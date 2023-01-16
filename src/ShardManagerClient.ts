@@ -6,6 +6,7 @@ import * as Option from "@fp-ts/data/Option";
 import { Config } from "./Config";
 import * as PodAddress from "./PodAddress";
 import * as Layer from "@effect/io/Layer";
+import { shardId, ShardId } from "./ShardId";
 
 export interface ShardManagerClient {
   register(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>;
@@ -14,7 +15,7 @@ export interface ShardManagerClient {
   getAssignments: Effect.Effect<
     never,
     never,
-    HashMap.HashMap<number, Option.Option<PodAddress.PodAddress>>
+    HashMap.HashMap<ShardId, Option.Option<PodAddress.PodAddress>>
   >;
 }
 
@@ -24,9 +25,9 @@ export const local = pipe(
   Effect.gen(function* ($) {
     const config = yield* $(Effect.service(Config));
     const pod = PodAddress.podAddress(config.selfHost, config.shardingPort);
-    let shards = HashMap.empty<number, Option.Option<PodAddress.PodAddress>>();
+    let shards = HashMap.empty<ShardId, Option.Option<PodAddress.PodAddress>>();
     for (let i = 0; i < config.numberOfShards; i++) {
-      shards = pipe(shards, HashMap.set(i, Option.some(pod)));
+      shards = pipe(shards, HashMap.set(shardId(i), Option.some(pod)));
     }
     return {
       register: () => Effect.unit(),

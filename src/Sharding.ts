@@ -209,7 +209,7 @@ function make(
         Effect.bind("shards", () => Ref.get(shardAssignments)),
         Effect.bindValue("pod", ({ shards }) => pipe(shards, HashMap.get(shardId))),
         Effect.bind("response", ({ pod }) => {
-          console.log("sending", msg, pod);
+          console.log("sending to ", shardId, " of ", config.numberOfShards);
           if (Option.isSome(pod)) {
             const send = sendToPod<Msg, Res>(entityType.name, entityId, msg, pod.value, replyId);
             return pipe(
@@ -354,18 +354,6 @@ function make(
       Effect.bindValue("shardId", () => getShardId(recipientType, entityId)),
       Effect.bindValue("pod", ({ shards, shardId }) => pipe(shards, HashMap.get(shardId))),
       Effect.map((_) => Option.isSome(_.pod) && equals(_.pod.value, address))
-    );
-  }
-
-  function updateAssignments(
-    assignmentsOpt: HashMap.HashMap<ShardId, Option.Option<PodAddress>>,
-    fromShardManager: boolean
-  ) {
-    const assignments = pipe(assignmentsOpt);
-
-    pipe(
-      shardAssignments,
-      Ref.update((map) => (HashMap.isEmpty(map) ? assignments : map))
     );
   }
 
