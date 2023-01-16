@@ -5,11 +5,9 @@ import { pipe } from "@fp-ts/data/Function";
 import * as Option from "@fp-ts/data/Option";
 import { PodAddress } from "./PodAddress";
 import { Pods } from "./Pods";
-import * as E from "@fp-ts/schema/Encoder";
 import * as Schema from "@fp-ts/schema/Schema";
 import * as These from "@fp-ts/data/These";
 import * as Either from "@fp-ts/data/Either";
-import * as D from "@fp-ts/schema/Decoder";
 import * as ShardError from "./ShardError";
 
 /**
@@ -48,15 +46,8 @@ export const Serialization = Tag<Serialization>();
  * A layer that uses Java serialization for encoding and decoding messages.
  * This is useful for testing and not recommended to use in production.
  */
-export const fptsSchema = Layer.succeed(Serialization)({
+export const noop = Layer.succeed(Serialization)({
   [SerializationTypeId]: {},
-  encode: (schema, message) => Effect.sync(() => E.encoderFor(schema).encode(message)),
-  decode: (schema, body) =>
-    Effect.fromEither(
-      pipe(
-        D.decoderFor(schema).decode(body),
-        These.toEither((e, a) => Either.left(e)),
-        Either.mapLeft((errors) => ShardError.DecodeError(errors))
-      )
-    ),
+  encode: (message) => Effect.succeed(message),
+  decode: (body) => Effect.succeed(body as any),
 });

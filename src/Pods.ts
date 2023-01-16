@@ -2,6 +2,7 @@ import { BinaryMessage } from "./BinaryMessage";
 import { PodAddress } from "./PodAddress";
 import { ShardId } from "./ShardId";
 import * as Effect from "@effect/io/Effect";
+import * as Layer from "@effect/io/Layer";
 import * as Option from "@fp-ts/data/Option";
 import { Tag } from "@fp-ts/data/Context";
 
@@ -49,3 +50,15 @@ export interface Pods {
 }
 
 export const Pods = Tag<Pods>();
+
+/**
+ * A layer that creates a service that does nothing when called.
+ * Useful for testing ShardManager or when using Sharding.local.
+ */
+export const noop = Layer.succeed(Pods)({
+  [PodsTypeId]: {},
+  assignShards: () => Effect.unit(),
+  unassignShards: () => Effect.unit(),
+  ping: () => Effect.unit(),
+  sendMessage: () => Effect.succeed(Option.none),
+});

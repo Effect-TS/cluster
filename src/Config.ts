@@ -1,6 +1,6 @@
 import { Tag } from "@fp-ts/data/Context";
 import * as Duration from "@fp-ts/data/Duration";
-
+import * as Layer from "@effect/io/Layer";
 /**
  * Sharding configuration
  * @param numberOfShards number of shards (see documentation on how to choose this), should be same on all nodes
@@ -31,7 +31,7 @@ export interface Config {
 
 export const Config = Tag<Config>();
 
-export const defaults: Config = {
+export const defaults = Layer.succeed(Config)({
   numberOfShards: 300,
   selfHost: "localhost",
   shardingPort: 54321,
@@ -43,4 +43,4 @@ export const defaults: Config = {
   refreshAssignmentsRetryInterval: Duration.seconds(5),
   unhealthyPodReportInterval: Duration.seconds(5),
   simulateRemotePods: false,
-};
+});

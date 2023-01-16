@@ -48,7 +48,7 @@ export const noop = Layer.succeed(PodsHealth)({
  * A layer that pings the pod directly to check if it's alive.
  * This is useful for developing and testing but not reliable in production.
  */
-export const local = Layer.fromEffect(PodsHealth)(
+export const local = Layer.effect(PodsHealth)(
   Effect.serviceWith(Pods)((podApi) => ({
     [PodsHealthTypeId]: {},
     isAlive: (address: PodAddress) =>

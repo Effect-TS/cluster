@@ -1,21 +1,21 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@effect/io': 0.0.42
+  '@effect/io': 0.0.64
   '@effect/language-service': ^0.0.11
-  '@effect/stream': 0.0.3
-  '@fp-ts/data': 0.0.30
-  '@fp-ts/schema': 0.0.6
+  '@effect/stream': 0.0.12
+  '@fp-ts/data': ^0.0.39
+  '@fp-ts/schema': 0.0.8
   '@types/node': ^18.11.11
   prettier: ^2.8.0
   ts-node: ^10.9.1
   typescript: ^4.9.3
 
 dependencies:
-  '@effect/io': 0.0.42
-  '@effect/stream': 0.0.3
-  '@fp-ts/data': 0.0.30
-  '@fp-ts/schema': 0.0.6
+  '@effect/io': 0.0.64
+  '@effect/stream': 0.0.12
+  '@fp-ts/data': 0.0.39
+  '@fp-ts/schema': 0.0.8
 
 devDependencies:
   '@effect/language-service': 0.0.11
@@ -33,26 +33,19 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@effect/io/0.0.42:
-    resolution: {integrity: sha512-l6Mtm8KadL1pbV9BmyO7q0sz2oZn1mmSdLOYLtKe3A74t8h6+zEVB7XcUvTFa3U6wqtbg+sjxTT+FMM9k3o4rw==}
-    dependencies:
-      '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.30
-
-  /@effect/io/0.0.63:
-    resolution: {integrity: sha512-Xsa0KTuJOkJ8u5ePdaNaA21a5dTrQI8prAMXqnMabcxpDCRbDxmoXHmtPx0ZueF+jBoSxCWCKUHZzgTQa/sZhg==}
+  /@effect/io/0.0.64:
+    resolution: {integrity: sha512-E3dQSlHVY2D3m7tUOmDxmPmBaQJ3mFl3YRndgm+Pl0Zog8DVlWH0lEuZyUEa8XiKlAHqIMq6c0VN82C2xuyNOQ==}
     dependencies:
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.39
-    dev: false
 
   /@effect/language-service/0.0.11:
     resolution: {integrity: sha512-1uE1dSWxn8RBVPH/0voXIZTDDboxHeE1mwJvWkMYyjzFjXTSST0zAa8N0l8XAqM0FSKrFYUbK4IvbH+QQ2vm+A==}
     dependencies:
-      '@effect/io': 0.0.42
+      '@effect/io': 0.0.64
       '@effect/printer': 0.1.11
       '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.30
+      '@fp-ts/data': 0.0.39
     dev: true
 
   /@effect/printer/0.1.11:
@@ -62,42 +55,28 @@ packages:
       '@fp-ts/data': 0.0.39
     dev: true
 
-  /@effect/stm/0.0.15:
-    resolution: {integrity: sha512-8H3AnkGFWf96THWog51XR5fQKu81vzN1vlTbXfXmvj1wDNEmY5/cqS4QWLIG2iGlIYHI0y9nVAWBI/LUD0vSkQ==}
+  /@effect/stream/0.0.12:
+    resolution: {integrity: sha512-th6NokgLZQC97jGxo4vM4x29aYtmqkGSwMlNFAQUJCp0e0RGfmr+Wr2KRL24L+oRttd7ITNFJ9U2m+uo1IbBOg==}
     dependencies:
-      '@effect/io': 0.0.63
+      '@effect/io': 0.0.64
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.39
     dev: false
 
-  /@effect/stream/0.0.3:
-    resolution: {integrity: sha512-7uX5ViddHimNMfyNsCWK73cuX5t528uCIPrygreLc8Fd5vlawhj8bAVQ8N2YzHznXuV29KYSVNoNi7bUSmdsAg==}
-    dependencies:
-      '@effect/io': 0.0.42
-      '@effect/stm': 0.0.15
-      '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.30
-    dev: false
-
   /@fp-ts/core/0.0.11:
     resolution: {integrity: sha512-BCAJBYzghwoJpcUOARJ1tui50HoYJFlV2pJlVMlsEkDFhD8MTtq8xQVpZCRF66RmtkxtGBYINCQ+5H1lRaL35Q==}
-
-  /@fp-ts/data/0.0.30:
-    resolution: {integrity: sha512-nMRNrNDn6ebleNtWI8YKf7+VzkLjaSedeU84KMttBrX5MlFIcbrLzn+OzspY8q46kkqBJTnmc3tVXxpU0p70Tw==}
-    dependencies:
-      '@fp-ts/core': 0.0.11
 
   /@fp-ts/data/0.0.39:
     resolution: {integrity: sha512-dNw1LWjQmChmdenrDuxPct+ycucgKQQboVtWqov8rkAGY3DULznoSDJZam6l2kaLdq1ScPv810N4mzLLT+cBBw==}
     dependencies:
       '@fp-ts/core': 0.0.11
 
-  /@fp-ts/schema/0.0.6:
-    resolution: {integrity: sha512-LQXER4wDjbbG/OJSP8x/2nEvDeOQojzdrj4HiNjZF9ZpxOIgi3QjdzuxCRD0K/UpT6nm3jqY2VLHG+26zWmZ7g==}
+  /@fp-ts/schema/0.0.8:
+    resolution: {integrity: sha512-+osZGEnfVO4jaoBnjMRmZT/yoYhu+DoN3eCn0HjWMnDF6ZDUuWahtSTp4HpBwd2lL0+FkulAywvM8WRpy4lZiw==}
     dependencies:
       '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.30
-      fast-check: 3.4.0
+      '@fp-ts/data': 0.0.39
+      fast-check: 3.5.0
     dev: false
 
   /@jridgewell/resolve-uri/3.1.0:
@@ -160,8 +139,8 @@ packages:
     engines: {node: '>=0.3.1'}
     dev: true
 
-  /fast-check/3.4.0:
-    resolution: {integrity: sha512-EWeu5YRzLuf5/PjLu3g6p823B4fOsGc/C8abGfEW4ZJfz1mf670TsP8CxeOuICESO88qu7YoPwKRZ2mTMRxwzg==}
+  /fast-check/3.5.0:
+    resolution: {integrity: sha512-5Yk9kfPy1DR8+9nl+wgRbXGM+p7e25nDRuZ/4b3TjIaWu53p/KkwS4uyKFc+Ek2Ft5nF40KRCbPYGrWYp0SjPw==}
     engines: {node: '>=8.0.0'}
     dependencies:
       pure-rand: 5.0.5
