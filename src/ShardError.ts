@@ -46,9 +46,10 @@ export function SendTimeoutException<A>(
 
 export interface EntityNotManagedByThisPod {
   _tag: "EntityNotManagedByThisPod";
+  entityId: string;
 }
-export function EntityNotManagedByThisPod(): EntityNotManagedByThisPod {
-  return { _tag: "EntityNotManagedByThisPod" };
+export function EntityNotManagedByThisPod(entityId: string): EntityNotManagedByThisPod {
+  return { _tag: "EntityNotManagedByThisPod", entityId };
 }
 export function isEntityNotManagedByThisPodError(value: any): value is EntityNotManagedByThisPod {
   return value && "_tag" in value && value._tag === "EntityNotManagedByThisPod";

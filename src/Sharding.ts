@@ -6,7 +6,7 @@ import * as Ref from "@effect/io/Ref";
 import { Hub } from "@effect/io/Hub";
 import * as Synchronized from "@effect/io/Ref/Synchronized";
 import * as HashMap from "@fp-ts/data/HashMap";
-import { ShardId } from "./ShardId";
+import { shardId, ShardId } from "./ShardId";
 import { ShardingRegistrationEvent } from "./ShardingRegistrationEvent";
 import { MutableList } from "@fp-ts/data/MutableList";
 import { Fiber } from "@effect/io/Fiber";
@@ -14,6 +14,7 @@ import * as Effect from "@effect/io/Effect";
 import * as Option from "@fp-ts/data/Option";
 import { EntityState } from "./EntityState";
 import * as Deferred from "@effect/io/Deferred";
+import * as Queue from "@effect/io/Queue";
 import { Tag } from "@fp-ts/data/Context";
 import { ShardManagerClient } from "./ShardManagerClient";
 import { pipe } from "@fp-ts/data/Function";
@@ -24,12 +25,15 @@ import {
   isEntityNotManagedByThisPodError,
   isPodUnavailableError,
   MessageReturnedNoting,
+  SendTimeoutException,
   Throwable,
 } from "./ShardError";
-import { EntityType } from "./RecipientType";
+import { EntityType, RecipentType } from "./RecipientType";
 import { Duration } from "@fp-ts/data/Duration";
 import { Messenger } from "./Messenger";
 import { duration, random } from "@fp-ts/data";
+import * as RecipientType from "./RecipientType";
+import { equals } from "@fp-ts/data/Equal";
 
 function make(
   address: PodAddress,
@@ -42,7 +46,7 @@ function make(
   replyPromises: Synchronized.Synchronized<
     HashMap.HashMap<string, Deferred.Deferred<Error, Option.Option<any>>>
   >, // promise for each pending reply,
-  lastUnhealthyNodeReported: Ref.Ref<OffsetDateTime>,
+  lastUnhealthyNodeReported: Ref.Ref<Date>,
   isShuttingDownRef: Ref.Ref<boolean>,
   shardManager: ShardManagerClient,
   pods: Pods,
@@ -50,6 +54,10 @@ function make(
   serialization: Serialization,
   eventsHub: Hub<ShardingRegistrationEvent>
 ) {
+  function getShardId(recipientType: RecipentType<any>, entityId: string): ShardId {
+    return RecipientType.getShardId(entityId, config.numberOfShards);
+  }
+
   const register = pipe(
     Effect.logDebug(`Registering pod ${address} to Shard Manager`),
     Effect.zipRight(pipe(isShuttingDownRef, Ref.set(false))),
@@ -176,7 +184,7 @@ function make(
         Effect.bind("pod", ({ shards }) => pipe(shards, HashMap.get(shardId), Effect.succeed)),
         Effect.bind("response", ({ pod }) => {
           if (Option.isSome(pod)) {
-            const send = sendToPod(entityType.name, entityId, msg, pod.value, replyId);
+            const send = sendToPod<Msg, Res>(entityType.name, entityId, msg, pod.value, replyId);
             return pipe(
               send,
               Effect.catchSome((_) => {
@@ -211,7 +219,9 @@ function make(
               Effect.flatMap((_) => {
                 if (Option.isSome(_)) return Effect.succeed(_.value);
                 return Effect.fail(MessageReturnedNoting(entityId, body));
-              })
+              }),
+              Effect.timeoutFail(() => SendTimeoutException(entityType, entityId, body), timeout),
+              Effect.interruptible
             );
           })
         );
@@ -221,59 +231,84 @@ function make(
     return { sendDiscard, send };
   }
 
+  function registerRecipient<R, Req>(
+    recipientType: RecipentType<Req>,
+    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
+    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none,
+    entityMaxIdleTime: Option.Option<Duration> = Option.none
+  ) {
+    return Effect.gen(function* ($) {});
+  }
+
   /*
-def messenger[Msg](entityType: EntityType[Msg], sendTimeout: Option[Duration] = None): Messenger[Msg] =
-    new Messenger[Msg] {
-      val timeout: Duration = sendTimeout.getOrElse(config.sendTimeout)
-
-      def sendDiscard(entityId: String)(msg: Msg): Task[Unit] =
-        sendMessage(entityId, msg, None).timeout(timeout).unit
-
-      def send[Res](entityId: String)(msg: Replier[Res] => Msg): Task[Res] =
-        Random.nextUUID.flatMap { uuid =>
-          val body = msg(Replier(uuid.toString))
-          sendMessage[Res](entityId, body, Some(uuid.toString)).flatMap {
-            case Some(value) => ZIO.succeed(value)
-            case None        => ZIO.fail(new Exception(s"Send returned nothing, entityId=$entityId, body=$body"))
-          }
-            .timeoutFail(SendTimeoutException(entityType, entityId, body))(timeout)
-            .interruptible
-        }
-
-      private def sendMessage[Res](entityId: String, msg: Msg, replyId: Option[String]): Task[Option[Res]] = {
-        val shardId                    = getShardId(entityType, entityId)
-        def trySend: Task[Option[Res]] =
-          for {
-            shards   <- shardAssignments.get
-            pod       = shards.get(shardId)
-            response <- pod match {
-                          case Some(pod) =>
-                            val send = sendToPod(entityType.name, entityId, msg, pod, replyId)
-                            send.catchSome { case _: EntityNotManagedByThisPod | _: PodUnavailable =>
-                              Clock.sleep(200.millis) *> trySend
-                            }
-                          case None      =>
-                            // no shard assignment, retry
-                            Clock.sleep(100.millis) *> trySend
-                        }
-          } yield response
-
-        trySend
-      }
-    }
+  def registerRecipient[R, Req: Tag](
+    recipientType: RecipientType[Req],
+    behavior: (String, Dequeue[Req]) => RIO[R, Nothing],
+    terminateMessage: Promise[Nothing, Unit] => Option[Req] = (_: Promise[Nothing, Unit]) => None,
+    entityMaxIdleTime: Option[Duration] = None
+  ): URIO[Scope with R, Unit] =
+    for {
+      entityManager <- EntityManager.make(recipientType, behavior, terminateMessage, self, config, entityMaxIdleTime)
+      binaryQueue   <- Queue
+                         .unbounded[(BinaryMessage, Promise[Throwable, Option[Array[Byte]]], Promise[Nothing, Unit])]
+                         .withFinalizer(_.shutdown)
+      _             <- entityStates.update(_.updated(recipientType.name, EntityState(binaryQueue, entityManager)))
+      _             <- ZStream
+                         .fromQueue(binaryQueue)
+                         .mapZIO { case (msg, p, interruptor) =>
+                           ((for {
+                             req       <- serialization.decode[Req](msg.body)
+                             p2        <- Promise.make[Throwable, Option[Any]]
+                             resOption <- (entityManager.send(msg.entityId, req, msg.replyId, p2) *> p2.await)
+                                            .onError(_ => p2.interrupt)
+                             res       <- ZIO.foreach(resOption)(serialization.encode)
+                             _         <- p.succeed(res)
+                           } yield ())
+                             .catchAllCause((cause: Cause[Throwable]) => p.fail(cause.squash)) raceFirst
+                             interruptor.await).fork.unit
+                         }
+                         .runDrain
+                         .forkScoped
+    } yield ()
   */
+
+  function isEntityOnLocalShards(
+    recipientType: RecipentType<any>,
+    entityId: string
+  ): Effect.Effect<never, never, boolean> {
+    return pipe(
+      Effect.Do(),
+      Effect.bind("shards", () => Ref.get(shardAssignments)),
+      Effect.bindValue("shardId", () => getShardId(recipientType, entityId)),
+      Effect.bindValue("pod", ({ shards, shardId }) => pipe(shards, HashMap.get(shardId))),
+      Effect.map((_) => Option.isSome(_.pod) && equals(_.pod.value, address))
+    );
+  }
+
+  const isShuttingDown = Ref.get(isShuttingDownRef);
 
   return {
     register,
     unregister,
     reply,
     messenger,
-  };
+    isEntityOnLocalShards,
+    isShuttingDown,
+  } as Sharding;
 }
 
 export interface Sharding {
   register: Effect.Effect<never, never, void>;
   unregister: Effect.Effect<never, never, void>;
   reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void>;
+  messenger<Msg>(
+    entityType: EntityType<Msg>,
+    sendTimeout?: Option.Option<Duration>
+  ): Messenger<Msg>;
+  isEntityOnLocalShards(
+    recipientType: RecipentType<any>,
+    entityId: string
+  ): Effect.Effect<never, never, boolean>;
+  isShuttingDown: Effect.Effect<never, never, boolean>;
 }
 export const Sharding = Tag<Sharding>();
