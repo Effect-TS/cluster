@@ -41,6 +41,7 @@ import { equals } from "@fp-ts/data/Equal";
 import { Storage } from "./Storage";
 import * as Layer from "@effect/io/Layer";
 import { Scope } from "@effect/io/Scope";
+import * as Schedule from "@effect/io/Schedule";
 
 function make(
   address: PodAddress,
@@ -57,7 +58,7 @@ function make(
   isShuttingDownRef: Ref.Ref<boolean>,
   shardManager: ShardManagerClient,
   //pods: Pods,
-  //storage: Storage,
+  storage: Storage,
   serialization: Serialization
   //eventsHub: Hub<ShardingRegistrationEvent>
 ) {
@@ -114,7 +115,6 @@ function make(
       Ref.get(entityStates),
       Effect.flatMap((states) => {
         const a = pipe(states, HashMap.get(msg.entityType));
-        console.log("dealing with message", msg.body);
         if (Option.isSome(a)) {
           const state = a.value;
           return pipe(
@@ -209,7 +209,6 @@ function make(
         Effect.bind("shards", () => Ref.get(shardAssignments)),
         Effect.bindValue("pod", ({ shards }) => pipe(shards, HashMap.get(shardId))),
         Effect.bind("response", ({ pod }) => {
-          console.log("sending to ", shardId, " of ", config.numberOfShards);
           if (Option.isSome(pod)) {
             const send = sendToPod<Msg, Res>(entityType.name, entityId, msg, pod.value, replyId);
             return pipe(
@@ -295,15 +294,15 @@ function make(
         )
       );
 
+      yield* $(Effect.log("Starting drainer for " + recipientType.name));
+
       yield* $(
         pipe(
           Stream.fromQueue(binaryQueue),
           Stream.mapEffect(([msg, p, interruptor]) =>
             pipe(
               Effect.Do(),
-              Effect.tap((_) => Effect.logDebug("got something ")),
               Effect.bind("req", () => serialization.decode<Req>(msg.body)),
-              Effect.tap((_) => Effect.logDebug("got request " + JSON.stringify(_.req))),
               Effect.bind("p2", () => Deferred.make<Throwable, Option.Option<any>>()),
               Effect.bind("resOption", (_) =>
                 pipe(
@@ -325,10 +324,16 @@ function make(
               Effect.catchAllCause((cause) => pipe(p, Deferred.fail(Cause.squash(cause)))),
               Effect.raceFirst(Deferred.await(interruptor)),
               Effect.fork,
-              Effect.unit
+              Effect.asUnit
             )
           ),
           Stream.runDrain,
+          Effect.catchAllCause((e) =>
+            Effect.sync(() => {
+              console.log("errored with", e);
+              return undefined;
+            })
+          ),
           Effect.forkScoped
         )
       );
@@ -357,8 +362,53 @@ function make(
     );
   }
 
+  const refreshAssignments: Effect.Effect<never, never, void> = pipe(
+    Stream.fromEffect(
+      pipe(
+        shardManager.getAssignments,
+        Effect.map((_) => [_, true] as const)
+      )
+    ),
+    Stream.merge(
+      pipe(
+        storage.assignmentsStream(),
+        Stream.map((_) => [_, false] as const)
+      )
+    ),
+    Stream.mapEffect(([assignmentsOpt, fromShardManager]) =>
+      updateAssignments(assignmentsOpt, fromShardManager)
+    ),
+    Stream.runDrain,
+    Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval)),
+    Effect.interruptible,
+    Effect.forkDaemon,
+    // TODO: missing withFinalizer (fiber interrupt)
+    Effect.asUnit
+  );
+
+  function updateAssignments(
+    assignmentsOpt: HashMap.HashMap<ShardId, Option.Option<PodAddress>>,
+    fromShardManager: boolean
+  ) {
+    const assignments = pipe(
+      assignmentsOpt,
+      HashMap.mapWithIndex((v, k) =>
+        pipe(
+          v,
+          Option.getOrElse(() => address)
+        )
+      )
+    );
+    if (fromShardManager)
+      return pipe(
+        shardAssignments,
+        Ref.update((map) => (HashMap.isEmpty(map) ? assignments : map))
+      );
+    return Effect.unit();
+  }
+
   /*
-    private def updateAssignments(
+  private def updateAssignments(
     assignmentsOpt: Map[ShardId, Option[PodAddress]],
     fromShardManager: Boolean
   ): UIO[Unit] = {
@@ -373,6 +423,7 @@ function make(
              map.filter { case (_, pod) => pod == address }
          ))
   }
+
   */
 
   const isShuttingDown = Ref.get(isShuttingDownRef);
@@ -387,6 +438,7 @@ function make(
     initReply,
     registerScoped,
     registerEntity,
+    refreshAssignments,
   };
 
   return self;
@@ -416,7 +468,9 @@ export interface Sharding {
     terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
     entityMaxIdleTime?: Option.Option<Duration>
   ): Effect.Effect<Scope | R, never, void>;
+  refreshAssignments: Effect.Effect<never, never, void>;
 }
+
 export const Sharding = Tag<Sharding>();
 
 export const live = pipe(
@@ -441,56 +495,11 @@ export const live = pipe(
       _.promises,
       _.shuttingDown,
       _.shardManager,
+      _.storage,
       _.serialization
     )
   ),
+  Effect.tap((_) => _.sharding.refreshAssignments),
   Effect.map((_) => _.sharding),
   Layer.scoped(Sharding)
 );
-
-/**
-  val live: ZLayer[Pods with ShardManagerClient with Storage with Serialization with Config, Throwable, Sharding] =
-    ZLayer.scoped {
-      for {
-        config                    <- ZIO.service[Config]
-        pods                      <- ZIO.service[Pods]
-        shardManager              <- ZIO.service[ShardManagerClient]
-        storage                   <- ZIO.service[Storage]
-        serialization             <- ZIO.service[Serialization]
-        shardsCache               <- Ref.make(Map.empty[ShardId, PodAddress])
-        entityStates              <- Ref.make[Map[String, EntityState]](Map())
-        singletons                <- Ref.Synchronized
-                                       .make[List[(String, UIO[Nothing], Option[Fiber[Nothing, Nothing]])]](Nil)
-                                       .withFinalizer(
-                                         _.get.flatMap(singletons =>
-                                           ZIO.foreach(singletons) {
-                                             case (_, _, Some(fiber)) => fiber.interrupt
-                                             case _                   => ZIO.unit
-                                           }
-                                         )
-                                       )
-        promises                  <- Ref.Synchronized.make[Map[String, Promise[Throwable, Option[Any]]]](Map())
-        cdt                       <- Clock.currentDateTime
-        lastUnhealthyNodeReported <- Ref.make(cdt)
-        shuttingDown              <- Ref.make(false)
-        eventsHub                 <- Hub.unbounded[ShardingRegistrationEvent]
-        sharding                   = new Sharding(
-                                       PodAddress(config.selfHost, config.shardingPort),
-                                       config,
-                                       shardsCache,
-                                       entityStates,
-                                       singletons,
-                                       promises,
-                                       lastUnhealthyNodeReported,
-                                       shuttingDown,
-                                       shardManager,
-                                       pods,
-                                       storage,
-                                       serialization,
-                                       eventsHub
-                                     )
-        _                         <- sharding.getShardingRegistrationEvents.mapZIO(event => ZIO.logInfo(event.toString)).runDrain.forkDaemon
-        _                         <- sharding.refreshAssignments
-      } yield sharding
-    }
- */

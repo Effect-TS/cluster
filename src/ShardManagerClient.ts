@@ -30,9 +30,9 @@ export const local = pipe(
       shards = pipe(shards, HashMap.set(shardId(i), Option.some(pod)));
     }
     return {
-      register: () => Effect.unit(),
-      unregister: () => Effect.unit(),
-      notifyUnhealthyPod: () => Effect.unit(),
+      register: Effect.unit,
+      unregister: Effect.unit,
+      notifyUnhealthyPod: Effect.unit,
       getAssignments: Effect.succeed(shards),
     } as ShardManagerClient;
   }),

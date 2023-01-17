@@ -122,7 +122,6 @@ export function make<R, Req>(
       replyId: Option.Option<string>,
       promise: Deferred.Deferred<ShardError.Throwable, Option.Option<any>>
     ): Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void> {
-      console.log("send called for", entityId);
       function decide(
         map: HashMap.HashMap<
           string,
