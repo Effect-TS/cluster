@@ -13,24 +13,27 @@ import { pipe } from "@fp-ts/data/Function";
 import { EntityType } from "./RecipientType";
 import { runtimeDebug } from "@effect/io/Debug";
 import * as Logger from "@effect/io/Logger";
+import * as Schema from "@fp-ts/schema/Schema";
 
 import * as LogLevel from "@effect/io/Logger/Level";
-import { Replier } from "./Replier";
+import * as Replier from "./Replier";
 
-class Increment {
-  readonly _tag = "Increment";
-}
+const CounterMsg = Schema.union(
+  Schema.struct({
+    _tag: Schema.literal("Increment"),
+  }),
+  Schema.struct({
+    _tag: Schema.literal("Decrement"),
+  }),
+  Schema.struct({
+    _tag: Schema.literal("GetCurrent"),
+    replier: Replier.schema(Schema.number),
+  })
+);
 
-class Decrement {
-  readonly _tag = "Decrement";
-}
+type CounterMsg = Schema.Infer<typeof CounterMsg>;
 
-class GetCurrent {
-  readonly _tag = "GetCurrent";
-  constructor(readonly replier: Replier<number>) {}
-}
-
-const CounterEntity = EntityType<Increment | Decrement | GetCurrent>("Counter");
+const CounterEntity = EntityType("Counter", CounterMsg);
 
 const program = pipe(
   Effect.serviceWithEffect(Sharding.Sharding)((sharding) =>
@@ -72,10 +75,10 @@ const program = pipe(
         pipe(
           Effect.Do(),
           Effect.bindValue("messenger", () => sharding.messenger(CounterEntity)),
-          Effect.tap((_) => _.messenger.sendDiscard("test1")(new Increment())),
-          Effect.tap((_) => _.messenger.sendDiscard("test1")(new Increment())),
+          Effect.tap((_) => _.messenger.sendDiscard("test1")({ _tag: "Increment" })),
+          Effect.tap((_) => _.messenger.sendDiscard("test1")({ _tag: "Increment" })),
           Effect.flatMap((_) =>
-            _.messenger.send("test1")((_: Replier<number>) => new GetCurrent(_))
+            _.messenger.send("test1")(Schema.number, (replier) => ({ _tag: "GetCurrent", replier }))
           ),
           Effect.tap((_) => Effect.log("Result is now " + _))
         )

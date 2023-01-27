@@ -29,4 +29,4 @@ export function binaryMessage(
   return { [BinaryMessageTypeId]: {}, entityId, entityType, body, replyId };
 }
 
-export interface ByteArray {}
+export type ByteArray = unknown;

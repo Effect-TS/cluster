@@ -4,10 +4,16 @@ import { BinaryMessage, ByteArray } from "./BinaryMessage";
 import { Deferred } from "@effect/io/Deferred";
 import { Option } from "@fp-ts/data/Option";
 import { Throwable } from "./ShardError";
+import * as Schema from "@fp-ts/schema/Schema";
 
 export interface EntityState {
   binaryQueue: Queue<
-    readonly [BinaryMessage, Deferred<Throwable, Option<ByteArray>>, Deferred<never, void>]
+    readonly [
+      BinaryMessage,
+      Option<Schema.Schema<any>>,
+      Deferred<Throwable, Option<ByteArray>>,
+      Deferred<never, void>
+    ]
   >;
   entityManager: EntityManager<never>;
 }

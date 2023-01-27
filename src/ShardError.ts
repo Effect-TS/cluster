@@ -12,6 +12,17 @@ export function DecodeError(error: unknown): DecodeError {
   };
 }
 
+export interface EncodeError {
+  _tag: "EncodeError";
+  error: unknown;
+}
+export function EncodeError(error: unknown): EncodeError {
+  return {
+    _tag: "EncodeError",
+    error,
+  };
+}
+
 export interface ReplyFailure {
   _tag: "ReplyFailure";
   error: unknown;
@@ -85,6 +96,7 @@ export function MessageReturnedNoting<A>(entityId: string, msg: A): MessageRetur
 
 export type Throwable =
   | DecodeError
+  | EncodeError
   | ReplyFailure
   | SendError
   | SendTimeoutException<any>

@@ -1,6 +1,7 @@
 import * as Effect from "@effect/io/Effect";
 import { Replier } from "./Replier";
 import { Throwable } from "./ShardError";
+import * as Schema from "@fp-ts/schema/Schema";
 
 /**
  * An interface to communicate with a remote entity
@@ -15,7 +16,10 @@ export interface Messenger<Msg> {
   /**
    * Send a message and wait for a response of type `Res`
    */
-  send<Res>(
+  send(
     entityId: string
-  ): (msg: (replier: Replier<Res>) => Msg) => Effect.Effect<never, Throwable, Res>;
+  ): <Res>(
+    replySchema: Schema.Schema<Res>,
+    msg: (replier: Replier<Res>) => Msg
+  ) => Effect.Effect<never, Throwable, Res>;
 }

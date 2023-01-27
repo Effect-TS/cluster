@@ -42,6 +42,7 @@ import { Storage } from "./Storage";
 import * as Layer from "@effect/io/Layer";
 import { Scope } from "@effect/io/Scope";
 import * as Schedule from "@effect/io/Schedule";
+import * as Schema from "@fp-ts/schema/Schema";
 
 function make(
   address: PodAddress,
@@ -110,7 +111,7 @@ function make(
     );
   }
 
-  function sendToLocalEntity(msg: BinaryMessage) {
+  function sendToLocalEntity(msg: BinaryMessage, replySchema: Option.Option<any>) {
     return pipe(
       Ref.get(entityStates),
       Effect.flatMap((states) => {
@@ -121,7 +122,9 @@ function make(
             Effect.Do(),
             Effect.bind("p", () => Deferred.make<never, Option.Option<ByteArray>>()),
             Effect.bind("interruptor", () => Deferred.make<never, void>()),
-            Effect.tap(({ p, interruptor }) => state.binaryQueue.offer([msg, p, interruptor])),
+            Effect.tap(({ p, interruptor }) =>
+              state.binaryQueue.offer([msg, replySchema, p, interruptor])
+            ),
             Effect.flatMap(({ p, interruptor }) =>
               pipe(
                 Deferred.await(p),
@@ -170,18 +173,23 @@ function make(
     recipientTypeName: string,
     entityId: string,
     msg: Msg,
+    msgSchema: Schema.Schema<Msg>,
     pod: PodAddress,
-    replyId: Option.Option<string>
+    replyId: Option.Option<string>,
+    replySchema: Option.Option<Schema.Schema<Res>>
   ) {
     // TODO: handle real world cases (only simulateRemotePods for now)
     return pipe(
-      serialization.encode(msg),
+      serialization.encode(msg, msgSchema),
       Effect.flatMap((bytes) =>
-        sendToLocalEntity(binaryMessage(entityId, recipientTypeName, bytes, replyId))
+        sendToLocalEntity(binaryMessage(entityId, recipientTypeName, bytes, replyId), replySchema)
       ),
       Effect.flatMap((_) => {
-        if (Option.isSome(_))
-          return pipe(serialization.decode<Res>(_.value), Effect.map(Option.some));
+        if (Option.isSome(_) && Option.isSome(replySchema))
+          return pipe(
+            serialization.decode<Res>(_.value, replySchema.value),
+            Effect.map(Option.some)
+          );
         return Effect.succeed(Option.none);
       })
     );
@@ -198,10 +206,19 @@ function make(
 
     function sendDiscard(entityId: string) {
       return (msg: Msg) =>
-        pipe(sendMessage(entityId, msg, Option.none), Effect.timeout(timeout), Effect.asUnit);
+        pipe(
+          sendMessage(entityId, msg, Option.none, Option.none),
+          Effect.timeout(timeout),
+          Effect.asUnit
+        );
     }
 
-    function sendMessage<Res>(entityId: string, msg: Msg, replyId: Option.Option<string>) {
+    function sendMessage<Res>(
+      entityId: string,
+      msg: Msg,
+      replyId: Option.Option<string>,
+      replySchema: Option.Option<Schema.Schema<Res>>
+    ) {
       const shardId = getShardId(entityType, entityId);
 
       const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = pipe(
@@ -210,7 +227,15 @@ function make(
         Effect.bindValue("pod", ({ shards }) => pipe(shards, HashMap.get(shardId))),
         Effect.bind("response", ({ pod }) => {
           if (Option.isSome(pod)) {
-            const send = sendToPod<Msg, Res>(entityType.name, entityId, msg, pod.value, replyId);
+            const send = sendToPod<Msg, Res>(
+              entityType.name,
+              entityId,
+              msg,
+              entityType.schema,
+              pod.value,
+              replyId,
+              replySchema
+            );
             return pipe(
               send,
               Effect.catchSome((_) => {
@@ -234,14 +259,14 @@ function make(
       return trySend;
     }
 
-    function send<Res>(entityId: string) {
-      return (msg: (replier: Replier<Res>) => Msg) => {
+    function send(entityId: string) {
+      return <Res>(replySchema: Schema.Schema<Res>, msg: (replier: Replier<Res>) => Msg) => {
         return pipe(
           Effect.sync(() => "r" + Math.random()),
           Effect.flatMap((uuid) => {
-            const body = msg(replier(uuid));
+            const body = msg(replier(uuid, replySchema));
             return pipe(
-              sendMessage<Res>(entityId, body, Option.some(uuid)),
+              sendMessage<Res>(entityId, body, Option.some(uuid), Option.some(replySchema)),
               Effect.flatMap((_) => {
                 if (Option.isSome(_)) return Effect.succeed(_.value);
                 return Effect.fail(MessageReturnedNoting(entityId, body));
@@ -280,6 +305,7 @@ function make(
           Queue.unbounded<
             readonly [
               BinaryMessage,
+              Option.Option<Schema.Schema<any>>,
               Deferred.Deferred<Throwable, Option.Option<ByteArray>>,
               Deferred.Deferred<never, void>
             ]
@@ -299,10 +325,10 @@ function make(
       yield* $(
         pipe(
           Stream.fromQueue(binaryQueue),
-          Stream.mapEffect(([msg, p, interruptor]) =>
+          Stream.mapEffect(([msg, replySchema, p, interruptor]) =>
             pipe(
               Effect.Do(),
-              Effect.bind("req", () => serialization.decode<Req>(msg.body)),
+              Effect.bind("req", () => serialization.decode<Req>(msg.body, recipientType.schema)),
               Effect.bind("p2", () => Deferred.make<Throwable, Option.Option<any>>()),
               Effect.bind("resOption", (_) =>
                 pipe(
@@ -316,7 +342,11 @@ function make(
                   _.resOption,
                   Option.match(
                     () => Effect.succeed(Option.none),
-                    (_) => pipe(serialization.encode(_), Effect.map(Option.some))
+                    (_) =>
+                      pipe(
+                        serialization.encode(_, Option.getOrUndefined(replySchema)!),
+                        Effect.map(Option.some)
+                      )
                   )
                 )
               ),

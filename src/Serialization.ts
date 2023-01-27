@@ -6,9 +6,12 @@ import * as Option from "@fp-ts/data/Option";
 import { PodAddress } from "./PodAddress";
 import { Pods } from "./Pods";
 import * as Schema from "@fp-ts/schema/Schema";
+import * as Parser from "@fp-ts/schema/Parser";
+import * as ParseError from "@fp-ts/schema/ParseError";
 import * as These from "@fp-ts/data/These";
 import * as Either from "@fp-ts/data/Either";
 import * as ShardError from "./ShardError";
+import { ByteArray } from "./BinaryMessage";
 
 /**
  * @since 1.0.0
@@ -33,12 +36,18 @@ export interface Serialization {
   /**
    * Transforms the given message into binary
    */
-  encode<A>(message: A): Effect.Effect<never, never, unknown>;
+  encode<A>(
+    message: A,
+    schema: Schema.Schema<A>
+  ): Effect.Effect<never, ShardError.EncodeError, ByteArray>;
 
   /**
    * Transform binary back into the given type
    */
-  decode<A>(bytes: unknown): Effect.Effect<never, ShardError.DecodeError, A>;
+  decode<A>(
+    bytes: ByteArray,
+    schema: Schema.Schema<A>
+  ): Effect.Effect<never, ShardError.DecodeError, A>;
 }
 export const Serialization = Tag<Serialization>();
 
@@ -48,6 +57,11 @@ export const Serialization = Tag<Serialization>();
  */
 export const noop = Layer.succeed(Serialization)({
   [SerializationTypeId]: {},
-  encode: (message) => Effect.succeed(message),
-  decode: (body) => Effect.succeed(body as any),
+  encode: (message, schema) =>
+    pipe(
+      Effect.fromEither(Parser.encode(schema)(message)),
+      Effect.mapError(ShardError.EncodeError)
+    ),
+  decode: (body, schema) =>
+    pipe(Effect.fromEither(Parser.decode(schema)(body)), Effect.mapError(ShardError.DecodeError)),
 });

@@ -1,4 +1,5 @@
 import * as Equal from "@fp-ts/data/Equal";
+import * as Schema from "@fp-ts/schema/Schema";
 import * as ShardId from "./ShardId";
 /**
  * An abstract type to extend for each type of entity or topic
@@ -9,16 +10,18 @@ import * as ShardId from "./ShardId";
 export interface EntityType<Msg> {
   _tag: "EntityType";
   name: string;
+  schema: Schema.Schema<Msg>;
 }
 export interface TopicType<Msg> {
   _tag: "TopicType";
   name: string;
+  schema: Schema.Schema<Msg>;
 }
 export type RecipentType<Msg> = EntityType<Msg> | TopicType<Msg>;
 
 export const getShardId = (entityId: string, numberOfShards: number): ShardId.ShardId =>
   ShardId.shardId(Math.abs(Equal.hash(entityId) % numberOfShards) + 1);
 
-export function EntityType<Msg>(name: string): EntityType<Msg> {
-  return { _tag: "EntityType", name };
+export function EntityType<Msg>(name: string, schema: Schema.Schema<Msg>): EntityType<Msg> {
+  return { _tag: "EntityType", name, schema };
 }
