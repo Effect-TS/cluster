@@ -29,7 +29,7 @@ export const local = pipe(
       const pod = PodAddress.podAddress(config.selfHost, config.shardingPort);
       let shards = HashMap.empty<ShardId, Option.Option<PodAddress.PodAddress>>();
       for (let i = 0; i < config.numberOfShards; i++) {
-        shards = pipe(shards, HashMap.set(shardId(i), Option.some(pod)));
+        shards = HashMap.set(shards, shardId(i), Option.some(pod));
       }
       return {
         register: () => Effect.unit(),

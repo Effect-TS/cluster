@@ -112,11 +112,9 @@ function make(
   }
 
   function sendToLocalEntity(msg: BinaryMessage, replySchema: Option.Option<any>) {
-    console.log("send called");
     return pipe(
       Ref.get(entityStates),
       Effect.flatMap((states) => {
-        console.log("about to offer msg", msg);
         const a = HashMap.get(states, msg.entityType);
         if (Option.isSome(a)) {
           const state = a.value;
@@ -227,9 +225,8 @@ function make(
         Effect.Do(),
         Effect.bind("shards", () => Ref.get(shardAssignments)),
         Effect.bindValue("pod", ({ shards }) => HashMap.get(shards, shardId)),
-        Effect.bind("response", ({ pod }) => {
+        Effect.bind("response", ({ pod, shards }) => {
           if (Option.isSome(pod)) {
-            console.log("waiting for response");
             const send = sendToPod(
               entityType.name,
               entityId,

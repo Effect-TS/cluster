@@ -1,3 +1,5 @@
+import * as Data from "@fp-ts/data/Data";
+
 /**
  * @since 1.0.0
  * @category symbols
@@ -16,5 +18,5 @@ export interface ShardId {
 }
 
 export function shardId(value: number): ShardId {
-  return { [ShardIdTypeId]: {}, value };
+  return Data.struct({ [ShardIdTypeId]: {}, value });
 }

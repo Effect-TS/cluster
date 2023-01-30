@@ -14,6 +14,7 @@ import { runtimeDebug } from "@effect/io/Debug";
 import * as Logger from "@effect/io/Logger";
 import { pipe } from "@fp-ts/core/Function";
 import * as Schema from "@fp-ts/schema/Schema";
+import * as HashMap from "@fp-ts/data/HashMap";
 
 import * as LogLevel from "@effect/io/Logger/Level";
 import * as Replier from "./Replier";

@@ -1,3 +1,4 @@
+import * as Data from "@fp-ts/data/Data";
 /**
  * @since 1.0.0
  * @category symbols
@@ -17,5 +18,5 @@ export interface PodAddress {
 }
 
 export function podAddress(host: string, port: number): PodAddress {
-  return { [PodAddressTypeId]: {}, host, port };
+  return Data.struct({ [PodAddressTypeId]: {}, host, port });
 }
