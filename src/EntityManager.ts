@@ -228,7 +228,11 @@ export function make<R, Req>(
                   replyId,
                   Option.match(
                     () =>
-                      pipe(queue, Queue.offer(req), Effect.zipLeft(Effect.succeed(Option.none))),
+                      pipe(
+                        queue,
+                        Queue.offer(req),
+                        Effect.zipLeft(Deferred.succeed(Option.none as any)(promise))
+                      ),
                     (replyId_) =>
                       pipe(
                         sharding.initReply(replyId_, promise),

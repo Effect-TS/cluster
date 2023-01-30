@@ -358,12 +358,6 @@ function make(
             )
           ),
           Stream.runDrain,
-          Effect.catchAllCause((e) =>
-            Effect.sync(() => {
-              console.log("errored with", e);
-              return undefined;
-            })
-          ),
           Effect.forkScoped
         )
       );
