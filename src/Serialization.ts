@@ -1,15 +1,15 @@
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import { Tag } from "@fp-ts/data/Context";
-import { pipe } from "@fp-ts/data/Function";
-import * as Option from "@fp-ts/data/Option";
+import { pipe } from "@fp-ts/core/Function";
+import * as Option from "@fp-ts/core/Option";
 import { PodAddress } from "./PodAddress";
 import { Pods } from "./Pods";
 import * as Schema from "@fp-ts/schema/Schema";
 import * as Parser from "@fp-ts/schema/Parser";
-import * as ParseError from "@fp-ts/schema/ParseError";
-import * as These from "@fp-ts/data/These";
-import * as Either from "@fp-ts/data/Either";
+import * as ParseError from "@fp-ts/schema/ParseResult";
+import * as These from "@fp-ts/core/These";
+import * as Either from "@fp-ts/core/Either";
 import * as ShardError from "./ShardError";
 import { ByteArray } from "./BinaryMessage";
 
@@ -55,7 +55,7 @@ export const Serialization = Tag<Serialization>();
  * A layer that uses Java serialization for encoding and decoding messages.
  * This is useful for testing and not recommended to use in production.
  */
-export const noop = Layer.succeed(Serialization)({
+export const noop = Layer.succeed(Serialization, {
   [SerializationTypeId]: {},
   encode: (message, schema) =>
     pipe(

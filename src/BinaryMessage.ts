@@ -1,4 +1,4 @@
-import { Option } from "@fp-ts/data/Option";
+import { Option } from "@fp-ts/core/Option";
 
 /**
  * @since 1.0.0

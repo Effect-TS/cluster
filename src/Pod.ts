@@ -1,4 +1,4 @@
-import * as O from "@fp-ts/data/Option";
+import * as Option from "@fp-ts/core/Option";
 import { PodAddress } from "./PodAddress";
 
 /**

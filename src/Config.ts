@@ -31,7 +31,7 @@ export interface Config {
 
 export const Config = Tag<Config>();
 
-export const defaults = Layer.succeed(Config)({
+export const defaults = Layer.succeed(Config, {
   numberOfShards: 300,
   selfHost: "localhost",
   shardingPort: 54321,

@@ -1,8 +1,8 @@
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import { Tag } from "@fp-ts/data/Context";
-import { pipe } from "@fp-ts/data/Function";
-import * as Option from "@fp-ts/data/Option";
+import { pipe } from "@fp-ts/core/Function";
+import * as Option from "@fp-ts/core/Option";
 import { PodAddress } from "./PodAddress";
 import { Pods } from "./Pods";
 
@@ -39,7 +39,7 @@ export const PodsHealth = Tag<PodsHealth>();
  * A layer that considers pods as always alive.
  * This is useful for testing only.
  */
-export const noop = Layer.succeed(PodsHealth)({
+export const noop = Layer.succeed(PodsHealth, {
   [PodsHealthTypeId]: {},
   isAlive: () => Effect.succeed(true),
 });
@@ -48,8 +48,9 @@ export const noop = Layer.succeed(PodsHealth)({
  * A layer that pings the pod directly to check if it's alive.
  * This is useful for developing and testing but not reliable in production.
  */
-export const local = Layer.effect(PodsHealth)(
-  Effect.serviceWith(Pods)((podApi) => ({
+export const local = Layer.effect(
+  PodsHealth,
+  Effect.serviceWith(Pods, (podApi) => ({
     [PodsHealthTypeId]: {},
     isAlive: (address: PodAddress) =>
       pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome)),

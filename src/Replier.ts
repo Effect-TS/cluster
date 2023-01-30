@@ -1,9 +1,8 @@
 import * as Sharding from "./Sharding";
 import * as Effect from "@effect/io/Effect";
 import * as Schema from "@fp-ts/schema/Schema";
-import { pipe } from "@fp-ts/data/Function";
-import type { Option } from "@fp-ts/data/Option";
-import * as O from "@fp-ts/data/Option";
+import { pipe } from "@fp-ts/core/Function";
+import * as Option from "@fp-ts/core/Option";
 import { IdentifierId } from "@fp-ts/schema/annotation/AST";
 import * as H from "@fp-ts/schema/annotation/Hook";
 
@@ -16,7 +15,7 @@ export interface Replier<R> {
 export const replier = <R>(id: string, schema: Schema.Schema<R>): Replier<R> => {
   const self: Replier<R> = {
     id,
-    reply: (reply) => Effect.serviceWithEffect(Sharding.Sharding)((_) => _.reply(reply, self)),
+    reply: (reply) => Effect.serviceWithEffect(Sharding.Sharding, (_) => _.reply(reply, self)),
     schema,
   };
   return self;

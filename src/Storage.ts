@@ -1,13 +1,13 @@
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import { Tag } from "@fp-ts/data/Context";
-import { pipe } from "@fp-ts/data/Function";
-import * as Option from "@fp-ts/data/Option";
+import { pipe } from "@fp-ts/core/Function";
+import * as Option from "@fp-ts/core/Option";
 import { PodAddress } from "./PodAddress";
 import { Pods } from "./Pods";
 import * as Schema from "@fp-ts/schema/Schema";
-import * as These from "@fp-ts/data/These";
-import * as Either from "@fp-ts/data/Either";
+import * as These from "@fp-ts/core/These";
+import * as Either from "@fp-ts/core/Either";
 import * as ShardError from "./ShardError";
 import * as HashMap from "@fp-ts/data/HashMap";
 import { ShardId } from "./ShardId";
@@ -73,7 +73,8 @@ export const Storage = Tag<Storage>();
  * This is useful for testing with a single pod only.
  */
 
-export const memory = Layer.effect(Storage)(
+export const memory = Layer.effect(
+  Storage,
   Effect.gen(function* ($) {
     const assignmentsRef = yield* $(
       SubscriptionRef.make(HashMap.empty<ShardId, Option.Option<PodAddress>>())

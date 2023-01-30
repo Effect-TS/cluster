@@ -1,24 +1,26 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@effect/io': 0.0.64
-  '@effect/language-service': ^0.0.11
-  '@effect/stream': 0.0.12
-  '@fp-ts/data': ^0.0.39
-  '@fp-ts/schema': 0.0.8
+  '@effect/io': 0.1.4
+  '@effect/language-service': ^0.0.17
+  '@effect/stream': 0.1.0
+  '@fp-ts/core': ^0.1.1
+  '@fp-ts/data': ^0.1.1
+  '@fp-ts/schema': 0.1.3
   '@types/node': ^18.11.11
   prettier: ^2.8.0
   ts-node: ^10.9.1
   typescript: ^4.9.3
 
 dependencies:
-  '@effect/io': 0.0.64
-  '@effect/stream': 0.0.12
-  '@fp-ts/data': 0.0.39
-  '@fp-ts/schema': 0.0.8
+  '@effect/io': 0.1.4
+  '@effect/stream': 0.1.0
+  '@fp-ts/core': 0.1.1
+  '@fp-ts/data': 0.1.1
+  '@fp-ts/schema': 0.1.3
 
 devDependencies:
-  '@effect/language-service': 0.0.11
+  '@effect/language-service': 0.0.17
   '@types/node': 18.11.17
   prettier: 2.8.1
   ts-node: 10.9.1_moeqx3xmzxqxagf2sz6mqkbb7m
@@ -33,50 +35,54 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@effect/io/0.0.64:
-    resolution: {integrity: sha512-E3dQSlHVY2D3m7tUOmDxmPmBaQJ3mFl3YRndgm+Pl0Zog8DVlWH0lEuZyUEa8XiKlAHqIMq6c0VN82C2xuyNOQ==}
+  /@effect/io/0.1.4:
+    resolution: {integrity: sha512-O0hk0cqiSR0ZEA3s4PXEGY0bKTZdtSCNpC79JaGkXuzN+/f1iUi943By7cvf/2MB002wortmG69tGuGQIG9HgA==}
     dependencies:
-      '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.39
+      '@fp-ts/core': 0.1.1
+      '@fp-ts/data': 0.1.1
+    dev: false
 
-  /@effect/language-service/0.0.11:
-    resolution: {integrity: sha512-1uE1dSWxn8RBVPH/0voXIZTDDboxHeE1mwJvWkMYyjzFjXTSST0zAa8N0l8XAqM0FSKrFYUbK4IvbH+QQ2vm+A==}
-    dependencies:
-      '@effect/io': 0.0.64
-      '@effect/printer': 0.1.11
-      '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.39
-    dev: true
-
-  /@effect/printer/0.1.11:
-    resolution: {integrity: sha512-95ha+/xFmDGG/FN0mZASJLBaU635IlhDcBxYO6sswqaheCz3s92Ouub+xTomjyPYtev5xAnVHQpZaaxcnjFaHQ==}
+  /@effect/language-service/0.0.17:
+    resolution: {integrity: sha512-98c6VtueGDvCGDfkQijsQ5uP/g4J2VhSbI83f/Rv84Gg0uJ+BbA9jno1dQubvaPRGBMIVE+1egZUduSWY6tfEg==}
     dependencies:
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.39
     dev: true
 
-  /@effect/stream/0.0.12:
-    resolution: {integrity: sha512-th6NokgLZQC97jGxo4vM4x29aYtmqkGSwMlNFAQUJCp0e0RGfmr+Wr2KRL24L+oRttd7ITNFJ9U2m+uo1IbBOg==}
+  /@effect/stream/0.1.0:
+    resolution: {integrity: sha512-GeJNY5WKV6h/aLynZpJTR/xmvTD1JQq8hk9bt+Z2OxHLwyBZ+YSQetA9YsxQsZGLUZl+h1twSdkI0n7d0mx3Lw==}
     dependencies:
-      '@effect/io': 0.0.64
-      '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.39
+      '@effect/io': 0.1.4
+      '@fp-ts/core': 0.1.1
+      '@fp-ts/data': 0.1.1
     dev: false
 
   /@fp-ts/core/0.0.11:
     resolution: {integrity: sha512-BCAJBYzghwoJpcUOARJ1tui50HoYJFlV2pJlVMlsEkDFhD8MTtq8xQVpZCRF66RmtkxtGBYINCQ+5H1lRaL35Q==}
+    dev: true
+
+  /@fp-ts/core/0.1.1:
+    resolution: {integrity: sha512-7vQnrnvJAMrXgIwt0qQNhXkPDtm4l8vwql8EvXeY47v/FwnWpDvt1HISoO9Kq3am5SZ0A8Av+4NqPab2FRdKxw==}
+    dev: false
 
   /@fp-ts/data/0.0.39:
     resolution: {integrity: sha512-dNw1LWjQmChmdenrDuxPct+ycucgKQQboVtWqov8rkAGY3DULznoSDJZam6l2kaLdq1ScPv810N4mzLLT+cBBw==}
     dependencies:
       '@fp-ts/core': 0.0.11
+    dev: true
 
-  /@fp-ts/schema/0.0.8:
-    resolution: {integrity: sha512-+osZGEnfVO4jaoBnjMRmZT/yoYhu+DoN3eCn0HjWMnDF6ZDUuWahtSTp4HpBwd2lL0+FkulAywvM8WRpy4lZiw==}
+  /@fp-ts/data/0.1.1:
+    resolution: {integrity: sha512-hgsoSDKP01kGY+g/Ino+QX3VEqiPnf0mrhKujMajT4ma0w82i4u0nMEPbBykyMxscQirFemwl7CnWn7G3TadcA==}
     dependencies:
-      '@fp-ts/core': 0.0.11
-      '@fp-ts/data': 0.0.39
-      fast-check: 3.5.0
+      '@fp-ts/core': 0.1.1
+    dev: false
+
+  /@fp-ts/schema/0.1.3:
+    resolution: {integrity: sha512-rdyqwodZPqbY96mAUg3cAEKK7WsJ3JqZWDfBShSoPvxwB+fnFw1Rjhg3tsTpBhBN1oGlSHatIRJQ+QcoaAU+uA==}
+    dependencies:
+      '@fp-ts/core': 0.1.1
+      '@fp-ts/data': 0.1.1
+      fast-check: 3.6.2
     dev: false
 
   /@jridgewell/resolve-uri/3.1.0:
@@ -139,11 +145,11 @@ packages:
     engines: {node: '>=0.3.1'}
     dev: true
 
-  /fast-check/3.5.0:
-    resolution: {integrity: sha512-5Yk9kfPy1DR8+9nl+wgRbXGM+p7e25nDRuZ/4b3TjIaWu53p/KkwS4uyKFc+Ek2Ft5nF40KRCbPYGrWYp0SjPw==}
+  /fast-check/3.6.2:
+    resolution: {integrity: sha512-htRkbkw8B1yVfvrLNiJTnpcvpXrdcgpwZUQdC07dsiUGXaHHWK38t6VCnTmAUf68atyos1+XXXY60VUbSgorAQ==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      pure-rand: 5.0.5
+      pure-rand: 6.0.0
     dev: false
 
   /make-error/1.3.6:
@@ -156,8 +162,8 @@ packages:
     hasBin: true
     dev: true
 
-  /pure-rand/5.0.5:
-    resolution: {integrity: sha512-BwQpbqxSCBJVpamI6ydzcKqyFmnd5msMWUGvzXLm1aXvusbbgkbOto/EUPM00hjveJEaJtdbhUjKSzWRhQVkaw==}
+  /pure-rand/6.0.0:
+    resolution: {integrity: sha512-rLSBxJjP+4DQOgcJAx6RZHT2he2pkhQdSnofG5VWyVl6GRq/K02ISOuOLcsMOrtKDIJb8JN2zm3FFzWNbezdPw==}
     dev: false
 
   /ts-node/10.9.1_moeqx3xmzxqxagf2sz6mqkbb7m:

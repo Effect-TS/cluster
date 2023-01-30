@@ -12,7 +12,7 @@ import { MutableList } from "@fp-ts/data/MutableList";
 import { Fiber } from "@effect/io/Fiber";
 import * as Effect from "@effect/io/Effect";
 import * as Cause from "@effect/io/Cause";
-import * as Option from "@fp-ts/data/Option";
+import * as Option from "@fp-ts/core/Option";
 import { EntityState } from "./EntityState";
 import * as Deferred from "@effect/io/Deferred";
 import * as Logger from "@effect/io/Logger";
@@ -20,7 +20,7 @@ import * as Queue from "@effect/io/Queue";
 import * as Stream from "@effect/stream/Stream";
 import { Tag } from "@fp-ts/data/Context";
 import { ShardManagerClient } from "./ShardManagerClient";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import { replier, Replier } from "./Replier";
 import * as EntityManager from "./EntityManager";
 import { BinaryMessage, binaryMessage, ByteArray } from "./BinaryMessage";
@@ -112,10 +112,12 @@ function make(
   }
 
   function sendToLocalEntity(msg: BinaryMessage, replySchema: Option.Option<any>) {
+    console.log("send called");
     return pipe(
       Ref.get(entityStates),
       Effect.flatMap((states) => {
-        const a = pipe(states, HashMap.get(msg.entityType));
+        console.log("about to offer msg", msg);
+        const a = HashMap.get(states, msg.entityType);
         if (Option.isSome(a)) {
           const state = a.value;
           return pipe(
@@ -150,7 +152,7 @@ function make(
         pipe(
           promise,
           Deferred.await,
-          Effect.onError((cause) => abortReply(id, pipe(cause, Cause.squash) as any)),
+          Effect.onError((cause) => abortReply(id, Cause.squash(cause) as any)),
           Effect.forkDaemon
         )
       )
@@ -190,14 +192,14 @@ function make(
             serialization.decode<Res>(_.value, replySchema.value),
             Effect.map(Option.some)
           );
-        return Effect.succeed(Option.none);
+        return Effect.succeed(Option.none());
       })
     );
   }
 
   function messenger<Msg>(
     entityType: EntityType<Msg>,
-    sendTimeout: Option.Option<Duration> = Option.none
+    sendTimeout: Option.Option<Duration> = Option.none()
   ): Messenger<Msg> {
     const timeout = pipe(
       sendTimeout,
@@ -207,7 +209,7 @@ function make(
     function sendDiscard(entityId: string) {
       return (msg: Msg) =>
         pipe(
-          sendMessage(entityId, msg, Option.none, Option.none),
+          sendMessage(entityId, msg, Option.none(), Option.none()),
           Effect.timeout(timeout),
           Effect.asUnit
         );
@@ -224,10 +226,11 @@ function make(
       const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = pipe(
         Effect.Do(),
         Effect.bind("shards", () => Ref.get(shardAssignments)),
-        Effect.bindValue("pod", ({ shards }) => pipe(shards, HashMap.get(shardId))),
+        Effect.bindValue("pod", ({ shards }) => HashMap.get(shards, shardId)),
         Effect.bind("response", ({ pod }) => {
           if (Option.isSome(pod)) {
-            const send = sendToPod<Msg, Res>(
+            console.log("waiting for response");
+            const send = sendToPod(
               entityType.name,
               entityId,
               msg,
@@ -246,7 +249,7 @@ function make(
                     Option.some
                   );
                 }
-                return Option.none;
+                return Option.none();
               })
             );
           }
@@ -266,7 +269,7 @@ function make(
           Effect.flatMap((uuid) => {
             const body = msg(replier(uuid, replySchema));
             return pipe(
-              sendMessage<Res>(entityId, body, Option.some(uuid), Option.some(replySchema)),
+              sendMessage(entityId, body, Option.some(uuid), Option.some(replySchema)),
               Effect.flatMap((_) => {
                 if (Option.isSome(_)) return Effect.succeed(_.value);
                 return Effect.fail(MessageReturnedNoting(entityId, body));
@@ -285,8 +288,9 @@ function make(
   function registerRecipient<R, Req>(
     recipientType: RecipentType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none,
-    entityMaxIdleTime: Option.Option<Duration> = Option.none
+    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () =>
+      Option.none(),
+    entityMaxIdleTime: Option.Option<Duration> = Option.none()
   ) {
     return Effect.gen(function* ($) {
       const entityManager = yield* $(
@@ -341,7 +345,7 @@ function make(
                 pipe(
                   _.resOption,
                   Option.match(
-                    () => Effect.succeed(Option.none),
+                    () => Effect.succeed(Option.none()),
                     (_) =>
                       pipe(
                         serialization.encode(_, Option.getOrUndefined(replySchema)!),
@@ -367,8 +371,9 @@ function make(
   function registerEntity<R, Req>(
     entityType: EntityType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none,
-    entityMaxIdleTime: Option.Option<Duration> = Option.none
+    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () =>
+      Option.none(),
+    entityMaxIdleTime: Option.Option<Duration> = Option.none()
   ): Effect.Effect<Scope | R, never, void> {
     return registerRecipient(entityType, behavior, terminateMessage, entityMaxIdleTime);
   }
@@ -497,33 +502,35 @@ export interface Sharding {
 
 export const Sharding = Tag<Sharding>();
 
-export const live = pipe(
-  Effect.Do(),
-  Effect.bind("config", () => Effect.service(Config)),
-  Effect.bind("pods", () => Effect.service(Pods)),
-  Effect.bind("shardManager", () => Effect.service(ShardManagerClient)),
-  Effect.bind("storage", () => Effect.service(Storage)),
-  Effect.bind("serialization", () => Effect.service(Serialization)),
-  Effect.bind("shardsCache", () => Ref.make(HashMap.empty<ShardId, PodAddress>())),
-  Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState>())),
-  Effect.bind("shuttingDown", () => Ref.make(false)),
-  Effect.bind("promises", () =>
-    Synchronized.make(HashMap.empty<string, Deferred.Deferred<Throwable, Option.Option<any>>>())
-  ),
-  Effect.bindValue("sharding", (_) =>
-    make(
-      podAddress(_.config.selfHost, _.config.shardingPort),
-      _.config,
-      _.shardsCache,
-      _.entityStates,
-      _.promises,
-      _.shuttingDown,
-      _.shardManager,
-      _.storage,
-      _.serialization
-    )
-  ),
-  Effect.tap((_) => _.sharding.refreshAssignments),
-  Effect.map((_) => _.sharding),
-  Layer.scoped(Sharding)
+export const live = Layer.scoped(
+  Sharding,
+  pipe(
+    Effect.Do(),
+    Effect.bind("config", () => Effect.service(Config)),
+    Effect.bind("pods", () => Effect.service(Pods)),
+    Effect.bind("shardManager", () => Effect.service(ShardManagerClient)),
+    Effect.bind("storage", () => Effect.service(Storage)),
+    Effect.bind("serialization", () => Effect.service(Serialization)),
+    Effect.bind("shardsCache", () => Ref.make(HashMap.empty<ShardId, PodAddress>())),
+    Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState>())),
+    Effect.bind("shuttingDown", () => Ref.make(false)),
+    Effect.bind("promises", () =>
+      Synchronized.make(HashMap.empty<string, Deferred.Deferred<Throwable, Option.Option<any>>>())
+    ),
+    Effect.bindValue("sharding", (_) =>
+      make(
+        podAddress(_.config.selfHost, _.config.shardingPort),
+        _.config,
+        _.shardsCache,
+        _.entityStates,
+        _.promises,
+        _.shuttingDown,
+        _.shardManager,
+        _.storage,
+        _.serialization
+      )
+    ),
+    Effect.tap((_) => _.sharding.refreshAssignments),
+    Effect.map((_) => _.sharding)
+  )
 );

@@ -1,5 +1,3 @@
-import * as O from "@fp-ts/data/Option";
-
 /**
  * @since 1.0.0
  * @category symbols

@@ -9,10 +9,10 @@ import * as Deferred from "@effect/io/Deferred";
 import * as Queue from "@effect/io/Queue";
 import * as Cause from "@effect/io/Cause";
 import * as Ref from "@effect/io/Ref";
-import { pipe } from "@fp-ts/data/Function";
 import { EntityType } from "./RecipientType";
 import { runtimeDebug } from "@effect/io/Debug";
 import * as Logger from "@effect/io/Logger";
+import { pipe } from "@fp-ts/core/Function";
 import * as Schema from "@fp-ts/schema/Schema";
 
 import * as LogLevel from "@effect/io/Logger/Level";
@@ -36,7 +36,7 @@ type CounterMsg = Schema.Infer<typeof CounterMsg>;
 const CounterEntity = EntityType("Counter", CounterMsg);
 
 const program = pipe(
-  Effect.serviceWithEffect(Sharding.Sharding)((sharding) =>
+  Effect.serviceWithEffect(Sharding.Sharding, (sharding) =>
     pipe(
       sharding.registerEntity(CounterEntity, (counter, dequeue) =>
         pipe(
@@ -47,14 +47,8 @@ const program = pipe(
               Effect.flatMap(
                 (msg) =>
                   ({
-                    Increment: pipe(
-                      count,
-                      Ref.update((a) => a + 1)
-                    ),
-                    Decrement: pipe(
-                      count,
-                      Ref.update((a) => a + 1)
-                    ),
+                    Increment: Ref.update(count, (a) => a + 1),
+                    Decrement: Ref.update(count, (a) => a - 1),
                     GetCurrent: pipe(
                       Ref.get(count),
                       Effect.flatMap((_) =>
@@ -93,8 +87,8 @@ const program = pipe(
   Effect.provideSomeLayer(ShardManagerClient.local),
   Effect.provideSomeLayer(Storage.memory),
   Effect.provideSomeLayer(Config.defaults),
-  Effect.catchAllCause((_) => Effect.log(Cause.pretty()(_))),
+  Effect.catchAllCause((_) => Effect.log(Cause.pretty(_))),
   Logger.withMinimumLogLevel(LogLevel.All)
 );
 
-Effect.unsafeFork(program);
+Effect.runFork(program);

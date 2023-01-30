@@ -1,4 +1,4 @@
-import * as Option from "@fp-ts/data/Option";
+import * as Option from "@fp-ts/core/Option";
 import * as Deferred from "@effect/io/Deferred";
 import * as Queue from "@effect/io/Queue";
 import * as Effect from "@effect/io/Effect";
@@ -12,7 +12,7 @@ import * as Config from "./Config";
 import * as Duration from "@fp-ts/data/Duration";
 import * as RefSynchronized from "@effect/io/Ref/Synchronized";
 import * as Fiber from "@effect/io/Fiber";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import { duration } from "@fp-ts/data";
 
 export interface EntityManager<Req> {
@@ -43,9 +43,9 @@ export function make<R, Req>(
         >
       >(HashMap.empty())
     );
-    const env = yield* $(Effect.environment<R>());
+    const env = yield* $(Effect.context<R>());
     const behavior = (entityId: string, dequeue: Queue.Dequeue<Req>) =>
-      pipe(behavior_(entityId, dequeue), Effect.provideEnvironment(env));
+      Effect.provideContext(behavior_(entityId, dequeue), env);
 
     function startExpirationFiber(entityId: string) {
       return pipe(
@@ -94,13 +94,10 @@ export function make<R, Req>(
                                   Queue.offer(msg),
                                   Effect.exit,
                                   Effect.as(
-                                    pipe(
-                                      map,
-                                      HashMap.set(entityId, [
-                                        Option.none as Option.Option<Queue.Queue<Req>>,
-                                        interruptionFiber,
-                                      ] as const)
-                                    )
+                                    HashMap.set(map, entityId, [
+                                      Option.none(),
+                                      interruptionFiber,
+                                    ] as const)
                                   )
                                 )
                             )
@@ -137,22 +134,12 @@ export function make<R, Req>(
             Fiber.interrupt(interruptionFiber),
             Effect.zipRight(startExpirationFiber(entityId)),
             Effect.map(
-              (fiber) =>
-                [
-                  queue,
-                  pipe(
-                    map,
-                    HashMap.set(entityId, [
-                      queue as Option.Option<Queue.Queue<Req>>,
-                      fiber,
-                    ] as const)
-                  ),
-                ] as const
+              (fiber) => [queue, HashMap.set(map, entityId, [queue, fiber] as const)] as const
             )
           );
         } else if (Option.isSome(test) && Option.isNone(test.value[0])) {
           // the queue is shutting down, stash and retry
-          return Effect.succeed([Option.none, map] as const);
+          return Effect.succeed([Option.none(), map] as const);
         } else {
           return pipe(
             sharding.isShuttingDown,
@@ -185,13 +172,7 @@ export function make<R, Req>(
                     (_) =>
                       [
                         _.someQueue,
-                        pipe(
-                          map,
-                          HashMap.set(entityId, [
-                            _.someQueue as Option.Option<Queue.Queue<Req>>,
-                            _.expirationFiber,
-                          ] as const)
-                        ),
+                        pipe(map, HashMap.set(entityId, [_.someQueue, _.expirationFiber] as const)),
                       ] as const
                   )
                 );
@@ -213,7 +194,9 @@ export function make<R, Req>(
 
           return Effect.unit();
         }),
-        Effect.bind("test", () => entities.modifyEffect((map) => decide(map, entityId))),
+        Effect.bind("test", () =>
+          RefSynchronized.modifyEffect(entities, (map) => decide(map, entityId))
+        ),
         Effect.tap((_) =>
           pipe(
             _.test,
@@ -231,7 +214,7 @@ export function make<R, Req>(
                       pipe(
                         queue,
                         Queue.offer(req),
-                        Effect.zipLeft(Deferred.succeed(Option.none as any)(promise))
+                        Effect.zipLeft(Deferred.succeed(promise, Option.none()))
                       ),
                     (replyId_) =>
                       pipe(
