@@ -22,7 +22,7 @@ export interface TopicType<Msg> {
 export type RecipentType<Msg> = EntityType<Msg> | TopicType<Msg>;
 
 export const getShardId = (entityId: string, numberOfShards: number): ShardId.ShardId =>
-  ShardId.shardId(Math.abs(Hash.string(entityId) % numberOfShards) + 1);
+  ShardId.apply(Math.abs(Hash.string(entityId) % numberOfShards) + 1);
 
 export function EntityType<Msg>(name: string, schema: Schema.Schema<Msg>): EntityType<Msg> {
   return { _tag: "EntityType", name, schema };

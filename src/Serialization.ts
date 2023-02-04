@@ -17,21 +17,19 @@ import { ByteArray } from "./BinaryMessage";
  * @since 1.0.0
  * @category symbols
  */
-export const SerializationTypeId: unique symbol = Symbol.for(
-  "@effect/shardcake/SerializationTypeId"
-);
+export const TypeId: unique symbol = Symbol.for("@effect/shardcake/SerializationTypeId");
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type SerializationTypeId = typeof SerializationTypeId;
+export type TypeId = typeof TypeId;
 
 /**
  * An interface to serialize user messages that will be sent between pods.
  */
 export interface Serialization {
-  [SerializationTypeId]: {};
+  [TypeId]: {};
 
   /**
    * Transforms the given message into binary
@@ -56,7 +54,7 @@ export const Serialization = Tag<Serialization>();
  * This is useful for testing and not recommended to use in production.
  */
 export const noop = Layer.succeed(Serialization, {
-  [SerializationTypeId]: {},
+  [TypeId]: {},
   encode: (message, schema) =>
     pipe(
       Effect.fromEither(Parser.encode(schema)(message)),

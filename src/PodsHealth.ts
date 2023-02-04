@@ -10,13 +10,13 @@ import { Pods } from "./Pods";
  * @since 1.0.0
  * @category symbols
  */
-export const PodsHealthTypeId: unique symbol = Symbol.for("@effect/shardcake/PodsHealth");
+export const TypeId = Symbol.for("@effect/shardcake/PodsHealth");
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type PodsHealthTypeId = typeof PodsHealthTypeId;
+export type TypeId = typeof TypeId;
 
 /**
  * An interface to check a pod's health.
@@ -25,14 +25,15 @@ export type PodsHealthTypeId = typeof PodsHealthTypeId;
  * If the pod is not alive, shards can be safely reassigned somewhere else.
  * A typical implementation for this is using k8s to check if the pod still exists.
  */
-interface PodsHealth {
-  [PodsHealthTypeId]: {};
+export interface PodsHealth {
+  [TypeId]: {};
 
   /**
    * Check if a pod is still alive.
    */
   isAlive(podAddress: PodAddress): Effect.Effect<never, never, boolean>;
 }
+
 export const PodsHealth = Tag<PodsHealth>();
 
 /**
@@ -40,7 +41,7 @@ export const PodsHealth = Tag<PodsHealth>();
  * This is useful for testing only.
  */
 export const noop = Layer.succeed(PodsHealth, {
-  [PodsHealthTypeId]: {},
+  [TypeId]: {},
   isAlive: () => Effect.succeed(true),
 });
 
@@ -51,7 +52,7 @@ export const noop = Layer.succeed(PodsHealth, {
 export const local = Layer.effect(
   PodsHealth,
   Effect.serviceWith(Pods, (podApi) => ({
-    [PodsHealthTypeId]: {},
+    [TypeId]: {},
     isAlive: (address: PodAddress) =>
       pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome)),
   }))

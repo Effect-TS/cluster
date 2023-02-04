@@ -1,32 +1,33 @@
 import { Option } from "@fp-ts/core/Option";
+import * as Data from "@fp-ts/data/Data";
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const BinaryMessageTypeId: unique symbol = Symbol.for("@effect/shardcake/BinaryMessage");
+export const TypeId: unique symbol = Symbol.for("@effect/shardcake/BinaryMessage");
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type BinaryMessageTypeId = typeof BinaryMessageTypeId;
+export type TypeId = typeof TypeId;
 
 export interface BinaryMessage {
-  [BinaryMessageTypeId]: {};
+  [TypeId]: {};
   entityId: string;
   entityType: string;
   body: unknown;
   replyId: Option<string>;
 }
 
-export function binaryMessage(
+export function apply(
   entityId: string,
   entityType: string,
   body: unknown,
   replyId: Option<string>
 ): BinaryMessage {
-  return { [BinaryMessageTypeId]: {}, entityId, entityType, body, replyId };
+  return Data.struct({ [TypeId]: {}, entityId, entityType, body, replyId });
 }
 
 export type ByteArray = unknown;

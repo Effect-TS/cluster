@@ -5,8 +5,13 @@ import { Deferred } from "@effect/io/Deferred";
 import { Option } from "@fp-ts/core/Option";
 import { Throwable } from "./ShardError";
 import * as Schema from "@fp-ts/schema/Schema";
+import * as Data from "@fp-ts/data/Data";
+
+export const TypeId = Symbol.for("@effect/shardcake/EntityState");
+export type TypeId = typeof TypeId;
 
 export interface EntityState {
+  [TypeId]: {};
   binaryQueue: Queue<
     readonly [
       BinaryMessage,
@@ -18,6 +23,9 @@ export interface EntityState {
   entityManager: EntityManager<never>;
 }
 
-export function EntityState(args: EntityState): EntityState {
-  return args;
+export function apply(
+  binaryQueue: EntityState["binaryQueue"],
+  entityManager: EntityState["entityManager"]
+): EntityState {
+  return Data.struct({ [TypeId]: {}, binaryQueue, entityManager });
 }

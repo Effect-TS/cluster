@@ -9,14 +9,12 @@ import * as H from "@fp-ts/schema/annotation/Hook";
 export interface Replier<R> {
   id: string;
   reply: (reply: R) => Effect.Effect<Sharding.Sharding, never, void>;
-  schema: Schema.Schema<R>;
 }
 
-export const replier = <R>(id: string, schema: Schema.Schema<R>): Replier<R> => {
+export const replier = <R>(id: string, replySchema: Schema.Schema<R>): Replier<R> => {
   const self: Replier<R> = {
     id,
     reply: (reply) => Effect.serviceWithEffect(Sharding.Sharding, (_) => _.reply(reply, self)),
-    schema,
   };
   return self;
 };

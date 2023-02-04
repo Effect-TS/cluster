@@ -6,7 +6,7 @@ import * as Option from "@fp-ts/core/Option";
 import { Config } from "./Config";
 import * as PodAddress from "./PodAddress";
 import * as Layer from "@effect/io/Layer";
-import { shardId, ShardId } from "./ShardId";
+import { apply, ShardId } from "./ShardId";
 
 export interface ShardManagerClient {
   register(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>;
@@ -29,7 +29,7 @@ export const local = pipe(
       const pod = PodAddress.podAddress(config.selfHost, config.shardingPort);
       let shards = HashMap.empty<ShardId, Option.Option<PodAddress.PodAddress>>();
       for (let i = 0; i < config.numberOfShards; i++) {
-        shards = HashMap.set(shards, shardId(i), Option.some(pod));
+        shards = HashMap.set(shards, apply(i), Option.some(pod));
       }
       return {
         register: () => Effect.unit(),

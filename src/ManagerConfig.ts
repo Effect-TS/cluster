@@ -11,7 +11,7 @@ import * as Duration from "@fp-ts/data/Duration";
  * @param persistRetryCount max retry count for persistence of pods and shard assignments
  * @param rebalanceRate max ratio of shards to rebalance at once
  */
-interface ManagerConfig {
+export interface ManagerConfig {
   numberOfShards: number;
   apiPort: number;
   rebalanceInterval: Duration.Duration;

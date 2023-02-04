@@ -6,14 +6,14 @@ import * as Ref from "@effect/io/Ref";
 import { Hub } from "@effect/io/Hub";
 import * as Synchronized from "@effect/io/Ref/Synchronized";
 import * as HashMap from "@fp-ts/data/HashMap";
-import { shardId, ShardId } from "./ShardId";
+import * as ShardId from "./ShardId";
 import { ShardingRegistrationEvent } from "./ShardingRegistrationEvent";
 import { MutableList } from "@fp-ts/data/MutableList";
 import { Fiber } from "@effect/io/Fiber";
 import * as Effect from "@effect/io/Effect";
 import * as Cause from "@effect/io/Cause";
 import * as Option from "@fp-ts/core/Option";
-import { EntityState } from "./EntityState";
+import * as EntityState from "./EntityState";
 import * as Deferred from "@effect/io/Deferred";
 import * as Logger from "@effect/io/Logger";
 import * as Queue from "@effect/io/Queue";
@@ -23,7 +23,8 @@ import { ShardManagerClient } from "./ShardManagerClient";
 import { pipe } from "@fp-ts/core/Function";
 import { replier, Replier } from "./Replier";
 import * as EntityManager from "./EntityManager";
-import { BinaryMessage, binaryMessage, ByteArray } from "./BinaryMessage";
+import * as BinaryMessage from "./BinaryMessage";
+
 import {
   EntityTypeNotRegistered,
   isEntityNotManagedByThisPodError,
@@ -47,8 +48,8 @@ import * as Schema from "@fp-ts/schema/Schema";
 function make(
   address: PodAddress,
   config: Config,
-  shardAssignments: Ref.Ref<HashMap.HashMap<ShardId, PodAddress>>,
-  entityStates: Ref.Ref<HashMap.HashMap<string, EntityState>>,
+  shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress>>,
+  entityStates: Ref.Ref<HashMap.HashMap<string, EntityState.EntityState>>,
   /*singletons: Synchronized.Synchronized<
     MutableList<[string, Effect.Effect<never, never, void>, Option.Option<Fiber<never, never>>]>
   >,*/
@@ -63,7 +64,7 @@ function make(
   serialization: Serialization
   //eventsHub: Hub<ShardingRegistrationEvent>
 ) {
-  function getShardId(recipientType: RecipentType<any>, entityId: string): ShardId {
+  function getShardId(recipientType: RecipentType<any>, entityId: string): ShardId.ShardId {
     return RecipientType.getShardId(entityId, config.numberOfShards);
   }
 
@@ -95,7 +96,7 @@ function make(
     Ref.get(shardAssignments),
     Effect.map((_) =>
       pipe(
-        HashMap.get(_, shardId(1)),
+        HashMap.get(_, ShardId.apply(1)),
         Option.match(() => false, equals(address))
       )
     )
@@ -121,7 +122,7 @@ function make(
     );
   }
 
-  function sendToLocalEntity(msg: BinaryMessage, replySchema: Option.Option<any>) {
+  function sendToLocalEntity(msg: BinaryMessage.BinaryMessage, replySchema: Option.Option<any>) {
     return pipe(
       Ref.get(entityStates),
       Effect.flatMap((states) => {
@@ -130,7 +131,7 @@ function make(
           const state = a.value;
           return pipe(
             Effect.Do(),
-            Effect.bind("p", () => Deferred.make<never, Option.Option<ByteArray>>()),
+            Effect.bind("p", () => Deferred.make<never, Option.Option<BinaryMessage.ByteArray>>()),
             Effect.bind("interruptor", () => Deferred.make<never, void>()),
             Effect.tap(({ p, interruptor }) =>
               state.binaryQueue.offer([msg, replySchema, p, interruptor])
@@ -192,7 +193,10 @@ function make(
     return pipe(
       serialization.encode(msg, msgSchema),
       Effect.flatMap((bytes) =>
-        sendToLocalEntity(binaryMessage(entityId, recipientTypeName, bytes, replyId), replySchema)
+        sendToLocalEntity(
+          BinaryMessage.apply(entityId, recipientTypeName, bytes, replyId),
+          replySchema
+        )
       ),
       Effect.flatMap((_) => {
         if (Option.isSome(_) && Option.isSome(replySchema))
@@ -315,9 +319,9 @@ function make(
         pipe(
           Queue.unbounded<
             readonly [
-              BinaryMessage,
+              BinaryMessage.BinaryMessage,
               Option.Option<Schema.Schema<any>>,
-              Deferred.Deferred<Throwable, Option.Option<ByteArray>>,
+              Deferred.Deferred<Throwable, Option.Option<BinaryMessage.ByteArray>>,
               Deferred.Deferred<never, void>
             ]
           >()
@@ -327,7 +331,7 @@ function make(
       yield* $(
         pipe(
           entityStates,
-          Ref.update(HashMap.set(recipientType.name, EntityState({ binaryQueue, entityManager })))
+          Ref.update(HashMap.set(recipientType.name, EntityState.apply(binaryQueue, entityManager)))
         )
       );
 
@@ -423,7 +427,7 @@ function make(
   );
 
   function updateAssignments(
-    assignmentsOpt: HashMap.HashMap<ShardId, Option.Option<PodAddress>>,
+    assignmentsOpt: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress>>,
     fromShardManager: boolean
   ) {
     const assignments = pipe(
@@ -482,7 +486,7 @@ function make(
 }
 
 export interface Sharding {
-  getShardId: (recipientType: RecipentType<any>, entityId: string) => ShardId;
+  getShardId: (recipientType: RecipentType<any>, entityId: string) => ShardId.ShardId;
   register: Effect.Effect<never, never, void>;
   unregister: Effect.Effect<never, never, void>;
   reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void>;
@@ -520,8 +524,8 @@ export const live = Layer.scoped(
     Effect.bind("shardManager", () => Effect.service(ShardManagerClient)),
     Effect.bind("storage", () => Effect.service(Storage)),
     Effect.bind("serialization", () => Effect.service(Serialization)),
-    Effect.bind("shardsCache", () => Ref.make(HashMap.empty<ShardId, PodAddress>())),
-    Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState>())),
+    Effect.bind("shardsCache", () => Ref.make(HashMap.empty<ShardId.ShardId, PodAddress>())),
+    Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState.EntityState>())),
     Effect.bind("shuttingDown", () => Ref.make(false)),
     Effect.bind("promises", () =>
       Synchronized.make(HashMap.empty<string, Deferred.Deferred<Throwable, Option.Option<any>>>())

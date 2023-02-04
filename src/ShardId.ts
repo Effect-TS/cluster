@@ -17,6 +17,6 @@ export interface ShardId {
   value: number;
 }
 
-export function shardId(value: number): ShardId {
+export function apply(value: number): ShardId {
   return Data.struct({ [ShardIdTypeId]: {}, value });
 }
