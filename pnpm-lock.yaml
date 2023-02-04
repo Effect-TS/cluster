@@ -1,8 +1,8 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@effect/io': 0.1.4
-  '@effect/language-service': ^0.0.17
+  '@effect/io': 0.1.8
+  '@effect/language-service': ^0.0.19
   '@effect/stream': 0.1.0
   '@fp-ts/core': ^0.1.1
   '@fp-ts/data': ^0.1.1
@@ -13,14 +13,14 @@ specifiers:
   typescript: ^4.9.3
 
 dependencies:
-  '@effect/io': 0.1.4
+  '@effect/io': 0.1.8
   '@effect/stream': 0.1.0
   '@fp-ts/core': 0.1.1
   '@fp-ts/data': 0.1.1
   '@fp-ts/schema': 0.1.3
 
 devDependencies:
-  '@effect/language-service': 0.0.17
+  '@effect/language-service': 0.0.19
   '@types/node': 18.11.17
   prettier: 2.8.1
   ts-node: 10.9.1_moeqx3xmzxqxagf2sz6mqkbb7m
@@ -35,15 +35,15 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@effect/io/0.1.4:
-    resolution: {integrity: sha512-O0hk0cqiSR0ZEA3s4PXEGY0bKTZdtSCNpC79JaGkXuzN+/f1iUi943By7cvf/2MB002wortmG69tGuGQIG9HgA==}
+  /@effect/io/0.1.8:
+    resolution: {integrity: sha512-lZP57eToueXhNQzkrR3q3Tl8iH+cPRWVEeUFLW+/C24wQlKgEm9UyRdnB3xYerKHQjUQD28nRJ2IZeQFPRIC5Q==}
     dependencies:
       '@fp-ts/core': 0.1.1
       '@fp-ts/data': 0.1.1
     dev: false
 
-  /@effect/language-service/0.0.17:
-    resolution: {integrity: sha512-98c6VtueGDvCGDfkQijsQ5uP/g4J2VhSbI83f/Rv84Gg0uJ+BbA9jno1dQubvaPRGBMIVE+1egZUduSWY6tfEg==}
+  /@effect/language-service/0.0.19:
+    resolution: {integrity: sha512-sKNVo031dkwLfe1jHZzdTiF1UXgLq1lAYd2JG7q416dlmMoxRcMXrZWyw6a/SxIDM0hyIJAEmrz5iUkQPcPdBQ==}
     dependencies:
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.39
@@ -52,7 +52,7 @@ packages:
   /@effect/stream/0.1.0:
     resolution: {integrity: sha512-GeJNY5WKV6h/aLynZpJTR/xmvTD1JQq8hk9bt+Z2OxHLwyBZ+YSQetA9YsxQsZGLUZl+h1twSdkI0n7d0mx3Lw==}
     dependencies:
-      '@effect/io': 0.1.4
+      '@effect/io': 0.1.8
       '@fp-ts/core': 0.1.1
       '@fp-ts/data': 0.1.1
     dev: false

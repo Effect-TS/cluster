@@ -91,6 +91,16 @@ function make(
     Effect.zipRight(shardManager.unregister(address))
   );
 
+  const isSingletonNode: Effect.Effect<never, never, boolean> = pipe(
+    Ref.get(shardAssignments),
+    Effect.map((_) =>
+      pipe(
+        HashMap.get(_, shardId(1)),
+        Option.match(() => false, equals(address))
+      )
+    )
+  );
+
   const registerScoped: Effect.Effect<Scope, never, void> = Effect.acquireRelease(
     register,
     (_) => unregister
@@ -455,6 +465,7 @@ function make(
   const isShuttingDown = Ref.get(isShuttingDownRef);
 
   const self: Sharding = {
+    getShardId,
     register,
     unregister,
     reply,
@@ -471,6 +482,7 @@ function make(
 }
 
 export interface Sharding {
+  getShardId: (recipientType: RecipentType<any>, entityId: string) => ShardId;
   register: Effect.Effect<never, never, void>;
   unregister: Effect.Effect<never, never, void>;
   reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void>;
