@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@effect/io': 0.1.8
+  '@effect/io': 0.1.9
   '@effect/language-service': ^0.0.19
   '@effect/stream': 0.1.0
   '@fp-ts/core': ^0.1.1
@@ -13,7 +13,7 @@ specifiers:
   typescript: ^4.9.3
 
 dependencies:
-  '@effect/io': 0.1.8
+  '@effect/io': 0.1.9
   '@effect/stream': 0.1.0
   '@fp-ts/core': 0.1.1
   '@fp-ts/data': 0.1.1
@@ -35,8 +35,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@effect/io/0.1.8:
-    resolution: {integrity: sha512-lZP57eToueXhNQzkrR3q3Tl8iH+cPRWVEeUFLW+/C24wQlKgEm9UyRdnB3xYerKHQjUQD28nRJ2IZeQFPRIC5Q==}
+  /@effect/io/0.1.9:
+    resolution: {integrity: sha512-EDUvzIEZJM5T9XUIfYqMxC7rQfpyT1+q4WcAwrbqnMoSacaSwar4VMGz8fmODXOS6cCgPs2rdnwl/W29+KjRMg==}
     dependencies:
       '@fp-ts/core': 0.1.1
       '@fp-ts/data': 0.1.1
@@ -52,7 +52,7 @@ packages:
   /@effect/stream/0.1.0:
     resolution: {integrity: sha512-GeJNY5WKV6h/aLynZpJTR/xmvTD1JQq8hk9bt+Z2OxHLwyBZ+YSQetA9YsxQsZGLUZl+h1twSdkI0n7d0mx3Lw==}
     dependencies:
-      '@effect/io': 0.1.8
+      '@effect/io': 0.1.9
       '@fp-ts/core': 0.1.1
       '@fp-ts/data': 0.1.1
     dev: false

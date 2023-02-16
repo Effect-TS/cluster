@@ -39,7 +39,7 @@ const CounterEntity = EntityType("Counter", CounterMsg);
 const program = pipe(
   Effect.serviceWithEffect(Sharding.Sharding, (sharding) =>
     pipe(
-      sharding.registerEntity(CounterEntity, (counter, dequeue) =>
+      sharding.registerEntity(CounterEntity, (counterId, dequeue) =>
         pipe(
           Ref.make(0),
           Effect.flatMap((count) =>
@@ -59,7 +59,7 @@ const program = pipe(
                   }[msg._tag])
               ),
               Effect.zipRight(Ref.get(count)),
-              Effect.tap((_) => Effect.log("Counter " + counter + " is now " + _)),
+              Effect.tap((_) => Effect.log("Counter " + counterId + " is now " + _)),
               Effect.forever
             )
           )
@@ -70,10 +70,13 @@ const program = pipe(
         pipe(
           Effect.Do(),
           Effect.bindValue("messenger", () => sharding.messenger(CounterEntity)),
-          Effect.tap((_) => _.messenger.sendDiscard("test1")({ _tag: "Increment" })),
-          Effect.tap((_) => _.messenger.sendDiscard("test1")({ _tag: "Increment" })),
+          Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
+          Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
           Effect.flatMap((_) =>
-            _.messenger.send("test1")(Schema.number, (replier) => ({ _tag: "GetCurrent", replier }))
+            _.messenger.send("entity1")(Schema.number, (replier) => ({
+              _tag: "GetCurrent",
+              replier,
+            }))
           ),
           Effect.tap((_) => Effect.log("Result is now " + _))
         )
