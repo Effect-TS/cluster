@@ -13,7 +13,7 @@ import { EntityType } from "./RecipientType";
 import { runtimeDebug } from "@effect/io/Debug";
 import * as Logger from "@effect/io/Logger";
 import { pipe } from "@effect/data/Function";
-import * as Schema from "@fp-ts/schema/Schema";
+import * as Schema from "@effect/schema/Schema";
 import * as HashMap from "@effect/data/HashMap";
 
 import * as LogLevel from "@effect/io/Logger/Level";

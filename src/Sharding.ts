@@ -42,7 +42,7 @@ import { Storage } from "./Storage";
 import * as Layer from "@effect/io/Layer";
 import { Scope } from "@effect/io/Scope";
 import * as Schedule from "@effect/io/Schedule";
-import * as Schema from "@fp-ts/schema/Schema";
+import * as Schema from "@effect/schema/Schema";
 
 function make(
   address: PodAddress,

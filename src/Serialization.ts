@@ -2,8 +2,8 @@ import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import { Tag } from "@effect/data/Context";
 import { pipe } from "@effect/data/Function";
-import * as Schema from "@fp-ts/schema/Schema";
-import * as Parser from "@fp-ts/schema/Parser";
+import * as Schema from "@effect/schema/Schema";
+import * as Parser from "@effect/schema/Parser";
 import * as ShardError from "./ShardError";
 import { ByteArray } from "./BinaryMessage";
 

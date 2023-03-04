@@ -1,7 +1,7 @@
 import * as Effect from "@effect/io/Effect";
 import { Replier } from "./Replier";
 import { Throwable } from "./ShardError";
-import * as Schema from "@fp-ts/schema/Schema";
+import * as Schema from "@effect/schema/Schema";
 
 /**
  * An interface to communicate with a remote entity
