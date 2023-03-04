@@ -1,5 +1,5 @@
 import * as Effect from "@effect/io/Effect";
-import * as HashMap from "@fp-ts/data/HashMap";
+import * as HashMap from "@effect/data/HashMap";
 import { PodAddress } from "./PodAddress";
 import { Replier } from "./Replier";
 import * as ShardError from "./ShardError";

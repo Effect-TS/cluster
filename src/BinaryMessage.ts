@@ -1,5 +1,5 @@
-import { Option } from "@fp-ts/core/Option";
-import * as Data from "@fp-ts/data/Data";
+import { Option } from "@effect/data/Option";
+import * as Data from "@effect/data/Data";
 
 /**
  * @since 1.0.0

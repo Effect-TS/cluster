@@ -2,10 +2,10 @@ import { EntityManager } from "./EntityManager";
 import { Queue } from "@effect/io/Queue";
 import { BinaryMessage, ByteArray } from "./BinaryMessage";
 import { Deferred } from "@effect/io/Deferred";
-import { Option } from "@fp-ts/core/Option";
+import { Option } from "@effect/data/Option";
 import { Throwable } from "./ShardError";
 import * as Schema from "@fp-ts/schema/Schema";
-import * as Data from "@fp-ts/data/Data";
+import * as Data from "@effect/data/Data";
 
 export const TypeId = Symbol.for("@effect/shardcake/EntityState");
 export type TypeId = typeof TypeId;

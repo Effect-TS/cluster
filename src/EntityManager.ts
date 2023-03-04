@@ -1,19 +1,18 @@
-import * as Option from "@fp-ts/core/Option";
+import * as Option from "@effect/data/Option";
 import * as Deferred from "@effect/io/Deferred";
 import * as Queue from "@effect/io/Queue";
 import * as Effect from "@effect/io/Effect";
 import * as ShardError from "./ShardError";
-import * as HashSet from "@fp-ts/data/HashSet";
-import * as HashMap from "@fp-ts/data/HashMap";
+import * as HashSet from "@effect/data/HashSet";
+import * as HashMap from "@effect/data/HashMap";
 import * as RecipientType from "./RecipientType";
 import * as ShardId from "./ShardId";
 import * as Sharding from "./Sharding";
 import * as Config from "./Config";
-import * as Duration from "@fp-ts/data/Duration";
+import * as Duration from "@effect/data/Duration";
 import * as RefSynchronized from "@effect/io/Ref/Synchronized";
 import * as Fiber from "@effect/io/Fiber";
-import { pipe } from "@fp-ts/core/Function";
-import { duration } from "@fp-ts/data";
+import { pipe } from "@effect/data/Function";
 
 export interface EntityManager<Req> {
   send(
@@ -189,7 +188,7 @@ export function make<R, Req>(
             Option.match(
               () =>
                 pipe(
-                  Effect.sleep(duration.millis(100)),
+                  Effect.sleep(Duration.millis(100)),
                   Effect.zipRight(send(entityId, req, replyId, promise))
                 ),
               (queue) => {

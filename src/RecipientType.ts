@@ -1,7 +1,7 @@
-import * as Equal from "@fp-ts/data/Equal";
+import * as Equal from "@effect/data/Equal";
 import * as Schema from "@fp-ts/schema/Schema";
 import * as ShardId from "./ShardId";
-import * as Hash from "@fp-ts/data/Hash";
+import * as Hash from "@effect/data/Hash";
 
 /**
  * An abstract type to extend for each type of entity or topic

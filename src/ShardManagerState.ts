@@ -1,11 +1,11 @@
-import * as HashMap from "@fp-ts/data/HashMap";
-import * as HashSet from "@fp-ts/data/HashSet";
-import * as List from "@fp-ts/data/List";
+import * as HashMap from "@effect/data/HashMap";
+import * as HashSet from "@effect/data/HashSet";
+import * as List from "@effect/data/List";
 import * as PodAddress from "./PodAddress";
 import * as ShardId from "./ShardId";
-import * as Option from "@fp-ts/core/Option";
+import * as Option from "@effect/data/Option";
 import * as PodWithMetadata from "./PodWithMetadata";
-import { pipe } from "@fp-ts/core/Function";
+import { pipe } from "@effect/data/Function";
 
 export interface ShardManagerState {
   pods: HashMap.HashMap<PodAddress.PodAddress, PodWithMetadata.PodWithMetadata>;

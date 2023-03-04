@@ -1,8 +1,8 @@
 import * as Effect from "@effect/io/Effect";
-import { Tag } from "@fp-ts/data/Context";
-import { pipe } from "@fp-ts/core/Function";
-import * as HashMap from "@fp-ts/data/HashMap";
-import * as Option from "@fp-ts/core/Option";
+import { Tag } from "@effect/data/Context";
+import { pipe } from "@effect/data/Function";
+import * as HashMap from "@effect/data/HashMap";
+import * as Option from "@effect/data/Option";
 import { Config } from "./Config";
 import * as PodAddress from "./PodAddress";
 import * as Layer from "@effect/io/Layer";

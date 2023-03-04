@@ -1,5 +1,5 @@
-import { Tag } from "@fp-ts/data/Context";
-import * as Duration from "@fp-ts/data/Duration";
+import { Tag } from "@effect/data/Context";
+import * as Duration from "@effect/data/Duration";
 import * as Layer from "@effect/io/Layer";
 /**
  * Sharding configuration

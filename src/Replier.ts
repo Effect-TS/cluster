@@ -1,8 +1,8 @@
 import * as Sharding from "./Sharding";
 import * as Effect from "@effect/io/Effect";
 import * as Schema from "@fp-ts/schema/Schema";
-import { pipe } from "@fp-ts/core/Function";
-import * as Option from "@fp-ts/core/Option";
+import { pipe } from "@effect/data/Function";
+import * as Option from "@effect/data/Option";
 import { IdentifierId } from "@fp-ts/schema/annotation/AST";
 import * as H from "@fp-ts/schema/annotation/Hook";
 

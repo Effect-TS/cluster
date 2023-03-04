@@ -5,22 +5,22 @@ import { Serialization } from "./Serialization";
 import * as Ref from "@effect/io/Ref";
 import { Hub } from "@effect/io/Hub";
 import * as Synchronized from "@effect/io/Ref/Synchronized";
-import * as HashMap from "@fp-ts/data/HashMap";
+import * as HashMap from "@effect/data/HashMap";
 import * as ShardId from "./ShardId";
 import { ShardingRegistrationEvent } from "./ShardingRegistrationEvent";
-import { MutableList } from "@fp-ts/data/MutableList";
+import { MutableList } from "@effect/data/MutableList";
 import { Fiber } from "@effect/io/Fiber";
 import * as Effect from "@effect/io/Effect";
 import * as Cause from "@effect/io/Cause";
-import * as Option from "@fp-ts/core/Option";
+import * as Option from "@effect/data/Option";
 import * as EntityState from "./EntityState";
 import * as Deferred from "@effect/io/Deferred";
 import * as Logger from "@effect/io/Logger";
 import * as Queue from "@effect/io/Queue";
 import * as Stream from "@effect/stream/Stream";
-import { Tag } from "@fp-ts/data/Context";
+import { Tag } from "@effect/data/Context";
 import { ShardManagerClient } from "./ShardManagerClient";
-import { pipe } from "@fp-ts/core/Function";
+import { pipe } from "@effect/data/Function";
 import { replier, Replier } from "./Replier";
 import * as EntityManager from "./EntityManager";
 import * as BinaryMessage from "./BinaryMessage";
@@ -34,11 +34,10 @@ import {
   Throwable,
 } from "./ShardError";
 import { EntityType, RecipentType } from "./RecipientType";
-import { Duration } from "@fp-ts/data/Duration";
 import { Messenger } from "./Messenger";
-import { duration, random } from "@fp-ts/data";
+import * as Duration from "@effect/data/Duration";
 import * as RecipientType from "./RecipientType";
-import { equals } from "@fp-ts/data/Equal";
+import { equals } from "@effect/data/Equal";
 import { Storage } from "./Storage";
 import * as Layer from "@effect/io/Layer";
 import { Scope } from "@effect/io/Scope";
@@ -211,7 +210,7 @@ function make(
 
   function messenger<Msg>(
     entityType: EntityType<Msg>,
-    sendTimeout: Option.Option<Duration> = Option.none()
+    sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Messenger<Msg> {
     const timeout = pipe(
       sendTimeout,
@@ -255,7 +254,7 @@ function make(
               Effect.catchSome((_) => {
                 if (isEntityNotManagedByThisPodError(_) || isPodUnavailableError(_)) {
                   return pipe(
-                    Effect.sleep(duration.millis(200)),
+                    Effect.sleep(Duration.millis(200)),
                     Effect.zipRight(trySend),
                     Option.some
                   );
@@ -265,7 +264,7 @@ function make(
             );
           }
 
-          return pipe(Effect.sleep(duration.millis(100)), Effect.zipRight(trySend));
+          return pipe(Effect.sleep(Duration.millis(100)), Effect.zipRight(trySend));
         }),
         Effect.map((_) => _.response)
       );
@@ -301,7 +300,7 @@ function make(
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
     terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () =>
       Option.none(),
-    entityMaxIdleTime: Option.Option<Duration> = Option.none()
+    entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ) {
     return Effect.gen(function* ($) {
       const entityManager = yield* $(
@@ -384,7 +383,7 @@ function make(
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
     terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () =>
       Option.none(),
-    entityMaxIdleTime: Option.Option<Duration> = Option.none()
+    entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ): Effect.Effect<Scope | R, never, void> {
     return registerRecipient(entityType, behavior, terminateMessage, entityMaxIdleTime);
   }
@@ -403,12 +402,7 @@ function make(
   }
 
   const refreshAssignments: Effect.Effect<never, never, void> = pipe(
-    Stream.fromEffect(
-      pipe(
-        shardManager.getAssignments,
-        Effect.map((_) => [_, true] as const)
-      )
-    ),
+    Stream.fromEffect(Effect.map(shardManager.getAssignments, (_) => [_, true] as const)),
     Stream.merge(
       pipe(
         storage.assignmentsStream(),
@@ -430,20 +424,13 @@ function make(
     assignmentsOpt: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress>>,
     fromShardManager: boolean
   ) {
-    const assignments = pipe(
-      assignmentsOpt,
-      HashMap.mapWithIndex((v, k) =>
-        pipe(
-          v,
-          Option.getOrElse(() => address)
-        )
-      )
+    const assignments = HashMap.mapWithIndex(assignmentsOpt, (v, k) =>
+      Option.getOrElse(v, () => address)
     );
+
     if (fromShardManager)
-      return pipe(
-        shardAssignments,
-        Ref.update((map) => (HashMap.isEmpty(map) ? assignments : map))
-      );
+      return Ref.update(shardAssignments, (map) => (HashMap.isEmpty(map) ? assignments : map));
+
     return Effect.unit();
   }
 
@@ -492,7 +479,7 @@ export interface Sharding {
   reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void>;
   messenger<Msg>(
     entityType: EntityType<Msg>,
-    sendTimeout?: Option.Option<Duration>
+    sendTimeout?: Option.Option<Duration.Duration>
   ): Messenger<Msg>;
   isEntityOnLocalShards(
     recipientType: RecipentType<any>,
@@ -508,7 +495,7 @@ export interface Sharding {
     entityType: EntityType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
     terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
-    entityMaxIdleTime?: Option.Option<Duration>
+    entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>;
   refreshAssignments: Effect.Effect<never, never, void>;
 }

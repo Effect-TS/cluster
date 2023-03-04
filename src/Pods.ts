@@ -3,8 +3,8 @@ import { PodAddress } from "./PodAddress";
 import { ShardId } from "./ShardId";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
-import * as Option from "@fp-ts/core/Option";
-import { Tag } from "@fp-ts/data/Context";
+import * as Option from "@effect/data/Option";
+import { Tag } from "@effect/data/Context";
 
 /**
  * @since 1.0.0

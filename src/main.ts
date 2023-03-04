@@ -12,9 +12,9 @@ import * as Ref from "@effect/io/Ref";
 import { EntityType } from "./RecipientType";
 import { runtimeDebug } from "@effect/io/Debug";
 import * as Logger from "@effect/io/Logger";
-import { pipe } from "@fp-ts/core/Function";
+import { pipe } from "@effect/data/Function";
 import * as Schema from "@fp-ts/schema/Schema";
-import * as HashMap from "@fp-ts/data/HashMap";
+import * as HashMap from "@effect/data/HashMap";
 
 import * as LogLevel from "@effect/io/Logger/Level";
 import * as Replier from "./Replier";

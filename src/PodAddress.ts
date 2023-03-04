@@ -1,4 +1,4 @@
-import * as Data from "@fp-ts/data/Data";
+import * as Data from "@effect/data/Data";
 /**
  * @since 1.0.0
  * @category symbols

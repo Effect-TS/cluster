@@ -1,9 +1,9 @@
 import * as Pod from "./Pod";
-import * as List from "@fp-ts/data/List";
-import * as Data from "@fp-ts/data/Data";
-import * as Option from "@fp-ts/core/Option";
-import { pipe } from "@fp-ts/core/Function";
-import { Order } from "@fp-ts/core/typeclass/Order";
+import * as List from "@effect/data/List";
+import * as Data from "@effect/data/Data";
+import * as Option from "@effect/data/Option";
+import { pipe } from "@effect/data/Function";
+import { Order } from "@effect/data/typeclass/Order";
 
 export interface PodWithMetadata {
   pod: Pod.Pod;

@@ -1,5 +1,5 @@
 import * as PodAddress from "./PodAddress";
-import * as HashSet from "@fp-ts/data/HashSet";
+import * as HashSet from "@effect/data/HashSet";
 import * as ShardId from "./ShardId";
 
 interface ShardsAssigned {
@@ -12,5 +12,20 @@ interface ShardsUnassigned {
   pod: PodAddress.PodAddress;
   shards: HashSet.HashSet<ShardId.ShardId>;
 }
+interface PodHealthChecked {
+  _tag: "PodHealthChecked";
+  pod: PodAddress.PodAddress;
+}
+export function PodHealthChecked(pod: PodAddress.PodAddress): PodHealthChecked {
+  return { _tag: "PodHealthChecked", pod };
+}
 
-export type ShardingEvent = ShardsAssigned | ShardsUnassigned;
+interface PodRegistered {
+  _tag: "PodRegistered";
+  pod: PodAddress.PodAddress;
+}
+export function PodRegistered(pod: PodAddress.PodAddress): PodRegistered {
+  return { _tag: "PodRegistered", pod };
+}
+
+export type ShardingEvent = ShardsAssigned | ShardsUnassigned | PodHealthChecked | PodRegistered;

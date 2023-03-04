@@ -1,4 +1,4 @@
-import * as Duration from "@fp-ts/data/Duration";
+import * as Duration from "@effect/data/Duration";
 
 /**
  * Shard Manager configuration
