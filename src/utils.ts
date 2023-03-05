@@ -1,6 +1,6 @@
 import * as Option from "@effect/data/Option";
 import * as HashMap from "@effect/data/HashMap";
-import { key } from "@fp-ts/schema/ParseResult";
+import { key } from "@effect/schema/ParseResult";
 import * as HashSet from "@effect/data/HashSet";
 
 export function minByOption<A>(f: (value: A) => number) {

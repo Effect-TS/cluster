@@ -1,27 +1,27 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@effect/data': ^0.2.0
-  '@effect/io': 0.3.1
+  '@effect/data': ^0.3.2
+  '@effect/io': 0.6.0
   '@effect/language-service': ^0.0.19
-  '@effect/stream': 0.5.0
-  '@fp-ts/schema': 0.3.2
-  '@types/node': ^18.11.11
-  prettier: ^2.8.0
+  '@effect/schema': ^0.0.4
+  '@effect/stream': 0.6.0
+  '@types/node': ^18.14.6
+  prettier: ^2.8.4
   ts-node: ^10.9.1
-  typescript: ^4.9.3
+  typescript: ^4.9.5
 
 dependencies:
-  '@effect/data': 0.2.0
-  '@effect/io': 0.3.1
-  '@effect/stream': 0.5.0
-  '@fp-ts/schema': 0.3.2
+  '@effect/data': 0.3.2
+  '@effect/io': 0.6.0
+  '@effect/schema': 0.0.4
+  '@effect/stream': 0.6.0
 
 devDependencies:
   '@effect/language-service': 0.0.19
-  '@types/node': 18.14.5
+  '@types/node': 18.14.6
   prettier: 2.8.4
-  ts-node: 10.9.1_2cogyjchoknpkalymtikkc6nay
+  ts-node: 10.9.1_alpjt73dvgv6kni625hu7f2l4m
   typescript: 4.9.5
 
 packages:
@@ -33,14 +33,14 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@effect/data/0.2.0:
-    resolution: {integrity: sha512-1hSNjR0LX3zsGxCB8wykSNZ4OHXoA9NjeWlxgjmxcCOkYyMH+3exxJu/9GbkXt/35zaZE0KDFyMwfvrr20zRKw==}
+  /@effect/data/0.3.2:
+    resolution: {integrity: sha512-4rdxsQI9mwfBdgbWQ5SjekLEJpxSJLiHLQOgZ6atoPFwKqAo1PsYglf8gbonWvMx4lIR2R2Km7zXwhk/LEgY0Q==}
     dev: false
 
-  /@effect/io/0.3.1:
-    resolution: {integrity: sha512-mcUWfA0eVNGklL9rx7pOAiRxd5TOmjJMxvBapb7fPiarYJCPJgvCPRxOi2mWb31buDN0Z9v3C8DE9KKLE8Yv3w==}
+  /@effect/io/0.6.0:
+    resolution: {integrity: sha512-RqEXAt/2Gia2tzLo50rgA/rSuZCyZQjITT1YVHffqUZrG/g7a+cTB3Easm1ki4ehSh1NDyNUD4/E05Fn15cbPg==}
     dependencies:
-      '@effect/data': 0.2.0
+      '@effect/data': 0.3.2
     dev: false
 
   /@effect/language-service/0.0.19:
@@ -50,11 +50,18 @@ packages:
       '@fp-ts/data': 0.0.41
     dev: true
 
-  /@effect/stream/0.5.0:
-    resolution: {integrity: sha512-Qt+NGT8CpwTcCu8mhmSssNMDWDSokkpdhXrEDheHsjR1up3HkH4eNyxmLIITcl7byKfDpIXQDAxq9TQbkHMVEA==}
+  /@effect/schema/0.0.4:
+    resolution: {integrity: sha512-KOPkGMJgxV+vtkdUs01jg9wQvUcFLQ7JtOR2iFNycGtsP4n+rR9QcPf+oFsjdwROzgOgnkjEehB358Z9bIBZOQ==}
     dependencies:
-      '@effect/data': 0.2.0
-      '@effect/io': 0.3.1
+      '@effect/data': 0.3.2
+      fast-check: 3.7.0
+    dev: false
+
+  /@effect/stream/0.6.0:
+    resolution: {integrity: sha512-ApRI4X8tEQr88TsAvaB9/g13sduh3t/1hF8+kkJVNsm4dXkq8+zrHkgsBmgu/wddHmrCk2zGjqcGBbswyTjDmw==}
+    dependencies:
+      '@effect/data': 0.3.2
+      '@effect/io': 0.6.0
     dev: false
 
   /@fp-ts/core/0.0.11:
@@ -66,13 +73,6 @@ packages:
     dependencies:
       '@fp-ts/core': 0.0.11
     dev: true
-
-  /@fp-ts/schema/0.3.2:
-    resolution: {integrity: sha512-DTWpgptOjnqEJxiif4Q8DDE6/8k7dx8Q+bJe/PMs+EiSvn62CXli4I6jBZHymL9+YJ35ezeK9zHa9Y2cQIOYwQ==}
-    dependencies:
-      '@effect/data': 0.2.0
-      fast-check: 3.7.0
-    dev: false
 
   /@jridgewell/resolve-uri/3.1.0:
     resolution: {integrity: sha512-F2msla3tad+Mfht5cJq7LSXcdudKTWCVYUgw6pLFOOHSTtZlj6SWNYAp+AhuqLmWdBO2X5hPrLcu8cVP8fy28w==}
@@ -106,8 +106,8 @@ packages:
     resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
     dev: true
 
-  /@types/node/18.14.5:
-    resolution: {integrity: sha512-CRT4tMK/DHYhw1fcCEBwME9CSaZNclxfzVMe7GsO6ULSwsttbj70wSiX6rZdIjGblu93sTJxLdhNIT85KKI7Qw==}
+  /@types/node/18.14.6:
+    resolution: {integrity: sha512-93+VvleD3mXwlLI/xASjw0FzKcwzl3OdTCzm1LaRfqgS21gfFtK3zDXM5Op9TeeMsJVOaJ2VRDpT9q4Y3d0AvA==}
     dev: true
 
   /acorn-walk/8.2.0:
@@ -155,7 +155,7 @@ packages:
     resolution: {integrity: sha512-rLSBxJjP+4DQOgcJAx6RZHT2he2pkhQdSnofG5VWyVl6GRq/K02ISOuOLcsMOrtKDIJb8JN2zm3FFzWNbezdPw==}
     dev: false
 
-  /ts-node/10.9.1_2cogyjchoknpkalymtikkc6nay:
+  /ts-node/10.9.1_alpjt73dvgv6kni625hu7f2l4m:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -174,7 +174,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
-      '@types/node': 18.14.5
+      '@types/node': 18.14.6
       acorn: 8.8.2
       acorn-walk: 8.2.0
       arg: 4.1.3

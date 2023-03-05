@@ -1,10 +1,10 @@
 import * as Sharding from "./Sharding";
 import * as Effect from "@effect/io/Effect";
-import * as Schema from "@fp-ts/schema/Schema";
+import * as Schema from "@effect/schema/Schema";
 import { pipe } from "@effect/data/Function";
 import * as Option from "@effect/data/Option";
-import { IdentifierId } from "@fp-ts/schema/annotation/AST";
-import * as H from "@fp-ts/schema/annotation/Hook";
+import { IdentifierId } from "@effect/schema/annotation/AST";
+import * as H from "@effect/schema/annotation/Hook";
 
 export interface Replier<R> {
   id: string;

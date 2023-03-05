@@ -4,7 +4,7 @@ import { BinaryMessage, ByteArray } from "./BinaryMessage";
 import { Deferred } from "@effect/io/Deferred";
 import { Option } from "@effect/data/Option";
 import { Throwable } from "./ShardError";
-import * as Schema from "@fp-ts/schema/Schema";
+import * as Schema from "@effect/schema/Schema";
 import * as Data from "@effect/data/Data";
 
 export const TypeId = Symbol.for("@effect/shardcake/EntityState");

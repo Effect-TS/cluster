@@ -1,5 +1,5 @@
 import * as Equal from "@effect/data/Equal";
-import * as Schema from "@fp-ts/schema/Schema";
+import * as Schema from "@effect/schema/Schema";
 import * as ShardId from "./ShardId";
 import * as Hash from "@effect/data/Hash";
 
