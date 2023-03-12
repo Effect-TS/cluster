@@ -103,40 +103,41 @@ export function apply(
     Effect.flatMap((_) => Effect.withParallelism(Effect.forEachDiscard(_, notifyUnhealthyPod), 4))
   );
 
-  /// TODO: finish porting
   function unregister(podAddress: PodAddress.PodAddress) {
-    return Effect.whenEffect(
-      pipe(Effect.logInfo(`Unregistering ${podAddress}`)),
-      stateHasPod(podAddress)
+    const eff = pipe(
+      Effect.Do(),
+      Effect.zipLeft(Effect.logInfo(`Unregistering ${podAddress}`)),
+      Effect.bind("unassignments", (_) =>
+        pipe(
+          stateRef,
+          RefSynchronized.modify((state) => [
+            pipe(
+              state.shards,
+              HashMap.filter((pod) => equals(pod)(Option.some(podAddress))),
+              HashMap.keySet
+            ),
+            {
+              ...state,
+              pods: HashMap.remove(state.pods, podAddress),
+              shards: HashMap.map(state.shards, (_) =>
+                equals(_)(Option.some(podAddress)) ? Option.none() : _
+              ),
+            },
+          ])
+        )
+      ),
+      Effect.tap((_) => Hub.publish(eventsHub, ShardingEvent.PodUnregistered(podAddress))),
+      Effect.tap((_) =>
+        Effect.when(
+          Hub.publish(eventsHub, ShardingEvent.ShardsUnassigned(podAddress, _.unassignments)),
+          () => HashSet.size(_.unassignments) > 0
+        )
+      ),
+      Effect.zipLeft(Effect.forkDaemon(persistPods)),
+      Effect.zipLeft(Effect.forkDaemon(rebalance(true)))
     );
+    return Effect.asUnit(Effect.whenEffect(eff, stateHasPod(podAddress)));
   }
-
-  /**
-  def unregister(podAddress: PodAddress): UIO[Unit] =
-    ZIO
-      .whenZIO(stateRef.get.map(_.pods.contains(podAddress))) {
-        for {
-          _             <- ZIO.logInfo(s"Unregistering $podAddress")
-          unassignments <- stateRef.modify { state =>
-                             (
-                               state.shards.collect { case (shard, Some(p)) if p == podAddress => shard }.toSet,
-                               state.copy(
-                                 pods = state.pods - podAddress,
-                                 shards =
-                                   state.shards.map { case (k, v) => k -> (if (v.contains(podAddress)) None else v) }
-                               )
-                             )
-                           }
-          _             <- eventsHub.publish(ShardingEvent.PodUnregistered(podAddress))
-          _             <- eventsHub
-                             .publish(ShardingEvent.ShardsUnassigned(podAddress, unassignments))
-                             .when(unassignments.nonEmpty)
-          _             <- persistPods.forkDaemon
-          _             <- rebalance(rebalanceImmediately = true).forkDaemon
-        } yield ()
-      }
-      .unit
-   */
 
   function withRetry<E, A>(zio: Effect.Effect<never, E, A>): Effect.Effect<never, never, void> {
     return pipe(
@@ -364,7 +365,7 @@ export function apply(
     return rebalanceSemaphore.withPermits(1)(algo2);
   }
 
-  return { getAssignments, getShardingEvents, register };
+  return { getAssignments, getShardingEvents, register, unregister };
 }
 
 function decideAssignmentsForUnassignedShards(state: ShardManagerState.ShardManagerState) {

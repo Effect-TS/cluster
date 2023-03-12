@@ -42,4 +42,17 @@ export function PodRegistered(pod: PodAddress.PodAddress): PodRegistered {
   return { _tag: "PodRegistered", pod };
 }
 
-export type ShardingEvent = ShardsAssigned | ShardsUnassigned | PodHealthChecked | PodRegistered;
+interface PodUnregistered {
+  _tag: "PodUnregistered";
+  pod: PodAddress.PodAddress;
+}
+export function PodUnregistered(pod: PodAddress.PodAddress): PodUnregistered {
+  return { _tag: "PodUnregistered", pod };
+}
+
+export type ShardingEvent =
+  | ShardsAssigned
+  | ShardsUnassigned
+  | PodHealthChecked
+  | PodRegistered
+  | PodUnregistered;
