@@ -1,3 +1,4 @@
+import { Tag } from "@effect/data/Context";
 import * as Duration from "@effect/data/Duration";
 
 /**
@@ -21,6 +22,7 @@ export interface ManagerConfig {
   persistRetryCount: number;
   rebalanceRate: number;
 }
+export const ManagerConfig = Tag<ManagerConfig>();
 
 export const defaults: ManagerConfig = {
   numberOfShards: 300,

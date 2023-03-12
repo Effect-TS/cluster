@@ -29,11 +29,7 @@ export interface Storage {
   /**
    * Get the current state of shard assignments to pods
    */
-  getAssignments(): Effect.Effect<
-    never,
-    never,
-    HashMap.HashMap<ShardId, Option.Option<PodAddress>>
-  >;
+  getAssignments: Effect.Effect<never, never, HashMap.HashMap<ShardId, Option.Option<PodAddress>>>;
 
   /**
    * Save the current state of shard assignments to pods
@@ -45,7 +41,7 @@ export interface Storage {
   /**
    * A stream that will emit the state of shard assignments whenever it changes
    */
-  assignmentsStream(): Stream.Stream<
+  assignmentsStream: Stream.Stream<
     never,
     never,
     HashMap.HashMap<ShardId, Option.Option<PodAddress>>
@@ -54,7 +50,7 @@ export interface Storage {
   /**
    * Get the list of existing pods
    */
-  getPods(): Effect.Effect<never, never, HashMap.HashMap<PodAddress, Pod>>;
+  getPods: Effect.Effect<never, never, HashMap.HashMap<PodAddress, Pod>>;
 
   /**
    * Save the list of existing pods
@@ -78,10 +74,10 @@ export const memory = Layer.effect(
 
     return {
       [StorageTypeId]: {},
-      getAssignments: () => SubscriptionRef.get(assignmentsRef),
+      getAssignments: SubscriptionRef.get(assignmentsRef),
       saveAssignments: (assignments) => pipe(assignmentsRef, SubscriptionRef.set(assignments)),
-      assignmentsStream: () => assignmentsRef.changes,
-      getPods: () => Ref.get(podsRef),
+      assignmentsStream: assignmentsRef.changes,
+      getPods: Ref.get(podsRef),
       savePods: (pods) => pipe(podsRef, Ref.set(pods)),
     } as Storage;
   })

@@ -405,7 +405,7 @@ function make(
     Stream.fromEffect(Effect.map(shardManager.getAssignments, (_) => [_, true] as const)),
     Stream.merge(
       pipe(
-        storage.assignmentsStream(),
+        storage.assignmentsStream,
         Stream.map((_) => [_, false] as const)
       )
     ),

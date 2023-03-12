@@ -7,10 +7,10 @@ import { Order } from "@effect/data/typeclass/Order";
 
 export interface PodWithMetadata {
   pod: Pod.Pod;
-  registered: Date;
+  registered: number;
 }
 
-export function apply(pod: Pod.Pod, registered: Date): PodWithMetadata {
+export function apply(pod: Pod.Pod, registered: number): PodWithMetadata {
   return Data.struct({ pod, registered });
 }
 

@@ -9,6 +9,7 @@ import * as ManagerConfig from "./ManagerConfig";
 import { pipe } from "@effect/data/Function";
 import * as HashMap from "@effect/data//HashMap";
 import * as List from "@effect/data/List";
+import * as Layer from "@effect/io/Layer";
 import * as HashSet from "@effect/data/HashSet";
 import * as Chunk from "@effect/data/Chunk";
 import * as ShardId from "./ShardId";
@@ -16,12 +17,31 @@ import * as PodAddress from "./PodAddress";
 import * as PodWithMetadata from "./PodWithMetadata";
 import * as Option from "@effect/data/Option";
 import * as Stream from "@effect/stream/Stream";
+import * as Clock from "@effect/io/Clock";
 import * as Schedule from "@effect/io/Schedule";
 import * as Storage from ".//Storage";
 import * as Pod from "./Pod";
 import { equals } from "@effect/data/Equal";
 import { groupBy, minByOption } from "./utils";
 import * as ShardError from "./ShardError";
+import { Tag } from "@effect/data/Context";
+
+export interface ShardManager {
+  getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>;
+  register(pod: Pod.Pod): Effect.Effect<never, never, void>;
+  unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>;
+  /* @internal */
+  rebalance(rebalanceImmediately: boolean): Effect.Effect<never, never, void>;
+  /* @internal */
+  getAssignments: Effect.Effect<
+    never,
+    never,
+    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
+  >;
+  /* @internal */
+  persistPods: Effect.Effect<never, never, void>;
+}
+export const ShardManager = Tag<ShardManager>();
 
 export function apply(
   stateRef: RefSynchronized.Synchronized<ShardManagerState.ShardManagerState>,
@@ -31,7 +51,7 @@ export function apply(
   podApi: Pods.Pods,
   stateRepository: Storage.Storage,
   config: ManagerConfig.ManagerConfig
-) {
+): ShardManager {
   const getAssignments: Effect.Effect<
     never,
     never,
@@ -50,7 +70,6 @@ export function apply(
         RefSynchronized.updateAndGetEffect(stateRef, (state) =>
           pipe(
             Effect.flatMap(Effect.clock(), (_) => _.currentTimeMillis()),
-            Effect.map((millis) => new Date(millis)),
             Effect.map((cdt) =>
               ShardManagerState.apply(
                 HashMap.set(state.pods, pod.address, PodWithMetadata.apply(pod, cdt)),
@@ -365,7 +384,7 @@ export function apply(
     return rebalanceSemaphore.withPermits(1)(algo2);
   }
 
-  return { getAssignments, getShardingEvents, register, unregister };
+  return { getAssignments, getShardingEvents, register, unregister, persistPods, rebalance };
 }
 
 function decideAssignmentsForUnassignedShards(state: ShardManagerState.ShardManagerState) {
@@ -527,3 +546,82 @@ function pickNewPods(
   );
   return [assignmentsPerPod, unassignmentsPerPod] as const;
 }
+
+const live0 = pipe(
+  Effect.Do(),
+  Effect.bind("config", (_) => Effect.service(ManagerConfig.ManagerConfig)),
+  Effect.bind("stateRepository", (_) => Effect.service(Storage.Storage)),
+  Effect.bind("healthApi", (_) => Effect.service(PodsHealth.PodsHealth)),
+  Effect.bind("podApi", (_) => Effect.service(Pods.Pods)),
+  Effect.bind("pods", (_) => _.stateRepository.getPods),
+  Effect.bind("assignments", (_) => _.stateRepository.getAssignments),
+  // remove unhealthy pods on startup
+  Effect.bind("filteredPods", (_) =>
+    pipe(
+      Effect.filterPar(_.pods, ([podAddress]) => _.healthApi.isAlive(podAddress)),
+      Effect.map(HashMap.fromIterable)
+    )
+  ),
+  Effect.bindValue("filteredAssignments", (_) =>
+    pipe(
+      HashMap.filter(
+        _.assignments,
+        (pod) => Option.isSome(pod) && HashMap.has(_.filteredPods, pod.value)
+      )
+    )
+  ),
+  Effect.bind("cdt", (_) => Clock.currentTimeMillis()),
+  Effect.bindValue("initialState", (_) =>
+    ShardManagerState.apply(
+      HashMap.map(_.filteredPods, (pod) => PodWithMetadata.apply(pod, _.cdt)),
+      HashMap.union(
+        _.filteredAssignments,
+        pipe(
+          Chunk.range(1, _.config.numberOfShards),
+          Chunk.map((n) => [ShardId.apply(n), Option.none()] as const),
+          HashMap.fromIterable
+        )
+      )
+    )
+  )
+);
+const live1 = pipe(
+  live0,
+  Effect.bind("state", (_) => RefSynchronized.make(_.initialState)),
+  Effect.bind("rebalanceSemaphore", (_) => Effect.makeSemaphore(1)),
+  Effect.bind("eventsHub", (_) => Hub.unbounded<ShardingEvent.ShardingEvent>()),
+  Effect.bindValue("shardManager", (_) =>
+    apply(
+      _.state,
+      _.rebalanceSemaphore,
+      _.eventsHub,
+      _.healthApi,
+      _.podApi,
+      _.stateRepository,
+      _.config
+    )
+  ),
+  Effect.tap((_) => Effect.forkDaemon(_.shardManager.persistPods)),
+  // rebalance immediately if there are unassigned shards
+  Effect.tap((_) => _.shardManager.rebalance(HashSet.size(_.initialState.unassignedShards) > 0)),
+  // start a regular rebalance at the given interval
+  Effect.tap((_) =>
+    pipe(
+      _.shardManager.rebalance(false),
+      Effect.repeat(Schedule.spaced(_.config.rebalanceInterval)),
+      Effect.forkDaemon
+    )
+  ),
+  Effect.tap((_) =>
+    pipe(
+      _.shardManager.getShardingEvents,
+      Stream.mapEffect((_) => Effect.logInfo(JSON.stringify(_))),
+      Stream.runDrain,
+      Effect.forkDaemon
+    )
+  ),
+  Effect.tap((_) => Effect.logInfo("Shard Manager loaded")),
+  Effect.map((_) => _.shardManager)
+);
+
+export const live = Layer.effect(ShardManager, live1);
