@@ -4,6 +4,7 @@ import { ShardId } from "./ShardId";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import * as Option from "@effect/data/Option";
+import * as HashSet from "@effect/data/HashSet";
 import { Tag } from "@effect/data/Context";
 
 /**
@@ -28,12 +29,18 @@ export interface Pods {
   /**
    * Notify a pod that it was assigned a list of shards
    */
-  assignShards(pod: PodAddress, shards: Set<ShardId>): Effect.Effect<never, never, void>;
+  assignShards(
+    pod: PodAddress,
+    shards: HashSet.HashSet<ShardId>
+  ): Effect.Effect<never, never, void>;
 
   /**
    * Notify a pod that it was unassigned a list of shards
    */
-  unassignShards(pod: PodAddress, shards: Set<ShardId>): Effect.Effect<never, never, void>;
+  unassignShards(
+    pod: PodAddress,
+    shards: HashSet.HashSet<ShardId>
+  ): Effect.Effect<never, never, void>;
 
   /**
    * Check that a pod is responsive

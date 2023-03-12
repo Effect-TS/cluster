@@ -94,6 +94,14 @@ export function MessageReturnedNoting<A>(entityId: string, msg: A): MessageRetur
   return { _tag: "MessageReturnedNoting", entityId, msg };
 }
 
+export interface PodNoLongerRegistered {
+  _tag: "PodNoLongerRegistered";
+  pod: PodAddress;
+}
+export function PodNoLongerRegistered(pod: PodAddress): PodNoLongerRegistered {
+  return { _tag: "PodNoLongerRegistered", pod };
+}
+
 export type Throwable =
   | DecodeError
   | EncodeError
@@ -103,4 +111,5 @@ export type Throwable =
   | EntityNotManagedByThisPod
   | PodUnavailable
   | EntityTypeNotRegistered
-  | MessageReturnedNoting;
+  | MessageReturnedNoting
+  | PodNoLongerRegistered;

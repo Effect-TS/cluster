@@ -7,11 +7,25 @@ interface ShardsAssigned {
   pod: PodAddress.PodAddress;
   shards: HashSet.HashSet<ShardId.ShardId>;
 }
+export function ShardsAssigned(
+  pod: PodAddress.PodAddress,
+  shards: HashSet.HashSet<ShardId.ShardId>
+): ShardsAssigned {
+  return { _tag: "ShardsAssigned", pod, shards };
+}
+
 interface ShardsUnassigned {
   _tag: "ShardsUnassigned";
   pod: PodAddress.PodAddress;
   shards: HashSet.HashSet<ShardId.ShardId>;
 }
+export function ShardsUnassigned(
+  pod: PodAddress.PodAddress,
+  shards: HashSet.HashSet<ShardId.ShardId>
+): ShardsUnassigned {
+  return { _tag: "ShardsUnassigned", pod, shards };
+}
+
 interface PodHealthChecked {
   _tag: "PodHealthChecked";
   pod: PodAddress.PodAddress;

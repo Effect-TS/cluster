@@ -20,9 +20,8 @@ import * as Schedule from "@effect/io/Schedule";
 import * as Storage from ".//Storage";
 import * as Pod from "./Pod";
 import { equals } from "@effect/data/Equal";
-import * as ReadonlyArray from "@effect/data/ReadonlyArray";
-import * as Order from "@effect/data/typeclass/Order";
 import { groupBy, minByOption } from "./utils";
+import * as ShardError from "./ShardError";
 
 export function apply(
   stateRef: RefSynchronized.Synchronized<ShardManagerState.ShardManagerState>,
@@ -166,33 +165,34 @@ export function apply(
     )
   );
 
-  function updateShardsState(shards: HashSet.HashSet<ShardId.ShardId>, pod: Option.Option<PodAddress.PodAddress>) {
+  function updateShardsState(
+    shards: HashSet.HashSet<ShardId.ShardId>,
+    pod: Option.Option<PodAddress.PodAddress>
+  ) {
     return pipe(
       stateRef,
-      RefSynchronized.updateEffect(state => pipe(
-        Effect.whenCase(() => )
-      ))
-    )
-  }
-
-  /**
-  private def updateShardsState(shards: Set[ShardId], pod: Option[PodAddress]): Task[Unit] =
-    stateRef.updateZIO(state =>
-      ZIO
-        .whenCase(pod) {
-          case Some(pod) if !state.pods.contains(pod) => ZIO.fail(new Exception(s"Pod $pod is no longer registered"))
-        }
-        .as(
-          state.copy(shards = state.shards.map { case (shard, assignment) =>
-            shard -> (if (shards.contains(shard)) pod else assignment)
+      RefSynchronized.updateEffect((state) =>
+        pipe(
+          Effect.whenCase(
+            () => Option.isSome(pod) && !HashMap.has(state.pods, pod.value),
+            () => Option.map(pod, (_) => Effect.fail(ShardError.PodNoLongerRegistered(_)))
+          ),
+          Effect.as({
+            ...state,
+            shards: pipe(
+              state.shards,
+              HashMap.mapWithIndex((assignment, shard) =>
+                HashSet.has(shards, shard) ? pod : assignment
+              )
+            ),
           })
         )
-    )
-   */
+      )
+    );
+  }
 
-
-  function rebalance(rebalanceImmediately: boolean) {
-    const algo = pipe(
+  function rebalance(rebalanceImmediately: boolean): Effect.Effect<never, never, void> {
+    const algo1 = pipe(
       Effect.Do(),
       Effect.bind("state", () => RefSynchronized.get(stateRef)),
       Effect.bindValue("_1", ({ state }) =>
@@ -240,71 +240,132 @@ export function apply(
           List.concat(List.fromIterable(_.unassignments)),
           List.filter(([pod, __]) => HashSet.has(_.failedPingedPods, pod)),
           List.map(([_, shards]) => List.fromIterable(shards)),
-          List.flatMap(_ => _), // TODO: List is missing flatMap
+          List.flatMap((_) => _), // TODO: List is missing flatMap
           HashSet.fromIterable
         )
+      )
+    );
+    const algo2 = pipe(
+      algo1,
+      Effect.bindValue("readyAssignments", (_) =>
+        pipe(
+          _.assignments,
+          HashMap.map(HashSet.difference(_.shardsToRemove)),
+          HashMap.filter((__) => HashSet.size(__) > 0)
+        )
       ),
-      Effect.bindValue("readyAssignments", _ => pipe(
-        _.assignments,
-        HashMap.map(HashSet.difference(_.shardsToRemove)),
-        HashMap.filter(__ => HashSet.size(__) > 0)
-      )),
-      Effect.bindValue("readyUnassignments", _ => pipe(
-        _.unassignments,
-        HashMap.map(HashSet.difference(_.shardsToRemove)),
-        HashMap.filter(__ => HashSet.size(__) > 0)
-      ))
+      Effect.bindValue("readyUnassignments", (_) =>
+        pipe(
+          _.unassignments,
+          HashMap.map(HashSet.difference(_.shardsToRemove)),
+          HashMap.filter((__) => HashSet.size(__) > 0)
+        )
+      ),
+      // do the unassignments first
+      Effect.bind("failed", (_) =>
+        pipe(
+          Effect.forEachPar(_.readyUnassignments, ([pod, shards]) =>
+            pipe(
+              podApi.unassignShards(pod, shards),
+              Effect.zipRight(updateShardsState(shards, Option.none())),
+              Effect.matchEffect(
+                () => Effect.succeed([HashSet.fromIterable([pod]), shards] as const),
+                () =>
+                  pipe(
+                    Hub.publish(eventsHub, ShardingEvent.ShardsUnassigned(pod, shards)),
+                    Effect.as([
+                      HashSet.empty<PodAddress.PodAddress>(),
+                      HashSet.empty<ShardId.ShardId>(),
+                    ] as const)
+                  )
+              )
+            )
+          ),
+          Effect.map((_) => Chunk.unzip(_)),
+          Effect.map(
+            ([pods, shards]) =>
+              [Chunk.map(pods, Chunk.fromIterable), Chunk.map(shards, Chunk.fromIterable)] as const
+          ),
+          Effect.map(
+            ([pods, shards]) =>
+              [
+                HashSet.fromIterable(Chunk.flatten(pods)),
+                HashSet.fromIterable(Chunk.flatten(shards)),
+              ] as const
+          )
+        )
+      ),
+      Effect.bindValue("failedUnassignedPods", (_) => _.failed[0]),
+      Effect.bindValue("failedUnassignedShards", (_) => _.failed[1]),
+      // remove assignments of shards that couldn't be unassigned, as well as faulty pods.
+      Effect.bindValue("filteredAssignments", (_) =>
+        pipe(
+          HashMap.removeMany(_.readyAssignments, _.failedUnassignedPods),
+          HashMap.mapWithIndex((shards, pod) =>
+            HashSet.difference(shards, _.failedUnassignedShards)
+          )
+        )
+      ),
+
+      // then do the assignments
+      Effect.bind("failedAssignedPods", (_) =>
+        pipe(
+          Effect.forEachPar(_.filteredAssignments, ([pod, shards]) =>
+            pipe(
+              podApi.assignShards(pod, shards),
+              Effect.zipRight(updateShardsState(shards, Option.some(pod))),
+              Effect.matchEffect(
+                () => Effect.succeed(Chunk.fromIterable([pod])),
+                () =>
+                  pipe(
+                    Hub.publish(eventsHub, ShardingEvent.ShardsAssigned(pod, shards)),
+                    Effect.as(Chunk.empty())
+                  )
+              )
+            )
+          ),
+          Effect.map(Chunk.flatten),
+          Effect.map(HashSet.fromIterable)
+        )
+      ),
+      Effect.bindValue("failedPods", (_) =>
+        HashSet.union(
+          HashSet.union(_.failedPingedPods, _.failedUnassignedPods),
+          _.failedAssignedPods
+        )
+      ),
+      // check if failing pods are still up
+      Effect.tap((_) => Effect.forkDaemon(Effect.forEachDiscard(_.failedPods, notifyUnhealthyPod))),
+      Effect.tap((_) =>
+        Effect.when(
+          Effect.logWarning("Failed to rebalance pods: " + _.failedPods),
+          () => HashSet.size(_.failedPods) > 0
+        )
+      ),
+      // retry rebalancing later if there was any failure
+      Effect.tap((_) =>
+        pipe(
+          Effect.sleep(config.rebalanceRetryInterval),
+          Effect.zipRight(rebalance(rebalanceImmediately)),
+          Effect.forkDaemon,
+          Effect.when(() => HashSet.size(_.failedPods) > 0 && rebalanceImmediately)
+        )
+      ),
+      // persist state changes to Redis
+      Effect.tap((_) =>
+        pipe(
+          persistAssignments,
+          Effect.forkDaemon,
+          Effect.when(() => _.areChanges)
+        )
+      )
     );
 
-    return rebalanceSemaphore.withPermits(1)(algo);
+    return rebalanceSemaphore.withPermits(1)(algo2);
   }
 
   return { getAssignments, getShardingEvents, register };
 }
-
-/*
-  private def rebalance(rebalanceImmediately: Boolean): UIO[Unit] =
-    rebalanceSemaphore.withPermit {
-      for {
-        // do the unassignments first
-        failed                                        <- ZIO
-                                                           .foreachPar(readyUnassignments.toList) { case (pod, shards) =>
-                                                             (podApi.unassignShards(pod, shards) *> updateShardsState(shards, None)).foldZIO(
-                                                               _ => ZIO.succeed((Set(pod), shards)),
-                                                               _ =>
-                                                                 eventsHub
-                                                                   .publish(ShardingEvent.ShardsUnassigned(pod, shards))
-                                                                   .as((Set.empty, Set.empty))
-                                                             )
-                                                           }
-                                                           .map(_.unzip)
-                                                           .map { case (pods, shards) => (pods.flatten.toSet, shards.flatten.toSet) }
-        (failedUnassignedPods, failedUnassignedShards) = failed
-        // remove assignments of shards that couldn't be unassigned, as well as faulty pods
-        filteredAssignments                            = (readyAssignments -- failedUnassignedPods).map { case (pod, shards) =>
-                                                           pod -> (shards diff failedUnassignedShards)
-                                                         }
-        // then do the assignments
-        failedAssignedPods                            <- ZIO
-                                                           .foreachPar(filteredAssignments.toList) { case (pod, shards) =>
-                                                             (podApi.assignShards(pod, shards) *> updateShardsState(shards, Some(pod))).foldZIO(
-                                                               _ => ZIO.succeed(Set(pod)),
-                                                               _ => eventsHub.publish(ShardingEvent.ShardsAssigned(pod, shards)).as(Set.empty)
-                                                             )
-                                                           }
-                                                           .map(_.flatten.toSet)
-        failedPods                                     = failedPingedPods ++ failedUnassignedPods ++ failedAssignedPods
-        // check if failing pods are still up
-        _                                             <- ZIO.foreachDiscard(failedPods)(notifyUnhealthyPod).forkDaemon
-        _                                             <- ZIO.logWarning(s"Failed to rebalance pods: $failedPods").when(failedPods.nonEmpty)
-        // retry rebalancing later if there was any failure
-        _                                             <- (Clock.sleep(config.rebalanceRetryInterval) *> rebalance(rebalanceImmediately)).forkDaemon
-                                                           .when(failedPods.nonEmpty && rebalanceImmediately)
-        // persist state changes to Redis
-        _                                             <- persistAssignments.forkDaemon.when(areChanges)
-      } yield ()
-    }
-* */
 
 function decideAssignmentsForUnassignedShards(state: ShardManagerState.ShardManagerState) {
   return pickNewPods(List.fromIterable(state.unassignedShards), state, true, 1);
