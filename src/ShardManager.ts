@@ -10,6 +10,7 @@ import { pipe } from "@effect/data/Function";
 import * as HashMap from "@effect/data//HashMap";
 import * as List from "@effect/data/List";
 import * as HashSet from "@effect/data/HashSet";
+import * as Chunk from "@effect/data/Chunk";
 import * as ShardId from "./ShardId";
 import * as PodAddress from "./PodAddress";
 import * as PodWithMetadata from "./PodWithMetadata";
@@ -103,6 +104,7 @@ export function apply(
     Effect.flatMap((_) => Effect.withParallelism(Effect.forEachDiscard(_, notifyUnhealthyPod), 4))
   );
 
+  /// TODO: finish porting
   function unregister(podAddress: PodAddress.PodAddress) {
     return Effect.whenEffect(
       pipe(Effect.logInfo(`Unregistering ${podAddress}`)),
@@ -164,7 +166,187 @@ export function apply(
     )
   );
 
+  function updateShardsState(shards: HashSet.HashSet<ShardId.ShardId>, pod: Option.Option<PodAddress.PodAddress>) {
+    return pipe(
+      stateRef,
+      RefSynchronized.updateEffect(state => pipe(
+        Effect.whenCase(() => )
+      ))
+    )
+  }
+
+  /**
+  private def updateShardsState(shards: Set[ShardId], pod: Option[PodAddress]): Task[Unit] =
+    stateRef.updateZIO(state =>
+      ZIO
+        .whenCase(pod) {
+          case Some(pod) if !state.pods.contains(pod) => ZIO.fail(new Exception(s"Pod $pod is no longer registered"))
+        }
+        .as(
+          state.copy(shards = state.shards.map { case (shard, assignment) =>
+            shard -> (if (shards.contains(shard)) pod else assignment)
+          })
+        )
+    )
+   */
+
+
+  function rebalance(rebalanceImmediately: boolean) {
+    const algo = pipe(
+      Effect.Do(),
+      Effect.bind("state", () => RefSynchronized.get(stateRef)),
+      Effect.bindValue("_1", ({ state }) =>
+        rebalanceImmediately || HashSet.size(state.unassignedShards) > 0
+          ? decideAssignmentsForUnassignedShards(state)
+          : decideAssignmentsForUnbalancedShards(state, config.rebalanceRate)
+      ),
+      Effect.bindValue("assignments", (_) => _._1[0]),
+      Effect.bindValue("unassignments", (_) => _._1[1]),
+      Effect.bindValue(
+        "areChanges",
+        (_) => HashMap.size(_.assignments) > 0 || HashMap.size(_.unassignments) > 0
+      ),
+      Effect.tap((_) =>
+        Effect.when(
+          Effect.logDebug(
+            "Rebalance (rebalanceImmidiately=" + JSON.stringify(rebalanceImmediately) + ")"
+          ),
+          () => _.areChanges
+        )
+      ),
+      // ping pods first to make sure they are ready and remove those who aren't
+      Effect.bind("failedPingedPods", (_) =>
+        pipe(
+          Effect.forEachPar(
+            HashSet.union(HashMap.keySet(_.assignments), HashMap.keySet(_.unassignments)),
+            (pod) =>
+              pipe(
+                podApi.ping(pod),
+                Effect.timeout(config.pingTimeout),
+                Effect.someOrFailException,
+                Effect.match(
+                  () => Chunk.fromIterable([pod]),
+                  () => Chunk.empty()
+                )
+              )
+          ),
+          Effect.map(Chunk.flatten),
+          Effect.map(HashSet.fromIterable)
+        )
+      ),
+      Effect.bindValue("shardsToRemove", (_) =>
+        pipe(
+          List.fromIterable(_.assignments),
+          List.concat(List.fromIterable(_.unassignments)),
+          List.filter(([pod, __]) => HashSet.has(_.failedPingedPods, pod)),
+          List.map(([_, shards]) => List.fromIterable(shards)),
+          List.flatMap(_ => _), // TODO: List is missing flatMap
+          HashSet.fromIterable
+        )
+      ),
+      Effect.bindValue("readyAssignments", _ => pipe(
+        _.assignments,
+        HashMap.map(HashSet.difference(_.shardsToRemove)),
+        HashMap.filter(__ => HashSet.size(__) > 0)
+      )),
+      Effect.bindValue("readyUnassignments", _ => pipe(
+        _.unassignments,
+        HashMap.map(HashSet.difference(_.shardsToRemove)),
+        HashMap.filter(__ => HashSet.size(__) > 0)
+      ))
+    );
+
+    return rebalanceSemaphore.withPermits(1)(algo);
+  }
+
   return { getAssignments, getShardingEvents, register };
+}
+
+/*
+  private def rebalance(rebalanceImmediately: Boolean): UIO[Unit] =
+    rebalanceSemaphore.withPermit {
+      for {
+        // do the unassignments first
+        failed                                        <- ZIO
+                                                           .foreachPar(readyUnassignments.toList) { case (pod, shards) =>
+                                                             (podApi.unassignShards(pod, shards) *> updateShardsState(shards, None)).foldZIO(
+                                                               _ => ZIO.succeed((Set(pod), shards)),
+                                                               _ =>
+                                                                 eventsHub
+                                                                   .publish(ShardingEvent.ShardsUnassigned(pod, shards))
+                                                                   .as((Set.empty, Set.empty))
+                                                             )
+                                                           }
+                                                           .map(_.unzip)
+                                                           .map { case (pods, shards) => (pods.flatten.toSet, shards.flatten.toSet) }
+        (failedUnassignedPods, failedUnassignedShards) = failed
+        // remove assignments of shards that couldn't be unassigned, as well as faulty pods
+        filteredAssignments                            = (readyAssignments -- failedUnassignedPods).map { case (pod, shards) =>
+                                                           pod -> (shards diff failedUnassignedShards)
+                                                         }
+        // then do the assignments
+        failedAssignedPods                            <- ZIO
+                                                           .foreachPar(filteredAssignments.toList) { case (pod, shards) =>
+                                                             (podApi.assignShards(pod, shards) *> updateShardsState(shards, Some(pod))).foldZIO(
+                                                               _ => ZIO.succeed(Set(pod)),
+                                                               _ => eventsHub.publish(ShardingEvent.ShardsAssigned(pod, shards)).as(Set.empty)
+                                                             )
+                                                           }
+                                                           .map(_.flatten.toSet)
+        failedPods                                     = failedPingedPods ++ failedUnassignedPods ++ failedAssignedPods
+        // check if failing pods are still up
+        _                                             <- ZIO.foreachDiscard(failedPods)(notifyUnhealthyPod).forkDaemon
+        _                                             <- ZIO.logWarning(s"Failed to rebalance pods: $failedPods").when(failedPods.nonEmpty)
+        // retry rebalancing later if there was any failure
+        _                                             <- (Clock.sleep(config.rebalanceRetryInterval) *> rebalance(rebalanceImmediately)).forkDaemon
+                                                           .when(failedPods.nonEmpty && rebalanceImmediately)
+        // persist state changes to Redis
+        _                                             <- persistAssignments.forkDaemon.when(areChanges)
+      } yield ()
+    }
+* */
+
+function decideAssignmentsForUnassignedShards(state: ShardManagerState.ShardManagerState) {
+  return pickNewPods(List.fromIterable(state.unassignedShards), state, true, 1);
+}
+
+function decideAssignmentsForUnbalancedShards(
+  state: ShardManagerState.ShardManagerState,
+  rebalanceRate: number
+) {
+  // don't do regular rebalance in the middle of a rolling update
+  const extraShardsToAllocate = state.allPodsHaveMaxVersion
+    ? pipe(
+        state.shardsPerPod,
+        HashMap.flatMapWithIndex((shards, _) => {
+          // count how many extra shards compared to the average
+          const extraShards = Math.max(HashSet.size(shards) - state.averageShardsPerPod.value, 0);
+          return pipe(
+            HashMap.empty(),
+            HashMap.set(_, HashSet.fromIterable(List.take(List.fromIterable(shards), extraShards)))
+          );
+        }),
+        HashSet.fromIterable,
+        HashSet.map((_) => _[1]),
+        HashSet.flatMap((_) => _)
+      )
+    : HashSet.empty();
+
+  /*
+        TODO: port sortBy
+
+    val sortedShardsToRebalance = extraShardsToAllocate.toList.sortBy { shard =>
+      // handle unassigned shards first, then shards on the pods with most shards, then shards on old pods
+      state.shards.get(shard).flatten.fold((Int.MinValue, OffsetDateTime.MIN)) { pod =>
+        (
+          state.shardsPerPod.get(pod).fold(Int.MinValue)(-_.size),
+          state.pods.get(pod).fold(OffsetDateTime.MIN)(_.registered)
+        )
+      }
+    }
+* */
+  const sortedShardsToRebalance = List.fromIterable(extraShardsToAllocate);
+  return pickNewPods(sortedShardsToRebalance, state, false, rebalanceRate);
 }
 
 function pickNewPods(
