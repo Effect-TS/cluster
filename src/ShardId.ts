@@ -1,4 +1,5 @@
 import * as Data from "@effect/data/Data";
+import * as Schema from "@effect/schema/Schema";
 
 /**
  * @since 1.0.0
@@ -12,11 +13,13 @@ export const ShardIdTypeId: unique symbol = Symbol.for("@effect/shardcake/ShardI
  */
 export type ShardIdTypeId = typeof ShardIdTypeId;
 
-export interface ShardId {
-  [ShardIdTypeId]: {};
-  value: number;
-}
+export const Schema_ = Schema.struct({
+  _tag: Schema.uniqueSymbol(ShardIdTypeId),
+  value: Schema.number,
+});
 
-export function apply(value: number): ShardId {
-  return Data.struct({ [ShardIdTypeId]: {}, value });
+export interface ShardId extends Schema.To<typeof Schema_> {}
+
+export function shardId(value: number): ShardId {
+  return Data.struct({ _tag: ShardIdTypeId, value });
 }

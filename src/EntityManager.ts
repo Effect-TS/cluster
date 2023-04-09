@@ -150,7 +150,7 @@ export function make<R, Req>(
                     Effect.forkDaemon
                   )
                 ),
-                Effect.bindValue("someQueue", (_) => Option.some(_.queue)),
+                Effect.let("someQueue", (_) => Option.some(_.queue)),
                 Effect.map(
                   (_) =>
                     [

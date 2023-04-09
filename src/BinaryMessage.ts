@@ -5,16 +5,16 @@ import * as Data from "@effect/data/Data";
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("@effect/shardcake/BinaryMessage");
+export const BinaryMessageTypeId: unique symbol = Symbol.for("@effect/shardcake/BinaryMessage");
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId;
+export type BinaryMessageTypeId = typeof BinaryMessageTypeId;
 
 export interface BinaryMessage {
-  [TypeId]: {};
+  [BinaryMessageTypeId]: {};
   entityId: string;
   entityType: string;
   body: unknown;
@@ -27,7 +27,7 @@ export function apply(
   body: unknown,
   replyId: Option<string>
 ): BinaryMessage {
-  return Data.struct({ [TypeId]: {}, entityId, entityType, body, replyId });
+  return Data.struct({ [BinaryMessageTypeId]: {}, entityId, entityType, body, replyId });
 }
 
 export type ByteArray = unknown;

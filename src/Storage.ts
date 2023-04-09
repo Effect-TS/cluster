@@ -24,8 +24,6 @@ export const StorageTypeId: unique symbol = Symbol.for("@effect/shardcake/Storag
 export type StorageTypeId = typeof StorageTypeId;
 
 export interface Storage {
-  [StorageTypeId]: {};
-
   /**
    * Get the current state of shard assignments to pods
    */
@@ -73,12 +71,11 @@ export const memory = Layer.effect(
     const podsRef = yield* $(Ref.make(HashMap.empty<PodAddress, Pod>()));
 
     return {
-      [StorageTypeId]: {},
       getAssignments: SubscriptionRef.get(assignmentsRef),
       saveAssignments: (assignments) => pipe(assignmentsRef, SubscriptionRef.set(assignments)),
       assignmentsStream: assignmentsRef.changes,
       getPods: Ref.get(podsRef),
       savePods: (pods) => pipe(podsRef, Ref.set(pods)),
-    } as Storage;
+    };
   })
 );

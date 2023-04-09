@@ -71,7 +71,7 @@ export function apply(
           pipe(
             Effect.flatMap(Effect.clock(), (_) => _.currentTimeMillis()),
             Effect.map((cdt) =>
-              ShardManagerState.apply(
+              ShardManagerState.shardManagerState(
                 HashMap.set(state.pods, pod.address, PodWithMetadata.apply(pod, cdt)),
                 state.shards
               )
@@ -215,14 +215,14 @@ export function apply(
     const algo1 = pipe(
       Effect.Do(),
       Effect.bind("state", () => RefSynchronized.get(stateRef)),
-      Effect.bindValue("_1", ({ state }) =>
+      Effect.let("_1", ({ state }) =>
         rebalanceImmediately || HashSet.size(state.unassignedShards) > 0
           ? decideAssignmentsForUnassignedShards(state)
           : decideAssignmentsForUnbalancedShards(state, config.rebalanceRate)
       ),
-      Effect.bindValue("assignments", (_) => _._1[0]),
-      Effect.bindValue("unassignments", (_) => _._1[1]),
-      Effect.bindValue(
+      Effect.let("assignments", (_) => _._1[0]),
+      Effect.let("unassignments", (_) => _._1[1]),
+      Effect.let(
         "areChanges",
         (_) => HashMap.size(_.assignments) > 0 || HashMap.size(_.unassignments) > 0
       ),
@@ -254,7 +254,7 @@ export function apply(
           Effect.map(HashSet.fromIterable)
         )
       ),
-      Effect.bindValue("shardsToRemove", (_) =>
+      Effect.let("shardsToRemove", (_) =>
         pipe(
           List.fromIterable(_.assignments),
           List.concat(List.fromIterable(_.unassignments)),
@@ -267,14 +267,14 @@ export function apply(
     );
     const algo2 = pipe(
       algo1,
-      Effect.bindValue("readyAssignments", (_) =>
+      Effect.let("readyAssignments", (_) =>
         pipe(
           _.assignments,
           HashMap.map(HashSet.difference(_.shardsToRemove)),
           HashMap.filter((__) => HashSet.size(__) > 0)
         )
       ),
-      Effect.bindValue("readyUnassignments", (_) =>
+      Effect.let("readyUnassignments", (_) =>
         pipe(
           _.unassignments,
           HashMap.map(HashSet.difference(_.shardsToRemove)),
@@ -315,10 +315,10 @@ export function apply(
           )
         )
       ),
-      Effect.bindValue("failedUnassignedPods", (_) => _.failed[0]),
-      Effect.bindValue("failedUnassignedShards", (_) => _.failed[1]),
+      Effect.let("failedUnassignedPods", (_) => _.failed[0]),
+      Effect.let("failedUnassignedShards", (_) => _.failed[1]),
       // remove assignments of shards that couldn't be unassigned, as well as faulty pods.
-      Effect.bindValue("filteredAssignments", (_) =>
+      Effect.let("filteredAssignments", (_) =>
         pipe(
           HashMap.removeMany(_.readyAssignments, _.failedUnassignedPods),
           HashMap.mapWithIndex((shards, pod) =>
@@ -348,7 +348,7 @@ export function apply(
           Effect.map(HashSet.fromIterable)
         )
       ),
-      Effect.bindValue("failedPods", (_) =>
+      Effect.let("failedPods", (_) =>
         HashSet.union(
           HashSet.union(_.failedPingedPods, _.failedUnassignedPods),
           _.failedAssignedPods
@@ -549,10 +549,10 @@ function pickNewPods(
 
 const live0 = pipe(
   Effect.Do(),
-  Effect.bind("config", (_) => Effect.service(ManagerConfig.ManagerConfig)),
-  Effect.bind("stateRepository", (_) => Effect.service(Storage.Storage)),
-  Effect.bind("healthApi", (_) => Effect.service(PodsHealth.PodsHealth)),
-  Effect.bind("podApi", (_) => Effect.service(Pods.Pods)),
+  Effect.bind("config", (_) => ManagerConfig.ManagerConfig),
+  Effect.bind("stateRepository", (_) => Storage.Storage),
+  Effect.bind("healthApi", (_) => PodsHealth.PodsHealth),
+  Effect.bind("podApi", (_) => Pods.Pods),
   Effect.bind("pods", (_) => _.stateRepository.getPods),
   Effect.bind("assignments", (_) => _.stateRepository.getAssignments),
   // remove unhealthy pods on startup
@@ -562,7 +562,7 @@ const live0 = pipe(
       Effect.map(HashMap.fromIterable)
     )
   ),
-  Effect.bindValue("filteredAssignments", (_) =>
+  Effect.let("filteredAssignments", (_) =>
     pipe(
       HashMap.filter(
         _.assignments,
@@ -571,14 +571,14 @@ const live0 = pipe(
     )
   ),
   Effect.bind("cdt", (_) => Clock.currentTimeMillis()),
-  Effect.bindValue("initialState", (_) =>
-    ShardManagerState.apply(
+  Effect.let("initialState", (_) =>
+    ShardManagerState.shardManagerState(
       HashMap.map(_.filteredPods, (pod) => PodWithMetadata.apply(pod, _.cdt)),
       HashMap.union(
         _.filteredAssignments,
         pipe(
           Chunk.range(1, _.config.numberOfShards),
-          Chunk.map((n) => [ShardId.apply(n), Option.none()] as const),
+          Chunk.map((n) => [ShardId.shardId(n), Option.none()] as const),
           HashMap.fromIterable
         )
       )
@@ -590,7 +590,7 @@ const live1 = pipe(
   Effect.bind("state", (_) => RefSynchronized.make(_.initialState)),
   Effect.bind("rebalanceSemaphore", (_) => Effect.makeSemaphore(1)),
   Effect.bind("eventsHub", (_) => Hub.unbounded<ShardingEvent.ShardingEvent>()),
-  Effect.bindValue("shardManager", (_) =>
+  Effect.let("shardManager", (_) =>
     apply(
       _.state,
       _.rebalanceSemaphore,

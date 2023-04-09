@@ -95,7 +95,7 @@ function make(
     Ref.get(shardAssignments),
     Effect.map((_) =>
       pipe(
-        HashMap.get(_, ShardId.apply(1)),
+        HashMap.get(_, ShardId.shardId(1)),
         Option.match(() => false, equals(address))
       )
     )
@@ -237,7 +237,7 @@ function make(
       const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = pipe(
         Effect.Do(),
         Effect.bind("shards", () => Ref.get(shardAssignments)),
-        Effect.bindValue("pod", ({ shards }) => HashMap.get(shards, shardId)),
+        Effect.let("pod", ({ shards }) => HashMap.get(shards, shardId)),
         Effect.bind("response", ({ pod, shards }) => {
           if (Option.isSome(pod)) {
             const send = sendToPod(
@@ -395,8 +395,8 @@ function make(
     return pipe(
       Effect.Do(),
       Effect.bind("shards", () => Ref.get(shardAssignments)),
-      Effect.bindValue("shardId", () => getShardId(recipientType, entityId)),
-      Effect.bindValue("pod", ({ shards, shardId }) => pipe(shards, HashMap.get(shardId))),
+      Effect.let("shardId", () => getShardId(recipientType, entityId)),
+      Effect.let("pod", ({ shards, shardId }) => pipe(shards, HashMap.get(shardId))),
       Effect.map((_) => Option.isSome(_.pod) && equals(_.pod.value, address))
     );
   }
@@ -506,18 +506,18 @@ export const live = Layer.scoped(
   Sharding,
   pipe(
     Effect.Do(),
-    Effect.bind("config", () => Effect.service(Config)),
-    Effect.bind("pods", () => Effect.service(Pods)),
-    Effect.bind("shardManager", () => Effect.service(ShardManagerClient)),
-    Effect.bind("storage", () => Effect.service(Storage)),
-    Effect.bind("serialization", () => Effect.service(Serialization)),
+    Effect.bind("config", () => Config),
+    Effect.bind("pods", () => Pods),
+    Effect.bind("shardManager", () => ShardManagerClient),
+    Effect.bind("storage", () => Storage),
+    Effect.bind("serialization", () => Serialization),
     Effect.bind("shardsCache", () => Ref.make(HashMap.empty<ShardId.ShardId, PodAddress>())),
     Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState.EntityState>())),
     Effect.bind("shuttingDown", () => Ref.make(false)),
     Effect.bind("promises", () =>
       Synchronized.make(HashMap.empty<string, Deferred.Deferred<Throwable, Option.Option<any>>>())
     ),
-    Effect.bindValue("sharding", (_) =>
+    Effect.let("sharding", (_) =>
       make(
         podAddress(_.config.selfHost, _.config.shardingPort),
         _.config,

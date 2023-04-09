@@ -1,5 +1,7 @@
 import * as Option from "@effect/data/Option";
-import { PodAddress } from "./PodAddress";
+import * as PodAddress from "./PodAddress";
+import * as Schema from "@effect/schema/Schema";
+import * as Data from "@effect/data/Data";
 
 /**
  * @since 1.0.0
@@ -13,12 +15,16 @@ export const PodTypeId: unique symbol = Symbol.for("@effect/shardcake/Pod");
  */
 export type PodTypeId = typeof PodTypeId;
 
-export interface Pod {
-  readonly [PodTypeId]: {};
-  address: PodAddress;
-  version: string;
-}
+export const Schema_ = Schema.data(
+  Schema.struct({
+    _tag: Schema.uniqueSymbol(PodTypeId),
+    address: PodAddress.Schema_,
+    version: Schema.string,
+  })
+);
 
-export function pod(address: PodAddress, version: string): Pod {
-  return { [PodTypeId]: {}, address, version };
+export interface Pod extends Schema.To<typeof Schema_> {}
+
+export function pod(address: PodAddress.PodAddress, version: string): Pod {
+  return Data.struct({ _tag: PodTypeId, address, version });
 }

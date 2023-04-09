@@ -3,18 +3,21 @@ import * as Effect from "@effect/io/Effect";
 import * as Schema from "@effect/schema/Schema";
 import { pipe } from "@effect/data/Function";
 import * as Option from "@effect/data/Option";
-import { IdentifierId } from "@effect/schema/annotation/AST";
-import * as H from "@effect/schema/annotation/Hook";
 
 export interface Replier<R> {
   id: string;
   reply: (reply: R) => Effect.Effect<Sharding.Sharding, never, void>;
 }
 
+const Replier = Schema.struct({
+  id: Schema.required(Schema.string),
+  reply: Schema.required(Schema.any),
+});
+
 export const replier = <R>(id: string, replySchema: Schema.Schema<R>): Replier<R> => {
   const self: Replier<R> = {
     id,
-    reply: (reply) => Effect.serviceWithEffect(Sharding.Sharding, (_) => _.reply(reply, self)),
+    reply: (reply) => Effect.flatMap(Sharding.Sharding, (_) => _.reply(reply, self)),
   };
   return self;
 };
@@ -23,12 +26,10 @@ export const replier = <R>(id: string, replySchema: Schema.Schema<R>): Replier<R
  * @since 1.0.0
  */
 export const schema = <A>(value: Schema.Schema<A>): Schema.Schema<Replier<A>> => {
-  return pipe(
+  return Schema.transform(
     Schema.string,
-    Schema.transform<string, Replier<A>>(
-      Schema.any,
-      (id) => replier(id, value),
-      (_) => _.id
-    )
-  );
+    Schema.unknown,
+    (id) => replier(id, value),
+    (_) => (_ as any).id
+  ) as any;
 };

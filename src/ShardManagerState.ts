@@ -18,7 +18,7 @@ export interface ShardManagerState {
   allPodsHaveMaxVersion: boolean;
 }
 
-export function apply(
+export function shardManagerState(
   pods: HashMap.HashMap<PodAddress.PodAddress, PodWithMetadata.PodWithMetadata>,
   shards: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
 ): ShardManagerState {
@@ -64,8 +64,8 @@ export function apply(
     ),
     averageShardsPerPod: pipe(
       HashMap.isEmpty(pods)
-        ? ShardId.apply(0)
-        : ShardId.apply(HashMap.size(shards) / HashMap.size(pods))
+        ? ShardId.shardId(0)
+        : ShardId.shardId(HashMap.size(shards) / HashMap.size(pods))
     ),
     shardsPerPod,
     maxVersion,

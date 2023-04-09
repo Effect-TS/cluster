@@ -51,9 +51,12 @@ export const noop = Layer.succeed(Serialization, {
   [TypeId]: {},
   encode: (message, schema) =>
     pipe(
-      Effect.fromEither(Parser.encode(schema)(message)),
+      Effect.fromEither(Parser.encodeEither(schema)(message)),
       Effect.mapError(ShardError.EncodeError)
     ),
   decode: (body, schema) =>
-    pipe(Effect.fromEither(Parser.decode(schema)(body)), Effect.mapError(ShardError.DecodeError)),
+    pipe(
+      Effect.fromEither(Parser.decodeEither(schema)(body as any)),
+      Effect.mapError(ShardError.DecodeError)
+    ),
 });

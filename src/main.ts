@@ -10,7 +10,6 @@ import * as Queue from "@effect/io/Queue";
 import * as Cause from "@effect/io/Cause";
 import * as Ref from "@effect/io/Ref";
 import { EntityType } from "./RecipientType";
-import { runtimeDebug } from "@effect/io/Debug";
 import * as Logger from "@effect/io/Logger";
 import { pipe } from "@effect/data/Function";
 import * as Schema from "@effect/schema/Schema";
@@ -32,12 +31,12 @@ const CounterMsg = Schema.union(
   })
 );
 
-type CounterMsg = Schema.Infer<typeof CounterMsg>;
+type CounterMsg = Schema.To<typeof CounterMsg>;
 
 const CounterEntity = EntityType("Counter", CounterMsg);
 
 const program = pipe(
-  Effect.serviceWithEffect(Sharding.Sharding, (sharding) =>
+  Effect.flatMap(Sharding.Sharding, (sharding) =>
     pipe(
       sharding.registerEntity(CounterEntity, (counterId, dequeue) =>
         pipe(
@@ -69,7 +68,7 @@ const program = pipe(
       Effect.zipParRight(
         pipe(
           Effect.Do(),
-          Effect.bindValue("messenger", () => sharding.messenger(CounterEntity)),
+          Effect.let("messenger", () => sharding.messenger(CounterEntity)),
           Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
           Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
           Effect.flatMap((_) =>

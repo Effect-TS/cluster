@@ -1,6 +1,19 @@
 import { Tag } from "@effect/data/Context";
 import * as Duration from "@effect/data/Duration";
 import * as Layer from "@effect/io/Layer";
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export const ConfigTypeId: unique symbol = Symbol.for("@effect/shardcake/Config");
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type ConfigTypeId = typeof ConfigTypeId;
+
 /**
  * Sharding configuration
  * @param numberOfShards number of shards (see documentation on how to choose this), should be same on all nodes
