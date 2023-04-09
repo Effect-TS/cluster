@@ -4,7 +4,7 @@ import * as Effect from "@effect/io/Effect";
 import { pipe } from "@effect/data/Function";
 import * as http from "http";
 
-function startServer() {
+export function asHttpServer(handler: (_: string) => Effect.Effect<never, never, string>) {
   return pipe(
     Queue.unbounded<[string, Deferred.Deferred<string, string>]>(),
     Effect.map((queue) => {
@@ -21,7 +21,8 @@ function startServer() {
                 response.writeHead(200, { "Content-Type": "application/json" });
                 response.end(result);
               })
-            )
+            ),
+            Effect.runCallback
           )
         );
       });
@@ -32,7 +33,12 @@ function startServer() {
       pipe(
         Effect.acquireUseRelease(
           Effect.sync(() => http.listen(1234)),
-          () => Effect.unit(),
+          () =>
+            pipe(
+              Queue.take(queue),
+              Effect.flatMap(([req, p]) => pipe(Deferred.complete(p, handler(req)), Effect.fork)),
+              Effect.forever
+            ),
           (_) => Effect.sync(() => _.close())
         )
       )

@@ -30,6 +30,8 @@ export interface ShardManager {
   getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>;
   register(pod: Pod.Pod): Effect.Effect<never, never, void>;
   unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>;
+  notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>;
+  checkAllPodsHealth: Effect.Effect<never, never, void>;
   /* @internal */
   rebalance(rebalanceImmediately: boolean): Effect.Effect<never, never, void>;
   /* @internal */
@@ -384,7 +386,16 @@ export function apply(
     return rebalanceSemaphore.withPermits(1)(algo2);
   }
 
-  return { getAssignments, getShardingEvents, register, unregister, persistPods, rebalance };
+  return {
+    getAssignments,
+    getShardingEvents,
+    register,
+    unregister,
+    persistPods,
+    rebalance,
+    notifyUnhealthyPod,
+    checkAllPodsHealth,
+  };
 }
 
 function decideAssignmentsForUnassignedShards(state: ShardManagerState.ShardManagerState) {

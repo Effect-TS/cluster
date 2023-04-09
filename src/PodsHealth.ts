@@ -51,7 +51,7 @@ export const noop = Layer.succeed(PodsHealth, {
  */
 export const local = Layer.effect(
   PodsHealth,
-  Effect.serviceWith(Pods, (podApi) => ({
+  Effect.map(Pods, (podApi) => ({
     [TypeId]: {},
     isAlive: (address: PodAddress) =>
       pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome)),
