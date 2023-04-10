@@ -6,6 +6,7 @@ import * as Ref from "@effect/io/Ref";
 import { Hub } from "@effect/io/Hub";
 import * as Synchronized from "@effect/io/Ref/Synchronized";
 import * as HashMap from "@effect/data/HashMap";
+import * as HashSet from "@effect/data/HashSet";
 import * as ShardId from "./ShardId";
 import { ShardingRegistrationEvent } from "./ShardingRegistrationEvent";
 import { MutableList } from "@effect/data/MutableList";
@@ -455,6 +456,48 @@ function make(
 
   const isShuttingDown = Ref.get(isShuttingDownRef);
 
+  function assign(shards: HashSet.HashSet<ShardId.ShardId>) {
+    return pipe(
+      Ref.update(shardAssignments, (_) =>
+        HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address))
+      ),
+      Effect.zipRight(startSingletonsIfNeeded),
+      Effect.zipLeft(Effect.logDebug("Assigned shards: " + JSON.stringify(shards))),
+      Effect.unlessEffect(isShuttingDown),
+      Effect.asUnit
+    );
+  }
+
+  function unassign(shards: HashSet.HashSet<ShardId.ShardId>) {
+    return pipe(
+      Ref.update(shardAssignments, (_) =>
+        HashSet.reduce(shards, _, (_, shardId) => {
+          const value = HashMap.get(_, shardId);
+          if (Option.isSome(value) && equals(value.value, address)) {
+            return HashMap.remove(_, shardId);
+          }
+          return _;
+        })
+      )
+    );
+  }
+
+  /**
+   *   private[shardcake] def assign(shards: Set[ShardId]): UIO[Unit] =
+  private[shardcake] def unassign(shards: Set[ShardId]): UIO[Unit] =
+    shardAssignments.update(shards.foldLeft(_) { case (map, shard) =>
+      if (map.get(shard).contains(address)) map - shard else map
+    }) *>
+      ZIO.logDebug(s"Unassigning shards: $shards") *>
+      entityStates.get.flatMap(state =>
+        ZIO.foreachDiscard(state.values)(
+          _.entityManager.terminateEntitiesOnShards(shards) // this will return once all shards are terminated
+        )
+      ) *>
+      stopSingletonsIfNeeded <*
+      ZIO.logDebug(s"Unassigned shards: $shards")
+   */
+
   const self: Sharding = {
     getShardId,
     register,
@@ -467,6 +510,7 @@ function make(
     registerScoped,
     registerEntity,
     refreshAssignments,
+    assign,
   };
 
   return self;
@@ -498,6 +542,7 @@ export interface Sharding {
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>;
   refreshAssignments: Effect.Effect<never, never, void>;
+  assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<unknown, unknown, void>;
 }
 
 export const Sharding = Tag<Sharding>();
