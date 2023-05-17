@@ -456,6 +456,8 @@ function make(
 
   const isShuttingDown = Ref.get(isShuttingDownRef);
 
+  const startSingletonsIfNeeded = Effect.unit();
+
   function assign(shards: HashSet.HashSet<ShardId.ShardId>) {
     return pipe(
       Ref.update(shardAssignments, (_) =>
@@ -478,7 +480,8 @@ function make(
           }
           return _;
         })
-      )
+      ),
+      Effect.zipRight(Effect.logDebug("Unassigning shards: " + JSON.stringify(shards)))
     );
   }
 
@@ -511,6 +514,8 @@ function make(
     registerEntity,
     refreshAssignments,
     assign,
+    unassign,
+    sendToLocalEntity,
   };
 
   return self;
@@ -542,7 +547,12 @@ export interface Sharding {
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>;
   refreshAssignments: Effect.Effect<never, never, void>;
-  assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<unknown, unknown, void>;
+  assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
+  unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
+  sendToLocalEntity(
+    msg: BinaryMessage.BinaryMessage,
+    replySchema: Option.Option<any>
+  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<unknown>>;
 }
 
 export const Sharding = Tag<Sharding>();

@@ -2,7 +2,7 @@ import * as Sharding from "./Sharding";
 import * as Config from "./Config";
 import * as Pods from "./Pods";
 import * as Serialization from "./Serialization";
-import * as Storage from "./Storage";
+import * as StorageFile from "./StorageFile";
 import * as ShardManagerClient from "./ShardManagerClient";
 import * as Effect from "@effect/io/Effect";
 import * as Deferred from "@effect/io/Deferred";
@@ -85,11 +85,9 @@ const program = pipe(
   Effect.zipRight(Effect.never()),
   Effect.scoped,
   Effect.provideSomeLayer(Sharding.live),
-  Effect.provideSomeLayer(Pods.noop),
-  Effect.provideSomeLayer(Serialization.json),
-  Effect.provideSomeLayer(ShardManagerClient.local),
-  Effect.provideSomeLayer(Storage.memory),
+  Effect.provideSomeLayer(StorageFile.storageFile),
   Effect.provideSomeLayer(Config.defaults),
+  Effect.provideSomeLayer(Serialization.json),
   Effect.catchAllCause((_) => Effect.log(Cause.pretty(_))),
   Logger.withMinimumLogLevel(LogLevel.All)
 );

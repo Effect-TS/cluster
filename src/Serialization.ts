@@ -47,16 +47,18 @@ export const Serialization = Tag<Serialization>();
  * A layer that uses Java serialization for encoding and decoding messages.
  * This is useful for testing and not recommended to use in production.
  */
-export const noop = Layer.succeed(Serialization, {
+export const json = Layer.succeed(Serialization, {
   [TypeId]: {},
   encode: (message, schema) =>
     pipe(
       Effect.fromEither(Parser.encodeEither(schema)(message)),
-      Effect.mapError(ShardError.EncodeError)
+      Effect.mapError(ShardError.EncodeError),
+      Effect.flatMap((value) => Effect.sync(() => JSON.stringify(value)))
     ),
   decode: (body, schema) =>
     pipe(
-      Effect.fromEither(Parser.decodeEither(schema)(body as any)),
+      Effect.sync(() => JSON.parse(body as string)),
+      Effect.flatMap((value) => Effect.fromEither(Parser.decodeEither(schema)(value))),
       Effect.mapError(ShardError.DecodeError)
     ),
 });
