@@ -13,12 +13,7 @@ export type TypeId = typeof TypeId;
 export interface EntityState {
   [TypeId]: {};
   binaryQueue: Queue<
-    readonly [
-      BinaryMessage,
-      Option<Schema.Schema<any>>,
-      Deferred<Throwable, Option<ByteArray>>,
-      Deferred<never, void>
-    ]
+    readonly [BinaryMessage, Deferred<Throwable, Option<ByteArray>>, Deferred<never, void>]
   >;
   entityManager: EntityManager<never>;
 }

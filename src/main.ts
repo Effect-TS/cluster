@@ -17,6 +17,13 @@ import * as HashMap from "@effect/data/HashMap";
 
 import * as LogLevel from "@effect/io/Logger/Level";
 import * as Replier from "./Replier";
+import * as Message from "./Message";
+
+const [GetCurrent_, GetCurrent] = Message.schema(Schema.number)(
+  Schema.struct({
+    _tag: Schema.literal("GetCurrent"),
+  })
+);
 
 const CounterMsg = Schema.union(
   Schema.struct({
@@ -25,10 +32,7 @@ const CounterMsg = Schema.union(
   Schema.struct({
     _tag: Schema.literal("Decrement"),
   }),
-  Schema.struct({
-    _tag: Schema.literal("GetCurrent"),
-    replier: Replier.schema(Schema.number),
-  })
+  GetCurrent_
 );
 
 type CounterMsg = Schema.To<typeof CounterMsg>;
@@ -72,10 +76,11 @@ const program = pipe(
           Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
           Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
           Effect.flatMap((_) =>
-            _.messenger.send("entity1")(Schema.number, (replier) => ({
-              _tag: "GetCurrent",
-              replier,
-            }))
+            _.messenger.send("entity1")(
+              GetCurrent({
+                _tag: "GetCurrent",
+              })
+            )
           ),
           Effect.tap((_) => Effect.log("Result is now " + _))
         )

@@ -6,6 +6,7 @@ import * as Option from "@effect/data/Option";
 
 export interface Replier<R> {
   id: string;
+  schema: Schema.Schema<R>;
   reply: (reply: R) => Effect.Effect<Sharding.Sharding, never, void>;
 }
 
@@ -14,9 +15,10 @@ const Replier = Schema.struct({
   reply: Schema.required(Schema.any),
 });
 
-export const replier = <R>(id: string, replySchema: Schema.Schema<R>): Replier<R> => {
+export const replier = <R>(id: string, schema: Schema.Schema<R>): Replier<R> => {
   const self: Replier<R> = {
     id,
+    schema,
     reply: (reply) => Effect.flatMap(Sharding.Sharding, (_) => _.reply(reply, self)),
   };
   return self;

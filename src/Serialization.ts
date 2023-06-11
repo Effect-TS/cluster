@@ -51,14 +51,14 @@ export const json = Layer.succeed(Serialization, {
   [TypeId]: {},
   encode: (message, schema) =>
     pipe(
-      Effect.fromEither(Parser.encodeEither(schema)(message)),
+      Parser.encodeEither(schema)(message),
       Effect.mapError(ShardError.EncodeError),
       Effect.flatMap((value) => Effect.sync(() => JSON.stringify(value)))
     ),
   decode: (body, schema) =>
     pipe(
       Effect.sync(() => JSON.parse(body as string)),
-      Effect.flatMap((value) => Effect.fromEither(Parser.decodeEither(schema)(value))),
+      Effect.flatMap((value) => Parser.decodeEither(schema)(value)),
       Effect.mapError(ShardError.DecodeError)
     ),
 });

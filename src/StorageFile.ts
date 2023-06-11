@@ -19,7 +19,7 @@ const PODS_FILE = "pods.json";
 const ASSIGNMENTS_FILE = "assignments.json";
 
 const AssignmentsSchema = Schema.array(
-  Schema.tuple(ShardId.Schema_, Schema.optionFromNullable(PodAddress.Schema_))
+  Schema.tuple(ShardId.schema, Schema.optionFromNullable(PodAddress.Schema_))
 );
 
 const PodsSchema = Schema.array(Schema.tuple(PodAddress.Schema_, Pod.Schema_));

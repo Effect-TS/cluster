@@ -17,17 +17,17 @@ export interface BinaryMessage {
   [BinaryMessageTypeId]: {};
   entityId: string;
   entityType: string;
-  body: unknown;
+  body: ByteArray;
   replyId: Option<string>;
 }
 
 export function apply(
   entityId: string,
   entityType: string,
-  body: unknown,
+  body: ByteArray,
   replyId: Option<string>
 ): BinaryMessage {
   return Data.struct({ [BinaryMessageTypeId]: {}, entityId, entityType, body, replyId });
 }
 
-export type ByteArray = unknown;
+export type ByteArray = string;

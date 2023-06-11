@@ -1,6 +1,7 @@
 import * as Effect from "@effect/io/Effect";
 import { Replier } from "./Replier";
 import { Throwable } from "./ShardError";
+import * as Message from "./Message";
 import * as Schema from "@effect/schema/Schema";
 
 /**
@@ -18,8 +19,7 @@ export interface Messenger<Msg> {
    */
   send(
     entityId: string
-  ): <Res>(
-    replySchema: Schema.Schema<Res>,
-    msg: (replier: Replier<Res>) => Msg
-  ) => Effect.Effect<never, Throwable, Res>;
+  ): <A extends Msg & Message.Message<any>>(
+    msg: (replyId: string) => A
+  ) => Effect.Effect<never, Throwable, Message.Success<A>>;
 }

@@ -13,12 +13,12 @@ export const ShardIdTypeId: unique symbol = Symbol.for("@effect/shardcake/ShardI
  */
 export type ShardIdTypeId = typeof ShardIdTypeId;
 
-export const Schema_ = Schema.struct({
+export const schema = Schema.struct({
   _tag: Schema.uniqueSymbol(ShardIdTypeId),
   value: Schema.number,
 });
 
-export interface ShardId extends Schema.To<typeof Schema_> {}
+export interface ShardId extends Schema.To<typeof schema> {}
 
 export function shardId(value: number): ShardId {
   return Data.struct({ _tag: ShardIdTypeId, value });

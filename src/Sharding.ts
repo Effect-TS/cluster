@@ -25,6 +25,7 @@ import { pipe } from "@effect/data/Function";
 import { replier, Replier } from "./Replier";
 import * as EntityManager from "./EntityManager";
 import * as BinaryMessage from "./BinaryMessage";
+import * as Message from "./Message";
 
 import {
   EntityTypeNotRegistered,
@@ -122,7 +123,7 @@ function make(
     );
   }
 
-  function sendToLocalEntity(msg: BinaryMessage.BinaryMessage, replySchema: Option.Option<any>) {
+  function sendToLocalEntity(msg: BinaryMessage.BinaryMessage) {
     return pipe(
       Ref.get(entityStates),
       Effect.flatMap((states) => {
@@ -133,9 +134,7 @@ function make(
             Effect.Do(),
             Effect.bind("p", () => Deferred.make<never, Option.Option<BinaryMessage.ByteArray>>()),
             Effect.bind("interruptor", () => Deferred.make<never, void>()),
-            Effect.tap(({ p, interruptor }) =>
-              state.binaryQueue.offer([msg, replySchema, p, interruptor])
-            ),
+            Effect.tap(({ p, interruptor }) => state.binaryQueue.offer([msg, p, interruptor])),
             Effect.flatMap(({ p, interruptor }) =>
               pipe(
                 Deferred.await(p),
@@ -186,24 +185,26 @@ function make(
     msg: Msg,
     msgSchema: Schema.Schema<Msg>,
     pod: PodAddress,
-    replyId: Option.Option<string>,
-    replySchema: Option.Option<Schema.Schema<Res>>
+    replyId: Option.Option<string>
   ) {
     // TODO: handle real world cases (only simulateRemotePods for now)
     return pipe(
       serialization.encode(msg, msgSchema),
       Effect.flatMap((bytes) =>
-        sendToLocalEntity(
-          BinaryMessage.apply(entityId, recipientTypeName, bytes, replyId),
-          replySchema
-        )
+        sendToLocalEntity(BinaryMessage.apply(entityId, recipientTypeName, bytes, replyId))
       ),
       Effect.flatMap((_) => {
-        if (Option.isSome(_) && Option.isSome(replySchema))
+        const replySchema = Message.getSchema<Res>(msg);
+        if (Option.isSome(_) && Option.isNone(replySchema)) {
+          console.log("Illegal bug");
+        }
+        if (Option.isSome(_) && Option.isSome(replySchema)) {
+          console.log("reply is", JSON.stringify(_.value));
           return pipe(
             serialization.decode<Res>(_.value, replySchema.value),
             Effect.map(Option.some)
           );
+        }
         return Effect.succeed(Option.none());
       })
     );
@@ -220,19 +221,10 @@ function make(
 
     function sendDiscard(entityId: string) {
       return (msg: Msg) =>
-        pipe(
-          sendMessage(entityId, msg, Option.none(), Option.none()),
-          Effect.timeout(timeout),
-          Effect.asUnit
-        );
+        pipe(sendMessage(entityId, msg, Option.none()), Effect.timeout(timeout), Effect.asUnit);
     }
 
-    function sendMessage<Res>(
-      entityId: string,
-      msg: Msg,
-      replyId: Option.Option<string>,
-      replySchema: Option.Option<Schema.Schema<Res>>
-    ) {
+    function sendMessage<Res>(entityId: string, msg: Msg, replyId: Option.Option<string>) {
       const shardId = getShardId(entityType, entityId);
 
       const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = pipe(
@@ -241,14 +233,13 @@ function make(
         Effect.let("pod", ({ shards }) => HashMap.get(shards, shardId)),
         Effect.bind("response", ({ pod, shards }) => {
           if (Option.isSome(pod)) {
-            const send = sendToPod(
+            const send = sendToPod<Msg, Res>(
               entityType.name,
               entityId,
               msg,
               entityType.schema,
               pod.value,
-              replyId,
-              replySchema
+              replyId
             );
             return pipe(
               send,
@@ -274,13 +265,13 @@ function make(
     }
 
     function send(entityId: string) {
-      return <Res>(replySchema: Schema.Schema<Res>, msg: (replier: Replier<Res>) => Msg) => {
+      return <A extends Msg & Message.Message<any>>(fn: (replyId: string) => Msg) => {
         return pipe(
           Effect.sync(() => "r" + Math.random()),
           Effect.flatMap((uuid) => {
-            const body = msg(replier(uuid, replySchema));
+            const body = fn(uuid);
             return pipe(
-              sendMessage(entityId, body, Option.some(uuid), Option.some(replySchema)),
+              sendMessage<Message.Success<A>>(entityId, body, Option.some(uuid)),
               Effect.flatMap((_) => {
                 if (Option.isSome(_)) return Effect.succeed(_.value);
                 return Effect.fail(MessageReturnedNoting(entityId, body));
@@ -320,7 +311,6 @@ function make(
           Queue.unbounded<
             readonly [
               BinaryMessage.BinaryMessage,
-              Option.Option<Schema.Schema<any>>,
               Deferred.Deferred<Throwable, Option.Option<BinaryMessage.ByteArray>>,
               Deferred.Deferred<never, void>
             ]
@@ -340,7 +330,7 @@ function make(
       yield* $(
         pipe(
           Stream.fromQueue(binaryQueue),
-          Stream.mapEffect(([msg, replySchema, p, interruptor]) =>
+          Stream.mapEffect(([msg, p, interruptor]) =>
             pipe(
               Effect.Do(),
               Effect.bind("req", () => serialization.decode<Req>(msg.body, recipientType.schema)),
@@ -357,9 +347,9 @@ function make(
                   _.resOption,
                   Option.match(
                     () => Effect.succeed(Option.none()),
-                    (_) =>
+                    (__) =>
                       pipe(
-                        serialization.encode(_, Option.getOrUndefined(replySchema)!),
+                        serialization.encode(__, Option.getOrUndefined(Message.getSchema(_.req))!),
                         Effect.map(Option.some)
                       )
                   )
@@ -550,9 +540,8 @@ export interface Sharding {
   assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
   unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
   sendToLocalEntity(
-    msg: BinaryMessage.BinaryMessage,
-    replySchema: Option.Option<any>
-  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<unknown>>;
+    msg: BinaryMessage.BinaryMessage
+  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<BinaryMessage.ByteArray>>;
 }
 
 export const Sharding = Tag<Sharding>();

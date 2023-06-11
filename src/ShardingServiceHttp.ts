@@ -17,11 +17,11 @@ import * as BinaryMessage from "./BinaryMessage";
 const RequestSchema = Schema.union(
   Schema.struct({
     _tag: Schema.literal("AssignShards"),
-    shards: Schema.array(ShardId.Schema_),
+    shards: Schema.array(ShardId.schema),
   }),
   Schema.struct({
     _tag: Schema.literal("UnassignShards"),
-    shards: Schema.array(ShardId.Schema_),
+    shards: Schema.array(ShardId.schema),
   }),
   Schema.struct({
     _tag: Schema.literal("Send"),
@@ -59,11 +59,10 @@ export const shardingServiceHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
                 case "Send":
                   return pipe(
                     sharding.sendToLocalEntity(
-                      BinaryMessage.apply(req.entityId, req.entityType, req.body, req.replyId),
-                      Option.some(Schema.any)
+                      BinaryMessage.apply(req.entityId, req.entityType, req.body, req.replyId)
                     ),
-                    Effect.flatMap((res) => reply(Schema.option(Schema.any), res)),
-                    Effect.catchAll((error) => reply(Schema.option(Schema.any), Option.none()))
+                    Effect.flatMap((res) => reply(Schema.option(Schema.string), res)),
+                    Effect.catchAll((error) => reply(Schema.option(Schema.string), Option.none()))
                   );
                 case "PingShards":
                   return reply(Schema.boolean, true);
