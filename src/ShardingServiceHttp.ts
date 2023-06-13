@@ -13,6 +13,8 @@ import * as Pod from "./Pod";
 import * as PodAddress from "./PodAddress";
 import * as ShardId from "./ShardId";
 import * as BinaryMessage from "./BinaryMessage";
+import * as ByteArray from "./ByteArray";
+import * as ReplyId from "./ReplyId";
 
 const RequestSchema = Schema.union(
   Schema.struct({
@@ -27,8 +29,8 @@ const RequestSchema = Schema.union(
     _tag: Schema.literal("Send"),
     entityId: Schema.string,
     entityType: Schema.string,
-    body: Schema.string,
-    replyId: Schema.option(Schema.string),
+    body: ByteArray.schema,
+    replyId: Schema.option(ReplyId.schema),
   }),
   Schema.struct({
     _tag: Schema.literal("PingShards"),
@@ -59,9 +61,14 @@ export const shardingServiceHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
                 case "Send":
                   return pipe(
                     sharding.sendToLocalEntity(
-                      BinaryMessage.apply(req.entityId, req.entityType, req.body, req.replyId)
+                      BinaryMessage.binaryMessage(
+                        req.entityId,
+                        req.entityType,
+                        req.body,
+                        req.replyId
+                      )
                     ),
-                    Effect.flatMap((res) => reply(Schema.option(Schema.string), res)),
+                    Effect.flatMap((res) => reply(Schema.option(ByteArray.schema), res)),
                     Effect.catchAll((error) => reply(Schema.option(Schema.string), Option.none()))
                   );
                 case "PingShards":

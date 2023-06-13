@@ -1,5 +1,8 @@
 import { Option } from "@effect/data/Option";
 import * as Data from "@effect/data/Data";
+import * as Schema from "@effect/schema/Schema";
+import * as ByteArray from "./ByteArray";
+import * as ReplyId from "./ReplyId";
 
 /**
  * @since 1.0.0
@@ -13,21 +16,23 @@ export const BinaryMessageTypeId: unique symbol = Symbol.for("@effect/shardcake/
  */
 export type BinaryMessageTypeId = typeof BinaryMessageTypeId;
 
-export interface BinaryMessage {
-  [BinaryMessageTypeId]: {};
-  entityId: string;
-  entityType: string;
-  body: ByteArray;
-  replyId: Option<string>;
-}
+export const schema = Schema.data(
+  Schema.struct({
+    _tag: Schema.uniqueSymbol(BinaryMessageTypeId),
+    entityId: Schema.string,
+    entityType: Schema.string,
+    body: ByteArray.schema,
+    replyId: Schema.option(ReplyId.schema),
+  })
+);
 
-export function apply(
+export interface BinaryMessage extends Schema.To<typeof schema> {}
+
+export function binaryMessage(
   entityId: string,
   entityType: string,
-  body: ByteArray,
-  replyId: Option<string>
+  body: ByteArray.ByteArray,
+  replyId: Option<ReplyId.ReplyId>
 ): BinaryMessage {
-  return Data.struct({ [BinaryMessageTypeId]: {}, entityId, entityType, body, replyId });
+  return Data.struct({ _tag: BinaryMessageTypeId, entityId, entityType, body, replyId });
 }
-
-export type ByteArray = string;

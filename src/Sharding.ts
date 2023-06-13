@@ -26,12 +26,15 @@ import { replier, Replier } from "./Replier";
 import * as EntityManager from "./EntityManager";
 import * as BinaryMessage from "./BinaryMessage";
 import * as Message from "./Message";
+import * as ByteArray from "./ByteArray";
+import * as ReplyId from "./ReplyId";
 
 import {
   EntityTypeNotRegistered,
   isEntityNotManagedByThisPodError,
   isPodUnavailableError,
   MessageReturnedNoting,
+  NotAMessageWithReplier,
   SendTimeoutException,
   Throwable,
 } from "./ShardError";
@@ -55,7 +58,7 @@ function make(
     MutableList<[string, Effect.Effect<never, never, void>, Option.Option<Fiber<never, never>>]>
   >,*/
   replyPromises: Synchronized.Synchronized<
-    HashMap.HashMap<string, Deferred.Deferred<Throwable, Option.Option<any>>>
+    HashMap.HashMap<ReplyId.ReplyId, Deferred.Deferred<Throwable, Option.Option<any>>>
   >, // promise for each pending reply,
   //lastUnhealthyNodeReported: Ref.Ref<Date>,
   isShuttingDownRef: Ref.Ref<boolean>,
@@ -132,7 +135,7 @@ function make(
           const state = a.value;
           return pipe(
             Effect.Do(),
-            Effect.bind("p", () => Deferred.make<never, Option.Option<BinaryMessage.ByteArray>>()),
+            Effect.bind("p", () => Deferred.make<never, Option.Option<ByteArray.ByteArray>>()),
             Effect.bind("interruptor", () => Deferred.make<never, void>()),
             Effect.tap(({ p, interruptor }) => state.binaryQueue.offer([msg, p, interruptor])),
             Effect.flatMap(({ p, interruptor }) =>
@@ -150,7 +153,7 @@ function make(
   }
 
   function initReply(
-    id: string,
+    id: ReplyId.ReplyId,
     promise: Deferred.Deferred<Throwable, Option.Option<any>>
   ): Effect.Effect<never, never, void> {
     return pipe(
@@ -167,7 +170,7 @@ function make(
     );
   }
 
-  function abortReply(id: string, ex: Throwable) {
+  function abortReply(id: ReplyId.ReplyId, ex: Throwable) {
     return pipe(
       replyPromises,
       Synchronized.updateEffect((promises) =>
@@ -185,25 +188,24 @@ function make(
     msg: Msg,
     msgSchema: Schema.Schema<Msg>,
     pod: PodAddress,
-    replyId: Option.Option<string>
+    replyId: Option.Option<ReplyId.ReplyId>
   ) {
     // TODO: handle real world cases (only simulateRemotePods for now)
     return pipe(
       serialization.encode(msg, msgSchema),
       Effect.flatMap((bytes) =>
-        sendToLocalEntity(BinaryMessage.apply(entityId, recipientTypeName, bytes, replyId))
+        sendToLocalEntity(BinaryMessage.binaryMessage(entityId, recipientTypeName, bytes, replyId))
       ),
       Effect.flatMap((_) => {
-        const replySchema = Message.getSchema<Res>(msg);
-        if (Option.isSome(_) && Option.isNone(replySchema)) {
-          console.log("Illegal bug");
-        }
-        if (Option.isSome(_) && Option.isSome(replySchema)) {
-          console.log("reply is", JSON.stringify(_.value));
-          return pipe(
-            serialization.decode<Res>(_.value, replySchema.value),
-            Effect.map(Option.some)
-          );
+        if (Option.isSome(_)) {
+          if (Message.isMessage<Res>(msg)) {
+            return pipe(
+              serialization.decode<Res>(_.value, msg.replier.schema),
+              Effect.map(Option.some)
+            );
+          } else {
+            return Effect.die(NotAMessageWithReplier(msg));
+          }
         }
         return Effect.succeed(Option.none());
       })
@@ -224,7 +226,7 @@ function make(
         pipe(sendMessage(entityId, msg, Option.none()), Effect.timeout(timeout), Effect.asUnit);
     }
 
-    function sendMessage<Res>(entityId: string, msg: Msg, replyId: Option.Option<string>) {
+    function sendMessage<Res>(entityId: string, msg: Msg, replyId: Option.Option<ReplyId.ReplyId>) {
       const shardId = getShardId(entityType, entityId);
 
       const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = pipe(
@@ -265,13 +267,14 @@ function make(
     }
 
     function send(entityId: string) {
-      return <A extends Msg & Message.Message<any>>(fn: (replyId: string) => Msg) => {
+      return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => Msg) => {
         return pipe(
           Effect.sync(() => "r" + Math.random()),
           Effect.flatMap((uuid) => {
-            const body = fn(uuid);
+            const replyId = ReplyId.replyId(uuid);
+            const body = fn(replyId);
             return pipe(
-              sendMessage<Message.Success<A>>(entityId, body, Option.some(uuid)),
+              sendMessage<Message.Success<A>>(entityId, body, Option.some(replyId)),
               Effect.flatMap((_) => {
                 if (Option.isSome(_)) return Effect.succeed(_.value);
                 return Effect.fail(MessageReturnedNoting(entityId, body));
@@ -311,7 +314,7 @@ function make(
           Queue.unbounded<
             readonly [
               BinaryMessage.BinaryMessage,
-              Deferred.Deferred<Throwable, Option.Option<BinaryMessage.ByteArray>>,
+              Deferred.Deferred<Throwable, Option.Option<ByteArray.ByteArray>>,
               Deferred.Deferred<never, void>
             ]
           >()
@@ -347,11 +350,15 @@ function make(
                   _.resOption,
                   Option.match(
                     () => Effect.succeed(Option.none()),
-                    (__) =>
-                      pipe(
-                        serialization.encode(__, Option.getOrUndefined(Message.getSchema(_.req))!),
-                        Effect.map(Option.some)
-                      )
+                    (__) => {
+                      if (Message.isMessage(_.req)) {
+                        return pipe(
+                          serialization.encode(__, _.req.replier.schema),
+                          Effect.map(Option.some)
+                        );
+                      }
+                      return Effect.die(NotAMessageWithReplier(_.req));
+                    }
                   )
                 )
               ),
@@ -526,7 +533,7 @@ export interface Sharding {
   ): Effect.Effect<never, never, boolean>;
   isShuttingDown: Effect.Effect<never, never, boolean>;
   initReply(
-    id: string,
+    id: ReplyId.ReplyId,
     promise: Deferred.Deferred<Throwable, Option.Option<any>>
   ): Effect.Effect<never, never, void>;
   registerScoped: Effect.Effect<Scope, never, void>;
@@ -541,7 +548,7 @@ export interface Sharding {
   unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
   sendToLocalEntity(
     msg: BinaryMessage.BinaryMessage
-  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<BinaryMessage.ByteArray>>;
+  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<ByteArray.ByteArray>>;
 }
 
 export const Sharding = Tag<Sharding>();
@@ -559,7 +566,9 @@ export const live = Layer.scoped(
     Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState.EntityState>())),
     Effect.bind("shuttingDown", () => Ref.make(false)),
     Effect.bind("promises", () =>
-      Synchronized.make(HashMap.empty<string, Deferred.Deferred<Throwable, Option.Option<any>>>())
+      Synchronized.make(
+        HashMap.empty<ReplyId.ReplyId, Deferred.Deferred<Throwable, Option.Option<any>>>()
+      )
     ),
     Effect.let("sharding", (_) =>
       make(

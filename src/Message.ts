@@ -6,6 +6,7 @@ import * as Option from "@effect/data/Option";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Parser from "@effect/schema/Parser";
 import * as Replier from "./Replier";
+import * as ReplyId from "./ReplyId";
 
 export const MessageSuccessSchema = Symbol.for("@effect/shardcake/Message/SuccessSchema");
 
@@ -33,10 +34,13 @@ export interface Message<A> {
 
 export type Success<A> = A extends Message<infer X> ? X : never;
 
-export function getSchema<A>(value: any): Option.Option<Schema.Schema<A>> {
-  return typeof value === "object" && value !== null && "replier" in value
-    ? Option.some(value.replier.schema as Schema.Schema<A>)
-    : Option.none();
+export function isMessage<R>(value: unknown): value is Message<R> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "replier" in value &&
+    Replier.isReplier(value.replier)
+  );
 }
 
 export function schema<A>(success: Schema.Schema<A>) {
@@ -45,7 +49,8 @@ export function schema<A>(success: Schema.Schema<A>) {
 
     const make =
       (arg: I) =>
-      (replyId: string): I & Message<A> => ({ ...arg, replier: Replier.replier(replyId, success) });
+      (replyId: ReplyId.ReplyId): I & Message<A> =>
+        Data.struct({ ...arg, replier: Replier.replier(replyId, success) });
 
     return [result, make] as const;
   };

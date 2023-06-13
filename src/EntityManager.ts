@@ -13,12 +13,13 @@ import * as Duration from "@effect/data/Duration";
 import * as RefSynchronized from "@effect/io/Ref/Synchronized";
 import * as Fiber from "@effect/io/Fiber";
 import { pipe } from "@effect/data/Function";
+import * as ReplyId from "./ReplyId";
 
 export interface EntityManager<Req> {
   send(
     entityId: string,
     req: Req,
-    replyId: Option.Option<string>,
+    replyId: Option.Option<ReplyId.ReplyId>,
     promise: Deferred.Deferred<ShardError.Throwable, Option.Option<any>>
   ): Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void>;
   terminateEntitiesOnShards(
@@ -102,7 +103,7 @@ export function make<R, Req>(
     function send(
       entityId: string,
       req: Req,
-      replyId: Option.Option<string>,
+      replyId: Option.Option<ReplyId.ReplyId>,
       promise: Deferred.Deferred<ShardError.Throwable, Option.Option<any>>
     ): Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void> {
       function decide(

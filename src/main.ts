@@ -25,6 +25,18 @@ const [GetCurrent_, GetCurrent] = Message.schema(Schema.number)(
   })
 );
 
+const [GetUserById_, GetUserById] = Message.schema(
+  Schema.struct({
+    name: Schema.string,
+    age: Schema.number,
+  })
+)(
+  Schema.struct({
+    _tag: Schema.literal("GetUserById"),
+    id: Schema.number,
+  })
+);
+
 const CounterMsg = Schema.union(
   Schema.struct({
     _tag: Schema.literal("Increment"),
@@ -32,7 +44,8 @@ const CounterMsg = Schema.union(
   Schema.struct({
     _tag: Schema.literal("Decrement"),
   }),
-  GetCurrent_
+  GetCurrent_,
+  GetUserById_
 );
 
 type CounterMsg = Schema.To<typeof CounterMsg>;
@@ -48,19 +61,21 @@ const program = pipe(
           Effect.flatMap((count) =>
             pipe(
               Queue.take(dequeue),
-              Effect.flatMap(
-                (msg) =>
-                  ({
-                    Increment: Ref.update(count, (a) => a + 1),
-                    Decrement: Ref.update(count, (a) => a - 1),
-                    GetCurrent: pipe(
+              Effect.flatMap((msg) => {
+                switch (msg._tag) {
+                  case "Increment":
+                    return Ref.update(count, (a) => a + 1);
+                  case "Decrement":
+                    return Ref.update(count, (a) => a - 1);
+                  case "GetCurrent":
+                    return pipe(
                       Ref.get(count),
-                      Effect.flatMap((_) =>
-                        msg._tag === "GetCurrent" ? msg.replier.reply(_) : Effect.unit()
-                      )
-                    ),
-                  }[msg._tag])
-              ),
+                      Effect.flatMap((count) => msg.replier.reply(count))
+                    );
+                  case "GetUserById":
+                    return msg.replier.reply({ name: "Mattia", age: 29 });
+                }
+              }),
               Effect.zipRight(Ref.get(count)),
               Effect.tap((_) => Effect.log("Counter " + counterId + " is now " + _)),
               Effect.forever
@@ -76,13 +91,9 @@ const program = pipe(
           Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
           Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
           Effect.flatMap((_) =>
-            _.messenger.send("entity1")(
-              GetCurrent({
-                _tag: "GetCurrent",
-              })
-            )
+            _.messenger.send("entity1")(GetUserById({ _tag: "GetUserById", id: 1 }))
           ),
-          Effect.tap((_) => Effect.log("Result is now " + _))
+          Effect.tap((_) => Effect.log("User is " + _.name))
         )
       )
     )

@@ -3,6 +3,7 @@ import { Replier } from "./Replier";
 import { Throwable } from "./ShardError";
 import * as Message from "./Message";
 import * as Schema from "@effect/schema/Schema";
+import * as ReplyId from "./ReplyId";
 
 /**
  * An interface to communicate with a remote entity
@@ -20,6 +21,6 @@ export interface Messenger<Msg> {
   send(
     entityId: string
   ): <A extends Msg & Message.Message<any>>(
-    msg: (replyId: string) => A
+    msg: (replyId: ReplyId.ReplyId) => A
   ) => Effect.Effect<never, Throwable, Message.Success<A>>;
 }

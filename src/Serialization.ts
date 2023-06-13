@@ -5,25 +5,27 @@ import { pipe } from "@effect/data/Function";
 import * as Schema from "@effect/schema/Schema";
 import * as Parser from "@effect/schema/Parser";
 import * as ShardError from "./ShardError";
-import { ByteArray } from "./BinaryMessage";
+import * as ByteArray from "./ByteArray";
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("@effect/shardcake/SerializationTypeId");
+export const SerializationTypeId: unique symbol = Symbol.for(
+  "@effect/shardcake/SerializationTypeId"
+);
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId;
+export type SerializationTypeId = typeof SerializationTypeId;
 
 /**
  * An interface to serialize user messages that will be sent between pods.
  */
 export interface Serialization {
-  [TypeId]: {};
+  [SerializationTypeId]: {};
 
   /**
    * Transforms the given message into binary
@@ -31,13 +33,13 @@ export interface Serialization {
   encode<A>(
     message: A,
     schema: Schema.Schema<A>
-  ): Effect.Effect<never, ShardError.EncodeError, ByteArray>;
+  ): Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>;
 
   /**
    * Transform binary back into the given type
    */
   decode<A>(
-    bytes: ByteArray,
+    bytes: ByteArray.ByteArray,
     schema: Schema.Schema<A>
   ): Effect.Effect<never, ShardError.DecodeError, A>;
 }
@@ -48,16 +50,17 @@ export const Serialization = Tag<Serialization>();
  * This is useful for testing and not recommended to use in production.
  */
 export const json = Layer.succeed(Serialization, {
-  [TypeId]: {},
+  [SerializationTypeId]: {},
   encode: (message, schema) =>
     pipe(
       Parser.encodeEither(schema)(message),
       Effect.mapError(ShardError.EncodeError),
-      Effect.flatMap((value) => Effect.sync(() => JSON.stringify(value)))
+      Effect.flatMap((value) => Effect.sync(() => JSON.stringify(value))),
+      Effect.map(ByteArray.byteArray)
     ),
   decode: (body, schema) =>
     pipe(
-      Effect.sync(() => JSON.parse(body as string)),
+      Effect.sync(() => JSON.parse(body.value)),
       Effect.flatMap((value) => Parser.decodeEither(schema)(value)),
       Effect.mapError(ShardError.DecodeError)
     ),

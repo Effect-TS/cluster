@@ -102,6 +102,15 @@ export function PodNoLongerRegistered(pod: PodAddress): PodNoLongerRegistered {
   return { _tag: "PodNoLongerRegistered", pod };
 }
 
+export interface NotAMessageWithReplier {
+  _tag: "NotAMessageWithReplier";
+  value: unknown;
+}
+
+export function NotAMessageWithReplier(value: unknown) {
+  return { _tag: "NotAMessageWithReplier", value };
+}
+
 export type Throwable =
   | DecodeError
   | EncodeError
