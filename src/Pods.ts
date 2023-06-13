@@ -6,6 +6,7 @@ import * as Layer from "@effect/io/Layer";
 import * as Option from "@effect/data/Option";
 import * as HashSet from "@effect/data/HashSet";
 import { Tag } from "@effect/data/Context";
+import * as ByteArray from "./ByteArray";
 
 /**
  * @since 1.0.0
@@ -53,7 +54,7 @@ export interface Pods {
   sendMessage(
     pod: PodAddress,
     message: BinaryMessage
-  ): Effect.Effect<never, never, Option.Option<unknown>>;
+  ): Effect.Effect<never, never, Option.Option<ByteArray.ByteArray>>;
 }
 
 export const Pods = Tag<Pods>();

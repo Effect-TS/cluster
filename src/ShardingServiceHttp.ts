@@ -14,28 +14,7 @@ import * as PodAddress from "./PodAddress";
 import * as ShardId from "./ShardId";
 import * as BinaryMessage from "./BinaryMessage";
 import * as ByteArray from "./ByteArray";
-import * as ReplyId from "./ReplyId";
-
-const RequestSchema = Schema.union(
-  Schema.struct({
-    _tag: Schema.literal("AssignShards"),
-    shards: Schema.array(ShardId.schema),
-  }),
-  Schema.struct({
-    _tag: Schema.literal("UnassignShards"),
-    shards: Schema.array(ShardId.schema),
-  }),
-  Schema.struct({
-    _tag: Schema.literal("Send"),
-    entityId: Schema.string,
-    entityType: Schema.string,
-    body: ByteArray.schema,
-    replyId: Schema.option(ReplyId.schema),
-  }),
-  Schema.struct({
-    _tag: Schema.literal("PingShards"),
-  })
-);
+import * as ShardingProtocolHttp from "./ShardingProtocolHttp";
 
 export const shardingServiceHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
   pipe(
@@ -46,7 +25,7 @@ export const shardingServiceHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
         Effect.flatMap((config) =>
           pipe(
             fa,
-            asHttpServer(config.shardingPort, RequestSchema, (req, reply) => {
+            asHttpServer(config.shardingPort, ShardingProtocolHttp.schema, (req, reply) => {
               switch (req._tag) {
                 case "AssignShards":
                   return Effect.zipRight(
@@ -60,16 +39,11 @@ export const shardingServiceHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
                   );
                 case "Send":
                   return pipe(
-                    sharding.sendToLocalEntity(
-                      BinaryMessage.binaryMessage(
-                        req.entityId,
-                        req.entityType,
-                        req.body,
-                        req.replyId
-                      )
-                    ),
+                    sharding.sendToLocalEntity(req.message),
                     Effect.flatMap((res) => reply(Schema.option(ByteArray.schema), res)),
-                    Effect.catchAll((error) => reply(Schema.option(Schema.string), Option.none()))
+                    Effect.catchAll((error) =>
+                      reply(Schema.option(ByteArray.schema), Option.none())
+                    )
                   );
                 case "PingShards":
                   return reply(Schema.boolean, true);

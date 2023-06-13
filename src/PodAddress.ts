@@ -5,7 +5,7 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export const PodAddressTypeId: unique symbol = Symbol.for("@effect/shardcake/PodAddress");
+export const PodAddressTypeId = "@effect/shardcake/PodAddress";
 
 /**
  * @since 1.0.0
@@ -15,7 +15,7 @@ export type PodAddressTypeId = typeof PodAddressTypeId;
 
 export const Schema_ = Schema.data(
   Schema.struct({
-    _tag: Schema.uniqueSymbol(PodAddressTypeId),
+    _tag: Schema.literal(PodAddressTypeId),
     host: Schema.string,
     port: Schema.number,
   })

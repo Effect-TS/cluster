@@ -8,7 +8,7 @@ import * as ReplyId from "./ReplyId";
  * @since 1.0.0
  * @category symbols
  */
-export const BinaryMessageTypeId: unique symbol = Symbol.for("@effect/shardcake/BinaryMessage");
+export const BinaryMessageTypeId = "@effect/shardcake/BinaryMessage";
 
 /**
  * @since 1.0.0
@@ -18,7 +18,7 @@ export type BinaryMessageTypeId = typeof BinaryMessageTypeId;
 
 export const schema = Schema.data(
   Schema.struct({
-    _tag: Schema.uniqueSymbol(BinaryMessageTypeId),
+    _tag: Schema.literal(BinaryMessageTypeId),
     entityId: Schema.string,
     entityType: Schema.string,
     body: ByteArray.schema,

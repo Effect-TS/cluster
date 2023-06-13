@@ -33,9 +33,11 @@ export function isReplier<R>(value: unknown): value is Replier<R> {
  */
 export const schema = <A>(schema: Schema.Schema<A>): Schema.Schema<Replier<A>> => {
   return Schema.transform(
-    Schema.string,
+    ReplyId.schema,
     Schema.unknown,
-    (id) => replier(ReplyId.replyId(id), schema) as any,
-    (_) => (_ as any).id
+    (id) => replier(id, schema) as any,
+    (_) => {
+      return (_ as any).id;
+    }
   ) as any;
 };

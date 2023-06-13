@@ -7,7 +7,7 @@ import * as Data from "@effect/data/Data";
  * @since 1.0.0
  * @category symbols
  */
-export const PodTypeId: unique symbol = Symbol.for("@effect/shardcake/Pod");
+export const PodTypeId = "@effect/shardcake/Pod";
 
 /**
  * @since 1.0.0
@@ -17,7 +17,7 @@ export type PodTypeId = typeof PodTypeId;
 
 export const Schema_ = Schema.data(
   Schema.struct({
-    _tag: Schema.uniqueSymbol(PodTypeId),
+    _tag: Schema.literal(PodTypeId),
     address: PodAddress.Schema_,
     version: Schema.string,
   })

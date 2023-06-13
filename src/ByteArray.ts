@@ -1,7 +1,7 @@
 import * as Schema from "@effect/schema/Schema";
 import * as Data from "@effect/data/Data";
 
-export const ByteArrayTypeId = Symbol.for("@effect/shardcake/ByteArray");
+export const ByteArrayTypeId = "@effect/shardcake/ByteArray";
 
 export function isByteArray(value: unknown): value is ByteArray {
   return (
@@ -14,7 +14,7 @@ export function isByteArray(value: unknown): value is ByteArray {
 
 export const schema = Schema.data(
   Schema.struct({
-    _tag: Schema.uniqueSymbol(ByteArrayTypeId),
+    _tag: Schema.literal(ByteArrayTypeId),
     value: Schema.string,
   })
 );

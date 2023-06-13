@@ -8,6 +8,7 @@ import * as ManagerConfig from "./ManagerConfig";
 import * as Effect from "@effect/io/Effect";
 import * as Deferred from "@effect/io/Deferred";
 import * as PodsHealth from "./PodsHealth";
+import * as PodsHttp from "./PodsHttp";
 import * as Cause from "@effect/io/Cause";
 import * as Ref from "@effect/io/Ref";
 import { EntityType } from "./RecipientType";
@@ -25,6 +26,7 @@ const program = pipe(
   Effect.provideSomeLayer(ShardManager.live),
   Effect.provideSomeLayer(StorageFile.storageFile),
   Effect.provideSomeLayer(PodsHealth.local),
+  Effect.provideSomeLayer(PodsHttp.httpPods),
   Effect.provideService(ManagerConfig.ManagerConfig, ManagerConfig.defaults)
 );
 

@@ -5,7 +5,7 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export const ShardIdTypeId: unique symbol = Symbol.for("@effect/shardcake/ShardId");
+export const ShardIdTypeId = "@effect/shardcake/ShardId";
 
 /**
  * @since 1.0.0
@@ -14,7 +14,7 @@ export const ShardIdTypeId: unique symbol = Symbol.for("@effect/shardcake/ShardI
 export type ShardIdTypeId = typeof ShardIdTypeId;
 
 export const schema = Schema.struct({
-  _tag: Schema.uniqueSymbol(ShardIdTypeId),
+  _tag: Schema.literal(ShardIdTypeId),
   value: Schema.number,
 });
 

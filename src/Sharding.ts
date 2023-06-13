@@ -269,9 +269,8 @@ function make(
     function send(entityId: string) {
       return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => Msg) => {
         return pipe(
-          Effect.sync(() => "r" + Math.random()),
-          Effect.flatMap((uuid) => {
-            const replyId = ReplyId.replyId(uuid);
+          ReplyId.make,
+          Effect.flatMap((replyId) => {
             const body = fn(replyId);
             return pipe(
               sendMessage<Message.Success<A>>(entityId, body, Option.some(replyId)),
