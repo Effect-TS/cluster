@@ -57,11 +57,12 @@ export function send<A, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any
       jsonStringify(data, send),
       Effect.flatMap((body) =>
         Effect.tryCatchPromise(
-          () =>
-            fetch(url, {
+          () => {
+            return fetch(url, {
               method: "POST",
               body,
-            }),
+            });
+          },
           (error) => "Error fetching " + url + ": " + String(error)
         )
       ),

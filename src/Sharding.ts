@@ -28,6 +28,7 @@ import * as BinaryMessage from "./BinaryMessage";
 import * as Message from "./Message";
 import * as ByteArray from "./ByteArray";
 import * as ReplyId from "./ReplyId";
+import * as Equal from "@effect/data/Equal";
 
 import {
   EntityTypeNotRegistered,
@@ -63,7 +64,7 @@ function make(
   //lastUnhealthyNodeReported: Ref.Ref<Date>,
   isShuttingDownRef: Ref.Ref<boolean>,
   shardManager: ShardManagerClient,
-  //pods: Pods,
+  pods: Pods,
   storage: Storage,
   serialization: Serialization
   //eventsHub: Hub<ShardingRegistrationEvent>
@@ -189,7 +190,58 @@ function make(
     msgSchema: Schema.Schema<Msg>,
     pod: PodAddress,
     replyId: Option.Option<ReplyId.ReplyId>
-  ) {
+  ): Effect.Effect<never, Throwable, Option.Option<Res>> {
+    const a = pipe(
+      serialization.encode(msg, msgSchema),
+      Effect.flatMap((bytes) =>
+        pipe(
+          pods.sendMessage(
+            pod,
+            BinaryMessage.binaryMessage(entityId, recipientTypeName, bytes, replyId)
+          ),
+          Effect.tapError((error) => Effect.unit())
+        )
+      ),
+      Effect.flatMap(
+        Option.match(
+          () => Effect.succeed(Option.none()),
+          (bytes) => {
+            if (Message.isMessage<Res>(msg)) {
+              return pipe(serialization.decode(bytes, msg.replier.schema), Effect.map(Option.some));
+            }
+            return Effect.die("Error, schema is missing in request message");
+          }
+        )
+      )
+    );
+    return a;
+    /*
+serialization
+        .encode(msg)
+        .flatMap(bytes =>
+          pods
+            .sendMessage(pod, BinaryMessage(entityId, recipientTypeName, bytes, replyId))
+            .tapError {
+              ZIO.whenCase(_) { case PodUnavailable(pod) =>
+                val notify = Clock.currentDateTime.flatMap(cdt =>
+                  lastUnhealthyNodeReported
+                    .updateAndGet(old =>
+                      if (old.plusNanos(config.unhealthyPodReportInterval.toNanos) isBefore cdt) cdt
+                      else old
+                    )
+                    .map(_ isEqual cdt)
+                )
+                ZIO.whenZIO(notify)(
+                  (shardManager.notifyUnhealthyPod(pod) *>
+                    // just in case we missed the update from the pubsub, refresh assignments
+                    shardManager.getAssignments
+                      .flatMap(updateAssignments(_, fromShardManager = true))).forkDaemon
+                )
+              }
+            }
+            .flatMap(ZIO.foreach(_)(serialization.decode[Res]))
+        )
+    */
     // TODO: handle real world cases (only simulateRemotePods for now)
     return pipe(
       serialization.encode(msg, msgSchema),
@@ -428,27 +480,21 @@ function make(
     if (fromShardManager)
       return Ref.update(shardAssignments, (map) => (HashMap.isEmpty(map) ? assignments : map));
 
-    return Effect.unit();
+    return Ref.update(shardAssignments, (map) => {
+      // we keep self assignments (we don't override them with the new assignments
+      // because only the Shard Manager is able to change assignments of the current node, via assign/unassign
+      return HashMap.union(
+        pipe(
+          assignments,
+          HashMap.filterWithIndex((pod, _) => !Equal.equals(pod, address))
+        ),
+        pipe(
+          map,
+          HashMap.filterWithIndex((pod, _) => Equal.equals(pod, address))
+        )
+      );
+    });
   }
-
-  /*
-  private def updateAssignments(
-    assignmentsOpt: Map[ShardId, Option[PodAddress]],
-    fromShardManager: Boolean
-  ): UIO[Unit] = {
-    val assignments = assignmentsOpt.flatMap { case (k, v) => v.map(k -> _) }
-    ZIO.logDebug("Received new shard assignments") *>
-      (if (fromShardManager) shardAssignments.update(map => if (map.isEmpty) assignments else map)
-       else
-         shardAssignments.update(map =>
-           // we keep self assignments (we don't override them with the new assignments
-           // because only the Shard Manager is able to change assignments of the current node, via assign/unassign
-           assignments.filter { case (_, pod) => pod != address } ++
-             map.filter { case (_, pod) => pod == address }
-         ))
-  }
-
-  */
 
   const isShuttingDown = Ref.get(isShuttingDownRef);
 
@@ -480,22 +526,6 @@ function make(
       Effect.zipRight(Effect.logDebug("Unassigning shards: " + JSON.stringify(shards)))
     );
   }
-
-  /**
-   *   private[shardcake] def assign(shards: Set[ShardId]): UIO[Unit] =
-  private[shardcake] def unassign(shards: Set[ShardId]): UIO[Unit] =
-    shardAssignments.update(shards.foldLeft(_) { case (map, shard) =>
-      if (map.get(shard).contains(address)) map - shard else map
-    }) *>
-      ZIO.logDebug(s"Unassigning shards: $shards") *>
-      entityStates.get.flatMap(state =>
-        ZIO.foreachDiscard(state.values)(
-          _.entityManager.terminateEntitiesOnShards(shards) // this will return once all shards are terminated
-        )
-      ) *>
-      stopSingletonsIfNeeded <*
-      ZIO.logDebug(s"Unassigned shards: $shards")
-   */
 
   const self: Sharding = {
     getShardId,
@@ -578,6 +608,7 @@ export const live = Layer.scoped(
         _.promises,
         _.shuttingDown,
         _.shardManager,
+        _.pods,
         _.storage,
         _.serialization
       )

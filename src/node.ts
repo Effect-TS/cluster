@@ -8,51 +8,51 @@ import * as Layer from "@effect/io/Layer";
 import * as http from "http";
 import { jsonParse, jsonStringify } from "./utils";
 
-export function httpServer(
-  port: number,
-  handler: (
-    request: http.IncomingMessage,
-    body: Stream.Stream<never, never, string>
-  ) => Effect.Effect<
-    never,
-    never,
-    [status: number, headers: http.OutgoingHttpHeaders, body: Stream.Stream<never, never, string>]
-  >
-) {
-  return <R, E, B>(fa: Effect.Effect<R, E, B>) =>
-    Effect.acquireUseRelease(
-      pipe(
-        Effect.sync(() =>
-          http.createServer((request, response) => {
-            let queue = Effect.runSync(Queue.unbounded<string>());
-            request.on("data", (data) => Effect.runSync(Queue.offer(queue, data)));
-            request.on("end", () =>
-              pipe(
-                Queue.takeAll(queue),
-                Effect.tap(() => Queue.shutdown(queue)),
-                Effect.flatMap((chunks) => handler(request, Stream.fromChunk(chunks))),
-                Effect.tap(([status, headers]) =>
-                  Effect.sync(() => response.writeHead(status, headers))
-                ),
-                Effect.tap(([_, __, body]) =>
-                  pipe(
-                    body,
-                    Stream.mapEffect((data) => Effect.sync(() => response.write(data))),
-                    Stream.runDrain
-                  )
-                ),
-                Effect.tap(() => Effect.sync(() => response.end())),
-                Effect.runCallback
-              )
-            );
-          })
-        ),
-        Effect.tap((http) => Effect.sync(() => http.listen(port)))
-      ),
-      () => fa,
-      (http) => Effect.sync(() => http.close())
-    );
-}
+// export function httpServer(
+//   port: number,
+//   handler: (
+//     request: http.IncomingMessage,
+//     body: Stream.Stream<never, never, string>
+//   ) => Effect.Effect<
+//     never,
+//     never,
+//     [status: number, headers: http.OutgoingHttpHeaders, body: Stream.Stream<never, never, string>]
+//   >
+// ) {
+//   return <R, E, B>(fa: Effect.Effect<R, E, B>) =>
+//     Effect.acquireUseRelease(
+//       pipe(
+//         Effect.sync(() =>
+//           http.createServer((request, response) => {
+//             let queue = Effect.runSync(Queue.unbounded<string>());
+//             request.on("data", (data) => Effect.runSync(Queue.offer(queue, data)));
+//             request.on("end", () =>
+//               pipe(
+//                 Queue.takeAll(queue),
+//                 Effect.tap(() => Queue.shutdown(queue)),
+//                 Effect.flatMap((chunks) => handler(request, Stream.fromChunk(chunks))),
+//                 Effect.tap(([status, headers]) =>
+//                   Effect.sync(() => response.writeHead(status, headers))
+//                 ),
+//                 Effect.tap(([_, __, body]) =>
+//                   pipe(
+//                     body,
+//                     Stream.mapEffect((data) => Effect.sync(() => response.write(data))),
+//                     Stream.runDrain
+//                   )
+//                 ),
+//                 Effect.tap(() => Effect.sync(() => response.end())),
+//                 Effect.runCallback
+//               )
+//             );
+//           })
+//         ),
+//         Effect.tap((http) => Effect.sync(() => http.listen(port)))
+//       ),
+//       () => fa,
+//       (http) => Effect.sync(() => http.close())
+//     );
+// }
 
 export function asHttpServer<A2, A>(
   port: number,
@@ -67,11 +67,10 @@ export function asHttpServer<A2, A>(
       pipe(
         Effect.sync(() =>
           http.createServer((request, response) => {
-            console.log("got request at ", request.url);
             let body: string = "";
             request.on("data", (data) => (body += data));
-            request.on("end", () =>
-              pipe(
+            request.on("end", () => {
+              return pipe(
                 jsonParse(body, RequestSchema),
                 Effect.flatMap((req) => {
                   const reply = <B>(schema: Schema.Schema<B>, value: B) =>
@@ -91,8 +90,8 @@ export function asHttpServer<A2, A>(
                   return handler(req, reply as any);
                 }),
                 Effect.runCallback
-              )
-            );
+              );
+            });
           })
         ),
         Effect.tap((http) => Effect.sync(() => http.listen(port)))

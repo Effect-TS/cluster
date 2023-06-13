@@ -14,7 +14,7 @@ import { EntityType } from "./RecipientType";
 import * as Logger from "@effect/io/Logger";
 import { pipe } from "@effect/data/Function";
 import * as Schema from "@effect/schema/Schema";
-import * as Message from "./Message";
+import * as Storage from "./Storage";
 
 import * as LogLevel from "@effect/io/Logger/Level";
 import * as Replier from "./Replier";
