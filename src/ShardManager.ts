@@ -252,6 +252,7 @@ export function apply(
                 )
               )
           ),
+          Effect.map(Chunk.fromIterable),
           Effect.map(Chunk.flatten),
           Effect.map(HashSet.fromIterable)
         )
@@ -303,6 +304,7 @@ export function apply(
               )
             )
           ),
+          Effect.map(Chunk.fromIterable),
           Effect.map((_) => Chunk.unzip(_)),
           Effect.map(
             ([pods, shards]) =>
@@ -346,6 +348,7 @@ export function apply(
               )
             )
           ),
+          Effect.map(Chunk.fromIterable),
           Effect.map(Chunk.flatten),
           Effect.map(HashSet.fromIterable)
         )

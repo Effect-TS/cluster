@@ -6,6 +6,7 @@ import { pipe } from "@effect/data/Function";
 import * as Schema from "@effect/schema/Schema";
 import * as Layer from "@effect/io/Layer";
 import * as http from "http";
+import { jsonParse, jsonStringify } from "./utils";
 
 export function httpServer(
   port: number,
@@ -66,19 +67,17 @@ export function asHttpServer<A2, A>(
       pipe(
         Effect.sync(() =>
           http.createServer((request, response) => {
+            console.log("got request at ", request.url);
             let body: string = "";
             request.on("data", (data) => (body += data));
             request.on("end", () =>
               pipe(
-                Effect.sync(() => JSON.parse(body)),
-                Effect.flatMap(Schema.decodeEffect(RequestSchema)),
+                jsonParse(body, RequestSchema),
                 Effect.flatMap((req) => {
                   const reply = <B>(schema: Schema.Schema<B>, value: B) =>
                     pipe(
-                      Schema.encodeEffect(schema)(value),
-                      Effect.flatMap((value) =>
-                        Effect.sync(() => [200, JSON.stringify(value)] as const)
-                      ),
+                      jsonStringify(value, schema),
+                      Effect.map((body) => [200, body] as const),
                       Effect.catchAllCause((cause) =>
                         Effect.sync(() => [500, JSON.stringify(cause)] as const)
                       ),

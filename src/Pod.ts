@@ -18,7 +18,7 @@ export type PodTypeId = typeof PodTypeId;
 export const Schema_ = Schema.data(
   Schema.struct({
     _tag: Schema.literal(PodTypeId),
-    address: PodAddress.Schema_,
+    address: PodAddress.schema,
     version: Schema.string,
   })
 );

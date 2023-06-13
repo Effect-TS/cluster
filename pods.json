@@ -1,0 +1,1 @@
+[[{"_tag":"@effect/shardcake/PodAddress","host":"localhost","port":54321},{"_tag":"@effect/shardcake/Pod","version":"1.0.0","address":{"_tag":"@effect/shardcake/PodAddress","host":"localhost","port":54321}}]]

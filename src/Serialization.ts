@@ -6,6 +6,7 @@ import * as Schema from "@effect/schema/Schema";
 import * as Parser from "@effect/schema/Parser";
 import * as ShardError from "./ShardError";
 import * as ByteArray from "./ByteArray";
+import { jsonParse, jsonStringify } from "./utils";
 
 /**
  * @since 1.0.0
@@ -53,15 +54,10 @@ export const json = Layer.succeed(Serialization, {
   [SerializationTypeId]: {},
   encode: (message, schema) =>
     pipe(
-      Parser.encodeEither(schema)(message),
+      jsonStringify(message, schema),
       Effect.mapError(ShardError.EncodeError),
-      Effect.flatMap((value) => Effect.sync(() => JSON.stringify(value))),
       Effect.map(ByteArray.byteArray)
     ),
   decode: (body, schema) =>
-    pipe(
-      Effect.sync(() => JSON.parse(body.value)),
-      Effect.flatMap((value) => Parser.decodeEither(schema)(value)),
-      Effect.mapError(ShardError.DecodeError)
-    ),
+    pipe(jsonParse(body.value, schema), Effect.mapError(ShardError.DecodeError)),
 });

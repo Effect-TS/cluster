@@ -13,7 +13,7 @@ export const PodAddressTypeId = "@effect/shardcake/PodAddress";
  */
 export type PodAddressTypeId = typeof PodAddressTypeId;
 
-export const Schema_ = Schema.data(
+export const schema = Schema.data(
   Schema.struct({
     _tag: Schema.literal(PodAddressTypeId),
     host: Schema.string,
@@ -21,7 +21,7 @@ export const Schema_ = Schema.data(
   })
 );
 
-export interface PodAddress extends Schema.To<typeof Schema_> {}
+export interface PodAddress extends Schema.To<typeof schema> {}
 
 export function podAddress(host: string, port: number): PodAddress {
   return Data.struct({ _tag: PodAddressTypeId, host, port });

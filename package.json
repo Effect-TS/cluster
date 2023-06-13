@@ -6,7 +6,10 @@
   "scripts": {
     "start": "ts-node src/main.ts",
     "server": "ts-node src/server.ts",
-    "debug": "ts-node src/main.debug.ts"
+    "debug": "ts-node src/main.debug.ts",
+    "sample-manager": "ts-node src/sample-manager.ts",
+    "sample-shard": "ts-node src/sample-shard.ts",
+    "sample-connect": "ts-node src/sample-connect.ts"
   },
   "keywords": [],
   "author": "Michael Arnaldi",
