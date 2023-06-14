@@ -7,6 +7,7 @@ import * as Option from "@effect/data/Option";
 import * as HashSet from "@effect/data/HashSet";
 import { Tag } from "@effect/data/Context";
 import * as ByteArray from "./ByteArray";
+import { PodUnavailable, Throwable, WireThrowable } from "./ShardError";
 
 /**
  * @since 1.0.0
@@ -33,7 +34,7 @@ export interface Pods {
   assignShards(
     pod: PodAddress,
     shards: HashSet.HashSet<ShardId>
-  ): Effect.Effect<never, never, void>;
+  ): Effect.Effect<never, WireThrowable, void>;
 
   /**
    * Notify a pod that it was unassigned a list of shards
@@ -41,12 +42,12 @@ export interface Pods {
   unassignShards(
     pod: PodAddress,
     shards: HashSet.HashSet<ShardId>
-  ): Effect.Effect<never, never, void>;
+  ): Effect.Effect<never, WireThrowable, void>;
 
   /**
    * Check that a pod is responsive
    */
-  ping(pod: PodAddress): Effect.Effect<never, never, void>;
+  ping(pod: PodAddress): Effect.Effect<never, WireThrowable | PodUnavailable, void>;
 
   /**
    * Send a message to a pod
@@ -54,7 +55,7 @@ export interface Pods {
   sendMessage(
     pod: PodAddress,
     message: BinaryMessage
-  ): Effect.Effect<never, never, Option.Option<ByteArray.ByteArray>>;
+  ): Effect.Effect<never, WireThrowable, Option.Option<ByteArray.ByteArray>>;
 }
 
 export const Pods = Tag<Pods>();

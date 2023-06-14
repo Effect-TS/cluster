@@ -7,14 +7,15 @@ import { Config } from "./Config";
 import * as PodAddress from "./PodAddress";
 import * as Layer from "@effect/io/Layer";
 import { shardId, ShardId } from "./ShardId";
+import { Throwable, WireThrowable } from "./ShardError";
 
 export interface ShardManagerClient {
-  register(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>;
-  unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>;
-  notifyUnhealthyPod(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>;
+  register(podAddress: PodAddress.PodAddress): Effect.Effect<never, WireThrowable, void>;
+  unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, WireThrowable, void>;
+  notifyUnhealthyPod(podAddress: PodAddress.PodAddress): Effect.Effect<never, WireThrowable, void>;
   getAssignments: Effect.Effect<
     never,
-    never,
+    WireThrowable,
     HashMap.HashMap<ShardId, Option.Option<PodAddress.PodAddress>>
   >;
 }

@@ -79,7 +79,7 @@ function make(
     Effect.zipRight(shardManager.register(address))
   );
 
-  const unregister: Effect.Effect<never, never, void> = pipe(
+  const unregister = pipe(
     shardManager.getAssignments,
     Effect.zipRight(Effect.logDebug(`Stopping local entities`)),
     Effect.zipRight(pipe(isShuttingDownRef, Ref.set(true))),
@@ -107,10 +107,7 @@ function make(
     )
   );
 
-  const registerScoped: Effect.Effect<Scope, never, void> = Effect.acquireRelease(
-    register,
-    (_) => unregister
-  );
+  const registerScoped = Effect.acquireRelease(register, (_) => Effect.orDie(unregister));
 
   function reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void> {
     return pipe(
@@ -549,8 +546,8 @@ serialization
 
 export interface Sharding {
   getShardId: (recipientType: RecipentType<any>, entityId: string) => ShardId.ShardId;
-  register: Effect.Effect<never, never, void>;
-  unregister: Effect.Effect<never, never, void>;
+  register: Effect.Effect<never, Throwable, void>;
+  unregister: Effect.Effect<never, Throwable, void>;
   reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void>;
   messenger<Msg>(
     entityType: EntityType<Msg>,
@@ -565,7 +562,7 @@ export interface Sharding {
     id: ReplyId.ReplyId,
     promise: Deferred.Deferred<Throwable, Option.Option<any>>
   ): Effect.Effect<never, never, void>;
-  registerScoped: Effect.Effect<Scope, never, void>;
+  registerScoped: Effect.Effect<Scope, Throwable, void>;
   registerEntity<R, Req>(
     entityType: EntityType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,

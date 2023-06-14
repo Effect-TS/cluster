@@ -111,6 +111,26 @@ export function NotAMessageWithReplier(value: unknown) {
   return { _tag: "NotAMessageWithReplier", value };
 }
 
+export interface FetchError {
+  _tag: "@effect/shardcake/FetchError";
+  url: string;
+  body: string;
+  error: unknown;
+}
+
+export function FetchError(url: string, body: string, error: unknown): FetchError {
+  return { _tag: "@effect/shardcake/FetchError", url, body, error };
+}
+
+export function isFetchError(value: unknown): value is FetchError {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "_tag" in value &&
+    value["_tag"] === "@effect/shardcake/FetchError"
+  );
+}
+
 export type Throwable =
   | DecodeError
   | EncodeError
@@ -121,4 +141,7 @@ export type Throwable =
   | PodUnavailable
   | EntityTypeNotRegistered
   | MessageReturnedNoting
-  | PodNoLongerRegistered;
+  | PodNoLongerRegistered
+  | FetchError;
+
+export type WireThrowable = DecodeError | EncodeError | FetchError;

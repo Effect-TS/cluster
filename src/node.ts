@@ -4,6 +4,7 @@ import * as Effect from "@effect/io/Effect";
 import * as Stream from "@effect/stream/Stream";
 import { pipe } from "@effect/data/Function";
 import * as Schema from "@effect/schema/Schema";
+import * as Cause from "@effect/io/Cause";
 import * as Layer from "@effect/io/Layer";
 import * as http from "http";
 import { jsonParse, jsonStringify } from "./utils";
@@ -89,12 +90,19 @@ export function asHttpServer<A2, A>(
                     );
                   return handler(req, reply as any);
                 }),
+                Effect.catchAllCause((cause) =>
+                  Effect.sync(() => {
+                    response.writeHead(500);
+                    response.end(Cause.pretty(cause));
+                  })
+                ),
                 Effect.runCallback
               );
             });
           })
         ),
-        Effect.tap((http) => Effect.sync(() => http.listen(port)))
+        Effect.tap((http) => Effect.sync(() => http.listen(port))),
+        Effect.tap((http) => Effect.logDebug("Starting server on port " + port))
       ),
       () => fa,
       (http) => Effect.sync(() => http.close())

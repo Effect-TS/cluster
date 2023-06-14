@@ -5,6 +5,8 @@ import * as HashSet from "@effect/data/HashSet";
 import * as Schema from "@effect/schema/Schema";
 import * as Effect from "@effect/io/Effect";
 import { pipe } from "@effect/data/Function";
+import { DecodeError, EncodeError, FetchError, WireThrowable } from "./ShardError";
+import fetch from "node-fetch";
 
 export function minByOption<A>(f: (value: A) => number) {
   return (fa: Iterable<A>) => {
@@ -41,18 +43,20 @@ export function jsonStringify<A>(value: A, schema: Schema.Schema<any, A>) {
   return pipe(
     value,
     Schema.encodeEffect(schema),
+    Effect.mapError((e) => EncodeError(e)),
     Effect.map((_) => JSON.stringify(_))
   );
 }
 export function jsonParse<A>(value: string, schema: Schema.Schema<any, A>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
-    Effect.flatMap(Schema.decodeEffect(schema))
+    Effect.flatMap(Schema.decodeEffect(schema)),
+    Effect.mapError((e) => DecodeError(e))
   );
 }
 
 export function send<A, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, R>) {
-  return (url: string, data: A) =>
+  return (url: string, data: A): Effect.Effect<never, WireThrowable, R> =>
     pipe(
       jsonStringify(data, send),
       Effect.flatMap((body) =>
@@ -63,11 +67,10 @@ export function send<A, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any
               body,
             });
           },
-          (error) => "Error fetching " + url + ": " + String(error)
+          (error) => FetchError(url, body, String(error))
         )
       ),
       Effect.flatMap((response) => Effect.promise(() => response.text())),
-      Effect.flatMap((data) => jsonParse(data, reply)),
-      Effect.orDie
+      Effect.flatMap((data) => jsonParse(data, reply))
     );
 }
