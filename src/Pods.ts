@@ -34,7 +34,7 @@ export interface Pods {
   assignShards(
     pod: PodAddress,
     shards: HashSet.HashSet<ShardId>
-  ): Effect.Effect<never, WireThrowable, void>;
+  ): Effect.Effect<never, never, void>;
 
   /**
    * Notify a pod that it was unassigned a list of shards
@@ -42,12 +42,12 @@ export interface Pods {
   unassignShards(
     pod: PodAddress,
     shards: HashSet.HashSet<ShardId>
-  ): Effect.Effect<never, WireThrowable, void>;
+  ): Effect.Effect<never, never, void>;
 
   /**
    * Check that a pod is responsive
    */
-  ping(pod: PodAddress): Effect.Effect<never, WireThrowable | PodUnavailable, void>;
+  ping(pod: PodAddress): Effect.Effect<never, PodUnavailable, void>;
 
   /**
    * Send a message to a pod
@@ -55,7 +55,7 @@ export interface Pods {
   sendMessage(
     pod: PodAddress,
     message: BinaryMessage
-  ): Effect.Effect<never, WireThrowable, Option.Option<ByteArray.ByteArray>>;
+  ): Effect.Effect<never, never, Option.Option<ByteArray.ByteArray>>;
 }
 
 export const Pods = Tag<Pods>();
