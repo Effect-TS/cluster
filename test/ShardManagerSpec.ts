@@ -1,11 +1,18 @@
+import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import * as Option from "@effect/data/Option"
+import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
+import * as ManagerConfig from "@effect/shardcake/ManagerConfig"
 import * as Pod from "@effect/shardcake/Pod"
 import * as PodAddress from "@effect/shardcake/PodAddress"
+import * as Pods from "@effect/shardcake/Pods"
+import * as PodsHealth from "@effect/shardcake/PodsHealth"
 import * as PodWithMetadata from "@effect/shardcake/PodWithMetadata"
 import * as ShardId from "@effect/shardcake/ShardId"
 import * as ShardManager from "@effect/shardcake/ShardManager"
 import * as ShardManagerState from "@effect/shardcake/ShardManagerState"
+import * as Storage from "@effect/shardcake/Storage"
 import { assertTrue } from "@effect/shardcake/test/util"
 
 describe.concurrent("ShardManagerSpec", () => {
@@ -137,3 +144,47 @@ describe.concurrent("ShardManagerSpec", () => {
     assertTrue(HashMap.isEmpty(unassignments))
   })
 })
+
+interface SimulatePodRegister {
+  _tag: "PodRegister"
+  pod: Pod.Pod
+}
+
+interface SimulatePodUnregister {
+  _tag: "PodUnregister"
+  podAddress: PodAddress.PodAddress
+}
+
+type SimulationEvent = SimulatePodRegister | SimulatePodUnregister
+
+export function simulatePodRegister(pod: Pod.Pod): SimulationEvent {
+  return { _tag: "PodRegister", pod }
+}
+export function simulatePodUnregister(podAddress: PodAddress.PodAddress): SimulationEvent {
+  return { _tag: "PodUnregister", podAddress }
+}
+
+const config = Layer.succeed(ManagerConfig.ManagerConfig, ManagerConfig.defaults)
+
+const shardManager = pipe(
+  ShardManager.live,
+  Layer.use(config),
+  Layer.use(PodsHealth.local),
+  Layer.use(Pods.noop),
+  Layer.use(Storage.noop)
+)
+
+export function simulate(events: Iterable<SimulationEvent>) {
+  return Effect.flatMap(
+    ShardManager.ShardManager,
+    (shardManager) =>
+      Effect.forEachDiscard(events, (event) => {
+        switch (event._tag) {
+          case "PodRegister":
+            return shardManager.register(event.pod)
+          case "PodUnregister":
+            return shardManager.unregister(event.podAddress)
+        }
+      })
+  )
+}

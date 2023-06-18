@@ -8,7 +8,7 @@ import * as Ref from "@effect/io/Ref"
 import type * as Pod from "@effect/shardcake/Pod"
 import type * as PodAddress from "@effect/shardcake/PodAddress"
 import type * as ShardId from "@effect/shardcake/ShardId"
-import type * as Stream from "@effect/stream/Stream"
+import * as Stream from "@effect/stream/Stream"
 import * as SubscriptionRef from "@effect/stream/SubscriptionRef"
 
 /**
@@ -77,5 +77,16 @@ export const memory = Layer.effect(
       getPods: Ref.get(podsRef),
       savePods: (pods) => pipe(podsRef, Ref.set(pods))
     }
+  })
+)
+
+export const noop = Layer.effect(
+  Storage,
+  Effect.succeed({
+    getAssignments: Effect.succeed(HashMap.empty()),
+    saveAssignments: () => Effect.unit(),
+    assignmentsStream: Stream.empty,
+    getPods: Effect.succeed(HashMap.empty()),
+    savePods: () => Effect.unit()
   })
 )
