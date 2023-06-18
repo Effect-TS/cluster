@@ -1,56 +1,53 @@
-import * as Sharding from "./Sharding";
-import * as Config from "./Config";
-import * as Pods from "./Pods";
-import * as Serialization from "./Serialization";
-import * as Storage from "./Storage";
-import * as ShardManagerClient from "./ShardManagerClient";
-import * as Effect from "@effect/io/Effect";
-import * as Deferred from "@effect/io/Deferred";
-import * as Queue from "@effect/io/Queue";
-import * as Cause from "@effect/io/Cause";
-import * as Ref from "@effect/io/Ref";
-import { EntityType } from "./RecipientType";
-import * as Logger from "@effect/io/Logger";
-import { pipe } from "@effect/data/Function";
-import * as Schema from "@effect/schema/Schema";
-import * as HashMap from "@effect/data/HashMap";
+import { pipe } from "@effect/data/Function"
+import * as Cause from "@effect/io/Cause"
+import * as Effect from "@effect/io/Effect"
+import * as Logger from "@effect/io/Logger"
+import * as Queue from "@effect/io/Queue"
+import * as Ref from "@effect/io/Ref"
+import * as Schema from "@effect/schema/Schema"
+import * as Config from "@effect/shardcake/Config"
+import * as Pods from "@effect/shardcake/Pods"
+import { EntityType } from "@effect/shardcake/RecipientType"
+import * as Serialization from "@effect/shardcake/Serialization"
+import * as Sharding from "@effect/shardcake/Sharding"
+import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
+import * as Storage from "@effect/shardcake/Storage"
 
-import * as LogLevel from "@effect/io/Logger/Level";
-import * as Replier from "./Replier";
-import * as Message from "./Message";
+import * as LogLevel from "@effect/io/Logger/Level"
+import * as Message from "@effect/shardcake/Message"
 
-const [GetCurrent_, GetCurrent] = Message.schema(Schema.number)(
+const [GetCurrent_] = Message.schema(Schema.number)(
   Schema.struct({
-    _tag: Schema.literal("GetCurrent"),
+    _tag: Schema.literal("GetCurrent")
   })
-);
+)
 
 const [GetUserById_, GetUserById] = Message.schema(
   Schema.struct({
     name: Schema.string,
-    age: Schema.number,
+    age: Schema.number
   })
 )(
   Schema.struct({
     _tag: Schema.literal("GetUserById"),
-    id: Schema.number,
+    id: Schema.number
   })
-);
+)
 
 const CounterMsg = Schema.union(
   Schema.struct({
-    _tag: Schema.literal("Increment"),
+    _tag: Schema.literal("Increment")
   }),
   Schema.struct({
-    _tag: Schema.literal("Decrement"),
+    _tag: Schema.literal("Decrement")
   }),
   GetCurrent_,
   GetUserById_
-);
+)
 
-type CounterMsg = Schema.To<typeof CounterMsg>;
+type CounterMsg = Schema.To<typeof CounterMsg>
 
-const CounterEntity = EntityType("Counter", CounterMsg);
+const CounterEntity = EntityType("Counter", CounterMsg)
 
 const program = pipe(
   Effect.flatMap(Sharding.Sharding, (sharding) =>
@@ -64,16 +61,16 @@ const program = pipe(
               Effect.flatMap((msg) => {
                 switch (msg._tag) {
                   case "Increment":
-                    return Ref.update(count, (a) => a + 1);
+                    return Ref.update(count, (a) => a + 1)
                   case "Decrement":
-                    return Ref.update(count, (a) => a - 1);
+                    return Ref.update(count, (a) => a - 1)
                   case "GetCurrent":
                     return pipe(
                       Ref.get(count),
                       Effect.flatMap((count) => msg.replier.reply(count))
-                    );
+                    )
                   case "GetUserById":
-                    return msg.replier.reply({ name: "Mattia", age: 29 });
+                    return msg.replier.reply({ name: "Mattia", age: 29 })
                 }
               }),
               Effect.zipRight(Ref.get(count)),
@@ -81,8 +78,7 @@ const program = pipe(
               Effect.forever
             )
           )
-        )
-      ),
+        )),
       Effect.zipRight(sharding.registerScoped),
       Effect.zipParRight(
         pipe(
@@ -90,14 +86,11 @@ const program = pipe(
           Effect.let("messenger", () => sharding.messenger(CounterEntity)),
           Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
           Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
-          Effect.flatMap((_) =>
-            _.messenger.send("entity1")(GetUserById({ _tag: "GetUserById", id: 1 }))
-          ),
+          Effect.flatMap((_) => _.messenger.send("entity1")(GetUserById({ _tag: "GetUserById", id: 1 }))),
           Effect.tap((_) => Effect.log("User is " + _.name))
         )
       )
-    )
-  ),
+    )),
   Effect.zipRight(Effect.never()),
   Effect.scoped,
   Effect.provideSomeLayer(Sharding.live),
@@ -108,6 +101,6 @@ const program = pipe(
   Effect.provideSomeLayer(Config.defaults),
   Effect.catchAllCause((_) => Effect.log(Cause.pretty(_))),
   Logger.withMinimumLogLevel(LogLevel.All)
-);
+)
 
-Effect.runFork(program);
+Effect.runFork(program)

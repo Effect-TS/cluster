@@ -1,16 +1,10 @@
-import * as Queue from "@effect/io/Queue";
-import * as Deferred from "@effect/io/Deferred";
-import * as ShardManager from "./ShardManager";
-import * as ManagerConfig from "./ManagerConfig";
-import * as Effect from "@effect/io/Effect";
-import { pipe } from "@effect/data/Function";
-import * as http from "http";
-import { asHttpServer } from "./node";
-import * as Schema from "@effect/schema/Schema";
-import * as Pod from "./Pod";
-import * as PodAddress from "./PodAddress";
-import * as ShardManagerProtocolHttp from "./ShardManagerProtocolHttp";
-import * as ShardId from "./ShardId";
+import { pipe } from "@effect/data/Function"
+import * as Effect from "@effect/io/Effect"
+import * as Schema from "@effect/schema/Schema"
+import * as ManagerConfig from "@effect/shardcake/ManagerConfig"
+import * as ShardManager from "@effect/shardcake/ShardManager"
+import * as ShardManagerProtocolHttp from "@effect/shardcake/ShardManagerProtocolHttp"
+import { asHttpServer } from "./node"
 
 export const shardManagerHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
   pipe(
@@ -27,25 +21,24 @@ export const shardManagerHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
                   return Effect.zipRight(
                     shardManager.register(req.pod),
                     reply(Schema.boolean, true)
-                  );
+                  )
                 case "Unregister":
                   return Effect.zipRight(
                     shardManager.unregister(req.pod.address),
                     reply(Schema.boolean, true)
-                  );
+                  )
                 case "NotifyUnhealthyPod":
                   return Effect.zipRight(
                     shardManager.notifyUnhealthyPod(req.podAddress),
                     reply(Schema.boolean, true)
-                  );
+                  )
                 case "GetAssignments":
                   return Effect.flatMap(shardManager.getAssignments, (assignments) =>
-                    reply(ShardManagerProtocolHttp.GetAssignments_Reply, Array.from(assignments))
-                  );
+                    reply(ShardManagerProtocolHttp.GetAssignments_Reply, Array.from(assignments)))
               }
             })
           )
         )
       )
     )
-  );
+  )

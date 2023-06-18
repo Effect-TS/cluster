@@ -1,7 +1,6 @@
-import * as Equal from "@effect/data/Equal";
-import * as Schema from "@effect/schema/Schema";
-import * as ShardId from "./ShardId";
-import * as Hash from "@effect/data/Hash";
+import * as Hash from "@effect/data/Hash"
+import type * as Schema from "@effect/schema/Schema"
+import * as ShardId from "@effect/shardcake/ShardId"
 
 /**
  * An abstract type to extend for each type of entity or topic
@@ -10,20 +9,20 @@ import * as Hash from "@effect/data/Hash";
  */
 
 export interface EntityType<Msg> {
-  _tag: "EntityType";
-  name: string;
-  schema: Schema.Schema<Msg>;
+  _tag: "EntityType"
+  name: string
+  schema: Schema.Schema<Msg>
 }
 export interface TopicType<Msg> {
-  _tag: "TopicType";
-  name: string;
-  schema: Schema.Schema<Msg>;
+  _tag: "TopicType"
+  name: string
+  schema: Schema.Schema<Msg>
 }
-export type RecipentType<Msg> = EntityType<Msg> | TopicType<Msg>;
+export type RecipentType<Msg> = EntityType<Msg> | TopicType<Msg>
 
 export const getShardId = (entityId: string, numberOfShards: number): ShardId.ShardId =>
-  ShardId.shardId(Math.abs(Hash.string(entityId) % numberOfShards) + 1);
+  ShardId.shardId(Math.abs(Hash.string(entityId) % numberOfShards) + 1)
 
 export function EntityType<Msg>(name: string, schema: Schema.Schema<Msg>): EntityType<Msg> {
-  return { _tag: "EntityType", name, schema };
+  return { _tag: "EntityType", name, schema }
 }

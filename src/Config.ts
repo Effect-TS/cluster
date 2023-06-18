@@ -1,18 +1,18 @@
-import { Tag } from "@effect/data/Context";
-import * as Duration from "@effect/data/Duration";
-import * as Layer from "@effect/io/Layer";
+import { Tag } from "@effect/data/Context"
+import * as Duration from "@effect/data/Duration"
+import * as Layer from "@effect/io/Layer"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const ConfigTypeId: unique symbol = Symbol.for("@effect/shardcake/Config");
+export const ConfigTypeId: unique symbol = Symbol.for("@effect/shardcake/Config")
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type ConfigTypeId = typeof ConfigTypeId;
+export type ConfigTypeId = typeof ConfigTypeId
 
 /**
  * Sharding configuration
@@ -29,20 +29,20 @@ export type ConfigTypeId = typeof ConfigTypeId;
  * @param simulateRemotePods disable optimizations when sending a message to an entity hosted on the local shards (this will force serialization of all messages)
  */
 export interface Config {
-  numberOfShards: number;
-  selfHost: string;
-  shardingPort: number;
-  shardManagerUri: string;
-  serverVersion: string;
-  entityMaxIdleTime: Duration.Duration;
-  entityTerminationTimeout: Duration.Duration;
-  sendTimeout: Duration.Duration;
-  refreshAssignmentsRetryInterval: Duration.Duration;
-  unhealthyPodReportInterval: Duration.Duration;
-  simulateRemotePods: boolean;
+  numberOfShards: number
+  selfHost: string
+  shardingPort: number
+  shardManagerUri: string
+  serverVersion: string
+  entityMaxIdleTime: Duration.Duration
+  entityTerminationTimeout: Duration.Duration
+  sendTimeout: Duration.Duration
+  refreshAssignmentsRetryInterval: Duration.Duration
+  unhealthyPodReportInterval: Duration.Duration
+  simulateRemotePods: boolean
 }
 
-export const Config = Tag<Config>();
+export const Config = Tag<Config>()
 
 export const defaults = Layer.succeed(Config, {
   numberOfShards: 300,
@@ -55,5 +55,5 @@ export const defaults = Layer.succeed(Config, {
   sendTimeout: Duration.seconds(5),
   refreshAssignmentsRetryInterval: Duration.seconds(5),
   unhealthyPodReportInterval: Duration.seconds(5),
-  simulateRemotePods: false,
-});
+  simulateRemotePods: false
+})

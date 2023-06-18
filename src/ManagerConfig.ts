@@ -1,5 +1,5 @@
-import { Tag } from "@effect/data/Context";
-import * as Duration from "@effect/data/Duration";
+import { Tag } from "@effect/data/Context"
+import * as Duration from "@effect/data/Duration"
 
 /**
  * Shard Manager configuration
@@ -13,16 +13,16 @@ import * as Duration from "@effect/data/Duration";
  * @param rebalanceRate max ratio of shards to rebalance at once
  */
 export interface ManagerConfig {
-  numberOfShards: number;
-  apiPort: number;
-  rebalanceInterval: Duration.Duration;
-  rebalanceRetryInterval: Duration.Duration;
-  pingTimeout: Duration.Duration;
-  persistRetryInterval: Duration.Duration;
-  persistRetryCount: number;
-  rebalanceRate: number;
+  numberOfShards: number
+  apiPort: number
+  rebalanceInterval: Duration.Duration
+  rebalanceRetryInterval: Duration.Duration
+  pingTimeout: Duration.Duration
+  persistRetryInterval: Duration.Duration
+  persistRetryCount: number
+  rebalanceRate: number
 }
-export const ManagerConfig = Tag<ManagerConfig>();
+export const ManagerConfig = Tag<ManagerConfig>()
 
 export const defaults: ManagerConfig = {
   numberOfShards: 300,
@@ -32,5 +32,5 @@ export const defaults: ManagerConfig = {
   pingTimeout: Duration.seconds(3),
   persistRetryInterval: Duration.seconds(3),
   persistRetryCount: 100,
-  rebalanceRate: 2 / 100,
-};
+  rebalanceRate: 2 / 100
+}

@@ -1,125 +1,125 @@
-import { PodAddress } from "./PodAddress";
-import { EntityType } from "./RecipientType";
+import type { PodAddress } from "@effect/shardcake/PodAddress"
+import type { EntityType } from "@effect/shardcake/RecipientType"
 
 export interface DecodeError {
-  _tag: "DecodeError";
-  error: unknown;
+  _tag: "DecodeError"
+  error: unknown
 }
 export function DecodeError(error: unknown): DecodeError {
   return {
     _tag: "DecodeError",
-    error,
-  };
+    error
+  }
 }
 
 export interface EncodeError {
-  _tag: "EncodeError";
-  error: unknown;
+  _tag: "EncodeError"
+  error: unknown
 }
 export function EncodeError(error: unknown): EncodeError {
   return {
     _tag: "EncodeError",
-    error,
-  };
+    error
+  }
 }
 
 export interface ReplyFailure {
-  _tag: "ReplyFailure";
-  error: unknown;
+  _tag: "ReplyFailure"
+  error: unknown
 }
 export function ReplyFailure(error: unknown): ReplyFailure {
   return {
     _tag: "ReplyFailure",
-    error,
-  };
+    error
+  }
 }
 
 export interface SendError {
-  _tag: "SendError";
+  _tag: "SendError"
 }
 export function SendError(): SendError {
-  return { _tag: "SendError" };
+  return { _tag: "SendError" }
 }
 
 export interface SendTimeoutException<A> {
-  _tag: "SendTimeoutException";
-  entityType: EntityType<A>;
-  entityId: String;
-  body: A;
+  _tag: "SendTimeoutException"
+  entityType: EntityType<A>
+  entityId: String
+  body: A
 }
 export function SendTimeoutException<A>(
   entityType: EntityType<A>,
   entityId: String,
   body: A
 ): SendTimeoutException<A> {
-  return { _tag: "SendTimeoutException", entityId, entityType, body };
+  return { _tag: "SendTimeoutException", entityId, entityType, body }
 }
 
 export interface EntityNotManagedByThisPod {
-  _tag: "EntityNotManagedByThisPod";
-  entityId: string;
+  _tag: "EntityNotManagedByThisPod"
+  entityId: string
 }
 export function EntityNotManagedByThisPod(entityId: string): EntityNotManagedByThisPod {
-  return { _tag: "EntityNotManagedByThisPod", entityId };
+  return { _tag: "EntityNotManagedByThisPod", entityId }
 }
 export function isEntityNotManagedByThisPodError(value: any): value is EntityNotManagedByThisPod {
-  return value && "_tag" in value && value._tag === "EntityNotManagedByThisPod";
+  return value && "_tag" in value && value._tag === "EntityNotManagedByThisPod"
 }
 
 export interface PodUnavailable {
-  _tag: "PodUnavailable";
-  pod: PodAddress;
+  _tag: "PodUnavailable"
+  pod: PodAddress
 }
 export function PodUnavailable(pod: PodAddress): PodUnavailable {
-  return { _tag: "PodUnavailable", pod };
+  return { _tag: "PodUnavailable", pod }
 }
 export function isPodUnavailableError(value: any): value is PodUnavailable {
-  return value && "_tag" in value && value._tag === "PodUnavailable";
+  return value && "_tag" in value && value._tag === "PodUnavailable"
 }
 
 export interface EntityTypeNotRegistered {
-  _tag: "EntityTypeNotRegistered";
-  entityType: string;
+  _tag: "EntityTypeNotRegistered"
+  entityType: string
 }
 export function EntityTypeNotRegistered(entityType: string): EntityTypeNotRegistered {
-  return { _tag: "EntityTypeNotRegistered", entityType };
+  return { _tag: "EntityTypeNotRegistered", entityType }
 }
 
 export interface MessageReturnedNoting {
-  _tag: "MessageReturnedNoting";
-  entityId: string;
-  msg: any;
+  _tag: "MessageReturnedNoting"
+  entityId: string
+  msg: any
 }
 export function MessageReturnedNoting<A>(entityId: string, msg: A): MessageReturnedNoting {
-  return { _tag: "MessageReturnedNoting", entityId, msg };
+  return { _tag: "MessageReturnedNoting", entityId, msg }
 }
 
 export interface PodNoLongerRegistered {
-  _tag: "PodNoLongerRegistered";
-  pod: PodAddress;
+  _tag: "PodNoLongerRegistered"
+  pod: PodAddress
 }
 export function PodNoLongerRegistered(pod: PodAddress): PodNoLongerRegistered {
-  return { _tag: "PodNoLongerRegistered", pod };
+  return { _tag: "PodNoLongerRegistered", pod }
 }
 
 export interface NotAMessageWithReplier {
-  _tag: "NotAMessageWithReplier";
-  value: unknown;
+  _tag: "NotAMessageWithReplier"
+  value: unknown
 }
 
 export function NotAMessageWithReplier(value: unknown) {
-  return { _tag: "NotAMessageWithReplier", value };
+  return { _tag: "NotAMessageWithReplier", value }
 }
 
 export interface FetchError {
-  _tag: "@effect/shardcake/FetchError";
-  url: string;
-  body: string;
-  error: unknown;
+  _tag: "@effect/shardcake/FetchError"
+  url: string
+  body: string
+  error: unknown
 }
 
 export function FetchError(url: string, body: string, error: unknown): FetchError {
-  return { _tag: "@effect/shardcake/FetchError", url, body, error };
+  return { _tag: "@effect/shardcake/FetchError", url, body, error }
 }
 
 export function isFetchError(value: unknown): value is FetchError {
@@ -128,7 +128,7 @@ export function isFetchError(value: unknown): value is FetchError {
     value !== null &&
     "_tag" in value &&
     value["_tag"] === "@effect/shardcake/FetchError"
-  );
+  )
 }
 
 export type Throwable =
@@ -142,6 +142,6 @@ export type Throwable =
   | EntityTypeNotRegistered
   | MessageReturnedNoting
   | PodNoLongerRegistered
-  | FetchError;
+  | FetchError
 
-export type WireThrowable = DecodeError | EncodeError | FetchError;
+export type WireThrowable = DecodeError | EncodeError | FetchError

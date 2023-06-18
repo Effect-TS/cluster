@@ -1,49 +1,49 @@
-import * as ShardManagerState from "./ShardManagerState";
-import * as RefSynchronized from "@effect/io/Ref/Synchronized";
-import * as Effect from "@effect/io/Effect";
-import * as Hub from "@effect/io/Hub";
-import * as ShardingEvent from "./ShardingEvent";
-import * as PodsHealth from "./PodsHealth";
-import * as Pods from "./Pods";
-import * as ManagerConfig from "./ManagerConfig";
-import { pipe } from "@effect/data/Function";
-import * as HashMap from "@effect/data//HashMap";
-import * as List from "@effect/data/List";
-import * as Layer from "@effect/io/Layer";
-import * as HashSet from "@effect/data/HashSet";
-import * as Chunk from "@effect/data/Chunk";
-import * as ShardId from "./ShardId";
-import * as PodAddress from "./PodAddress";
-import * as PodWithMetadata from "./PodWithMetadata";
-import * as Option from "@effect/data/Option";
-import * as Stream from "@effect/stream/Stream";
-import * as Clock from "@effect/io/Clock";
-import * as Schedule from "@effect/io/Schedule";
-import * as Storage from ".//Storage";
-import * as Pod from "./Pod";
-import { equals } from "@effect/data/Equal";
-import { groupBy, minByOption } from "./utils";
-import * as ShardError from "./ShardError";
-import { Tag } from "@effect/data/Context";
+import * as HashMap from "@effect/data//HashMap"
+import * as Chunk from "@effect/data/Chunk"
+import { Tag } from "@effect/data/Context"
+import { equals } from "@effect/data/Equal"
+import { pipe } from "@effect/data/Function"
+import * as HashSet from "@effect/data/HashSet"
+import * as List from "@effect/data/List"
+import * as Option from "@effect/data/Option"
+import * as Clock from "@effect/io/Clock"
+import * as Effect from "@effect/io/Effect"
+import * as Hub from "@effect/io/Hub"
+import * as Layer from "@effect/io/Layer"
+import * as RefSynchronized from "@effect/io/Ref/Synchronized"
+import * as Schedule from "@effect/io/Schedule"
+import * as ManagerConfig from "@effect/shardcake/ManagerConfig"
+import type * as Pod from "@effect/shardcake/Pod"
+import type * as PodAddress from "@effect/shardcake/PodAddress"
+import * as Pods from "@effect/shardcake/Pods"
+import * as PodsHealth from "@effect/shardcake/PodsHealth"
+import * as PodWithMetadata from "@effect/shardcake/PodWithMetadata"
+import * as ShardError from "@effect/shardcake/ShardError"
+import * as ShardId from "@effect/shardcake/ShardId"
+import * as ShardingEvent from "@effect/shardcake/ShardingEvent"
+import * as ShardManagerState from "@effect/shardcake/ShardManagerState"
+import * as Storage from "@effect/shardcake/Storage"
+import * as Stream from "@effect/stream/Stream"
+import { groupBy, minByOption } from "./utils"
 
 export interface ShardManager {
-  getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>;
-  register(pod: Pod.Pod): Effect.Effect<never, never, void>;
-  unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>;
-  notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>;
-  checkAllPodsHealth: Effect.Effect<never, never, void>;
+  getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>
+  register(pod: Pod.Pod): Effect.Effect<never, never, void>
+  unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>
+  notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
+  checkAllPodsHealth: Effect.Effect<never, never, void>
   /* @internal */
-  rebalance(rebalanceImmediately: boolean): Effect.Effect<never, never, void>;
+  rebalance(rebalanceImmediately: boolean): Effect.Effect<never, never, void>
   /* @internal */
   getAssignments: Effect.Effect<
     never,
     never,
     HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  >;
+  >
   /* @internal */
-  persistPods: Effect.Effect<never, never, void>;
+  persistPods: Effect.Effect<never, never, void>
 }
-export const ShardManager = Tag<ShardManager>();
+export const ShardManager = Tag<ShardManager>()
 
 export function apply(
   stateRef: RefSynchronized.Synchronized<ShardManagerState.ShardManagerState>,
@@ -61,9 +61,9 @@ export function apply(
   > = pipe(
     RefSynchronized.get(stateRef),
     Effect.map((_) => _.shards)
-  );
+  )
 
-  const getShardingEvents = Stream.fromHub(eventsHub);
+  const getShardingEvents = Stream.fromHub(eventsHub)
 
   function register(pod: Pod.Pod) {
     return pipe(
@@ -78,23 +78,20 @@ export function apply(
                 state.shards
               )
             )
-          )
-        )
+          ))
       ),
       Effect.zipLeft(Hub.publish(eventsHub, ShardingEvent.PodRegistered(pod.address))),
-      Effect.flatMap((state) =>
-        Effect.when(rebalance(false), () => HashSet.size(state.unassignedShards) > 0)
-      ),
+      Effect.flatMap((state) => Effect.when(rebalance(false), () => HashSet.size(state.unassignedShards) > 0)),
       Effect.zipRight(Effect.forkDaemon(persistPods)),
       Effect.asUnit
-    );
+    )
   }
 
   function stateHasPod(podAddress: PodAddress.PodAddress) {
     return pipe(
       RefSynchronized.get(stateRef),
       Effect.map((_) => HashMap.has(_.pods, podAddress))
-    );
+    )
   }
 
   function notifyUnhealthyPod(podAddress: PodAddress.PodAddress) {
@@ -115,14 +112,14 @@ export function apply(
         stateHasPod(podAddress)
       ),
       Effect.asUnit
-    );
+    )
   }
 
   const checkAllPodsHealth = pipe(
     RefSynchronized.get(stateRef),
     Effect.map((_) => HashMap.keySet(_.pods)),
     Effect.flatMap((_) => Effect.withParallelism(Effect.forEachDiscard(_, notifyUnhealthyPod), 4))
-  );
+  )
 
   function unregister(podAddress: PodAddress.PodAddress) {
     const eff = pipe(
@@ -140,13 +137,10 @@ export function apply(
             {
               ...state,
               pods: HashMap.remove(state.pods, podAddress),
-              shards: HashMap.map(state.shards, (_) =>
-                equals(_)(Option.some(podAddress)) ? Option.none() : _
-              ),
-            },
+              shards: HashMap.map(state.shards, (_) => equals(_)(Option.some(podAddress)) ? Option.none() : _)
+            }
           ])
-        )
-      ),
+        )),
       Effect.tap((_) => Hub.publish(eventsHub, ShardingEvent.PodUnregistered(podAddress))),
       Effect.tap((_) =>
         Effect.when(
@@ -156,8 +150,8 @@ export function apply(
       ),
       Effect.zipLeft(Effect.forkDaemon(persistPods)),
       Effect.zipLeft(Effect.forkDaemon(rebalance(true)))
-    );
-    return Effect.asUnit(Effect.whenEffect(eff, stateHasPod(podAddress)));
+    )
+    return Effect.asUnit(Effect.whenEffect(eff, stateHasPod(podAddress)))
   }
 
   function withRetry<E, A>(zio: Effect.Effect<never, E, A>): Effect.Effect<never, never, void> {
@@ -170,7 +164,7 @@ export function apply(
         )
       ),
       Effect.ignore
-    );
+    )
   }
 
   const persistAssignments = withRetry(
@@ -178,14 +172,14 @@ export function apply(
       RefSynchronized.get(stateRef),
       Effect.flatMap((state) => stateRepository.saveAssignments(state.shards))
     )
-  );
+  )
 
   const persistPods = withRetry(
     pipe(
       RefSynchronized.get(stateRef),
       Effect.flatMap((state) => stateRepository.savePods(HashMap.map(state.pods, (v) => v.pod)))
     )
-  );
+  )
 
   function updateShardsState(
     shards: HashSet.HashSet<ShardId.ShardId>,
@@ -203,14 +197,12 @@ export function apply(
             ...state,
             shards: pipe(
               state.shards,
-              HashMap.mapWithIndex((assignment, shard) =>
-                HashSet.has(shards, shard) ? pod : assignment
-              )
-            ),
+              HashMap.mapWithIndex((assignment, shard) => HashSet.has(shards, shard) ? pod : assignment)
+            )
           })
         )
       )
-    );
+    )
   }
 
   function rebalance(rebalanceImmediately: boolean): Effect.Effect<never, never, void> {
@@ -220,8 +212,7 @@ export function apply(
       Effect.let("_1", ({ state }) =>
         rebalanceImmediately || HashSet.size(state.unassignedShards) > 0
           ? decideAssignmentsForUnassignedShards(state)
-          : decideAssignmentsForUnbalancedShards(state, config.rebalanceRate)
-      ),
+          : decideAssignmentsForUnbalancedShards(state, config.rebalanceRate)),
       Effect.let("assignments", (_) => _._1[0]),
       Effect.let("unassignments", (_) => _._1[1]),
       Effect.let(
@@ -255,8 +246,7 @@ export function apply(
           Effect.map(Chunk.fromIterable),
           Effect.map(Chunk.flatten),
           Effect.map(HashSet.fromIterable)
-        )
-      ),
+        )),
       Effect.let("shardsToRemove", (_) =>
         pipe(
           List.fromIterable(_.assignments),
@@ -265,9 +255,8 @@ export function apply(
           List.map(([_, shards]) => List.fromIterable(shards)),
           List.flatMap((_) => _), // TODO: List is missing flatMap
           HashSet.fromIterable
-        )
-      )
-    );
+        ))
+    )
     const algo2 = pipe(
       algo1,
       Effect.let("readyAssignments", (_) =>
@@ -275,15 +264,13 @@ export function apply(
           _.assignments,
           HashMap.map(HashSet.difference(_.shardsToRemove)),
           HashMap.filter((__) => HashSet.size(__) > 0)
-        )
-      ),
+        )),
       Effect.let("readyUnassignments", (_) =>
         pipe(
           _.unassignments,
           HashMap.map(HashSet.difference(_.shardsToRemove)),
           HashMap.filter((__) => HashSet.size(__) > 0)
-        )
-      ),
+        )),
       // do the unassignments first
       Effect.bind("failed", (_) =>
         pipe(
@@ -296,41 +283,36 @@ export function apply(
                 () =>
                   pipe(
                     Hub.publish(eventsHub, ShardingEvent.ShardsUnassigned(pod, shards)),
-                    Effect.as([
-                      HashSet.empty<PodAddress.PodAddress>(),
-                      HashSet.empty<ShardId.ShardId>(),
-                    ] as const)
+                    Effect.as(
+                      [
+                        HashSet.empty<PodAddress.PodAddress>(),
+                        HashSet.empty<ShardId.ShardId>()
+                      ] as const
+                    )
                   )
               )
-            )
-          ),
+            )),
           Effect.map(Chunk.fromIterable),
           Effect.map((_) => Chunk.unzip(_)),
           Effect.map(
-            ([pods, shards]) =>
-              [Chunk.map(pods, Chunk.fromIterable), Chunk.map(shards, Chunk.fromIterable)] as const
+            ([pods, shards]) => [Chunk.map(pods, Chunk.fromIterable), Chunk.map(shards, Chunk.fromIterable)] as const
           ),
           Effect.map(
             ([pods, shards]) =>
               [
                 HashSet.fromIterable(Chunk.flatten(pods)),
-                HashSet.fromIterable(Chunk.flatten(shards)),
+                HashSet.fromIterable(Chunk.flatten(shards))
               ] as const
           )
-        )
-      ),
+        )),
       Effect.let("failedUnassignedPods", (_) => _.failed[0]),
       Effect.let("failedUnassignedShards", (_) => _.failed[1]),
       // remove assignments of shards that couldn't be unassigned, as well as faulty pods.
       Effect.let("filteredAssignments", (_) =>
         pipe(
           HashMap.removeMany(_.readyAssignments, _.failedUnassignedPods),
-          HashMap.mapWithIndex((shards, pod) =>
-            HashSet.difference(shards, _.failedUnassignedShards)
-          )
-        )
-      ),
-
+          HashMap.mapWithIndex((shards, __) => HashSet.difference(shards, _.failedUnassignedShards))
+        )),
       // then do the assignments
       Effect.bind("failedAssignedPods", (_) =>
         pipe(
@@ -346,19 +328,16 @@ export function apply(
                     Effect.as(Chunk.empty())
                   )
               )
-            )
-          ),
+            )),
           Effect.map(Chunk.fromIterable),
           Effect.map(Chunk.flatten),
           Effect.map(HashSet.fromIterable)
-        )
-      ),
+        )),
       Effect.let("failedPods", (_) =>
         HashSet.union(
           HashSet.union(_.failedPingedPods, _.failedUnassignedPods),
           _.failedAssignedPods
-        )
-      ),
+        )),
       // check if failing pods are still up
       Effect.tap((_) => Effect.forkDaemon(Effect.forEachDiscard(_.failedPods, notifyUnhealthyPod))),
       Effect.tap((_) =>
@@ -384,9 +363,9 @@ export function apply(
           Effect.when(() => _.areChanges)
         )
       )
-    );
+    )
 
-    return rebalanceSemaphore.withPermits(1)(algo2);
+    return rebalanceSemaphore.withPermits(1)(algo2)
   }
 
   return {
@@ -397,35 +376,35 @@ export function apply(
     persistPods,
     rebalance,
     notifyUnhealthyPod,
-    checkAllPodsHealth,
-  };
+    checkAllPodsHealth
+  }
 }
 
-function decideAssignmentsForUnassignedShards(state: ShardManagerState.ShardManagerState) {
-  return pickNewPods(List.fromIterable(state.unassignedShards), state, true, 1);
+export function decideAssignmentsForUnassignedShards(state: ShardManagerState.ShardManagerState) {
+  return pickNewPods(List.fromIterable(state.unassignedShards), state, true, 1)
 }
 
-function decideAssignmentsForUnbalancedShards(
+export function decideAssignmentsForUnbalancedShards(
   state: ShardManagerState.ShardManagerState,
   rebalanceRate: number
 ) {
   // don't do regular rebalance in the middle of a rolling update
   const extraShardsToAllocate = state.allPodsHaveMaxVersion
     ? pipe(
-        state.shardsPerPod,
-        HashMap.flatMapWithIndex((shards, _) => {
-          // count how many extra shards compared to the average
-          const extraShards = Math.max(HashSet.size(shards) - state.averageShardsPerPod.value, 0);
-          return pipe(
-            HashMap.empty(),
-            HashMap.set(_, HashSet.fromIterable(List.take(List.fromIterable(shards), extraShards)))
-          );
-        }),
-        HashSet.fromIterable,
-        HashSet.map((_) => _[1]),
-        HashSet.flatMap((_) => _)
-      )
-    : HashSet.empty();
+      state.shardsPerPod,
+      HashMap.flatMapWithIndex((shards, _) => {
+        // count how many extra shards compared to the average
+        const extraShards = Math.max(HashSet.size(shards) - state.averageShardsPerPod.value, 0)
+        return pipe(
+          HashMap.empty(),
+          HashMap.set(_, HashSet.fromIterable(List.take(List.fromIterable(shards), extraShards)))
+        )
+      }),
+      HashSet.fromIterable,
+      HashSet.map((_) => _[1]),
+      HashSet.flatMap((_) => _)
+    )
+    : HashSet.empty()
 
   /*
         TODO: port sortBy
@@ -440,8 +419,8 @@ function decideAssignmentsForUnbalancedShards(
       }
     }
 * */
-  const sortedShardsToRebalance = List.fromIterable(extraShardsToAllocate);
-  return pickNewPods(sortedShardsToRebalance, state, false, rebalanceRate);
+  const sortedShardsToRebalance = List.fromIterable(extraShardsToAllocate)
+  return pickNewPods(sortedShardsToRebalance, state, false, rebalanceRate)
 }
 
 function pickNewPods(
@@ -458,7 +437,7 @@ function pickNewPods(
       shardsToRebalance,
       [
         state.shardsPerPod,
-        List.empty<readonly [ShardId.ShardId, PodAddress.PodAddress]>(),
+        List.empty<readonly [ShardId.ShardId, PodAddress.PodAddress]>()
       ] as const,
       ([shardsPerPod, assignments], shard) => {
         const unassignedPods = pipe(
@@ -471,55 +450,55 @@ function pickNewPods(
               List.fromIterable
             )
           )
-        );
+        )
 
         // find pod with least amount of shards
         return pipe(
           // keep only pods with the max version
           HashMap.filterWithIndex(shardsPerPod, (_, pod) => {
-            const maxVersion = state.maxVersion;
-            if (Option.isNone(maxVersion)) return true;
+            const maxVersion = state.maxVersion
+            if (Option.isNone(maxVersion)) return true
             return pipe(
               HashMap.get(state.pods, pod),
               Option.map(PodWithMetadata.extractVersion),
               Option.map((_) => PodWithMetadata.compareVersion(_, maxVersion.value) === 0),
               Option.getOrElse(() => false)
-            );
+            )
           }),
           // don't assign too many shards to the same pods, unless we need rebalance immediately
           HashMap.filterWithIndex((_, pod) => {
-            if (rebalanceImmediately) return true;
+            if (rebalanceImmediately) return true
             return (
               pipe(
                 assignments,
                 List.filter(([_, p]) => equals(p)(pod)),
                 List.length
               ) <
-              HashMap.size(state.shards) * rebalanceRate
-            );
+                HashMap.size(state.shards) * rebalanceRate
+            )
           }),
           // don't assign to a pod that was unassigned in the same rebalance
           HashMap.filterWithIndex(
             (_, pod) => !Option.isSome(List.findFirst(unassignedPods, equals(pod)))
           ),
-          minByOption(([address, pods]) => HashSet.size(pods)),
+          minByOption(([_, pods]) => HashSet.size(pods)),
           Option.match(
             () => [shardsPerPod, assignments] as const,
             ([pod, shards]) => {
-              const oldPod = Option.flatten(HashMap.get(state.shards, shard));
+              const oldPod = Option.flatten(HashMap.get(state.shards, shard))
               // if old pod is same as new pod, don't change anything
               if (equals(oldPod)(pod)) {
-                return [shardsPerPod, assignments] as const;
+                return [shardsPerPod, assignments] as const
                 // if the new pod has more, as much, or only 1 less shard than the old pod, don't change anything
               } else if (
                 Option.match(HashMap.get(shardsPerPod, pod), () => 0, HashSet.size) + 1 >=
-                Option.match(
-                  oldPod,
-                  () => Number.MAX_SAFE_INTEGER,
-                  (_) => Option.match(HashMap.get(shardsPerPod, _), () => 0, HashSet.size)
-                )
+                  Option.match(
+                    oldPod,
+                    () => Number.MAX_SAFE_INTEGER,
+                    (_) => Option.match(HashMap.get(shardsPerPod, _), () => 0, HashSet.size)
+                  )
               ) {
-                return [shardsPerPod, assignments] as const;
+                return [shardsPerPod, assignments] as const
 
                 // otherwise, create a new assignment
               } else {
@@ -527,38 +506,37 @@ function pickNewPods(
                   oldPod,
                   () => shardsPerPod,
                   (oldPod) => HashMap.modify(shardsPerPod, oldPod, HashSet.remove(shard))
-                );
+                )
                 return [
                   HashMap.modify(unassigned, pod, (_) => HashSet.add(shards, shard)),
-                  List.prepend(assignments, [shard, pod] as const),
-                ] as const;
+                  List.prepend(assignments, [shard, pod] as const)
+                ] as const
               }
             }
           )
-        );
+        )
       }
     )
-  );
+  )
 
   const unassignments = List.flatMap(assignments, ([shard, _]) =>
     pipe(
       Option.flatten(HashMap.get(state.shards, shard)),
       Option.map((_) => [shard, _] as const),
       Option.match(List.empty, List.of)
-    )
-  );
+    ))
 
   const assignmentsPerPod = pipe(
     assignments,
     groupBy(([_, pod]) => pod),
-    HashMap.map(HashSet.map(([shardId, pod]) => shardId))
-  );
+    HashMap.map(HashSet.map(([shardId, _]) => shardId))
+  )
   const unassignmentsPerPod = pipe(
     unassignments,
     groupBy(([_, pod]) => pod),
-    HashMap.map(HashSet.map(([shardId, pod]) => shardId))
-  );
-  return [assignmentsPerPod, unassignmentsPerPod] as const;
+    HashMap.map(HashSet.map(([shardId, _]) => shardId))
+  )
+  return [assignmentsPerPod, unassignmentsPerPod] as const
 }
 
 const live0 = pipe(
@@ -574,16 +552,14 @@ const live0 = pipe(
     pipe(
       Effect.filterPar(_.pods, ([podAddress]) => _.healthApi.isAlive(podAddress)),
       Effect.map(HashMap.fromIterable)
-    )
-  ),
+    )),
   Effect.let("filteredAssignments", (_) =>
     pipe(
       HashMap.filter(
         _.assignments,
         (pod) => Option.isSome(pod) && HashMap.has(_.filteredPods, pod.value)
       )
-    )
-  ),
+    )),
   Effect.bind("cdt", (_) => Clock.currentTimeMillis()),
   Effect.let("initialState", (_) =>
     ShardManagerState.shardManagerState(
@@ -596,9 +572,8 @@ const live0 = pipe(
           HashMap.fromIterable
         )
       )
-    )
-  )
-);
+    ))
+)
 const live1 = pipe(
   live0,
   Effect.bind("state", (_) => RefSynchronized.make(_.initialState)),
@@ -613,8 +588,7 @@ const live1 = pipe(
       _.podApi,
       _.stateRepository,
       _.config
-    )
-  ),
+    )),
   Effect.tap((_) => Effect.forkDaemon(_.shardManager.persistPods)),
   // rebalance immediately if there are unassigned shards
   Effect.tap((_) => _.shardManager.rebalance(HashSet.size(_.initialState.unassignedShards) > 0)),
@@ -636,6 +610,6 @@ const live1 = pipe(
   ),
   Effect.tap((_) => Effect.logInfo("Shard Manager loaded")),
   Effect.map((_) => _.shardManager)
-);
+)
 
-export const live = Layer.effect(ShardManager, live1);
+export const live = Layer.effect(ShardManager, live1)

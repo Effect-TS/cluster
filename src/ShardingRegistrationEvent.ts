@@ -1,20 +1,20 @@
-import { EntityType, TopicType } from "./RecipientType";
+import type { EntityType, TopicType } from "@effect/shardcake/RecipientType"
 
 interface EntityRegistered<A> {
-  _tag: "EntityRegistered";
-  entityType: EntityType<A>;
+  _tag: "EntityRegistered"
+  entityType: EntityType<A>
 }
 interface SingletonRegistered {
-  _tag: "SingletonRegistered";
-  name: string;
+  _tag: "SingletonRegistered"
+  name: string
 }
 
 interface TopicRegistered<A> {
-  _tag: "TopicRegistered";
-  topicType: TopicType<A>;
+  _tag: "TopicRegistered"
+  topicType: TopicType<A>
 }
 
 export type ShardingRegistrationEvent =
   | EntityRegistered<any>
   | SingletonRegistered
-  | TopicRegistered<any>;
+  | TopicRegistered<any>

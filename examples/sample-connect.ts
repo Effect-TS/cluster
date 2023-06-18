@@ -1,16 +1,16 @@
-import * as Sharding from "./Sharding";
-import * as Config from "./Config";
-import * as PodsHttp from "./PodsHttp";
-import * as Serialization from "./Serialization";
-import * as StorageFile from "./StorageFile";
-import * as ShardManagerClientHttp from "./ShardManagerClientHttp";
-import * as Effect from "@effect/io/Effect";
-import * as Cause from "@effect/io/Cause";
-import * as Logger from "@effect/io/Logger";
-import { pipe } from "@effect/data/Function";
+import { pipe } from "@effect/data/Function"
+import * as Cause from "@effect/io/Cause"
+import * as Effect from "@effect/io/Effect"
+import * as Logger from "@effect/io/Logger"
+import * as Config from "@effect/shardcake/Config"
+import * as PodsHttp from "@effect/shardcake/PodsHttp"
+import * as Serialization from "@effect/shardcake/Serialization"
+import * as Sharding from "@effect/shardcake/Sharding"
+import * as ShardManagerClientHttp from "@effect/shardcake/ShardManagerClientHttp"
+import * as StorageFile from "@effect/shardcake/StorageFile"
 
-import * as LogLevel from "@effect/io/Logger/Level";
-import { CounterEntity, GetCurrent } from "./sample-common";
+import * as LogLevel from "@effect/io/Logger/Level"
+import { CounterEntity, GetCurrent } from "./sample-common"
 
 const program = pipe(
   Effect.flatMap(Sharding.Sharding, (sharding) =>
@@ -21,8 +21,7 @@ const program = pipe(
       Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
       Effect.flatMap((_) => _.messenger.send("entity1")(GetCurrent({ _tag: "GetCurrent" }))),
       Effect.tap((_) => Effect.log("Current count is " + _))
-    )
-  ),
+    )),
   Effect.zipRight(Effect.never()),
   Effect.scoped,
   Effect.provideSomeLayer(Sharding.live),
@@ -33,6 +32,6 @@ const program = pipe(
   Effect.provideSomeLayer(Serialization.json),
   Effect.catchAllCause((_) => Effect.log(Cause.pretty(_))),
   Logger.withMinimumLogLevel(LogLevel.All)
-);
+)
 
-Effect.runFork(program);
+Effect.runFork(program)
