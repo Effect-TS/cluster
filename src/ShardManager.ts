@@ -14,7 +14,7 @@ import * as RefSynchronized from "@effect/io/Ref/Synchronized"
 import * as Schedule from "@effect/io/Schedule"
 import * as ManagerConfig from "@effect/shardcake/ManagerConfig"
 import type * as Pod from "@effect/shardcake/Pod"
-import type * as PodAddress from "@effect/shardcake/PodAddress"
+import * as PodAddress from "@effect/shardcake/PodAddress"
 import * as Pods from "@effect/shardcake/Pods"
 import * as PodsHealth from "@effect/shardcake/PodsHealth"
 import * as PodWithMetadata from "@effect/shardcake/PodWithMetadata"
@@ -67,7 +67,7 @@ export function apply(
 
   function register(pod: Pod.Pod) {
     return pipe(
-      Effect.logInfo("Registering " + JSON.stringify(pod)),
+      Effect.logInfo("Registering " + PodAddress.toString(pod.address) + "@" + pod.version),
       Effect.zipRight(
         RefSynchronized.updateAndGetEffect(stateRef, (state) =>
           pipe(
@@ -320,6 +320,7 @@ export function apply(
             pipe(
               podApi.assignShards(pod, shards),
               Effect.zipRight(updateShardsState(shards, Option.some(pod))),
+              Effect.tapError((e) => Effect.logError("ERROR: " + JSON.stringify(e))),
               Effect.matchEffect(
                 () => Effect.succeed(Chunk.fromIterable([pod])),
                 () =>
@@ -342,7 +343,13 @@ export function apply(
       Effect.tap((_) => Effect.forkDaemon(Effect.forEachDiscard(_.failedPods, notifyUnhealthyPod))),
       Effect.tap((_) =>
         Effect.when(
-          Effect.logWarning("Failed to rebalance pods: " + _.failedPods),
+          Effect.logWarning(
+            "Failed to rebalance pods: " +
+              PodAddress.hashSetToString(_.failedPods) +
+              " failed pinged: " + PodAddress.hashSetToString(_.failedPingedPods) +
+              " failed assigned: " + PodAddress.hashSetToString(_.failedAssignedPods) +
+              " failed unassigned: " + PodAddress.hashSetToString(_.failedUnassignedPods)
+          ),
           () => HashSet.size(_.failedPods) > 0
         )
       ),
