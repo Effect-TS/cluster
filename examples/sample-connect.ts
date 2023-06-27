@@ -6,6 +6,7 @@ import * as Config from "@effect/shardcake/Config"
 import * as PodsHttp from "@effect/shardcake/PodsHttp"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
+import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
 import * as ShardManagerClientHttp from "@effect/shardcake/ShardManagerClientHttp"
 import * as StorageFile from "@effect/shardcake/StorageFile"
 
@@ -24,7 +25,7 @@ const program = pipe(
     )),
   Effect.zipRight(Effect.never()),
   Effect.scoped,
-  Effect.provideSomeLayer(Sharding.live),
+  Effect.provideSomeLayer(ShardingImpl.live),
   Effect.provideSomeLayer(StorageFile.storageFile),
   Effect.provideSomeLayer(PodsHttp.httpPods),
   Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),

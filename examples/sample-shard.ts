@@ -1,23 +1,18 @@
 import { pipe } from "@effect/data/Function"
-import * as Cause from "@effect/io/Cause"
-import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Logger from "@effect/io/Logger"
 import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
-import * as Schema from "@effect/schema/Schema"
 import * as Config from "@effect/shardcake/Config"
 import * as PodsHttp from "@effect/shardcake/PodsHttp"
-import { EntityType } from "@effect/shardcake/RecipientType"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
+import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
 import * as ShardingServiceHttp from "@effect/shardcake/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/shardcake/ShardManagerClientHttp"
-import * as Storage from "@effect/shardcake/Storage"
 import * as StorageFile from "@effect/shardcake/StorageFile"
 
 import * as LogLevel from "@effect/io/Logger/Level"
-import * as Replier from "@effect/shardcake/Replier"
 import { CounterEntity } from "./sample-common"
 
 const program = pipe(
@@ -50,7 +45,7 @@ const program = pipe(
   Effect.zipRight(Effect.never()),
   ShardingServiceHttp.shardingServiceHttp,
   Effect.scoped,
-  Effect.provideSomeLayer(Sharding.live),
+  Effect.provideSomeLayer(ShardingImpl.live),
   Effect.provideSomeLayer(StorageFile.storageFile),
   Effect.provideSomeLayer(PodsHttp.httpPods),
   Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),

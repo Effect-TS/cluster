@@ -164,9 +164,9 @@ export function simulatePodUnregister(podAddress: PodAddress.PodAddress): Simula
   return { _tag: "PodUnregister", podAddress }
 }
 
-const config = Layer.succeed(ManagerConfig.ManagerConfig, ManagerConfig.defaults)
+export const config = Layer.succeed(ManagerConfig.ManagerConfig, ManagerConfig.defaults)
 
-const shardManager = pipe(
+export const shardManager = pipe(
   ShardManager.live,
   Layer.use(config),
   Layer.use(PodsHealth.local),

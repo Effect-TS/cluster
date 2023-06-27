@@ -76,6 +76,7 @@
     "@types/glob": "^8.1.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.10",
+    "@types/node-fetch": "2.6.4",
     "@types/prettier": "2.7.2",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
@@ -104,15 +105,14 @@
     "typescript": "^5.0.4",
     "ultra-runner": "^3.10.5",
     "vite": "^4.2.1",
-    "vitest": "0.29.8",
-    "@types/node-fetch": "2.6.4"
+    "vitest": "0.29.8"
   },
   "dependencies": {
+    "@effect/data": "0.12.7",
     "@effect/io": "0.26.0",
     "@effect/schema": "0.20.1",
     "@effect/stream": "0.22.1",
-    "@effect/data": "0.12.7",
-    "node-fetch": "3.3.1"
+    "node-fetch": "2"
   },
   "config": {
     "side": [],

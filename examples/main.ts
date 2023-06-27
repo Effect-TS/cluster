@@ -10,6 +10,7 @@ import * as Pods from "@effect/shardcake/Pods"
 import { EntityType } from "@effect/shardcake/RecipientType"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
+import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
 import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
 import * as Storage from "@effect/shardcake/Storage"
 
@@ -93,7 +94,7 @@ const program = pipe(
     )),
   Effect.zipRight(Effect.never()),
   Effect.scoped,
-  Effect.provideSomeLayer(Sharding.live),
+  Effect.provideSomeLayer(ShardingImpl.live),
   Effect.provideSomeLayer(Pods.noop),
   Effect.provideSomeLayer(Serialization.json),
   Effect.provideSomeLayer(ShardManagerClient.local),
