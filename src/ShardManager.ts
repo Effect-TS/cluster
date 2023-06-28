@@ -24,7 +24,7 @@ import * as ShardingEvent from "@effect/shardcake/ShardingEvent"
 import * as ShardManagerState from "@effect/shardcake/ShardManagerState"
 import * as Storage from "@effect/shardcake/Storage"
 import * as Stream from "@effect/stream/Stream"
-import { groupBy, minByOption } from "./utils"
+import { groupBy, minByOption, showHashMap, showHashSet } from "./utils"
 
 export interface ShardManager {
   getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>
@@ -67,7 +67,7 @@ export function apply(
 
   function register(pod: Pod.Pod) {
     return pipe(
-      Effect.logInfo("Registering " + PodAddress.toString(pod.address) + "@" + pod.version),
+      Effect.logInfo("Registering " + PodAddress.show(pod.address) + "@" + pod.version),
       Effect.zipRight(
         RefSynchronized.updateAndGetEffect(stateRef, (state) =>
           pipe(
@@ -191,7 +191,7 @@ export function apply(
         pipe(
           Effect.logDebug(
             "state pods: " + (Option.isSome(pod) ? HashMap.has(state.pods, pod.value) : "") + " " +
-              PodAddress.hashSetToString(HashMap.keySet(state.pods))
+              showHashMap(PodAddress.show, PodWithMetadata.show)(state.pods)
           ),
           Effect.zipRight(Effect.whenCase(
             () => Option.isSome(pod) && !HashMap.has(state.pods, pod.value),
@@ -349,10 +349,10 @@ export function apply(
         Effect.when(
           Effect.logWarning(
             "Failed to rebalance pods: " +
-              PodAddress.hashSetToString(_.failedPods) +
-              " failed pinged: " + PodAddress.hashSetToString(_.failedPingedPods) +
-              " failed assigned: " + PodAddress.hashSetToString(_.failedAssignedPods) +
-              " failed unassigned: " + PodAddress.hashSetToString(_.failedUnassignedPods)
+              showHashSet(PodAddress.show)(_.failedPods) +
+              " failed pinged: " + showHashSet(PodAddress.show)(_.failedPingedPods) +
+              " failed assigned: " + showHashSet(PodAddress.show)(_.failedAssignedPods) +
+              " failed unassigned: " + showHashSet(PodAddress.show)(_.failedUnassignedPods)
           ),
           () => HashSet.size(_.failedPods) > 0
         )

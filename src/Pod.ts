@@ -27,3 +27,7 @@ export interface Pod extends Schema.To<typeof Schema_> {}
 export function pod(address: PodAddress.PodAddress, version: string): Pod {
   return Data.struct({ _tag: PodTypeId, address, version })
 }
+
+export function show(value: Pod) {
+  return "Pod(address=" + value.address + ", version=" + value.version + ")"
+}

@@ -69,7 +69,7 @@ function make(
   }
 
   const register = pipe(
-    Effect.logDebug(`Registering pod ${PodAddress.toString(address)} to Shard Manager`),
+    Effect.logDebug(`Registering pod ${PodAddress.show(address)} to Shard Manager`),
     Effect.zipRight(pipe(isShuttingDownRef, Ref.set(false))),
     Effect.zipRight(shardManager.register(address))
   )
@@ -290,7 +290,6 @@ serialization
             return pipe(
               send,
               Effect.catchSome((_) => {
-                console.log("got error in send", JSON.stringify(_))
                 if (isEntityNotManagedByThisPodError(_) || isPodUnavailableError(_)) {
                   return pipe(
                     Effect.sleep(Duration.millis(200)),
@@ -302,8 +301,6 @@ serialization
               })
             )
           }
-
-          console.log("pod is none", JSON.stringify(shardId))
 
           return pipe(Effect.sleep(Duration.millis(100)), Effect.zipRight(trySend))
         }),
@@ -462,7 +459,6 @@ serialization
     assignmentsOpt: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>,
     fromShardManager: boolean
   ) {
-    console.log("updating assignments", fromShardManager)
     const assignments = HashMap.mapWithIndex(assignmentsOpt, (v, _) => Option.getOrElse(v, () => address))
 
     if (fromShardManager) {

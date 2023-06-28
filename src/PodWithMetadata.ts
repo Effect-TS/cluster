@@ -2,7 +2,7 @@ import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as List from "@effect/data/List"
 import * as Option from "@effect/data/Option"
-import type * as Pod from "@effect/shardcake/Pod"
+import * as Pod from "@effect/shardcake/Pod"
 
 export interface PodWithMetadata {
   pod: Pod.Pod
@@ -45,4 +45,8 @@ export function compareVersion(a: List.List<number>, b: List.List<number>): 0 | 
     )
   }
   return 0
+}
+
+export function show(value: PodWithMetadata) {
+  return "PodWithMetadata(pod=" + Pod.show(value.pod) + ", registered=" + value.registered + ")"
 }

@@ -1,6 +1,4 @@
 import * as Data from "@effect/data/Data"
-import { pipe } from "@effect/data/Function"
-import * as HashSet from "@effect/data/HashSet"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -29,15 +27,6 @@ export function podAddress(host: string, port: number): PodAddress {
   return Data.struct({ _tag: PodAddressTypeId, host, port })
 }
 
-export function toString(podAddress: PodAddress) {
+export function show(podAddress: PodAddress) {
   return `http://${podAddress.host}:${podAddress.port}`
-}
-
-export function hashSetToString(podAddresses: HashSet.HashSet<PodAddress>): string {
-  return pipe(
-    podAddresses,
-    HashSet.map(toString),
-    Array.from,
-    (v) => v.join(" ")
-  )
 }

@@ -13,13 +13,17 @@ export const ShardIdTypeId = "@effect/shardcake/ShardId"
  */
 export type ShardIdTypeId = typeof ShardIdTypeId
 
-export const schema = Schema.struct({
+export const schema = Schema.data(Schema.struct({
   _tag: Schema.literal(ShardIdTypeId),
   value: Schema.number
-})
+}))
 
 export interface ShardId extends Schema.To<typeof schema> {}
 
 export function shardId(value: number): ShardId {
   return Data.struct({ _tag: ShardIdTypeId, value })
+}
+
+export function show(value: ShardId) {
+  return "ShardId(" + value.value + ")"
 }

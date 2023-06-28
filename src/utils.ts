@@ -77,3 +77,21 @@ export function send<A, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any
       Effect.flatMap((data) => jsonParse(data, reply))
     )
 }
+
+export function showHashSet<A>(fn: (value: A) => string) {
+  return (fa: HashSet.HashSet<A>) => {
+    return "HashSet(" + Array.from(fa).map(fn).join("; ") + ")"
+  }
+}
+
+export function showHashMap<K, A>(fnK: (value: K) => string, fn: (value: A) => string) {
+  return (fa: HashMap.HashMap<K, A>) => {
+    return "HashMap(" + Array.from(fa).map(([key, value]) => fnK(key) + "=" + fn(value)).join("; ") + ")"
+  }
+}
+
+export function showOption<A>(fn: (value: A) => string) {
+  return (fa: Option.Option<A>) => {
+    return Option.match(fa, () => "None()", (_) => "Some(" + fn(_) + ")")
+  }
+}
