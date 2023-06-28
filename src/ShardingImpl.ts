@@ -14,8 +14,7 @@ import type * as ByteArray from "@effect/shardcake/ByteArray"
 import * as EntityManager from "@effect/shardcake/EntityManager"
 import * as EntityState from "@effect/shardcake/EntityState"
 import * as Message from "@effect/shardcake/Message"
-import { podAddress } from "@effect/shardcake/PodAddress"
-import type { PodAddress } from "@effect/shardcake/PodAddress"
+import * as PodAddress from "@effect/shardcake/PodAddress"
 import { Pods } from "@effect/shardcake/Pods"
 import type { Replier } from "@effect/shardcake/Replier"
 import * as ReplyId from "@effect/shardcake/ReplyId"
@@ -47,9 +46,9 @@ import * as Storage from "@effect/shardcake/Storage"
 import { Sharding } from "./Sharding"
 
 function make(
-  address: PodAddress,
+  address: PodAddress.PodAddress,
   config: Config.Config,
-  shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress>>,
+  shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress.PodAddress>>,
   entityStates: Ref.Ref<HashMap.HashMap<string, EntityState.EntityState>>,
   /*singletons: Synchronized.Synchronized<
     MutableList<[string, Effect.Effect<never, never, void>, Option.Option<Fiber<never, never>>]>
@@ -70,7 +69,7 @@ function make(
   }
 
   const register = pipe(
-    Effect.logDebug(`Registering pod ${address} to Shard Manager`),
+    Effect.logDebug(`Registering pod ${PodAddress.toString(address)} to Shard Manager`),
     Effect.zipRight(pipe(isShuttingDownRef, Ref.set(false))),
     Effect.zipRight(shardManager.register(address))
   )
@@ -182,7 +181,7 @@ function make(
     entityId: string,
     msg: Msg,
     msgSchema: Schema.Schema<Msg>,
-    pod: PodAddress,
+    pod: PodAddress.PodAddress,
     replyId: Option.Option<ReplyId.ReplyId>
   ): Effect.Effect<never, Throwable, Option.Option<Res>> {
     const a = pipe(
@@ -291,6 +290,7 @@ serialization
             return pipe(
               send,
               Effect.catchSome((_) => {
+                console.log("got error in send", JSON.stringify(_))
                 if (isEntityNotManagedByThisPodError(_) || isPodUnavailableError(_)) {
                   return pipe(
                     Effect.sleep(Duration.millis(200)),
@@ -302,6 +302,8 @@ serialization
               })
             )
           }
+
+          console.log("pod is none", JSON.stringify(shardId))
 
           return pipe(Effect.sleep(Duration.millis(100)), Effect.zipRight(trySend))
         }),
@@ -457,9 +459,10 @@ serialization
   )
 
   function updateAssignments(
-    assignmentsOpt: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress>>,
+    assignmentsOpt: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>,
     fromShardManager: boolean
   ) {
+    console.log("updating assignments", fromShardManager)
     const assignments = HashMap.mapWithIndex(assignmentsOpt, (v, _) => Option.getOrElse(v, () => address))
 
     if (fromShardManager) {
@@ -539,7 +542,7 @@ export const live = Layer.scoped(
     Effect.bind("shardManager", () => ShardManagerClient),
     Effect.bind("storage", () => Storage.Storage),
     Effect.bind("serialization", () => Serialization.Serialization),
-    Effect.bind("shardsCache", () => Ref.make(HashMap.empty<ShardId.ShardId, PodAddress>())),
+    Effect.bind("shardsCache", () => Ref.make(HashMap.empty<ShardId.ShardId, PodAddress.PodAddress>())),
     Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState.EntityState>())),
     Effect.bind("shuttingDown", () => Ref.make(false)),
     Effect.bind("promises", () =>
@@ -548,7 +551,7 @@ export const live = Layer.scoped(
       )),
     Effect.let("sharding", (_) =>
       make(
-        podAddress(_.config.selfHost, _.config.shardingPort),
+        PodAddress.podAddress(_.config.selfHost, _.config.shardingPort),
         _.config,
         _.shardsCache,
         _.entityStates,

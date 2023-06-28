@@ -189,10 +189,14 @@ export function apply(
       stateRef,
       RefSynchronized.updateEffect((state) =>
         pipe(
-          Effect.whenCase(
-            () => Option.isSome(pod) && !HashMap.has(state.pods, pod.value),
-            () => Option.map(pod, (_) => Effect.fail(ShardError.PodNoLongerRegistered(_)))
+          Effect.logDebug(
+            "state pods: " + (Option.isSome(pod) ? HashMap.has(state.pods, pod.value) : "") + " " +
+              PodAddress.hashSetToString(HashMap.keySet(state.pods))
           ),
+          Effect.zipRight(Effect.whenCase(
+            () => Option.isSome(pod) && !HashMap.has(state.pods, pod.value),
+            (b) => b ? Option.map(pod, (_) => Effect.fail(ShardError.PodNoLongerRegistered(_))) : Option.none()
+          )),
           Effect.as({
             ...state,
             shards: pipe(

@@ -59,6 +59,7 @@ export function send<A, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any
   return (url: string, data: A): Effect.Effect<never, WireThrowable, R> =>
     pipe(
       jsonStringify(data, send),
+      Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
       Effect.flatMap((body) =>
         Effect.tryCatchPromise(
           () => {
@@ -70,7 +71,9 @@ export function send<A, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any
           (error) => FetchError(url, body, String(error))
         )
       ),
+      Effect.tap((response) => Effect.logDebug(url + " status: " + response.status)),
       Effect.flatMap((response) => Effect.promise(() => response.text())),
+      // Effect.tap((response) => Effect.logDebug(url + " body: " + response)),
       Effect.flatMap((data) => jsonParse(data, reply))
     )
 }

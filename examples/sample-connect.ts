@@ -1,5 +1,4 @@
 import { pipe } from "@effect/data/Function"
-import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import * as Logger from "@effect/io/Logger"
 import * as Config from "@effect/shardcake/Config"
@@ -7,6 +6,7 @@ import * as PodsHttp from "@effect/shardcake/PodsHttp"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
 import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
+import * as ShardingServiceHttp from "@effect/shardcake/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/shardcake/ShardManagerClientHttp"
 import * as StorageFile from "@effect/shardcake/StorageFile"
 
@@ -24,14 +24,15 @@ const program = pipe(
       Effect.tap((_) => Effect.log("Current count is " + _))
     )),
   Effect.zipRight(Effect.never()),
+  ShardingServiceHttp.shardingServiceHttp,
   Effect.scoped,
   Effect.provideSomeLayer(ShardingImpl.live),
   Effect.provideSomeLayer(StorageFile.storageFile),
   Effect.provideSomeLayer(PodsHttp.httpPods),
   Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),
-  Effect.provideSomeLayer(Config.defaults),
+  Effect.provideSomeLayer(Config.defaults2),
   Effect.provideSomeLayer(Serialization.json),
-  Effect.catchAllCause((_) => Effect.log(Cause.pretty(_))),
+  Effect.catchAllCause(Effect.logErrorCause),
   Logger.withMinimumLogLevel(LogLevel.All)
 )
 

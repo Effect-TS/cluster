@@ -57,3 +57,17 @@ export const defaults = Layer.succeed(Config, {
   unhealthyPodReportInterval: Duration.seconds(5),
   simulateRemotePods: false
 })
+
+export const defaults2 = Layer.succeed(Config, {
+  numberOfShards: 300,
+  selfHost: "localhost",
+  shardingPort: 54322,
+  shardManagerUri: "http://localhost:8080/api/rest",
+  serverVersion: "1.0.0",
+  entityMaxIdleTime: Duration.minutes(1),
+  entityTerminationTimeout: Duration.seconds(3),
+  sendTimeout: Duration.seconds(5),
+  refreshAssignmentsRetryInterval: Duration.seconds(5),
+  unhealthyPodReportInterval: Duration.seconds(5),
+  simulateRemotePods: false
+})
