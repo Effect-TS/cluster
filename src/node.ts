@@ -1,3 +1,4 @@
+import * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
@@ -10,7 +11,9 @@ export function asHttpServer<A2, A>(
   RequestSchema: Schema.Schema<A2, A>,
   handler: (
     req: A,
-    reply: <B2, B>(schema: Schema.Schema<B2, B>, value: B) => Effect.Effect<never, never, void>
+    reply: <RE, RA>(
+      schema: Schema.Schema<any, Either.Either<RE, RA>>
+    ) => (run: Effect.Effect<never, RE, RA>) => Effect.Effect<never, never, void>
   ) => Effect.Effect<never, never, void>
 ) {
   return <R, E, B>(fa: Effect.Effect<R, E, B>) =>
@@ -24,18 +27,23 @@ export function asHttpServer<A2, A>(
               return pipe(
                 jsonParse(body, RequestSchema),
                 Effect.flatMap((req) => {
-                  const reply = <B>(schema: Schema.Schema<B>, value: B) =>
-                    pipe(
-                      jsonStringify(value, schema),
-                      Effect.map((body) => [200, body] as const),
-                      Effect.catchAllCause((cause) => Effect.sync(() => [500, JSON.stringify(cause)] as const)),
-                      Effect.flatMap(([status, data]) =>
-                        Effect.sync(() => {
-                          response.writeHead(status, { "Content-Type": "application/json" })
-                          response.end(data)
-                        })
+                  const reply = <RE, RA>(schema: Schema.Schema<any, Either.Either<RE, RA>>) =>
+                    (fa: Effect.Effect<never, RE, RA>) =>
+                      pipe(
+                        fa,
+                        Effect.matchEffect(
+                          (error) => jsonStringify(Either.left(error), schema),
+                          (value) => jsonStringify(Either.right(value), schema)
+                        ),
+                        Effect.map((body) => [200, body] as const),
+                        Effect.catchAllCause((cause) => Effect.sync(() => [500, JSON.stringify(cause)] as const)),
+                        Effect.flatMap(([status, data]) =>
+                          Effect.sync(() => {
+                            response.writeHead(status, { "Content-Type": "application/json" })
+                            response.end(data)
+                          })
+                        )
                       )
-                    )
                   return handler(req, reply as any)
                 }),
                 Effect.catchAllCause((cause) =>

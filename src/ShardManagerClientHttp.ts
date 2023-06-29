@@ -2,7 +2,6 @@ import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
-import * as Schema from "@effect/schema/Schema"
 import * as Config from "@effect/shardcake/Config"
 import * as Pod from "@effect/shardcake/Pod"
 import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
@@ -16,17 +15,20 @@ export const shardManagerClientHttp = Layer.effect(
     Effect.map(
       (config) => ({
         register: (podAddress) =>
-          send(ShardManagerProtocolHttp.Register_, Schema.boolean)(config.shardManagerUri, {
+          send(ShardManagerProtocolHttp.Register_, ShardManagerProtocolHttp.RegisterResult_)(config.shardManagerUri, {
             _tag: "Register",
             pod: Pod.pod(podAddress, config.serverVersion)
           }),
         unregister: (podAddress) =>
-          send(ShardManagerProtocolHttp.Unregister_, Schema.boolean)(config.shardManagerUri, {
-            _tag: "Unregister",
-            pod: Pod.pod(podAddress, config.serverVersion)
-          }),
+          send(ShardManagerProtocolHttp.Unregister_, ShardManagerProtocolHttp.UnregisterResult_)(
+            config.shardManagerUri,
+            {
+              _tag: "Unregister",
+              pod: Pod.pod(podAddress, config.serverVersion)
+            }
+          ),
         notifyUnhealthyPod: (podAddress) =>
-          send(ShardManagerProtocolHttp.NotifyUnhealthyPod_, Schema.boolean)(
+          send(ShardManagerProtocolHttp.NotifyUnhealthyPod_, ShardManagerProtocolHttp.NotifyUnhealthyPodResult_)(
             config.shardManagerUri,
             {
               _tag: "NotifyUnhealthyPod",
@@ -36,7 +38,7 @@ export const shardManagerClientHttp = Layer.effect(
         getAssignments: pipe(
           send(
             ShardManagerProtocolHttp.GetAssignments_,
-            ShardManagerProtocolHttp.GetAssignments_Reply
+            ShardManagerProtocolHttp.GetAssignmentsResult_
           )(config.shardManagerUri, {
             _tag: "GetAssignments"
           }),

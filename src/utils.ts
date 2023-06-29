@@ -1,3 +1,4 @@
+import type * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import * as HashSet from "@effect/data/HashSet"
@@ -55,8 +56,8 @@ export function jsonParse<A>(value: string, schema: Schema.Schema<any, A>) {
   )
 }
 
-export function send<A, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, R>) {
-  return (url: string, data: A): Effect.Effect<never, WireThrowable, R> =>
+export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
+  return (url: string, data: A): Effect.Effect<never, WireThrowable | E, R> =>
     pipe(
       jsonStringify(data, send),
       Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
@@ -74,7 +75,8 @@ export function send<A, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any
       Effect.tap((response) => Effect.logDebug(url + " status: " + response.status)),
       Effect.flatMap((response) => Effect.promise(() => response.text())),
       Effect.tap((response) => Effect.logDebug(url + " body: " + response)),
-      Effect.flatMap((data) => jsonParse(data, reply))
+      Effect.flatMap((data) => jsonParse(data, reply)),
+      Effect.flatten
     )
 }
 

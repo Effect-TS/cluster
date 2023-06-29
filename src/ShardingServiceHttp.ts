@@ -1,8 +1,6 @@
-import * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as HashSet from "@effect/data/HashSet"
 import * as Effect from "@effect/io/Effect"
-import * as Schema from "@effect/schema/Schema"
 import * as Config from "@effect/shardcake/Config"
 import * as Sharding from "@effect/shardcake/Sharding"
 import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp"
@@ -20,23 +18,17 @@ export const shardingServiceHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
             asHttpServer(config.shardingPort, ShardingProtocolHttp.schema, (req, reply) => {
               switch (req._tag) {
                 case "AssignShards":
-                  return Effect.zipRight(
-                    sharding.assign(HashSet.fromIterable(req.shards)),
-                    reply(Schema.boolean, true)
+                  return reply(ShardingProtocolHttp.AssignShardResult_)(
+                    Effect.as(sharding.assign(HashSet.fromIterable(req.shards)), true)
                   )
                 case "UnassignShards":
-                  return Effect.zipRight(
-                    sharding.unassign(HashSet.fromIterable(req.shards)),
-                    reply(Schema.boolean, true)
+                  return reply(ShardingProtocolHttp.UnassignShardsResult_)(
+                    Effect.as(sharding.unassign(HashSet.fromIterable(req.shards)), true)
                   )
                 case "Send":
-                  return pipe(
-                    sharding.sendToLocalEntity(req.message),
-                    Effect.flatMap((res) => reply(ShardingProtocolHttp.SendResult_, Either.right(res))),
-                    Effect.catchAll((e) => reply(ShardingProtocolHttp.SendResult_, Either.left(e)))
-                  )
+                  return reply(ShardingProtocolHttp.SendResult_)(sharding.sendToLocalEntity(req.message))
                 case "PingShards":
-                  return reply(Schema.boolean, true)
+                  return reply(ShardingProtocolHttp.PingShardsResult_)(Effect.succeed(true))
               }
               return Effect.die("Unhandled")
             })

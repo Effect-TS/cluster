@@ -1,7 +1,6 @@
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
-import * as Schema from "@effect/schema/Schema"
 import type * as PodAddress from "@effect/shardcake/PodAddress"
 import * as Pods from "@effect/shardcake/Pods"
 import { isFetchError, PodUnavailable } from "@effect/shardcake/ShardError"
@@ -16,7 +15,7 @@ export const httpPods = Layer.succeed(Pods.Pods, {
   [Pods.PodsTypeId]: {},
   assignShards: (pod, shards) =>
     pipe(
-      send(ShardingProtocolHttp.AssignShard_, Schema.boolean)(asHttpUrl(pod), {
+      send(ShardingProtocolHttp.AssignShard_, ShardingProtocolHttp.AssignShardResult_)(asHttpUrl(pod), {
         _tag: "AssignShards",
         shards: Array.from(shards)
       }),
@@ -24,7 +23,7 @@ export const httpPods = Layer.succeed(Pods.Pods, {
     ),
   unassignShards: (pod, shards) =>
     pipe(
-      send(ShardingProtocolHttp.UnassignShards_, Schema.boolean)(asHttpUrl(pod), {
+      send(ShardingProtocolHttp.UnassignShards_, ShardingProtocolHttp.UnassignShardsResult_)(asHttpUrl(pod), {
         _tag: "UnassignShards",
         shards: Array.from(shards)
       }),
@@ -32,7 +31,7 @@ export const httpPods = Layer.succeed(Pods.Pods, {
     ),
   ping: (pod) =>
     pipe(
-      send(ShardingProtocolHttp.PingShards_, Schema.boolean)(asHttpUrl(pod), {
+      send(ShardingProtocolHttp.PingShards_, ShardingProtocolHttp.PingShardsResult_)(asHttpUrl(pod), {
         _tag: "PingShards"
       }),
       Effect.catchAll((e) => {
@@ -48,7 +47,6 @@ export const httpPods = Layer.succeed(Pods.Pods, {
         _tag: "Send",
         message
       }),
-      Effect.flatten,
       Effect.orDie
     )
 })

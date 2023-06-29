@@ -1,6 +1,5 @@
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
-import * as Schema from "@effect/schema/Schema"
 import * as ManagerConfig from "@effect/shardcake/ManagerConfig"
 import * as ShardManager from "@effect/shardcake/ShardManager"
 import * as ShardManagerProtocolHttp from "@effect/shardcake/ShardManagerProtocolHttp"
@@ -18,23 +17,21 @@ export const shardManagerHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
             asHttpServer(managerConfig.apiPort, ShardManagerProtocolHttp.schema, (req, reply) => {
               switch (req._tag) {
                 case "Register":
-                  return Effect.zipRight(
-                    shardManager.register(req.pod),
-                    reply(Schema.boolean, true)
+                  return reply(ShardManagerProtocolHttp.RegisterResult_)(
+                    Effect.as(shardManager.register(req.pod), true)
                   )
                 case "Unregister":
-                  return Effect.zipRight(
-                    shardManager.unregister(req.pod.address),
-                    reply(Schema.boolean, true)
+                  return reply(ShardManagerProtocolHttp.UnregisterResult_)(
+                    Effect.as(shardManager.unregister(req.pod.address), true)
                   )
                 case "NotifyUnhealthyPod":
-                  return Effect.zipRight(
-                    shardManager.notifyUnhealthyPod(req.podAddress),
-                    reply(Schema.boolean, true)
+                  return reply(ShardManagerProtocolHttp.NotifyUnhealthyPodResult_)(
+                    Effect.as(shardManager.notifyUnhealthyPod(req.podAddress), true)
                   )
                 case "GetAssignments":
-                  return Effect.flatMap(shardManager.getAssignments, (assignments) =>
-                    reply(ShardManagerProtocolHttp.GetAssignments_Reply, Array.from(assignments)))
+                  return reply(ShardManagerProtocolHttp.GetAssignmentsResult_)(
+                    Effect.map(shardManager.getAssignments, (_) => Array.from(_))
+                  )
               }
             })
           )
