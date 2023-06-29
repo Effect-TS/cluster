@@ -1,11 +1,14 @@
 {
-  "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:16",
-  "customizations": {
-      "vscode": {
-          "extensions": [
-              "dbaeumer.vscode-eslint"
-          ]
-      }
-  },
-  "initializeCommand": "npm install -g pnpm && pnpm install && pnpm run build"
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:16",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint"
+            ]
+        }
+    },
+    "initializeCommand": "npm install -g pnpm && pnpm install && pnpm run build",
 }
