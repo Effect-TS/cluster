@@ -10,3 +10,5 @@ dist/
 .cache/
 .direnv/
 .idea/
+/assignments.json
+/pods.json

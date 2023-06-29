@@ -140,7 +140,7 @@ function make(
             )
           )
         } else {
-          return Effect.fail(EntityTypeNotRegistered(msg.entityType))
+          return Effect.fail(EntityTypeNotRegistered(msg.entityType, address))
         }
       })
     )

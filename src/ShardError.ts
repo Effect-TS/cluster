@@ -1,4 +1,5 @@
-import type { PodAddress } from "@effect/shardcake/PodAddress"
+import * as Schema from "@effect/schema/Schema"
+import * as PodAddress from "@effect/shardcake/PodAddress"
 import type { EntityType } from "@effect/shardcake/RecipientType"
 
 export interface DecodeError {
@@ -68,21 +69,29 @@ export function isEntityNotManagedByThisPodError(value: any): value is EntityNot
 
 export interface PodUnavailable {
   _tag: "PodUnavailable"
-  pod: PodAddress
+  pod: PodAddress.PodAddress
 }
-export function PodUnavailable(pod: PodAddress): PodUnavailable {
+export function PodUnavailable(pod: PodAddress.PodAddress): PodUnavailable {
   return { _tag: "PodUnavailable", pod }
 }
 export function isPodUnavailableError(value: any): value is PodUnavailable {
   return value && "_tag" in value && value._tag === "PodUnavailable"
 }
 
-export interface EntityTypeNotRegistered {
-  _tag: "EntityTypeNotRegistered"
-  entityType: string
-}
-export function EntityTypeNotRegistered(entityType: string): EntityTypeNotRegistered {
-  return { _tag: "EntityTypeNotRegistered", entityType }
+export const EntityTypeNotRegistered_ = (
+  Schema.struct({
+    _tag: Schema.literal("EntityTypeNotRegistered"),
+    entityType: Schema.string,
+    podAddress: PodAddress.schema
+  })
+)
+export interface EntityTypeNotRegistered extends Schema.To<typeof EntityTypeNotRegistered_> {}
+
+export function EntityTypeNotRegistered(
+  entityType: string,
+  podAddress: PodAddress.PodAddress
+): EntityTypeNotRegistered {
+  return ({ _tag: "EntityTypeNotRegistered", entityType, podAddress })
 }
 
 export interface MessageReturnedNoting {
@@ -96,9 +105,9 @@ export function MessageReturnedNoting<A>(entityId: string, msg: A): MessageRetur
 
 export interface PodNoLongerRegistered {
   _tag: "PodNoLongerRegistered"
-  pod: PodAddress
+  pod: PodAddress.PodAddress
 }
-export function PodNoLongerRegistered(pod: PodAddress): PodNoLongerRegistered {
+export function PodNoLongerRegistered(pod: PodAddress.PodAddress): PodNoLongerRegistered {
   return { _tag: "PodNoLongerRegistered", pod }
 }
 

@@ -2,7 +2,6 @@ import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Schema from "@effect/schema/Schema"
-import * as ByteArray from "@effect/shardcake/ByteArray"
 import type * as PodAddress from "@effect/shardcake/PodAddress"
 import * as Pods from "@effect/shardcake/Pods"
 import { isFetchError, PodUnavailable } from "@effect/shardcake/ShardError"
@@ -45,10 +44,11 @@ export const httpPods = Layer.succeed(Pods.Pods, {
     ),
   sendMessage: (pod, message) =>
     pipe(
-      send(ShardingProtocolHttp.Send_, Schema.option(ByteArray.schema))(asHttpUrl(pod), {
+      send(ShardingProtocolHttp.Send_, ShardingProtocolHttp.SendResult_)(asHttpUrl(pod), {
         _tag: "Send",
         message
       }),
+      Effect.flatten,
       Effect.orDie
     )
 })

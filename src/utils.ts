@@ -73,7 +73,7 @@ export function send<A, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any
       ),
       Effect.tap((response) => Effect.logDebug(url + " status: " + response.status)),
       Effect.flatMap((response) => Effect.promise(() => response.text())),
-      // Effect.tap((response) => Effect.logDebug(url + " body: " + response)),
+      Effect.tap((response) => Effect.logDebug(url + " body: " + response)),
       Effect.flatMap((data) => jsonParse(data, reply))
     )
 }

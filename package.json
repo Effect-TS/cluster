@@ -27,6 +27,9 @@
     "functional-programming"
   ],
   "scripts": {
+    "sample-manager": "pnpm run example ./examples/sample-manager.ts",
+    "sample-connect": "pnpm run example ./examples/sample-connect.ts",
+    "sample-shard": "pnpm run example ./examples/sample-shard.ts",
     "example": "ts-node --project tsconfig.examples.json",
     "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run docs-update",
     "release": "pnpm run build && changeset publish",
