@@ -5,13 +5,19 @@ import * as Schema from "@effect/schema/Schema"
 import * as PodAddress from "@effect/shardcake/PodAddress"
 import type * as RecipentType from "@effect/shardcake/RecipientType"
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface DecodeError {
   _tag: "DecodeError"
   error: unknown
 }
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function DecodeError(error: unknown): DecodeError {
   return {
     _tag: "DecodeError",
@@ -19,13 +25,21 @@ export function DecodeError(error: unknown): DecodeError {
   }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface EncodeError {
   _tag: "EncodeError"
   error: unknown
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function EncodeError(error: unknown): EncodeError {
   return {
     _tag: "EncodeError",
@@ -33,13 +47,21 @@ export function EncodeError(error: unknown): EncodeError {
   }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface ReplyFailure {
   _tag: "ReplyFailure"
   error: unknown
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function ReplyFailure(error: unknown): ReplyFailure {
   return {
     _tag: "ReplyFailure",
@@ -47,17 +69,29 @@ export function ReplyFailure(error: unknown): ReplyFailure {
   }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface SendError {
   _tag: "SendError"
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function SendError(): SendError {
   return { _tag: "SendError" }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface SendTimeoutException<A> {
   _tag: "SendTimeoutException"
   entityType: RecipentType.RecipientType<A>
@@ -65,7 +99,11 @@ export interface SendTimeoutException<A> {
   body: A
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function SendTimeoutException<A>(
   entityType: RecipentType.RecipientType<A>,
   entityId: String,
@@ -74,39 +112,67 @@ export function SendTimeoutException<A>(
   return { _tag: "SendTimeoutException", entityId, entityType, body }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface EntityNotManagedByThisPod {
   _tag: "EntityNotManagedByThisPod"
   entityId: string
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function EntityNotManagedByThisPod(entityId: string): EntityNotManagedByThisPod {
   return { _tag: "EntityNotManagedByThisPod", entityId }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isEntityNotManagedByThisPodError(value: any): value is EntityNotManagedByThisPod {
   return value && "_tag" in value && value._tag === "EntityNotManagedByThisPod"
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface PodUnavailable {
   _tag: "PodUnavailable"
   pod: PodAddress.PodAddress
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function PodUnavailable(pod: PodAddress.PodAddress): PodUnavailable {
   return { _tag: "PodUnavailable", pod }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isPodUnavailableError(value: any): value is PodUnavailable {
   return value && "_tag" in value && value._tag === "PodUnavailable"
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
 export const EntityTypeNotRegistered_ = (
   Schema.struct({
     _tag: Schema.literal("EntityTypeNotRegistered"),
@@ -115,10 +181,18 @@ export const EntityTypeNotRegistered_ = (
   })
 )
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface EntityTypeNotRegistered extends Schema.To<typeof EntityTypeNotRegistered_> {}
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function EntityTypeNotRegistered(
   entityType: string,
   podAddress: PodAddress.PodAddress
@@ -126,41 +200,69 @@ export function EntityTypeNotRegistered(
   return ({ _tag: "EntityTypeNotRegistered", entityType, podAddress })
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface MessageReturnedNoting {
   _tag: "MessageReturnedNoting"
   entityId: string
   msg: any
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function MessageReturnedNoting<A>(entityId: string, msg: A): MessageReturnedNoting {
   return { _tag: "MessageReturnedNoting", entityId, msg }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface PodNoLongerRegistered {
   _tag: "PodNoLongerRegistered"
   pod: PodAddress.PodAddress
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function PodNoLongerRegistered(pod: PodAddress.PodAddress): PodNoLongerRegistered {
   return { _tag: "PodNoLongerRegistered", pod }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface NotAMessageWithReplier {
   _tag: "NotAMessageWithReplier"
   value: unknown
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function NotAMessageWithReplier(value: unknown) {
   return { _tag: "NotAMessageWithReplier", value }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface FetchError {
   _tag: "@effect/shardcake/FetchError"
   url: string
@@ -168,12 +270,20 @@ export interface FetchError {
   error: unknown
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function FetchError(url: string, body: string, error: unknown): FetchError {
   return { _tag: "@effect/shardcake/FetchError", url, body, error }
 }
 
-/** @internal */
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isFetchError(value: unknown): value is FetchError {
   return (
     typeof value === "object" &&

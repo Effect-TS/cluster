@@ -5,14 +5,20 @@ import * as Hash from "@effect/data/Hash"
 import type * as Schema from "@effect/schema/Schema"
 import * as ShardId from "@effect/shardcake/ShardId"
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category models
+ */
 interface EntityType<Msg> {
   _tag: "EntityType"
   name: string
   schema: Schema.Schema<any, Msg>
 }
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category models
+ */
 interface TopicType<Msg> {
   _tag: "TopicType"
   name: string
