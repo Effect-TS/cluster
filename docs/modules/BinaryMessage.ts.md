@@ -74,12 +74,12 @@ export declare const schema: Schema.Schema<
       | { readonly _tag: 'None' }
       | { readonly _tag: 'Some'; readonly value: { readonly _id: '@effect/shardcake/ReplyId'; readonly value: string } }
   },
-  Data.Data<{
+  Data<{
     readonly _id: '@effect/shardcake/BinaryMessage'
     readonly entityId: string
     readonly entityType: string
-    readonly body: Data.Data<{ readonly _id: '@effect/shardcake/ByteArray'; readonly value: string }>
-    readonly replyId: Option.Option<Data.Data<{ readonly _id: '@effect/shardcake/ReplyId'; readonly value: string }>>
+    readonly body: Data<{ readonly _id: '@effect/shardcake/ByteArray'; readonly value: string }>
+    readonly replyId: Option<Data<{ readonly _id: '@effect/shardcake/ReplyId'; readonly value: string }>>
   }>
 >
 ```

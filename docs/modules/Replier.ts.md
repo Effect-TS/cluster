@@ -60,7 +60,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const schema: <A>(schema: Schema.Schema<A, A>) => Schema.Schema<Replier<A>, Replier<A>>
+export declare const schema: <A>(schema: Schema.Schema<any, A>) => Schema.Schema<Replier<A>, Replier<A>>
 ```
 
 Added in v1.0.0

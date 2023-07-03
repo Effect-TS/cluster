@@ -50,7 +50,7 @@ Creates both the schema and a constructor for a `Message<A>`
 **Signature**
 
 ```ts
-export declare function schema<A>(success: Schema.Schema<A>)
+export declare function schema<A>(success: Schema.Schema<any, A>)
 ```
 
 Added in v1.0.0

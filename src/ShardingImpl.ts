@@ -183,7 +183,7 @@ function make(
     recipientTypeName: string,
     entityId: string,
     msg: Msg,
-    msgSchema: Schema.Schema<Msg>,
+    msgSchema: Schema.Schema<any, Msg>,
     pod: PodAddress.PodAddress,
     replyId: Option.Option<ReplyId.ReplyId>
   ): Effect.Effect<never, Throwable, Option.Option<Res>> {

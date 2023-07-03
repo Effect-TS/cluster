@@ -57,7 +57,7 @@ export interface Sharding {
     promise: Deferred.Deferred<Throwable, Option.Option<any>>
   ): Effect.Effect<never, never, void>
   registerScoped: Effect.Effect<Scope, Throwable, void>
-  registerEntity<R, Req>(
+  registerEntity<Req, R>(
     entityType: RecipentType.RecipientType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
     terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,

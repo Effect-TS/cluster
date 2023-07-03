@@ -53,13 +53,15 @@ export function isMessage<R>(value: unknown): value is Message<R> {
  * @since 1.0.0
  * @category schema
  */
-export function schema<A>(success: Schema.Schema<A>) {
-  return function<I extends object>(item: Schema.Schema<I>) {
+export function schema<A>(success: Schema.Schema<any, A>) {
+  return function<I extends object>(
+    item: Schema.Schema<any, I>
+  ): readonly [Schema.Schema<any, I & Message<A>>, (arg: I) => (replyId: ReplyId.ReplyId) => I & Message<A>] {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: Replier.schema(success) })))
 
     const make = (arg: I) =>
       (replyId: ReplyId.ReplyId): I & Message<A> => Data.struct({ ...arg, replier: Replier.replier(replyId, success) })
 
-    return [result, make] as const
+    return [result as any, make] as const
   }
 }

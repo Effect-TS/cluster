@@ -38,7 +38,7 @@ export interface Serialization {
    */
   encode<A>(
     message: A,
-    schema: Schema.Schema<A>
+    schema: Schema.Schema<any, A>
   ): Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>
 
   /**
@@ -47,7 +47,7 @@ export interface Serialization {
    */
   decode<A>(
     bytes: ByteArray.ByteArray,
-    schema: Schema.Schema<A>
+    schema: Schema.Schema<any, A>
   ): Effect.Effect<never, ShardError.DecodeError, A>
 }
 

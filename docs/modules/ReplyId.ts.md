@@ -74,7 +74,7 @@ This is the schema for a value.
 ```ts
 export declare const schema: Schema.Schema<
   { readonly _id: '@effect/shardcake/ReplyId'; readonly value: string },
-  Data.Data<{ readonly _id: '@effect/shardcake/ReplyId'; readonly value: string }>
+  Data<{ readonly _id: '@effect/shardcake/ReplyId'; readonly value: string }>
 >
 ```
 

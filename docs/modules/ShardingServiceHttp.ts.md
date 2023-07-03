@@ -24,9 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const shardingServiceHttp: <R, E, B>(
-  fa: Effect.Effect<R, E, B>
-) => Effect.Effect<Sharding.Sharding | ShardingConfig.ShardingConfig | R, E, B>
+export declare const shardingServiceHttp: <R, E, B>(fa: Effect.Effect<R, E, B>) => unknown
 ```
 
 Added in v1.0.0

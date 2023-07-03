@@ -24,9 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const shardManagerHttp: <R, E, B>(
-  fa: Effect.Effect<R, E, B>
-) => Effect.Effect<ManagerConfig.ManagerConfig | ShardManager.ShardManager | R, E, B>
+export declare const shardManagerHttp: <R, E, B>(fa: Effect.Effect<R, E, B>) => unknown
 ```
 
 Added in v1.0.0

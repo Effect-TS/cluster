@@ -25,7 +25,7 @@ export type TypeId = typeof TypeId
 export interface Replier<R> {
   [TypeId]: {}
   id: ReplyId.ReplyId
-  schema: Schema.Schema<R>
+  schema: Schema.Schema<any, R>
   reply: (reply: R) => Effect.Effect<Sharding.Sharding, never, void>
 }
 
@@ -33,7 +33,7 @@ export interface Replier<R> {
  * @since 1.0.0
  * @category constructors
  */
-export const replier = <R>(id: ReplyId.ReplyId, schema: Schema.Schema<R>): Replier<R> => {
+export const replier = <R>(id: ReplyId.ReplyId, schema: Schema.Schema<any, R>): Replier<R> => {
   const self: Replier<R> = {
     [TypeId]: {},
     id,
@@ -52,7 +52,7 @@ export function isReplier<R>(value: unknown): value is Replier<R> {
  * @since 1.0.0
  * @category schema
  */
-export const schema = <A>(schema: Schema.Schema<A>): Schema.Schema<Replier<A>> => {
+export const schema = <A>(schema: Schema.Schema<any, A>): Schema.Schema<any, Replier<A>> => {
   return Schema.transform(
     ReplyId.schema,
     Schema.unknown,

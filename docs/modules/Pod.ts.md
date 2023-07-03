@@ -61,9 +61,9 @@ export declare const schema: Schema.Schema<
     readonly address: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
     readonly version: string
   },
-  Data.Data<{
+  Data<{
     readonly _id: '@effect/shardcake/Pod'
-    readonly address: Data.Data<{
+    readonly address: Data<{
       readonly _id: '@effect/shardcake/PodAddress'
       readonly host: string
       readonly port: number

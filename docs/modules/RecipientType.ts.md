@@ -28,7 +28,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make<Msg>(name: string, schema: Schema.Schema<Msg>): RecipientType<Msg>
+export declare function make<Msg>(name: string, schema: Schema.Schema<any, Msg>): RecipientType<Msg>
 ```
 
 Added in v1.0.0

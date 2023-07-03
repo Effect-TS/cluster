@@ -24,11 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const shardManagerClientHttp: Layer.Layer<
-  ShardingConfig.ShardingConfig,
-  never,
-  ShardManagerClient.ShardManagerClient
->
+export declare const shardManagerClientHttp: Layer.Layer<unknown, unknown, ShardManagerClient.ShardManagerClient>
 ```
 
 Added in v1.0.0
