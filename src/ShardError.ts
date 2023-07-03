@@ -25,7 +25,6 @@ export function DecodeError(error: unknown): DecodeError {
   }
 }
 
-
 /**
  * @since 1.0.0
  * @category models
@@ -34,7 +33,6 @@ export interface EncodeError {
   _tag: "EncodeError"
   error: unknown
 }
-
 
 /**
  * @since 1.0.0
@@ -47,7 +45,6 @@ export function EncodeError(error: unknown): EncodeError {
   }
 }
 
-
 /**
  * @since 1.0.0
  * @category models
@@ -56,7 +53,6 @@ export interface ReplyFailure {
   _tag: "ReplyFailure"
   error: unknown
 }
-
 
 /**
  * @since 1.0.0
@@ -69,7 +65,6 @@ export function ReplyFailure(error: unknown): ReplyFailure {
   }
 }
 
-
 /**
  * @since 1.0.0
  * @category models
@@ -78,7 +73,6 @@ export interface SendError {
   _tag: "SendError"
 }
 
-
 /**
  * @since 1.0.0
  * @category constructors
@@ -86,7 +80,6 @@ export interface SendError {
 export function SendError(): SendError {
   return { _tag: "SendError" }
 }
-
 
 /**
  * @since 1.0.0
@@ -98,7 +91,6 @@ export interface SendTimeoutException<A> {
   entityId: String
   body: A
 }
-
 
 /**
  * @since 1.0.0
@@ -112,7 +104,6 @@ export function SendTimeoutException<A>(
   return { _tag: "SendTimeoutException", entityId, entityType, body }
 }
 
-
 /**
  * @since 1.0.0
  * @category models
@@ -122,7 +113,6 @@ export interface EntityNotManagedByThisPod {
   entityId: string
 }
 
-
 /**
  * @since 1.0.0
  * @category constructors
@@ -131,7 +121,6 @@ export function EntityNotManagedByThisPod(entityId: string): EntityNotManagedByT
   return { _tag: "EntityNotManagedByThisPod", entityId }
 }
 
-
 /**
  * @since 1.0.0
  * @category utils
@@ -139,7 +128,6 @@ export function EntityNotManagedByThisPod(entityId: string): EntityNotManagedByT
 export function isEntityNotManagedByThisPodError(value: any): value is EntityNotManagedByThisPod {
   return value && "_tag" in value && value._tag === "EntityNotManagedByThisPod"
 }
-
 
 /**
  * @since 1.0.0
@@ -150,7 +138,6 @@ export interface PodUnavailable {
   pod: PodAddress.PodAddress
 }
 
-
 /**
  * @since 1.0.0
  * @category constructors
@@ -159,7 +146,6 @@ export function PodUnavailable(pod: PodAddress.PodAddress): PodUnavailable {
   return { _tag: "PodUnavailable", pod }
 }
 
-
 /**
  * @since 1.0.0
  * @category utils
@@ -167,7 +153,6 @@ export function PodUnavailable(pod: PodAddress.PodAddress): PodUnavailable {
 export function isPodUnavailableError(value: any): value is PodUnavailable {
   return value && "_tag" in value && value._tag === "PodUnavailable"
 }
-
 
 /**
  * @since 1.0.0
@@ -181,13 +166,11 @@ export const EntityTypeNotRegistered_ = (
   })
 )
 
-
 /**
  * @since 1.0.0
  * @category models
  */
 export interface EntityTypeNotRegistered extends Schema.To<typeof EntityTypeNotRegistered_> {}
-
 
 /**
  * @since 1.0.0
@@ -200,7 +183,6 @@ export function EntityTypeNotRegistered(
   return ({ _tag: "EntityTypeNotRegistered", entityType, podAddress })
 }
 
-
 /**
  * @since 1.0.0
  * @category models
@@ -211,7 +193,6 @@ export interface MessageReturnedNoting {
   msg: any
 }
 
-
 /**
  * @since 1.0.0
  * @category constructors
@@ -219,7 +200,6 @@ export interface MessageReturnedNoting {
 export function MessageReturnedNoting<A>(entityId: string, msg: A): MessageReturnedNoting {
   return { _tag: "MessageReturnedNoting", entityId, msg }
 }
-
 
 /**
  * @since 1.0.0
@@ -230,7 +210,6 @@ export interface PodNoLongerRegistered {
   pod: PodAddress.PodAddress
 }
 
-
 /**
  * @since 1.0.0
  * @category constructors
@@ -238,7 +217,6 @@ export interface PodNoLongerRegistered {
 export function PodNoLongerRegistered(pod: PodAddress.PodAddress): PodNoLongerRegistered {
   return { _tag: "PodNoLongerRegistered", pod }
 }
-
 
 /**
  * @since 1.0.0
@@ -249,7 +227,6 @@ export interface NotAMessageWithReplier {
   value: unknown
 }
 
-
 /**
  * @since 1.0.0
  * @category constructors
@@ -257,7 +234,6 @@ export interface NotAMessageWithReplier {
 export function NotAMessageWithReplier(value: unknown) {
   return { _tag: "NotAMessageWithReplier", value }
 }
-
 
 /**
  * @since 1.0.0
@@ -270,7 +246,6 @@ export interface FetchError {
   error: unknown
 }
 
-
 /**
  * @since 1.0.0
  * @category constructors
@@ -278,7 +253,6 @@ export interface FetchError {
 export function FetchError(url: string, body: string, error: unknown): FetchError {
   return { _tag: "@effect/shardcake/FetchError", url, body, error }
 }
-
 
 /**
  * @since 1.0.0
