@@ -311,7 +311,7 @@ serialization
     function send(entityId: string) {
       return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => Msg) => {
         return pipe(
-          ReplyId.make,
+          ReplyId.makeEffect,
           Effect.flatMap((replyId) => {
             const body = fn(replyId)
             return pipe(
@@ -545,7 +545,7 @@ export const live = Layer.scoped(
       )),
     Effect.let("sharding", (_) =>
       make(
-        PodAddress.podAddress(_.config.selfHost, _.config.shardingPort),
+        PodAddress.make(_.config.selfHost, _.config.shardingPort),
         _.config,
         _.shardsCache,
         _.entityStates,

@@ -5,11 +5,11 @@ import * as Logger from "@effect/io/Logger"
 import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as Schema from "@effect/schema/Schema"
-import * as Config from "@effect/shardcake/Config"
 import * as Pods from "@effect/shardcake/Pods"
 import { EntityType } from "@effect/shardcake/RecipientType"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
+import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
 import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
 import * as Storage from "@effect/shardcake/Storage"
@@ -99,7 +99,7 @@ const program = pipe(
   Effect.provideSomeLayer(Serialization.json),
   Effect.provideSomeLayer(ShardManagerClient.local),
   Effect.provideSomeLayer(Storage.memory),
-  Effect.provideSomeLayer(Config.defaults),
+  Effect.provideSomeLayer(ShardingConfig.defaults),
   Effect.catchAllCause((_) => Effect.log(Cause.pretty(_))),
   Logger.withMinimumLogLevel(LogLevel.All)
 )

@@ -62,8 +62,8 @@ export function shardManagerState(
     ),
     averageShardsPerPod: pipe(
       HashMap.isEmpty(pods)
-        ? ShardId.shardId(0)
-        : ShardId.shardId(HashMap.size(shards) / HashMap.size(pods))
+        ? ShardId.make(0)
+        : ShardId.make(HashMap.size(shards) / HashMap.size(pods))
     ),
     shardsPerPod,
     maxVersion,

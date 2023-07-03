@@ -1,33 +1,51 @@
+/**
+ * @since 1.0.0
+ */
 import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as crypto from "crypto"
 
-export const ReplyIdTypeId = "@effect/shardcake/ReplyId"
+/**
+ * @since 1.0.0
+ * @category symbol
+ */
+export const TypeId = "@effect/shardcake/ReplyId"
 
+/**
+ * @since 1.0.0
+ * @category symbol
+ */
+export type TypeId = typeof TypeId
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface ReplyId extends Schema.To<typeof schema> {}
+
+/** @internal */
 export function isReplyId(value: unknown): value is ReplyId {
   return (
     typeof value === "object" &&
     value !== null &&
-    "_tag" in value &&
-    value["_tag"] === ReplyIdTypeId
+    "_id" in value &&
+    value["_id"] === TypeId
   )
 }
 
-export const schema = Schema.data(
-  Schema.struct({
-    _tag: Schema.literal(ReplyIdTypeId),
-    value: Schema.string
-  })
-)
-
-export interface ReplyId extends Schema.To<typeof schema> {}
-
-export function replyId(value: string): ReplyId {
-  return Data.struct({ _tag: ReplyIdTypeId, value })
+/**
+ * Construct a new `ReplyId` from its internal id string value.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export function make(value: string): ReplyId {
+  return Data.struct({ _id: TypeId, value })
 }
 
+/** @internal */
 const makeUUID = typeof crypto !== undefined && typeof crypto.getRandomValues === "function" ?
   Effect.sync(() =>
     // @ts-expect-error
@@ -38,7 +56,26 @@ const makeUUID = typeof crypto !== undefined && typeof crypto.getRandomValues ==
   ) :
   Effect.sync(() => (Math.random() * 10000).toString(36))
 
-export const make = pipe(
+/**
+ * Construct a new `ReplyId` by internally building a UUID.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export const makeEffect = pipe(
   makeUUID,
-  Effect.map(replyId)
+  Effect.map(make)
+)
+
+/**
+ * This is the schema for a value.
+ *
+ * @since 1.0.0
+ * @category schema
+ */
+export const schema = Schema.data(
+  Schema.struct({
+    _id: Schema.literal(TypeId),
+    value: Schema.string
+  })
 )

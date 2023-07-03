@@ -37,7 +37,7 @@ export function isByteArray(value: unknown): value is ByteArray {
 }
 
 /**
- * This is the schema for a ByteArray value.
+ * This is the schema for a value.
  *
  * @since 1.0.0
  * @category schema

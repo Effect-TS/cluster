@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Tag } from "@effect/data/Context"
 import * as Duration from "@effect/data/Duration"
 import * as Layer from "@effect/io/Layer"
@@ -6,13 +9,13 @@ import * as Layer from "@effect/io/Layer"
  * @since 1.0.0
  * @category symbols
  */
-export const ConfigTypeId: unique symbol = Symbol.for("@effect/shardcake/Config")
+export const TypeId: unique symbol = Symbol.for("@effect/shardcake/ShardingConfig")
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type ConfigTypeId = typeof ConfigTypeId
+export type TypeId = typeof TypeId
 
 /**
  * Sharding configuration
@@ -27,6 +30,8 @@ export type ConfigTypeId = typeof ConfigTypeId
  * @param refreshAssignmentsRetryInterval retry interval in case of failure getting shard assignments from storage
  * @param unhealthyPodReportInterval interval to report unhealthy pods to the Shard Manager (this exists to prevent calling the Shard Manager for each failed message)
  * @param simulateRemotePods disable optimizations when sending a message to an entity hosted on the local shards (this will force serialization of all messages)
+ * @since 1.0.0
+ * @category models
  */
 export interface ShardingConfig {
   numberOfShards: number
@@ -42,6 +47,10 @@ export interface ShardingConfig {
   simulateRemotePods: boolean
 }
 
+/**
+ * @since 1.0.0
+ * @category context
+ */
 export const ShardingConfig = Tag<ShardingConfig>()
 
 export const defaults = Layer.succeed(ShardingConfig, {

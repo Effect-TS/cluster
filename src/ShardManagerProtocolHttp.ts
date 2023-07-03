@@ -30,4 +30,11 @@ export const GetAssignmentsResult_ = Schema.either(
     Schema.tuple(ShardId.schema, Schema.option(PodAddress.schema))
   )
 )
+
+/**
+ * This is the schema for the protocol.
+ *
+ * @since 1.0.0
+ * @category schema
+ */
 export const schema = Schema.union(Register_, Unregister_, NotifyUnhealthyPod_, GetAssignments_)

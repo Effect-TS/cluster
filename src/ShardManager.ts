@@ -579,7 +579,7 @@ const live0 = pipe(
         _.filteredAssignments,
         pipe(
           Chunk.range(1, _.config.numberOfShards),
-          Chunk.map((n) => [ShardId.shardId(n), Option.none()] as const),
+          Chunk.map((n) => [ShardId.make(n), Option.none()] as const),
           HashMap.fromIterable
         )
       )

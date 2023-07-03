@@ -1,10 +1,10 @@
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Logger from "@effect/io/Logger"
-import * as Config from "@effect/shardcake/Config"
 import * as PodsHttp from "@effect/shardcake/PodsHttp"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
+import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
 import * as ShardingServiceHttp from "@effect/shardcake/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/shardcake/ShardManagerClientHttp"
@@ -30,7 +30,7 @@ const program = pipe(
   Effect.provideSomeLayer(StorageFile.storageFile),
   Effect.provideSomeLayer(PodsHttp.httpPods),
   Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),
-  Effect.provideSomeLayer(Config.defaults2),
+  Effect.provideSomeLayer(ShardingConfig.defaultsWithShardingPort(54322)),
   Effect.provideSomeLayer(Serialization.json),
   Effect.catchAllCause(Effect.logErrorCause),
   Logger.withMinimumLogLevel(LogLevel.All)

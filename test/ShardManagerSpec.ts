@@ -16,9 +16,9 @@ import * as Storage from "@effect/shardcake/Storage"
 import { assertTrue } from "@effect/shardcake/test/util"
 
 describe.concurrent("ShardManagerSpec", () => {
-  const pod1 = PodWithMetadata.apply(Pod.pod(PodAddress.podAddress("1", 1), "1.0.0"), 0)
-  const pod2 = PodWithMetadata.apply(Pod.pod(PodAddress.podAddress("2", 2), "1.0.0"), 0)
-  const pod3 = PodWithMetadata.apply(Pod.pod(PodAddress.podAddress("3", 3), "1.0.0"), 0)
+  const pod1 = PodWithMetadata.apply(Pod.pod(PodAddress.make("1", 1), "1.0.0"), 0)
+  const pod2 = PodWithMetadata.apply(Pod.pod(PodAddress.make("2", 2), "1.0.0"), 0)
+  const pod3 = PodWithMetadata.apply(Pod.pod(PodAddress.make("3", 3), "1.0.0"), 0)
 
   it("Rebalance unbalanced assignments", () => {
     const state = ShardManagerState.shardManagerState(
@@ -27,8 +27,8 @@ describe.concurrent("ShardManagerSpec", () => {
         [pod2.pod.address, pod2]
       ]),
       HashMap.fromIterable([
-        [ShardId.shardId(1), Option.some(pod1.pod.address)],
-        [ShardId.shardId(2), Option.some(pod1.pod.address)]
+        [ShardId.make(1), Option.some(pod1.pod.address)],
+        [ShardId.make(2), Option.some(pod1.pod.address)]
       ])
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
@@ -47,8 +47,8 @@ describe.concurrent("ShardManagerSpec", () => {
         [pod2.pod.address, newerPod2]
       ]),
       HashMap.fromIterable([
-        [ShardId.shardId(1), Option.some(pod1.pod.address)],
-        [ShardId.shardId(2), Option.some(pod1.pod.address)]
+        [ShardId.make(1), Option.some(pod1.pod.address)],
+        [ShardId.make(2), Option.some(pod1.pod.address)]
       ])
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
@@ -64,8 +64,8 @@ describe.concurrent("ShardManagerSpec", () => {
         [pod2.pod.address, pod2]
       ]),
       HashMap.fromIterable([
-        [ShardId.shardId(1), Option.some(pod1.pod.address)],
-        [ShardId.shardId(2), Option.some(pod2.pod.address)]
+        [ShardId.make(1), Option.some(pod1.pod.address)],
+        [ShardId.make(2), Option.some(pod2.pod.address)]
       ])
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
@@ -80,9 +80,9 @@ describe.concurrent("ShardManagerSpec", () => {
         [pod2.pod.address, pod2]
       ]),
       HashMap.fromIterable([
-        [ShardId.shardId(1), Option.some(pod1.pod.address)],
-        [ShardId.shardId(2), Option.some(pod1.pod.address)],
-        [ShardId.shardId(3), Option.some(pod2.pod.address)]
+        [ShardId.make(1), Option.some(pod1.pod.address)],
+        [ShardId.make(2), Option.some(pod1.pod.address)],
+        [ShardId.make(3), Option.some(pod2.pod.address)]
       ])
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
@@ -97,10 +97,10 @@ describe.concurrent("ShardManagerSpec", () => {
         [pod2.pod.address, pod2]
       ]),
       HashMap.fromIterable([
-        [ShardId.shardId(1), Option.some(pod1.pod.address)],
-        [ShardId.shardId(2), Option.some(pod1.pod.address)],
-        [ShardId.shardId(3), Option.some(pod1.pod.address)],
-        [ShardId.shardId(4), Option.some(pod2.pod.address)]
+        [ShardId.make(1), Option.some(pod1.pod.address)],
+        [ShardId.make(2), Option.some(pod1.pod.address)],
+        [ShardId.make(3), Option.some(pod1.pod.address)],
+        [ShardId.make(4), Option.some(pod2.pod.address)]
       ])
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
@@ -118,9 +118,9 @@ describe.concurrent("ShardManagerSpec", () => {
         [pod3.pod.address, pod3]
       ]),
       HashMap.fromIterable([
-        [ShardId.shardId(1), Option.some(pod1.pod.address)],
-        [ShardId.shardId(2), Option.some(pod1.pod.address)],
-        [ShardId.shardId(3), Option.some(pod2.pod.address)]
+        [ShardId.make(1), Option.some(pod1.pod.address)],
+        [ShardId.make(2), Option.some(pod1.pod.address)],
+        [ShardId.make(3), Option.some(pod2.pod.address)]
       ])
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
@@ -135,7 +135,7 @@ describe.concurrent("ShardManagerSpec", () => {
     const state = ShardManagerState.shardManagerState(
       HashMap.fromIterable([]),
       HashMap.fromIterable([
-        [ShardId.shardId(1), Option.some(pod1.pod.address)]
+        [ShardId.make(1), Option.some(pod1.pod.address)]
       ])
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)

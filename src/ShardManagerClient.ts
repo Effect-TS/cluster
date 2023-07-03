@@ -27,10 +27,10 @@ export const local = pipe(
     ShardManagerClient,
     Effect.gen(function*($) {
       const config = yield* $(ShardingConfig.ShardingConfig)
-      const pod = PodAddress.podAddress(config.selfHost, config.shardingPort)
+      const pod = PodAddress.make(config.selfHost, config.shardingPort)
       let shards = HashMap.empty<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>()
       for (let i = 0; i < config.numberOfShards; i++) {
-        shards = HashMap.set(shards, ShardId.shardId(i), Option.some(pod))
+        shards = HashMap.set(shards, ShardId.make(i), Option.some(pod))
       }
       return {
         register: () => Effect.unit(),

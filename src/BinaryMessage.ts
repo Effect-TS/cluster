@@ -51,7 +51,7 @@ export function isBinaryMessage(value: unknown): value is BinaryMessage {
 }
 
 /**
- * This is the schema for a BinaryMessage value.
+ * This is the schema for a value.
  *
  * @since 1.0.0
  * @category schema

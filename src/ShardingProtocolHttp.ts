@@ -39,4 +39,10 @@ export const PingShardsResult_ = Schema.either(
   Schema.boolean
 )
 
+/**
+ * This is the schema for the protocol.
+ *
+ * @since 1.0.0
+ * @category schema
+ */
 export const schema = Schema.union(AssignShard_, UnassignShards_, Send_, PingShards_)
