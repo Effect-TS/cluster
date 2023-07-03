@@ -25,14 +25,19 @@ const program = pipe(
             pipe(
               Queue.take(dequeue),
               Effect.flatMap(
-                (msg) => ({
-                  Increment: Ref.update(count, (a) => a + 1),
-                  Decrement: Ref.update(count, (a) => a - 1),
-                  GetCurrent: pipe(
-                    Ref.get(count),
-                    Effect.flatMap((_) => msg._tag === "GetCurrent" ? msg.replier.reply(_) : Effect.unit())
-                  )
-                }[msg._tag])
+                (msg) => {
+                  switch (msg._tag) {
+                    case "Increment":
+                      return Ref.update(count, (a) => a + 1)
+                    case "Decrement":
+                      return Ref.update(count, (a) => a + 1)
+                    case "GetCurrent":
+                      return pipe(
+                        Ref.get(count),
+                        Effect.flatMap((_) => msg._tag === "GetCurrent" ? msg.replier.reply(_) : Effect.unit())
+                      )
+                  }
+                }
               ),
               Effect.zipRight(Ref.get(count)),
               Effect.tap((_) => Effect.log("Counter " + counterId + " is now " + _)),
