@@ -1,28 +1,43 @@
-/**
- * @since 1.0.0
- */
-import { Tag } from "@effect/data/Context"
-import type * as HashSet from "@effect/data/HashSet"
-import type * as Option from "@effect/data/Option"
-import type * as Deferred from "@effect/io/Deferred"
-import type * as Effect from "@effect/io/Effect"
-import type * as Queue from "@effect/io/Queue"
-import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
-import type * as ByteArray from "@effect/shardcake/ByteArray"
-import type { Replier } from "@effect/shardcake/Replier"
-import type * as ReplyId from "@effect/shardcake/ReplyId"
-import type { EntityTypeNotRegistered, Throwable } from "@effect/shardcake/ShardError"
+---
+title: Sharding.ts
+nav_order: 22
+parent: Modules
+---
 
-import type * as Duration from "@effect/data/Duration"
-import type { Scope } from "@effect/io/Scope"
-import type { Messenger } from "@effect/shardcake/Messenger"
-import type * as RecipentType from "@effect/shardcake/RecipientType"
-import type * as ShardId from "@effect/shardcake/ShardId"
+## Sharding overview
 
-/**
- * @since 1.0.0
- * @category models
- */
+Added in v1.0.0
+
+---
+
+<h2 class="text-delta">Table of contents</h2>
+
+- [context](#context)
+  - [Sharding](#sharding)
+- [models](#models)
+  - [Sharding (interface)](#sharding-interface)
+
+---
+
+# context
+
+## Sharding
+
+**Signature**
+
+```ts
+export declare const Sharding: Tag<Sharding, Sharding>
+```
+
+Added in v1.0.0
+
+# models
+
+## Sharding (interface)
+
+**Signature**
+
+```ts
 export interface Sharding {
   getShardId: (recipientType: RecipentType.RecipientType<any>, entityId: string) => ShardId.ShardId
   register: Effect.Effect<never, Throwable, void>
@@ -55,9 +70,6 @@ export interface Sharding {
     msg: BinaryMessage.BinaryMessage
   ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<ByteArray.ByteArray>>
 }
+```
 
-/**
- * @since 1.0.0
- * @category context
- */
-export const Sharding = Tag<Sharding>()
+Added in v1.0.0

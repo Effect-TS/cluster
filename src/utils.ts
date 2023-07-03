@@ -8,7 +8,6 @@ import * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
-import type { WireThrowable } from "@effect/shardcake/ShardError"
 import { DecodeError, EncodeError, FetchError } from "@effect/shardcake/ShardError"
 import fetch from "node-fetch"
 
@@ -66,7 +65,7 @@ export function jsonParse<A>(value: string, schema: Schema.Schema<any, A>) {
 
 /** @internal */
 export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
-  return (url: string, data: A): Effect.Effect<never, WireThrowable | E, R> =>
+  return (url: string, data: A) =>
     pipe(
       jsonStringify(data, send),
       Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
@@ -85,6 +84,7 @@ export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<
       Effect.flatMap((response) => Effect.promise(() => response.text())),
       Effect.tap((response) => Effect.logDebug(url + " body: " + response)),
       Effect.flatMap((data) => jsonParse(data, reply)),
+      Effect.orDie,
       Effect.flatten
     )
 }

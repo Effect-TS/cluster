@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { equals } from "@effect/data/Equal"
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
@@ -8,6 +11,10 @@ import type * as PodAddress from "@effect/shardcake/PodAddress"
 import * as PodWithMetadata from "@effect/shardcake/PodWithMetadata"
 import * as ShardId from "@effect/shardcake/ShardId"
 
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface ShardManagerState {
   pods: HashMap.HashMap<PodAddress.PodAddress, PodWithMetadata.PodWithMetadata>
   shards: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
@@ -18,7 +25,11 @@ export interface ShardManagerState {
   allPodsHaveMaxVersion: boolean
 }
 
-export function shardManagerState(
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export function make(
   pods: HashMap.HashMap<PodAddress.PodAddress, PodWithMetadata.PodWithMetadata>,
   shards: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
 ): ShardManagerState {

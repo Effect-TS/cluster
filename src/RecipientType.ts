@@ -1,28 +1,43 @@
+/**
+ * @since 1.0.0
+ */
 import * as Hash from "@effect/data/Hash"
 import type * as Schema from "@effect/schema/Schema"
 import * as ShardId from "@effect/shardcake/ShardId"
 
-/**
- * An abstract type to extend for each type of entity or topic
- * @param name a unique string that identifies this entity or topic type
- * @tparam Msg the type of message that can be sent to this entity or topic type
- */
-
-export interface EntityType<Msg> {
+/** @internal */
+interface EntityType<Msg> {
   _tag: "EntityType"
   name: string
   schema: Schema.Schema<Msg>
 }
-export interface TopicType<Msg> {
+
+/** @internal */
+interface TopicType<Msg> {
   _tag: "TopicType"
   name: string
   schema: Schema.Schema<Msg>
 }
-export type RecipentType<Msg> = EntityType<Msg> | TopicType<Msg>
 
-export const getShardId = (entityId: string, numberOfShards: number): ShardId.ShardId =>
-  ShardId.make(Math.abs(Hash.string(entityId) % numberOfShards) + 1)
+/**
+ * An abstract type to extend for each type of entity or topic
+ * @since 1.0.0
+ * @category models
+ */
+export type RecipientType<Msg> = EntityType<Msg> | TopicType<Msg>
 
-export function EntityType<Msg>(name: string, schema: Schema.Schema<Msg>): EntityType<Msg> {
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export function make<Msg>(name: string, schema: Schema.Schema<Msg>): RecipientType<Msg> {
   return { _tag: "EntityType", name, schema }
 }
+
+/**
+ * Gets the shard id where this entity should run.
+ * @since 1.0.0
+ * @category utils
+ */
+export const getShardId = (entityId: string, numberOfShards: number): ShardId.ShardId =>
+  ShardId.make(Math.abs(Hash.string(entityId) % numberOfShards) + 1)

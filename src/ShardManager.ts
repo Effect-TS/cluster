@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as HashMap from "@effect/data//HashMap"
 import * as Chunk from "@effect/data/Chunk"
 import { Tag } from "@effect/data/Context"
@@ -26,6 +29,10 @@ import * as Storage from "@effect/shardcake/Storage"
 import * as Stream from "@effect/stream/Stream"
 import { groupBy, minByOption, showHashMap, showHashSet } from "./utils"
 
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface ShardManager {
   getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>
   register(pod: Pod.Pod): Effect.Effect<never, never, void>
@@ -43,9 +50,14 @@ export interface ShardManager {
   /* @internal */
   persistPods: Effect.Effect<never, never, void>
 }
+
+/**
+ * @since 1.0.0
+ * @category context
+ */
 export const ShardManager = Tag<ShardManager>()
 
-export function apply(
+function make(
   stateRef: RefSynchronized.Synchronized<ShardManagerState.ShardManagerState>,
   rebalanceSemaphore: Effect.Semaphore,
   eventsHub: Hub.Hub<ShardingEvent.ShardingEvent>,
@@ -73,7 +85,7 @@ export function apply(
           pipe(
             Effect.flatMap(Effect.clock(), (_) => _.currentTimeMillis()),
             Effect.map((cdt) =>
-              ShardManagerState.shardManagerState(
+              ShardManagerState.make(
                 HashMap.set(state.pods, pod.address, PodWithMetadata.make(pod, cdt)),
                 state.shards
               )
@@ -391,10 +403,12 @@ export function apply(
   }
 }
 
+/** @internal */
 export function decideAssignmentsForUnassignedShards(state: ShardManagerState.ShardManagerState) {
   return pickNewPods(List.fromIterable(state.unassignedShards), state, true, 1)
 }
 
+/** @internal */
 export function decideAssignmentsForUnbalancedShards(
   state: ShardManagerState.ShardManagerState,
   rebalanceRate: number
@@ -573,7 +587,7 @@ const live0 = pipe(
     )),
   Effect.bind("cdt", (_) => Clock.currentTimeMillis()),
   Effect.let("initialState", (_) =>
-    ShardManagerState.shardManagerState(
+    ShardManagerState.make(
       HashMap.map(_.filteredPods, (pod) => PodWithMetadata.make(pod, _.cdt)),
       HashMap.union(
         _.filteredAssignments,
@@ -591,7 +605,7 @@ const live1 = pipe(
   Effect.bind("rebalanceSemaphore", (_) => Effect.makeSemaphore(1)),
   Effect.bind("eventsHub", (_) => Hub.unbounded<ShardingEvent.ShardingEvent>()),
   Effect.let("shardManager", (_) =>
-    apply(
+    make(
       _.state,
       _.rebalanceSemaphore,
       _.eventsHub,
@@ -623,4 +637,8 @@ const live1 = pipe(
   Effect.map((_) => _.shardManager)
 )
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const live = Layer.effect(ShardManager, live1)

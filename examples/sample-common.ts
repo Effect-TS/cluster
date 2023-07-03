@@ -1,6 +1,6 @@
 import * as Schema from "@effect/schema/Schema"
 import * as Message from "@effect/shardcake/Message"
-import { EntityType } from "@effect/shardcake/RecipientType"
+import { make } from "@effect/shardcake/RecipientType"
 
 export const [GetCurrent_, GetCurrent] = Message.schema(Schema.number)(
   Schema.struct({
@@ -20,4 +20,4 @@ export const CounterMsg = Schema.union(
 
 export type CounterMsg = Schema.To<typeof CounterMsg>
 
-export const CounterEntity = EntityType("Counter", CounterMsg)
+export const CounterEntity = make("Counter", CounterMsg)

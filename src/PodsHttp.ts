@@ -42,7 +42,7 @@ export const httpPods = Layer.succeed(Pods.Pods, {
       send(ShardingProtocolHttp.PingShards_, ShardingProtocolHttp.PingShardsResult_)(asHttpUrl(pod), {
         _tag: "PingShards"
       }),
-      Effect.catchAll((e) => {
+      Effect.catchAllDefect((e) => {
         if (isFetchError(e)) {
           return Effect.fail(PodUnavailable(pod))
         }

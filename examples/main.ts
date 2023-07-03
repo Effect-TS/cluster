@@ -6,7 +6,7 @@ import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as Schema from "@effect/schema/Schema"
 import * as Pods from "@effect/shardcake/Pods"
-import { EntityType } from "@effect/shardcake/RecipientType"
+import * as RecipientType from "@effect/shardcake/RecipientType"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
@@ -48,7 +48,7 @@ const CounterMsg = Schema.union(
 
 type CounterMsg = Schema.To<typeof CounterMsg>
 
-const CounterEntity = EntityType("Counter", CounterMsg)
+const CounterEntity = RecipientType.make("Counter", CounterMsg)
 
 const program = pipe(
   Effect.flatMap(Sharding.Sharding, (sharding) =>

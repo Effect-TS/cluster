@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Data from "@effect/data/Data"
 import type * as Option from "@effect/data/Option"
 import type * as Deferred from "@effect/io/Deferred"
@@ -7,11 +10,24 @@ import type * as ByteArray from "@effect/shardcake/ByteArray"
 import type * as EntityManager from "@effect/shardcake/EntityManager"
 import type * as ShardError from "@effect/shardcake/ShardError"
 
-export const EntityStateTypeId = Symbol.for("@effect/shardcake/EntityState")
-export type EntityStateTypeId = typeof EntityStateTypeId
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export const TypeId = Symbol.for("@effect/shardcake/EntityState")
 
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type TypeId = typeof TypeId
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface EntityState {
-  [EntityStateTypeId]: {}
+  [TypeId]: {}
   binaryQueue: Queue.Queue<
     readonly [
       BinaryMessage.BinaryMessage,
@@ -22,9 +38,13 @@ export interface EntityState {
   entityManager: EntityManager.EntityManager<never>
 }
 
-export function apply(
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export function make(
   binaryQueue: EntityState["binaryQueue"],
   entityManager: EntityState["entityManager"]
 ): EntityState {
-  return Data.struct({ [EntityStateTypeId]: {}, binaryQueue, entityManager })
+  return Data.struct({ [TypeId]: {}, binaryQueue, entityManager })
 }

@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Tag } from "@effect/data/Context"
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
@@ -5,23 +8,34 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as PodAddress from "@effect/shardcake/PodAddress"
-import type { WireThrowable } from "@effect/shardcake/ShardError"
 import * as ShardId from "@effect/shardcake/ShardId"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface ShardManagerClient {
-  register(podAddress: PodAddress.PodAddress): Effect.Effect<never, WireThrowable, void>
-  unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, WireThrowable, void>
-  notifyUnhealthyPod(podAddress: PodAddress.PodAddress): Effect.Effect<never, WireThrowable, void>
+  register(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>
+  unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>
+  notifyUnhealthyPod(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>
   getAssignments: Effect.Effect<
     never,
-    WireThrowable,
+    never,
     HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
   >
 }
 
+/**
+ * @since 1.0.0
+ * @category context
+ */
 export const ShardManagerClient = Tag<ShardManagerClient>()
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const local = pipe(
   Layer.effect(
     ShardManagerClient,

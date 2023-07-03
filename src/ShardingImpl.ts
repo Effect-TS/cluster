@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Equal from "@effect/data/Equal"
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
@@ -29,7 +32,6 @@ import * as Schedule from "@effect/io/Schedule"
 import type { Scope } from "@effect/io/Scope"
 import type * as Schema from "@effect/schema/Schema"
 import type { Messenger } from "@effect/shardcake/Messenger"
-import type { EntityType, RecipentType } from "@effect/shardcake/RecipientType"
 import * as RecipientType from "@effect/shardcake/RecipientType"
 import * as Serialization from "@effect/shardcake/Serialization"
 import {
@@ -45,6 +47,7 @@ import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as Storage from "@effect/shardcake/Storage"
 import { Sharding } from "./Sharding"
 
+/** @internal */
 function make(
   address: PodAddress.PodAddress,
   config: ShardingConfig.ShardingConfig,
@@ -64,7 +67,7 @@ function make(
   serialization: Serialization.Serialization
   // eventsHub: Hub<ShardingRegistrationEvent>
 ) {
-  function getShardId(recipientType: RecipentType<any>, entityId: string): ShardId.ShardId {
+  function getShardId(recipientType: RecipientType.RecipientType<any>, entityId: string): ShardId.ShardId {
     return RecipientType.getShardId(entityId, config.numberOfShards)
   }
 
@@ -256,7 +259,7 @@ serialization
   }
 
   function messenger<Msg>(
-    entityType: EntityType<Msg>,
+    entityType: RecipientType.RecipientType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Messenger<Msg> {
     const timeout = pipe(
@@ -332,7 +335,7 @@ serialization
   }
 
   function registerRecipient<R, Req>(
-    recipientType: RecipentType<Req>,
+    recipientType: RecipientType.RecipientType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
     terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none(),
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
@@ -364,7 +367,7 @@ serialization
       yield* $(
         pipe(
           entityStates,
-          Ref.update(HashMap.set(recipientType.name, EntityState.apply(binaryQueue, entityManager)))
+          Ref.update(HashMap.set(recipientType.name, EntityState.make(binaryQueue, entityManager)))
         )
       )
 
@@ -415,7 +418,7 @@ serialization
   }
 
   function registerEntity<R, Req>(
-    entityType: EntityType<Req>,
+    entityType: RecipientType.RecipientType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
     terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none(),
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
@@ -424,7 +427,7 @@ serialization
   }
 
   function isEntityOnLocalShards(
-    recipientType: RecipentType<any>,
+    recipientType: RecipientType.RecipientType<any>,
     entityId: string
   ): Effect.Effect<never, never, boolean> {
     return pipe(
@@ -527,6 +530,10 @@ serialization
   return self
 }
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const live = Layer.scoped(
   Sharding,
   pipe(

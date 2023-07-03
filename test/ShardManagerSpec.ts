@@ -21,7 +21,7 @@ describe.concurrent("ShardManagerSpec", () => {
   const pod3 = PodWithMetadata.make(Pod.make(PodAddress.make("3", 3), "1.0.0"), 0)
 
   it("Rebalance unbalanced assignments", () => {
-    const state = ShardManagerState.shardManagerState(
+    const state = ShardManagerState.make(
       HashMap.fromIterable([
         [pod1.pod.address, pod1],
         [pod2.pod.address, pod2]
@@ -41,7 +41,7 @@ describe.concurrent("ShardManagerSpec", () => {
 
   it("Don't rebalance to pod with older version", () => {
     const newerPod2 = PodWithMetadata.make(Pod.make(pod2.pod.address, "0.1.2"), pod2.registered)
-    const state = ShardManagerState.shardManagerState(
+    const state = ShardManagerState.make(
       HashMap.fromIterable([
         [pod1.pod.address, pod1],
         [pod2.pod.address, newerPod2]
@@ -58,7 +58,7 @@ describe.concurrent("ShardManagerSpec", () => {
   })
 
   it("Don't rebalance when already well balanced", () => {
-    const state = ShardManagerState.shardManagerState(
+    const state = ShardManagerState.make(
       HashMap.fromIterable([
         [pod1.pod.address, pod1],
         [pod2.pod.address, pod2]
@@ -74,7 +74,7 @@ describe.concurrent("ShardManagerSpec", () => {
     assertTrue(HashMap.isEmpty(unassignments))
   })
   it("Don't rebalance when only 1 shard difference", () => {
-    const state = ShardManagerState.shardManagerState(
+    const state = ShardManagerState.make(
       HashMap.fromIterable([
         [pod1.pod.address, pod1],
         [pod2.pod.address, pod2]
@@ -91,7 +91,7 @@ describe.concurrent("ShardManagerSpec", () => {
     assertTrue(HashMap.isEmpty(unassignments))
   })
   it("Rebalance when 2 shard difference", () => {
-    const state = ShardManagerState.shardManagerState(
+    const state = ShardManagerState.make(
       HashMap.fromIterable([
         [pod1.pod.address, pod1],
         [pod2.pod.address, pod2]
@@ -111,7 +111,7 @@ describe.concurrent("ShardManagerSpec", () => {
     assertTrue(HashMap.size(unassignments) === 1)
   })
   it("Pick the pod with less shards", () => {
-    const state = ShardManagerState.shardManagerState(
+    const state = ShardManagerState.make(
       HashMap.fromIterable([
         [pod1.pod.address, pod1],
         [pod2.pod.address, pod2],
@@ -132,7 +132,7 @@ describe.concurrent("ShardManagerSpec", () => {
   })
 
   it("Don't rebalance if pod list is empty", () => {
-    const state = ShardManagerState.shardManagerState(
+    const state = ShardManagerState.make(
       HashMap.fromIterable([]),
       HashMap.fromIterable([
         [ShardId.make(1), Option.some(pod1.pod.address)]

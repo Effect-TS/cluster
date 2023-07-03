@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as ManagerConfig from "@effect/shardcake/ManagerConfig"
@@ -5,6 +8,10 @@ import * as ShardManager from "@effect/shardcake/ShardManager"
 import * as ShardManagerProtocolHttp from "@effect/shardcake/ShardManagerProtocolHttp"
 import { asHttpServer } from "./node"
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const shardManagerHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
   pipe(
     ShardManager.ShardManager,

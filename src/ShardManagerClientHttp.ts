@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import * as Effect from "@effect/io/Effect"
@@ -8,6 +11,10 @@ import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
 import * as ShardManagerProtocolHttp from "@effect/shardcake/ShardManagerProtocolHttp"
 import { send } from "./utils"
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const shardManagerClientHttp = Layer.effect(
   ShardManagerClient.ShardManagerClient,
   pipe(

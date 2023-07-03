@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { pipe } from "@effect/data/Function"
 import * as HashSet from "@effect/data/HashSet"
 import * as Effect from "@effect/io/Effect"
@@ -6,6 +9,10 @@ import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp"
 import { asHttpServer } from "./node"
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const shardingServiceHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
   pipe(
     Sharding.Sharding,

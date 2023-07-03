@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Duration from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
@@ -15,6 +18,10 @@ import type * as ShardId from "@effect/shardcake/ShardId"
 import type * as Sharding from "@effect/shardcake/Sharding"
 import type * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface EntityManager<Req> {
   send(
     entityId: string,
@@ -28,8 +35,12 @@ export interface EntityManager<Req> {
   terminateAllEntities: Effect.Effect<never, never, void>
 }
 
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
 export function make<R, Req>(
-  recipientType: RecipientType.RecipentType<Req>,
+  recipientType: RecipientType.RecipientType<Req>,
   behavior_: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
   terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
   sharding: Sharding.Sharding,

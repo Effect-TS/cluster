@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import type * as Option from "@effect/data/Option"
@@ -100,6 +103,10 @@ const assignmentsStream = pipe(
   Stream.mapEffect(() => getAssignments)
 )
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const storageFile = Layer.scoped(
   Storage.Storage,
   Effect.succeed({
