@@ -53,6 +53,10 @@ export interface ShardingConfig {
  */
 export const ShardingConfig = Tag<ShardingConfig>()
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const defaults = Layer.succeed(ShardingConfig, {
   numberOfShards: 300,
   selfHost: "localhost",
@@ -67,6 +71,10 @@ export const defaults = Layer.succeed(ShardingConfig, {
   simulateRemotePods: false
 })
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export function defaultsWithShardingPort(shardingPort: number) {
   return Layer.succeed(ShardingConfig, {
     numberOfShards: 300,

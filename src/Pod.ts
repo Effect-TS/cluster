@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Data from "@effect/data/Data"
 import * as Schema from "@effect/schema/Schema"
 import * as PodAddress from "@effect/shardcake/PodAddress"
@@ -6,28 +9,51 @@ import * as PodAddress from "@effect/shardcake/PodAddress"
  * @since 1.0.0
  * @category symbols
  */
-export const PodTypeId = "@effect/shardcake/Pod"
+export const TypeId = "@effect/shardcake/Pod"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type PodTypeId = typeof PodTypeId
+export type TypeId = typeof TypeId
 
-export const Schema_ = Schema.data(
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface Pod extends Schema.To<typeof schema> {}
+
+/** @internal */
+export function isPod(value: unknown): value is Pod {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "_id" in value &&
+    value["_id"] === TypeId
+  )
+}
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export function make(address: PodAddress.PodAddress, version: string): Pod {
+  return Data.struct({ _id: TypeId, address, version })
+}
+
+/** @internal */
+export function show(value: Pod) {
+  return "Pod(address=" + value.address + ", version=" + value.version + ")"
+}
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const schema = Schema.data(
   Schema.struct({
-    _tag: Schema.literal(PodTypeId),
+    _id: Schema.literal(TypeId),
     address: PodAddress.schema,
     version: Schema.string
   })
 )
-
-export interface Pod extends Schema.To<typeof Schema_> {}
-
-export function pod(address: PodAddress.PodAddress, version: string): Pod {
-  return Data.struct({ _tag: PodTypeId, address, version })
-}
-
-export function show(value: Pod) {
-  return "Pod(address=" + value.address + ", version=" + value.version + ")"
-}

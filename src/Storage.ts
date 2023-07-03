@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Tag } from "@effect/data/Context"
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
@@ -15,14 +18,18 @@ import * as SubscriptionRef from "@effect/stream/SubscriptionRef"
  * @since 1.0.0
  * @category symbols
  */
-export const StorageTypeId: unique symbol = Symbol.for("@effect/shardcake/StorageTypeId")
+export const TypeId: unique symbol = Symbol.for("@effect/shardcake/StorageTypeId")
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type StorageTypeId = typeof StorageTypeId
+export type TypeId = typeof TypeId
 
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface Storage {
   /**
    * Get the current state of shard assignments to pods
@@ -60,8 +67,10 @@ export const Storage = Tag<Storage>()
 /**
  * A layer that stores data in-memory.
  * This is useful for testing with a single pod only.
+ *
+ * @since 1.0.0
+ * @category layers
  */
-
 export const memory = Layer.effect(
   Storage,
   Effect.gen(function*($) {
@@ -80,6 +89,12 @@ export const memory = Layer.effect(
   })
 )
 
+/**
+ * A layer that does nothing, useful for testing.
+ *
+ * @since 1.0.0
+ * @category layers
+ */
 export const noop = Layer.effect(
   Storage,
   Effect.succeed({

@@ -17,14 +17,14 @@ export const shardManagerClientHttp = Layer.effect(
         register: (podAddress) =>
           send(ShardManagerProtocolHttp.Register_, ShardManagerProtocolHttp.RegisterResult_)(config.shardManagerUri, {
             _tag: "Register",
-            pod: Pod.pod(podAddress, config.serverVersion)
+            pod: Pod.make(podAddress, config.serverVersion)
           }),
         unregister: (podAddress) =>
           send(ShardManagerProtocolHttp.Unregister_, ShardManagerProtocolHttp.UnregisterResult_)(
             config.shardManagerUri,
             {
               _tag: "Unregister",
-              pod: Pod.pod(podAddress, config.serverVersion)
+              pod: Pod.make(podAddress, config.serverVersion)
             }
           ),
         notifyUnhealthyPod: (podAddress) =>

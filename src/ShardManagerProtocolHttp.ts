@@ -5,13 +5,13 @@ import * as ShardId from "@effect/shardcake/ShardId"
 
 export const Register_ = Schema.struct({
   _tag: Schema.literal("Register"),
-  pod: Pod.Schema_
+  pod: Pod.schema
 })
 export const RegisterResult_ = Schema.either(Schema.never, Schema.boolean)
 
 export const Unregister_ = Schema.struct({
   _tag: Schema.literal("Unregister"),
-  pod: Pod.Schema_
+  pod: Pod.schema
 })
 export const UnregisterResult_ = Schema.either(Schema.never, Schema.boolean)
 

@@ -74,7 +74,7 @@ export function apply(
             Effect.flatMap(Effect.clock(), (_) => _.currentTimeMillis()),
             Effect.map((cdt) =>
               ShardManagerState.shardManagerState(
-                HashMap.set(state.pods, pod.address, PodWithMetadata.apply(pod, cdt)),
+                HashMap.set(state.pods, pod.address, PodWithMetadata.make(pod, cdt)),
                 state.shards
               )
             )
@@ -574,7 +574,7 @@ const live0 = pipe(
   Effect.bind("cdt", (_) => Clock.currentTimeMillis()),
   Effect.let("initialState", (_) =>
     ShardManagerState.shardManagerState(
-      HashMap.map(_.filteredPods, (pod) => PodWithMetadata.apply(pod, _.cdt)),
+      HashMap.map(_.filteredPods, (pod) => PodWithMetadata.make(pod, _.cdt)),
       HashMap.union(
         _.filteredAssignments,
         pipe(

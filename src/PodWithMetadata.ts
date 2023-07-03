@@ -1,18 +1,53 @@
+/**
+ * @since 1.0.0
+ */
 import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as List from "@effect/data/List"
 import * as Option from "@effect/data/Option"
+import * as Schema from "@effect/schema/Schema"
 import * as Pod from "@effect/shardcake/Pod"
 
-export interface PodWithMetadata {
-  pod: Pod.Pod
-  registered: number
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export const TypeId = "@effect/shardcake/PodWithMetadata"
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type TypeId = typeof TypeId
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface PodWithMetadata extends Schema.To<typeof schema> {}
+
+/** @internal */
+export function isPodWithMetadata(value: unknown): value is PodWithMetadata {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "_id" in value &&
+    value["_id"] === TypeId
+  )
 }
 
-export function apply(pod: Pod.Pod, registered: number): PodWithMetadata {
-  return Data.struct({ pod, registered })
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export function make(pod: Pod.Pod, registered: number): PodWithMetadata {
+  return Data.struct({ _id: TypeId, pod, registered })
 }
 
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function extractVersion(pod: PodWithMetadata): List.List<number> {
   return pipe(
     List.fromIterable(pod.pod.version.split(".")),
@@ -20,6 +55,10 @@ export function extractVersion(pod: PodWithMetadata): List.List<number> {
   )
 }
 
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function compareVersion(a: List.List<number>, b: List.List<number>): 0 | 1 | -1 {
   let restA = a
   let restB = b
@@ -47,6 +86,19 @@ export function compareVersion(a: List.List<number>, b: List.List<number>): 0 | 
   return 0
 }
 
+/** @internal */
 export function show(value: PodWithMetadata) {
   return "PodWithMetadata(pod=" + Pod.show(value.pod) + ", registered=" + value.registered + ")"
 }
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const schema = Schema.data(
+  Schema.struct({
+    _id: Schema.literal(TypeId),
+    pod: Pod.schema,
+    registered: Schema.number
+  })
+)

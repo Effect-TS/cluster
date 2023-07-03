@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Tag } from "@effect/data/Context"
 import type * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
@@ -13,23 +16,27 @@ import type * as ShardId from "@effect/shardcake/ShardId"
  * @since 1.0.0
  * @category symbols
  */
-export const PodsTypeId: unique symbol = Symbol.for("@effect/shardcake/Pods")
+export const TypeId: unique symbol = Symbol.for("@effect/shardcake/Pods")
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type PodsTypeId = typeof PodsTypeId
+export type TypeId = typeof TypeId
 
 /**
  * An interface to communicate with remote pods.
  * This is used by the Shard Manager for assigning and unassigning shards.
  * This is also used by pods for internal communication (forward messages to each other).
+ *
+ * @since 1.0.0
+ * @category models
  */
 export interface Pods {
-  [PodsTypeId]: {}
+  [TypeId]: {}
   /**
    * Notify a pod that it was assigned a list of shards
+   * @since 1.0.0
    */
   assignShards(
     pod: PodAddress.PodAddress,
@@ -38,6 +45,7 @@ export interface Pods {
 
   /**
    * Notify a pod that it was unassigned a list of shards
+   * @since 1.0.0
    */
   unassignShards(
     pod: PodAddress.PodAddress,
@@ -46,11 +54,13 @@ export interface Pods {
 
   /**
    * Check that a pod is responsive
+   * @since 1.0.0
    */
   ping(pod: PodAddress.PodAddress): Effect.Effect<never, PodUnavailable, void>
 
   /**
    * Send a message to a pod
+   * @since 1.0.0
    */
   sendMessage(
     pod: PodAddress.PodAddress,
@@ -58,14 +68,21 @@ export interface Pods {
   ): Effect.Effect<never, never, Option.Option<ByteArray.ByteArray>>
 }
 
+/**
+ * @since 1.0.0
+ * @category context
+ */
 export const Pods = Tag<Pods>()
 
 /**
  * A layer that creates a service that does nothing when called.
  * Useful for testing ShardManager or when using Sharding.local.
+ *
+ * @since 1.0.0
+ * @category layers
  */
 export const noop = Layer.succeed(Pods, {
-  [PodsTypeId]: {},
+  [TypeId]: {},
   assignShards: () => Effect.unit(),
   unassignShards: () => Effect.unit(),
   ping: () => Effect.unit(),

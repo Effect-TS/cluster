@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Tag } from "@effect/data/Context"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
@@ -24,21 +27,30 @@ export type TypeId = typeof TypeId
  * If the pod is alive, shards will not be unassigned because the pods might still be processing messages and might be responsive again.
  * If the pod is not alive, shards can be safely reassigned somewhere else.
  * A typical implementation for this is using k8s to check if the pod still exists.
+ * @since 1.0.0
+ * @category models
  */
 export interface PodsHealth {
   [TypeId]: {}
 
   /**
    * Check if a pod is still alive.
+   * @since 1.0.0
    */
   isAlive(podAddress: PodAddress): Effect.Effect<never, never, boolean>
 }
 
+/**
+ * @since 1.0.0
+ * @category context
+ */
 export const PodsHealth = Tag<PodsHealth>()
 
 /**
  * A layer that considers pods as always alive.
  * This is useful for testing only.
+ * @since 1.0.0
+ * @category layers
  */
 export const noop = Layer.succeed(PodsHealth, {
   [TypeId]: {},
@@ -48,6 +60,8 @@ export const noop = Layer.succeed(PodsHealth, {
 /**
  * A layer that pings the pod directly to check if it's alive.
  * This is useful for developing and testing but not reliable in production.
+ * @since 1.0.0
+ * @category layers
  */
 export const local = Layer.effect(
   PodsHealth,

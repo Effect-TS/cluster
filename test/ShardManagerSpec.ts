@@ -16,9 +16,9 @@ import * as Storage from "@effect/shardcake/Storage"
 import { assertTrue } from "@effect/shardcake/test/util"
 
 describe.concurrent("ShardManagerSpec", () => {
-  const pod1 = PodWithMetadata.apply(Pod.pod(PodAddress.make("1", 1), "1.0.0"), 0)
-  const pod2 = PodWithMetadata.apply(Pod.pod(PodAddress.make("2", 2), "1.0.0"), 0)
-  const pod3 = PodWithMetadata.apply(Pod.pod(PodAddress.make("3", 3), "1.0.0"), 0)
+  const pod1 = PodWithMetadata.make(Pod.make(PodAddress.make("1", 1), "1.0.0"), 0)
+  const pod2 = PodWithMetadata.make(Pod.make(PodAddress.make("2", 2), "1.0.0"), 0)
+  const pod3 = PodWithMetadata.make(Pod.make(PodAddress.make("3", 3), "1.0.0"), 0)
 
   it("Rebalance unbalanced assignments", () => {
     const state = ShardManagerState.shardManagerState(
@@ -40,7 +40,7 @@ describe.concurrent("ShardManagerSpec", () => {
   })
 
   it("Don't rebalance to pod with older version", () => {
-    const newerPod2 = PodWithMetadata.apply(Pod.pod(pod2.pod.address, "0.1.2"), pod2.registered)
+    const newerPod2 = PodWithMetadata.make(Pod.make(pod2.pod.address, "0.1.2"), pod2.registered)
     const state = ShardManagerState.shardManagerState(
       HashMap.fromIterable([
         [pod1.pod.address, pod1],

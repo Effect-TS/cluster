@@ -20,7 +20,7 @@ const AssignmentsSchema = Schema.array(
   Schema.tuple(ShardId.schema, Schema.optionFromNullable(PodAddress.schema))
 )
 
-const PodsSchema = Schema.array(Schema.tuple(PodAddress.schema, Pod.Schema_))
+const PodsSchema = Schema.array(Schema.tuple(PodAddress.schema, Pod.schema))
 
 function writeJsonData<A>(fileName: string, schema: Schema.Schema<any, A>, data: A) {
   return pipe(

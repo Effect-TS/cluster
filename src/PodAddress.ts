@@ -23,7 +23,7 @@ export type TypeId = typeof TypeId
 export interface PodAddress extends Schema.To<typeof schema> {}
 
 /** @internal */
-export function isByteArray(value: unknown): value is PodAddress {
+export function isPodAddress(value: unknown): value is PodAddress {
   return (
     typeof value === "object" &&
     value !== null &&

@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
@@ -7,12 +10,17 @@ import { isFetchError, PodUnavailable } from "@effect/shardcake/ShardError"
 import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp"
 import { send } from "./utils"
 
+/** @internal */
 function asHttpUrl(pod: PodAddress.PodAddress): string {
   return `http://${pod.host}:${pod.port}/`
 }
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const httpPods = Layer.succeed(Pods.Pods, {
-  [Pods.PodsTypeId]: {},
+  [Pods.TypeId]: {},
   assignShards: (pod, shards) =>
     pipe(
       send(ShardingProtocolHttp.AssignShard_, ShardingProtocolHttp.AssignShardResult_)(asHttpUrl(pod), {

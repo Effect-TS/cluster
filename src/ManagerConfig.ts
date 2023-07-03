@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Tag } from "@effect/data/Context"
 import * as Duration from "@effect/data/Duration"
 
@@ -11,6 +14,8 @@ import * as Duration from "@effect/data/Duration"
  * @param persistRetryInterval retry interval for persistence of pods and shard assignments
  * @param persistRetryCount max retry count for persistence of pods and shard assignments
  * @param rebalanceRate max ratio of shards to rebalance at once
+ * @since 1.0.0
+ * @category models
  */
 export interface ManagerConfig {
   numberOfShards: number
@@ -22,8 +27,17 @@ export interface ManagerConfig {
   persistRetryCount: number
   rebalanceRate: number
 }
+
+/**
+ * @since 1.0.0
+ * @category context
+ */
 export const ManagerConfig = Tag<ManagerConfig>()
 
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export const defaults: ManagerConfig = {
   numberOfShards: 300,
   apiPort: 8080,
