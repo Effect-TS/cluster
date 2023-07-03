@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Tag } from "@effect/data/Context"
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
@@ -11,7 +14,7 @@ import { jsonParse, jsonStringify } from "./utils"
  * @since 1.0.0
  * @category symbols
  */
-export const SerializationTypeId: unique symbol = Symbol.for(
+export const TypeId: unique symbol = Symbol.for(
   "@effect/shardcake/SerializationTypeId"
 )
 
@@ -19,16 +22,19 @@ export const SerializationTypeId: unique symbol = Symbol.for(
  * @since 1.0.0
  * @category symbols
  */
-export type SerializationTypeId = typeof SerializationTypeId
+export type TypeId = typeof TypeId
 
 /**
  * An interface to serialize user messages that will be sent between pods.
+ * @since 1.0.0
+ * @category models
  */
 export interface Serialization {
-  [SerializationTypeId]: {}
+  [TypeId]: {}
 
   /**
    * Transforms the given message into binary
+   * @since 1.0.0
    */
   encode<A>(
     message: A,
@@ -37,20 +43,28 @@ export interface Serialization {
 
   /**
    * Transform binary back into the given type
+   * @since 1.0.0
    */
   decode<A>(
     bytes: ByteArray.ByteArray,
     schema: Schema.Schema<A>
   ): Effect.Effect<never, ShardError.DecodeError, A>
 }
+
+/**
+ * @since 1.0.0
+ * @category context
+ */
 export const Serialization = Tag<Serialization>()
 
 /**
  * A layer that uses Java serialization for encoding and decoding messages.
  * This is useful for testing and not recommended to use in production.
+ * @since 1.0.0
+ * @category layers
  */
 export const json = Layer.succeed(Serialization, {
-  [SerializationTypeId]: {},
+  [TypeId]: {},
   encode: (message, schema) =>
     pipe(
       jsonStringify(message, schema),

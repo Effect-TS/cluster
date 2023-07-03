@@ -62,6 +62,11 @@ export interface Storage {
    */
   savePods(pods: HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>): Effect.Effect<never, never, void>
 }
+
+/**
+ * @since 1.0.0
+ * @category context
+ */
 export const Storage = Tag<Storage>()
 
 /**
