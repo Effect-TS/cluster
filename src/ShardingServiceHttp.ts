@@ -1,8 +1,8 @@
 import { pipe } from "@effect/data/Function"
 import * as HashSet from "@effect/data/HashSet"
 import * as Effect from "@effect/io/Effect"
-import * as Config from "@effect/shardcake/Config"
 import * as Sharding from "@effect/shardcake/Sharding"
+import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp"
 import { asHttpServer } from "./node"
 
@@ -11,7 +11,7 @@ export const shardingServiceHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
     Sharding.Sharding,
     Effect.flatMap((sharding) =>
       pipe(
-        Config.Config,
+        ShardingConfig.ShardingConfig,
         Effect.flatMap((config) =>
           pipe(
             fa,

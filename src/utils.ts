@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import type * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
@@ -9,6 +12,7 @@ import type { WireThrowable } from "@effect/shardcake/ShardError"
 import { DecodeError, EncodeError, FetchError } from "@effect/shardcake/ShardError"
 import fetch from "node-fetch"
 
+/** @internal */
 export function minByOption<A>(f: (value: A) => number) {
   return (fa: Iterable<A>) => {
     let current: Option.Option<A> = Option.none()
@@ -25,6 +29,7 @@ export function minByOption<A>(f: (value: A) => number) {
   }
 }
 
+/** @internal */
 export function groupBy<A, K>(f: (value: A) => K) {
   return (fa: Iterable<A>) => {
     let current = HashMap.empty<K, HashSet.HashSet<A>>()
@@ -40,6 +45,7 @@ export function groupBy<A, K>(f: (value: A) => K) {
   }
 }
 
+/** @internal */
 export function jsonStringify<A>(value: A, schema: Schema.Schema<any, A>) {
   return pipe(
     value,
@@ -48,6 +54,8 @@ export function jsonStringify<A>(value: A, schema: Schema.Schema<any, A>) {
     Effect.map((_) => JSON.stringify(_))
   )
 }
+
+/** @internal */
 export function jsonParse<A>(value: string, schema: Schema.Schema<any, A>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
@@ -56,6 +64,7 @@ export function jsonParse<A>(value: string, schema: Schema.Schema<any, A>) {
   )
 }
 
+/** @internal */
 export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
   return (url: string, data: A): Effect.Effect<never, WireThrowable | E, R> =>
     pipe(
@@ -80,18 +89,21 @@ export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<
     )
 }
 
+/** @internal */
 export function showHashSet<A>(fn: (value: A) => string) {
   return (fa: HashSet.HashSet<A>) => {
     return "HashSet(" + Array.from(fa).map(fn).join("; ") + ")"
   }
 }
 
+/** @internal */
 export function showHashMap<K, A>(fnK: (value: K) => string, fn: (value: A) => string) {
   return (fa: HashMap.HashMap<K, A>) => {
     return "HashMap(" + Array.from(fa).map(([key, value]) => fnK(key) + "=" + fn(value)).join("; ") + ")"
   }
 }
 
+/** @internal */
 export function showOption<A>(fn: (value: A) => string) {
   return (fa: Option.Option<A>) => {
     return Option.match(fa, () => "None()", (_) => "Some(" + fn(_) + ")")

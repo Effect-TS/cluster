@@ -28,7 +28,6 @@ import * as Layer from "@effect/io/Layer"
 import * as Schedule from "@effect/io/Schedule"
 import type { Scope } from "@effect/io/Scope"
 import type * as Schema from "@effect/schema/Schema"
-import * as Config from "@effect/shardcake/Config"
 import type { Messenger } from "@effect/shardcake/Messenger"
 import type { EntityType, RecipentType } from "@effect/shardcake/RecipientType"
 import * as RecipientType from "@effect/shardcake/RecipientType"
@@ -42,12 +41,13 @@ import {
   SendTimeoutException
 } from "@effect/shardcake/ShardError"
 import type * as ShardId from "@effect/shardcake/ShardId"
+import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as Storage from "@effect/shardcake/Storage"
 import { Sharding } from "./Sharding"
 
 function make(
   address: PodAddress.PodAddress,
-  config: Config.Config,
+  config: ShardingConfig.ShardingConfig,
   shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress.PodAddress>>,
   entityStates: Ref.Ref<HashMap.HashMap<string, EntityState.EntityState>>,
   /*singletons: Synchronized.Synchronized<
@@ -190,7 +190,7 @@ function make(
         pipe(
           pods.sendMessage(
             pod,
-            BinaryMessage.binaryMessage(entityId, recipientTypeName, bytes, replyId)
+            BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
           ),
           Effect.tapError(() => Effect.unit())
         )
@@ -238,9 +238,7 @@ serialization
     // TODO: handle real world cases (only simulateRemotePods for now)
     return pipe(
       serialization.encode(msg, msgSchema),
-      Effect.flatMap((bytes) =>
-        sendToLocalEntity(BinaryMessage.binaryMessage(entityId, recipientTypeName, bytes, replyId))
-      ),
+      Effect.flatMap((bytes) => sendToLocalEntity(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId))),
       Effect.flatMap((_) => {
         if (Option.isSome(_)) {
           if (Message.isMessage<Res>(msg)) {
@@ -533,7 +531,7 @@ export const live = Layer.scoped(
   Sharding,
   pipe(
     Effect.Do(),
-    Effect.bind("config", () => Config.Config),
+    Effect.bind("config", () => ShardingConfig.ShardingConfig),
     Effect.bind("pods", () => Pods),
     Effect.bind("shardManager", () => ShardManagerClient),
     Effect.bind("storage", () => Storage.Storage),

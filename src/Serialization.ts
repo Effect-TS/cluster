@@ -55,7 +55,7 @@ export const json = Layer.succeed(Serialization, {
     pipe(
       jsonStringify(message, schema),
       Effect.mapError(ShardError.EncodeError),
-      Effect.map(ByteArray.byteArray)
+      Effect.map(ByteArray.make)
     ),
   decode: (body, schema) => pipe(jsonParse(body.value, schema), Effect.mapError(ShardError.DecodeError))
 })

@@ -4,22 +4,20 @@ import * as Schema from "@effect/schema/Schema"
 import * as Replier from "@effect/shardcake/Replier"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
 
-export const MessageSuccessSchema = Symbol.for("@effect/shardcake/Message/SuccessSchema")
-
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const MessageTypeId: unique symbol = Symbol.for("@effect/shardcake/Message")
+export const TypeId: unique symbol = Symbol.for("@effect/shardcake/Message")
 
 /**
  * @since 1.0.0
  * @category symbol
  */
-export type MessageTypeId = typeof MessageTypeId
+export type TypeId = typeof TypeId
+
 /**
- * A `Message<E, A>` is a request from a data source for a value of type `A`
- * that may fail with an `E`.
+ * A `Message<A>` is a request from a data source for a value of type `A`
  *
  * @since 1.0.0
  * @category models
@@ -28,8 +26,15 @@ export interface Message<A> {
   readonly replier: Replier.Replier<A>
 }
 
+/**
+ * Extracts the success type from a `Message<A>`.
+ *
+ * @since 1.0.0
+ * @category utils
+ */
 export type Success<A> = A extends Message<infer X> ? X : never
 
+/** @internal */
 export function isMessage<R>(value: unknown): value is Message<R> {
   return (
     typeof value === "object" &&
@@ -39,6 +44,12 @@ export function isMessage<R>(value: unknown): value is Message<R> {
   )
 }
 
+/**
+ * Creates both the schema and a constructor for a `Message<A>`
+ *
+ * @since 1.0.0
+ * @category schema
+ */
 export function schema<A>(success: Schema.Schema<A>) {
   return function<I extends object>(item: Schema.Schema<I>) {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: Replier.schema(success) })))

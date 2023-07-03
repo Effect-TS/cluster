@@ -8,12 +8,12 @@ import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Queue from "@effect/io/Queue"
 import * as RefSynchronized from "@effect/io/Ref/Synchronized"
-import type * as Config from "@effect/shardcake/Config"
 import type * as RecipientType from "@effect/shardcake/RecipientType"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
 import * as ShardError from "@effect/shardcake/ShardError"
 import type * as ShardId from "@effect/shardcake/ShardId"
 import type * as Sharding from "@effect/shardcake/Sharding"
+import type * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 
 export interface EntityManager<Req> {
   send(
@@ -33,7 +33,7 @@ export function make<R, Req>(
   behavior_: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
   terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
   sharding: Sharding.Sharding,
-  config: Config.Config,
+  config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>
 ) {
   return Effect.gen(function*($) {

@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as Cause from "@effect/io/Cause"
@@ -6,6 +9,7 @@ import type * as Schema from "@effect/schema/Schema"
 import * as http from "http"
 import { jsonParse, jsonStringify } from "./utils"
 
+/** @internal */
 export function asHttpServer<A2, A>(
   port: number,
   RequestSchema: Schema.Schema<A2, A>,

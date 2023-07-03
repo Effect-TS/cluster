@@ -28,7 +28,7 @@ export type ConfigTypeId = typeof ConfigTypeId
  * @param unhealthyPodReportInterval interval to report unhealthy pods to the Shard Manager (this exists to prevent calling the Shard Manager for each failed message)
  * @param simulateRemotePods disable optimizations when sending a message to an entity hosted on the local shards (this will force serialization of all messages)
  */
-export interface Config {
+export interface ShardingConfig {
   numberOfShards: number
   selfHost: string
   shardingPort: number
@@ -42,9 +42,9 @@ export interface Config {
   simulateRemotePods: boolean
 }
 
-export const Config = Tag<Config>()
+export const ShardingConfig = Tag<ShardingConfig>()
 
-export const defaults = Layer.succeed(Config, {
+export const defaults = Layer.succeed(ShardingConfig, {
   numberOfShards: 300,
   selfHost: "localhost",
   shardingPort: 54321,
@@ -58,16 +58,18 @@ export const defaults = Layer.succeed(Config, {
   simulateRemotePods: false
 })
 
-export const defaults2 = Layer.succeed(Config, {
-  numberOfShards: 300,
-  selfHost: "localhost",
-  shardingPort: 54322,
-  shardManagerUri: "http://localhost:8080/api/rest",
-  serverVersion: "1.0.0",
-  entityMaxIdleTime: Duration.minutes(1),
-  entityTerminationTimeout: Duration.seconds(3),
-  sendTimeout: Duration.seconds(5),
-  refreshAssignmentsRetryInterval: Duration.seconds(5),
-  unhealthyPodReportInterval: Duration.seconds(5),
-  simulateRemotePods: false
-})
+export function defaultsWithShardingPort(shardingPort: number) {
+  return Layer.succeed(ShardingConfig, {
+    numberOfShards: 300,
+    selfHost: "localhost",
+    shardingPort,
+    shardManagerUri: "http://localhost:8080/api/rest",
+    serverVersion: "1.0.0",
+    entityMaxIdleTime: Duration.minutes(1),
+    entityTerminationTimeout: Duration.seconds(3),
+    sendTimeout: Duration.seconds(5),
+    refreshAssignmentsRetryInterval: Duration.seconds(5),
+    unhealthyPodReportInterval: Duration.seconds(5),
+    simulateRemotePods: false
+  })
+}
