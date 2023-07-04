@@ -9,10 +9,16 @@ interface EntityRegistered<A> {
   entityType: RecipientType.RecipientType<A>
 }
 
-/** @interal */
+/**
+ * @since 1.0.0
+ * @category models
+ */
 interface SingletonRegistered {
   _tag: "SingletonRegistered"
   name: string
+}
+export function SingletonRegistered(name: string): ShardingRegistrationEvent {
+  return ({ _tag: "SingletonRegistered", name })
 }
 
 /** @interal */

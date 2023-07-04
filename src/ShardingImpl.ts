@@ -9,6 +9,7 @@ import * as Option from "@effect/data/Option"
 import * as Cause from "@effect/io/Cause"
 import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
+import * as Hub from "@effect/io/Hub"
 import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as Synchronized from "@effect/io/Ref/Synchronized"
@@ -22,11 +23,14 @@ import { Pods } from "@effect/shardcake/Pods"
 import type { Replier } from "@effect/shardcake/Replier"
 import * as ReplyId from "@effect/shardcake/ReplyId"
 import type { Throwable } from "@effect/shardcake/ShardError"
+import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
 import { ShardManagerClient } from "@effect/shardcake/ShardManagerClient"
 import * as Stream from "@effect/stream/Stream"
 
 import * as Duration from "@effect/data/Duration"
 import { equals } from "@effect/data/Equal"
+import * as List from "@effect/data/List"
+import * as Fiber from "@effect/io/Fiber"
 import * as Layer from "@effect/io/Layer"
 import * as Schedule from "@effect/io/Schedule"
 import type { Scope } from "@effect/io/Scope"
@@ -42,10 +46,12 @@ import {
   NotAMessageWithReplier,
   SendTimeoutException
 } from "@effect/shardcake/ShardError"
-import type * as ShardId from "@effect/shardcake/ShardId"
+import * as ShardId from "@effect/shardcake/ShardId"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as Storage from "@effect/shardcake/Storage"
 import { Sharding } from "./Sharding"
+
+type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
 
 /** @internal */
 function make(
@@ -53,9 +59,9 @@ function make(
   config: ShardingConfig.ShardingConfig,
   shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress.PodAddress>>,
   entityStates: Ref.Ref<HashMap.HashMap<string, EntityState.EntityState>>,
-  /*singletons: Synchronized.Synchronized<
-    MutableList<[string, Effect.Effect<never, never, void>, Option.Option<Fiber<never, never>>]>
-  >,*/
+  singletons: Synchronized.Synchronized<
+    List.List<SingletonEntry>
+  >,
   replyPromises: Synchronized.Synchronized<
     HashMap.HashMap<ReplyId.ReplyId, Deferred.Deferred<Throwable, Option.Option<any>>>
   >, // promise for each pending reply,
@@ -64,8 +70,8 @@ function make(
   shardManager: ShardManagerClient,
   pods: Pods,
   storage: Storage.Storage,
-  serialization: Serialization.Serialization
-  // eventsHub: Hub<ShardingRegistrationEvent>
+  serialization: Serialization.Serialization,
+  eventsHub: Hub.Hub<ShardingRegistrationEvent.ShardingRegistrationEvent>
 ) {
   function getShardId(recipientType: RecipientType.RecipientType<any>, entityId: string): ShardId.ShardId {
     return RecipientType.getShardId(entityId, config.numberOfShards)
@@ -79,32 +85,97 @@ function make(
 
   const unregister = pipe(
     shardManager.getAssignments,
-    Effect.zipRight(Effect.logDebug(`Stopping local entities`)),
-    Effect.zipRight(pipe(isShuttingDownRef, Ref.set(true))),
-    Effect.zipRight(
-      pipe(
-        Ref.get(entityStates),
-        Effect.flatMap(
-          Effect.forEachDiscard(
-            ([_, entityState]) => entityState.entityManager.terminateAllEntities
-          )
+    Effect.matchCauseEffect(
+      (_) => Effect.logWarningCauseMessage("Shard Manager not available. Can't unregister cleanly", _),
+      () =>
+        pipe(
+          Effect.logDebug(`Stopping local entities`),
+          Effect.zipRight(pipe(isShuttingDownRef, Ref.set(true))),
+          Effect.zipRight(
+            pipe(
+              Ref.get(entityStates),
+              Effect.flatMap(
+                Effect.forEachDiscard(
+                  ([name, entityState]) =>
+                    pipe(
+                      entityState.entityManager.terminateAllEntities,
+                      Effect.catchAllCause((_) => Effect.logErrorCauseMessage("Error during stop of entity " + name, _))
+                    )
+                )
+              )
+            )
+          ),
+          Effect.zipRight(Effect.logDebug(`Unregistering pod ${address} to Shard Manager`)),
+          Effect.zipRight(shardManager.unregister(address))
         )
-      )
-    ),
-    Effect.zipRight(Effect.logDebug(`Unregistering pod ${address} to Shard Manager`)),
-    Effect.zipRight(shardManager.unregister(address))
+    )
   )
 
-  /*
   const isSingletonNode: Effect.Effect<never, never, boolean> = pipe(
     Ref.get(shardAssignments),
     Effect.map((_) =>
       pipe(
-        HashMap.get(_, ShardId.shardId(1)),
+        HashMap.get(_, ShardId.make(1)),
         Option.match(() => false, equals(address))
       )
     )
-  )*/
+  )
+
+  const startSingletonsIfNeeded = pipe(
+    Synchronized.updateEffect(
+      singletons,
+      (singletons) =>
+        pipe(
+          Effect.forEach(singletons, ([name, run, fa]) =>
+            Option.match(
+              fa,
+              () =>
+                pipe(
+                  Effect.logDebug("Starting singleton " + name),
+                  Effect.zipRight(
+                    Effect.map(Effect.forkDaemon(run), (fiber) => [name, run, Option.some(fiber)] as SingletonEntry)
+                  )
+                ),
+              (_) => Effect.succeed([name, run, fa] as SingletonEntry)
+            )),
+          Effect.map(List.fromIterable)
+        )
+    ),
+    Effect.whenEffect(isSingletonNode),
+    Effect.asUnit
+  )
+
+  const stopSingletonsIfNeeded = pipe(
+    Synchronized.updateEffect(
+      singletons,
+      (singletons) =>
+        pipe(
+          Effect.forEach(singletons, ([name, run, fa]) =>
+            Option.match(
+              fa,
+              () => Effect.succeed([name, run, fa] as SingletonEntry),
+              (fiber) =>
+                pipe(
+                  Effect.logDebug("Stopping singleton " + name),
+                  Effect.zipRight(
+                    Effect.as(Fiber.interrupt(fiber), [name, run, Option.none()] as SingletonEntry)
+                  )
+                )
+            )),
+          Effect.map(List.fromIterable)
+        )
+    ),
+    Effect.unlessEffect(isSingletonNode),
+    Effect.asUnit
+  )
+
+  function registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void> {
+    return pipe(
+      Synchronized.update(singletons, (list) => (List.prepend(list, [name, run, Option.none()] as SingletonEntry))),
+      Effect.zipRight(startSingletonsIfNeeded),
+      Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))
+    )
+  }
 
   const registerScoped = Effect.acquireRelease(register, (_) => Effect.orDie(unregister))
 
@@ -484,8 +555,6 @@ serialization
 
   const isShuttingDown = Ref.get(isShuttingDownRef)
 
-  const startSingletonsIfNeeded = Effect.unit()
-
   function assign(shards: HashSet.HashSet<ShardId.ShardId>) {
     return pipe(
       Ref.update(shardAssignments, (_) => HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address))),
@@ -506,7 +575,8 @@ serialization
           }
           return _
         })),
-      Effect.zipRight(Effect.logDebug("Unassigning shards: " + JSON.stringify(shards)))
+      Effect.zipRight(stopSingletonsIfNeeded),
+      Effect.zipLeft(Effect.logDebug("Unassigning shards: " + JSON.stringify(shards)))
     )
   }
 
@@ -519,6 +589,7 @@ serialization
     isEntityOnLocalShards,
     isShuttingDown,
     initReply,
+    registerSingleton,
     registerScoped,
     registerEntity,
     refreshAssignments,
@@ -545,23 +616,37 @@ export const live = Layer.scoped(
     Effect.bind("serialization", () => Serialization.Serialization),
     Effect.bind("shardsCache", () => Ref.make(HashMap.empty<ShardId.ShardId, PodAddress.PodAddress>())),
     Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState.EntityState>())),
+    Effect.bind("singletons", (_) =>
+      pipe(
+        Synchronized.make<List.List<SingletonEntry>>(List.nil())
+        /*
+        TODO(Mattia): add finalizer
+        Effect.flatMap((_) =>
+          Effect.ensuring(Synchronized.get(_, (singletons) =>
+            Effect.forEach(singletons, ([_, __, fiber]) =>
+              Option.isSome(fiber) ? Fiber.interrupt(fiber) : Effect.unit())))
+        )*/
+      )),
     Effect.bind("shuttingDown", () => Ref.make(false)),
     Effect.bind("promises", () =>
       Synchronized.make(
         HashMap.empty<ReplyId.ReplyId, Deferred.Deferred<Throwable, Option.Option<any>>>()
       )),
+    Effect.bind("eventsHub", () => Hub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>()),
     Effect.let("sharding", (_) =>
       make(
         PodAddress.make(_.config.selfHost, _.config.shardingPort),
         _.config,
         _.shardsCache,
         _.entityStates,
+        _.singletons,
         _.promises,
         _.shuttingDown,
         _.shardManager,
         _.pods,
         _.storage,
-        _.serialization
+        _.serialization,
+        _.eventsHub
       )),
     Effect.tap((_) => _.sharding.refreshAssignments),
     Effect.map((_) => _.sharding)

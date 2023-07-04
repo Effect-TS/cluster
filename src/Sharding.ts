@@ -48,6 +48,7 @@ export interface Sharding {
     terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>
+  registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>
   refreshAssignments: Effect.Effect<never, never, void>
   assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
