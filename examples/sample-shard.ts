@@ -43,7 +43,7 @@ const program = pipe(
         )
       )
     )),
-  Effect.zipRight(Sharding.registerScoped),
+  Effect.zipRight(Sharding.register),
   Effect.zipRight(Effect.never()),
   ShardingServiceHttp.shardingServiceHttp,
   Effect.scoped,

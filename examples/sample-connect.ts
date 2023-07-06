@@ -21,6 +21,7 @@ const program = pipe(
   Effect.flatMap((_) => _.messenger.send("entity1")(GetCurrent({ _tag: "GetCurrent" }))),
   Effect.tap((_) => Effect.log("Current count is " + _)),
   Effect.zipRight(Effect.never()),
+  Effect.zipRight(Sharding.registerScoped),
   ShardingServiceHttp.shardingServiceHttp,
   Effect.scoped,
   Effect.provideSomeLayer(ShardingImpl.live),
