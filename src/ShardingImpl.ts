@@ -51,6 +51,7 @@ import {
 import * as ShardId from "@effect/shardcake/ShardId"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as Storage from "@effect/shardcake/Storage"
+import { showHashSet } from "@effect/shardcake/utils"
 import { Sharding } from "./Sharding"
 
 type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
@@ -107,7 +108,7 @@ function make(
               )
             )
           ),
-          Effect.zipRight(Effect.logDebug(`Unregistering pod ${address} to Shard Manager`)),
+          Effect.zipRight(Effect.logDebug(`Unregistering pod ${PodAddress.show(address)} to Shard Manager`)),
           Effect.zipRight(shardManager.unregister(address))
         )
     )
@@ -185,7 +186,7 @@ function make(
     return pipe(
       Ref.update(shardAssignments, (_) => HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address))),
       Effect.zipRight(startSingletonsIfNeeded),
-      Effect.zipLeft(Effect.logDebug("Assigned shards: " + JSON.stringify(shards))),
+      Effect.zipLeft(Effect.logDebug("Assigned shards: " + showHashSet(ShardId.show)(shards))),
       Effect.unlessEffect(isShuttingDown),
       Effect.asUnit
     )
@@ -202,7 +203,7 @@ function make(
           return _
         })),
       Effect.zipRight(stopSingletonsIfNeeded),
-      Effect.zipLeft(Effect.logDebug("Unassigning shards: " + JSON.stringify(shards)))
+      Effect.zipLeft(Effect.logDebug("Unassigning shards: " + showHashSet(ShardId.show)(shards)))
     )
   }
 
