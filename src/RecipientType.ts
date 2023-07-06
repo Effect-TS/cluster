@@ -9,7 +9,7 @@ import * as ShardId from "@effect/shardcake/ShardId"
  * @since 1.0.0
  * @category models
  */
-interface EntityType<Msg> {
+export interface EntityType<Msg> {
   _tag: "EntityType"
   name: string
   schema: Schema.Schema<any, Msg>
@@ -19,7 +19,7 @@ interface EntityType<Msg> {
  * @since 1.0.0
  * @category models
  */
-interface TopicType<Msg> {
+export interface TopicType<Msg> {
   _tag: "TopicType"
   name: string
   schema: Schema.Schema<any, Msg>
@@ -36,8 +36,16 @@ export type RecipientType<Msg> = EntityType<Msg> | TopicType<Msg>
  * @since 1.0.0
  * @category constructors
  */
-export function make<Msg>(name: string, schema: Schema.Schema<any, Msg>): RecipientType<Msg> {
+export function makeEntityType<Msg>(name: string, schema: Schema.Schema<any, Msg>): EntityType<Msg> {
   return { _tag: "EntityType", name, schema }
+}
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export function makeTopicType<Msg>(name: string, schema: Schema.Schema<any, Msg>): TopicType<Msg> {
+  return { _tag: "TopicType", name, schema }
 }
 
 /**

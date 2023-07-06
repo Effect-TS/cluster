@@ -16,37 +16,34 @@ import * as LogLevel from "@effect/io/Logger/Level"
 import { CounterEntity } from "./sample-common"
 
 const program = pipe(
-  Effect.flatMap(Sharding.Sharding, (sharding) =>
+  Sharding.registerEntity(CounterEntity, (counterId, dequeue) =>
     pipe(
-      sharding.registerEntity(CounterEntity, (counterId, dequeue) =>
+      Ref.make(0),
+      Effect.flatMap((count) =>
         pipe(
-          Ref.make(0),
-          Effect.flatMap((count) =>
-            pipe(
-              Queue.take(dequeue),
-              Effect.flatMap(
-                (msg) => {
-                  switch (msg._tag) {
-                    case "Increment":
-                      return Ref.update(count, (a) => a + 1)
-                    case "Decrement":
-                      return Ref.update(count, (a) => a + 1)
-                    case "GetCurrent":
-                      return pipe(
-                        Ref.get(count),
-                        Effect.flatMap((_) => msg._tag === "GetCurrent" ? msg.replier.reply(_) : Effect.unit())
-                      )
-                  }
-                }
-              ),
-              Effect.zipRight(Ref.get(count)),
-              Effect.tap((_) => Effect.log("Counter " + counterId + " is now " + _)),
-              Effect.forever
-            )
-          )
-        )),
-      Effect.zipRight(sharding.registerScoped)
+          Queue.take(dequeue),
+          Effect.flatMap(
+            (msg) => {
+              switch (msg._tag) {
+                case "Increment":
+                  return Ref.update(count, (a) => a + 1)
+                case "Decrement":
+                  return Ref.update(count, (a) => a + 1)
+                case "GetCurrent":
+                  return pipe(
+                    Ref.get(count),
+                    Effect.flatMap((_) => msg._tag === "GetCurrent" ? msg.replier.reply(_) : Effect.unit())
+                  )
+              }
+            }
+          ),
+          Effect.zipRight(Ref.get(count)),
+          Effect.tap((_) => Effect.log("Counter " + counterId + " is now " + _)),
+          Effect.forever
+        )
+      )
     )),
+  Effect.zipRight(Sharding.registerScoped),
   Effect.zipRight(Effect.never()),
   ShardingServiceHttp.shardingServiceHttp,
   Effect.scoped,

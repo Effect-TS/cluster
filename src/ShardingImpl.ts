@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import type * as Either from "@effect/data/Either"
 import * as Equal from "@effect/data/Equal"
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
@@ -14,6 +15,7 @@ import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as Synchronized from "@effect/io/Ref/Synchronized"
 import * as BinaryMessage from "@effect/shardcake/BinaryMessage"
+import type * as Broadcaster from "@effect/shardcake/Broadcaster"
 import type * as ByteArray from "@effect/shardcake/ByteArray"
 import * as EntityManager from "@effect/shardcake/EntityManager"
 import * as EntityState from "@effect/shardcake/EntityState"
@@ -77,13 +79,13 @@ function make(
     return RecipientType.getShardId(entityId, config.numberOfShards)
   }
 
-  const register = pipe(
+  const register: Effect.Effect<never, never, void> = pipe(
     Effect.logDebug(`Registering pod ${PodAddress.show(address)} to Shard Manager`),
     Effect.zipRight(pipe(isShuttingDownRef, Ref.set(false))),
     Effect.zipRight(shardManager.register(address))
   )
 
-  const unregister = pipe(
+  const unregister: Effect.Effect<never, never, void> = pipe(
     shardManager.getAssignments,
     Effect.matchCauseEffect(
       (_) => Effect.logWarningCauseMessage("Shard Manager not available. Can't unregister cleanly", _),
@@ -121,7 +123,7 @@ function make(
     )
   )
 
-  const startSingletonsIfNeeded = pipe(
+  const startSingletonsIfNeeded: Effect.Effect<never, never, void> = pipe(
     Synchronized.updateEffect(
       singletons,
       (singletons) =>
@@ -145,7 +147,7 @@ function make(
     Effect.asUnit
   )
 
-  const stopSingletonsIfNeeded = pipe(
+  const stopSingletonsIfNeeded: Effect.Effect<never, never, void> = pipe(
     Synchronized.updateEffect(
       singletons,
       (singletons) =>
@@ -177,24 +179,97 @@ function make(
     )
   }
 
-  const registerScoped = Effect.acquireRelease(register, (_) => Effect.orDie(unregister))
+  const isShuttingDown: Effect.Effect<never, never, boolean> = Ref.get(isShuttingDownRef)
 
-  function reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void> {
+  function assign(shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<never, never, void> {
     return pipe(
-      replyPromises,
-      Synchronized.updateEffect((promises) =>
-        pipe(
-          Effect.whenCase(
-            () => pipe(promises, HashMap.get(replier.id)),
-            Option.map((deferred) => pipe(deferred, Deferred.succeed(Option.some(reply))))
-          ),
-          Effect.as(pipe(promises, HashMap.remove(replier.id)))
-        )
-      )
+      Ref.update(shardAssignments, (_) => HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address))),
+      Effect.zipRight(startSingletonsIfNeeded),
+      Effect.zipLeft(Effect.logDebug("Assigned shards: " + JSON.stringify(shards))),
+      Effect.unlessEffect(isShuttingDown),
+      Effect.asUnit
     )
   }
 
-  function sendToLocalEntity(msg: BinaryMessage.BinaryMessage) {
+  function unassign(shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<never, never, void> {
+    return pipe(
+      Ref.update(shardAssignments, (_) =>
+        HashSet.reduce(shards, _, (_, shardId) => {
+          const value = HashMap.get(_, shardId)
+          if (Option.isSome(value) && equals(value.value, address)) {
+            return HashMap.remove(_, shardId)
+          }
+          return _
+        })),
+      Effect.zipRight(stopSingletonsIfNeeded),
+      Effect.zipLeft(Effect.logDebug("Unassigning shards: " + JSON.stringify(shards)))
+    )
+  }
+
+  function isEntityOnLocalShards(
+    recipientType: RecipientType.RecipientType<any>,
+    entityId: string
+  ): Effect.Effect<never, never, boolean> {
+    return pipe(
+      Effect.Do(),
+      Effect.bind("shards", () => Ref.get(shardAssignments)),
+      Effect.let("shardId", () => getShardId(recipientType, entityId)),
+      Effect.let("pod", ({ shardId, shards }) => pipe(shards, HashMap.get(shardId))),
+      Effect.map((_) => Option.isSome(_.pod) && equals(_.pod.value, address))
+    )
+  }
+
+  const getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>> = pipe(
+    Ref.get(shardAssignments),
+    Effect.map((_) => HashSet.fromIterable(HashMap.values(_)))
+  )
+
+  function updateAssignments(
+    assignmentsOpt: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>,
+    fromShardManager: boolean
+  ) {
+    const assignments = HashMap.mapWithIndex(assignmentsOpt, (v, _) => Option.getOrElse(v, () => address))
+
+    if (fromShardManager) {
+      return Ref.update(shardAssignments, (map) => (HashMap.isEmpty(map) ? assignments : map))
+    }
+
+    return Ref.update(shardAssignments, (map) => {
+      // we keep self assignments (we don't override them with the new assignments
+      // because only the Shard Manager is able to change assignments of the current node, via assign/unassign
+      return HashMap.union(
+        pipe(
+          assignments,
+          HashMap.filterWithIndex((pod, _) => !Equal.equals(pod, address))
+        ),
+        pipe(
+          map,
+          HashMap.filterWithIndex((pod, _) => Equal.equals(pod, address))
+        )
+      )
+    })
+  }
+
+  const refreshAssignments: Effect.Effect<never, never, void> = pipe(
+    Stream.fromEffect(Effect.map(shardManager.getAssignments, (_) => [_, true] as const)),
+    Stream.merge(
+      pipe(
+        storage.assignmentsStream,
+        Stream.map((_) => [_, false] as const)
+      )
+    ),
+    Stream.mapEffect(([assignmentsOpt, fromShardManager]) => updateAssignments(assignmentsOpt, fromShardManager)),
+    Stream.runDrain,
+    Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval)),
+    Effect.interruptible,
+    Effect.forkDaemon,
+    // TODO: missing withFinalizer (fiber interrupt)
+    Effect.asUnit
+  )
+
+  function sendToLocalEntity(
+    msg: BinaryMessage.BinaryMessage
+  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<ByteArray.ByteArray>> {
     return pipe(
       Ref.get(entityStates),
       Effect.flatMap((states) => {
@@ -238,13 +313,28 @@ function make(
     )
   }
 
-  function abortReply(id: ReplyId.ReplyId, ex: Throwable) {
+  function abortReply(id: ReplyId.ReplyId, ex: Throwable): Effect.Effect<never, never, void> {
     return pipe(
       replyPromises,
       Synchronized.updateEffect((promises) =>
         pipe(
           Effect.whenCase(() => pipe(promises, HashMap.get(id)), Option.map(Deferred.fail(ex))),
           Effect.as(pipe(promises, HashMap.remove(id)))
+        )
+      )
+    )
+  }
+
+  function reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void> {
+    return pipe(
+      replyPromises,
+      Synchronized.updateEffect((promises) =>
+        pipe(
+          Effect.whenCase(
+            () => pipe(promises, HashMap.get(replier.id)),
+            Option.map((deferred) => pipe(deferred, Deferred.succeed(Option.some(reply))))
+          ),
+          Effect.as(pipe(promises, HashMap.remove(replier.id)))
         )
       )
     )
@@ -258,79 +348,78 @@ function make(
     pod: PodAddress.PodAddress,
     replyId: Option.Option<ReplyId.ReplyId>
   ): Effect.Effect<never, Throwable, Option.Option<Res>> {
-    const a = pipe(
-      serialization.encode(msg, msgSchema),
-      Effect.flatMap((bytes) =>
-        pipe(
-          pods.sendMessage(
-            pod,
-            BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
-          ),
-          Effect.tapError(() => Effect.unit())
-        )
-      ),
-      Effect.flatMap(
-        Option.match(
-          () => Effect.succeed(Option.none()),
-          (bytes) => {
+    if (config.simulateRemotePods && equals(pod, address)) {
+      return pipe(
+        serialization.encode(msg, msgSchema),
+        Effect.flatMap((bytes) => sendToLocalEntity(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId))),
+        Effect.flatMap((_) => {
+          if (Option.isSome(_)) {
             if (Message.isMessage<Res>(msg)) {
-              return pipe(serialization.decode(bytes, msg.replier.schema), Effect.map(Option.some))
+              return pipe(
+                serialization.decode<Res>(_.value, msg.replier.schema),
+                Effect.map(Option.some)
+              )
+            } else {
+              return Effect.die(NotAMessageWithReplier(msg))
             }
-            return Effect.die("Error, schema is missing in request message")
           }
+          return Effect.succeed(Option.none())
+        })
+      )
+    } else if (equals(pod, address)) {
+      // if pod = self, shortcut and send directly without serialization
+      return pipe(
+        Deferred.make<Throwable, Option.Option<Res>>(),
+        Effect.flatMap((p) =>
+          pipe(
+            Ref.get(entityStates),
+            Effect.flatMap(
+              (_) =>
+                pipe(
+                  HashMap.get(_, recipientTypeName),
+                  Option.match(
+                    () => Effect.fail(EntityTypeNotRegistered(recipientTypeName, pod)),
+                    (state) =>
+                      pipe(
+                        (state.entityManager as EntityManager.EntityManager<Msg>).send(entityId, msg, replyId, p),
+                        Effect.zipRight(Deferred.await(p)),
+                        Effect.onError((cause) => Deferred.failCause(p, cause))
+                      )
+                  )
+                )
+            )
+          )
         )
       )
-    )
-    return a
-    /*
-serialization
-        .encode(msg)
-        .flatMap(bytes =>
-          pods
-            .sendMessage(pod, BinaryMessage(entityId, recipientTypeName, bytes, replyId))
-            .tapError {
-              ZIO.whenCase(_) { case PodUnavailable(pod) =>
-                val notify = Clock.currentDateTime.flatMap(cdt =>
-                  lastUnhealthyNodeReported
-                    .updateAndGet(old =>
-                      if (old.plusNanos(config.unhealthyPodReportInterval.toNanos) isBefore cdt) cdt
-                      else old
-                    )
-                    .map(_ isEqual cdt)
-                )
-                ZIO.whenZIO(notify)(
-                  (shardManager.notifyUnhealthyPod(pod) *>
-                    // just in case we missed the update from the pubsub, refresh assignments
-                    shardManager.getAssignments
-                      .flatMap(updateAssignments(_, fromShardManager = true))).forkDaemon
-                )
+    } else {
+      return pipe(
+        serialization.encode(msg, msgSchema),
+        Effect.flatMap((bytes) =>
+          pipe(
+            pods.sendMessage(
+              pod,
+              BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
+            ),
+            Effect.tapError(() => Effect.unit())
+          )
+        ),
+        Effect.flatMap(
+          Option.match(
+            () => Effect.succeed(Option.none()),
+            (bytes) => {
+              if (Message.isMessage<Res>(msg)) {
+                return pipe(serialization.decode(bytes, msg.replier.schema), Effect.map(Option.some))
               }
+              return Effect.die("Error, schema is missing in request message")
             }
-            .flatMap(ZIO.foreach(_)(serialization.decode[Res]))
+          )
         )
-    */
-    // TODO: handle real world cases (only simulateRemotePods for now)
-    return pipe(
-      serialization.encode(msg, msgSchema),
-      Effect.flatMap((bytes) => sendToLocalEntity(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId))),
-      Effect.flatMap((_) => {
-        if (Option.isSome(_)) {
-          if (Message.isMessage<Res>(msg)) {
-            return pipe(
-              serialization.decode<Res>(_.value, msg.replier.schema),
-              Effect.map(Option.some)
-            )
-          } else {
-            return Effect.die(NotAMessageWithReplier(msg))
-          }
-        }
-        return Effect.succeed(Option.none())
-      })
-    )
+      )
+    }
   }
 
   function messenger<Msg>(
-    entityType: RecipientType.RecipientType<Msg>,
+    entityType: RecipientType.EntityType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Messenger<Msg> {
     const timeout = pipe(
@@ -340,6 +429,26 @@ serialization
 
     function sendDiscard(entityId: string) {
       return (msg: Msg) => pipe(sendMessage(entityId, msg, Option.none()), Effect.timeout(timeout), Effect.asUnit)
+    }
+
+    function send(entityId: string) {
+      return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => Msg) => {
+        return pipe(
+          ReplyId.makeEffect,
+          Effect.flatMap((replyId) => {
+            const body = fn(replyId)
+            return pipe(
+              sendMessage<Message.Success<A>>(entityId, body, Option.some(replyId)),
+              Effect.flatMap((_) => {
+                if (Option.isSome(_)) return Effect.succeed(_.value)
+                return Effect.fail(MessageReturnedNoting(entityId, body))
+              }),
+              Effect.timeoutFail(() => SendTimeoutException(entityType, entityId, body), timeout),
+              Effect.interruptible
+            )
+          })
+        )
+      }
     }
 
     function sendMessage<Res>(entityId: string, msg: Msg, replyId: Option.Option<ReplyId.ReplyId>) {
@@ -382,19 +491,76 @@ serialization
       return trySend
     }
 
-    function send(entityId: string) {
+    return { sendDiscard, send }
+  }
+
+  function broadcaster<Msg>(
+    topicType: RecipientType.TopicType<Msg>,
+    sendTimeout: Option.Option<Duration.Duration> = Option.none()
+  ): Broadcaster.Broadcaster<Msg> {
+    const timeout = pipe(
+      sendTimeout,
+      Option.getOrElse(() => config.sendTimeout)
+    )
+
+    function sendMessage<Res>(
+      topic: string,
+      body: Msg,
+      replyId: Option.Option<ReplyId.ReplyId>
+    ): Effect.Effect<never, Throwable, HashMap.HashMap<PodAddress.PodAddress, Either.Either<Throwable, Res>>> {
+      return pipe(
+        Effect.Do(),
+        Effect.bind("pods", () => getPods),
+        Effect.bind("response", ({ pods }) =>
+          Effect.forEachPar(pods, (pod) => {
+            const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = pipe(
+              sendToPod<Msg, Res>(
+                topicType.name,
+                topic,
+                body,
+                topicType.schema,
+                pod,
+                replyId
+              ),
+              Effect.catchSome((_) => {
+                if (isPodUnavailableError(_)) {
+                  return pipe(
+                    Effect.sleep(Duration.millis(200)),
+                    Effect.zipRight(trySend),
+                    Option.some
+                  )
+                }
+                return Option.none()
+              })
+            )
+            return pipe(
+              trySend,
+              Effect.flatMap((_) => {
+                if (Option.isSome(_)) return Effect.succeed(_.value)
+                return Effect.fail(MessageReturnedNoting(topic, body))
+              }),
+              Effect.timeoutFail(() => SendTimeoutException(topicType, topic, body), timeout),
+              Effect.either,
+              Effect.map((res) => [pod, res] as const)
+            )
+          })),
+        Effect.map((_) => _.response),
+        Effect.map(HashMap.fromIterable)
+      )
+    }
+
+    function broadcastDiscard(topic: string) {
+      return (msg: Msg) => pipe(sendMessage(topic, msg, Option.none()), Effect.timeout(timeout), Effect.asUnit)
+    }
+
+    function broadcast(topic: string) {
       return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => Msg) => {
         return pipe(
           ReplyId.makeEffect,
           Effect.flatMap((replyId) => {
             const body = fn(replyId)
             return pipe(
-              sendMessage<Message.Success<A>>(entityId, body, Option.some(replyId)),
-              Effect.flatMap((_) => {
-                if (Option.isSome(_)) return Effect.succeed(_.value)
-                return Effect.fail(MessageReturnedNoting(entityId, body))
-              }),
-              Effect.timeoutFail(() => SendTimeoutException(entityType, entityId, body), timeout),
+              sendMessage<Message.Success<A>>(topic, body, Option.some(replyId)),
               Effect.interruptible
             )
           })
@@ -402,8 +568,39 @@ serialization
       }
     }
 
-    return { sendDiscard, send }
+    return { broadcast, broadcastDiscard }
   }
+
+  function registerEntity<R, Req>(
+    entityType: RecipientType.EntityType<Req>,
+    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
+    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none(),
+    entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
+  ): Effect.Effect<Scope | R, never, void> {
+    return pipe(
+      registerRecipient(entityType, behavior, terminateMessage, entityMaxIdleTime),
+      Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
+      Effect.asUnit
+    )
+  }
+
+  function registerTopic<R, Req>(
+    topicType: RecipientType.TopicType<Req>,
+    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
+    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none()
+  ): Effect.Effect<Scope | R, never, void> {
+    return pipe(
+      registerRecipient(topicType, behavior, terminateMessage, Option.none()),
+      Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
+      Effect.asUnit
+    )
+  }
+
+  const getShardingRegistrationEvents: Stream.Stream<
+    never,
+    never,
+    ShardingRegistrationEvent.ShardingRegistrationEvent
+  > = Stream.fromHub(eventsHub)
 
   function registerRecipient<R, Req>(
     recipientType: RecipientType.RecipientType<Req>,
@@ -488,97 +685,7 @@ serialization
     })
   }
 
-  function registerEntity<R, Req>(
-    entityType: RecipientType.RecipientType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none(),
-    entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
-  ): Effect.Effect<Scope | R, never, void> {
-    return registerRecipient(entityType, behavior, terminateMessage, entityMaxIdleTime)
-  }
-
-  function isEntityOnLocalShards(
-    recipientType: RecipientType.RecipientType<any>,
-    entityId: string
-  ): Effect.Effect<never, never, boolean> {
-    return pipe(
-      Effect.Do(),
-      Effect.bind("shards", () => Ref.get(shardAssignments)),
-      Effect.let("shardId", () => getShardId(recipientType, entityId)),
-      Effect.let("pod", ({ shardId, shards }) => pipe(shards, HashMap.get(shardId))),
-      Effect.map((_) => Option.isSome(_.pod) && equals(_.pod.value, address))
-    )
-  }
-
-  const refreshAssignments: Effect.Effect<never, never, void> = pipe(
-    Stream.fromEffect(Effect.map(shardManager.getAssignments, (_) => [_, true] as const)),
-    Stream.merge(
-      pipe(
-        storage.assignmentsStream,
-        Stream.map((_) => [_, false] as const)
-      )
-    ),
-    Stream.mapEffect(([assignmentsOpt, fromShardManager]) => updateAssignments(assignmentsOpt, fromShardManager)),
-    Stream.runDrain,
-    Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval)),
-    Effect.interruptible,
-    Effect.forkDaemon,
-    // TODO: missing withFinalizer (fiber interrupt)
-    Effect.asUnit
-  )
-
-  function updateAssignments(
-    assignmentsOpt: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>,
-    fromShardManager: boolean
-  ) {
-    const assignments = HashMap.mapWithIndex(assignmentsOpt, (v, _) => Option.getOrElse(v, () => address))
-
-    if (fromShardManager) {
-      return Ref.update(shardAssignments, (map) => (HashMap.isEmpty(map) ? assignments : map))
-    }
-
-    return Ref.update(shardAssignments, (map) => {
-      // we keep self assignments (we don't override them with the new assignments
-      // because only the Shard Manager is able to change assignments of the current node, via assign/unassign
-      return HashMap.union(
-        pipe(
-          assignments,
-          HashMap.filterWithIndex((pod, _) => !Equal.equals(pod, address))
-        ),
-        pipe(
-          map,
-          HashMap.filterWithIndex((pod, _) => Equal.equals(pod, address))
-        )
-      )
-    })
-  }
-
-  const isShuttingDown = Ref.get(isShuttingDownRef)
-
-  function assign(shards: HashSet.HashSet<ShardId.ShardId>) {
-    return pipe(
-      Ref.update(shardAssignments, (_) => HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address))),
-      Effect.zipRight(startSingletonsIfNeeded),
-      Effect.zipLeft(Effect.logDebug("Assigned shards: " + JSON.stringify(shards))),
-      Effect.unlessEffect(isShuttingDown),
-      Effect.asUnit
-    )
-  }
-
-  function unassign(shards: HashSet.HashSet<ShardId.ShardId>) {
-    return pipe(
-      Ref.update(shardAssignments, (_) =>
-        HashSet.reduce(shards, _, (_, shardId) => {
-          const value = HashMap.get(_, shardId)
-          if (Option.isSome(value) && equals(value.value, address)) {
-            return HashMap.remove(_, shardId)
-          }
-          return _
-        })),
-      Effect.zipRight(stopSingletonsIfNeeded),
-      Effect.zipLeft(Effect.logDebug("Unassigning shards: " + JSON.stringify(shards)))
-    )
-  }
+  const registerScoped = Effect.acquireRelease(register, (_) => Effect.orDie(unregister))
 
   const self: Sharding = {
     getShardId,
@@ -586,16 +693,20 @@ serialization
     unregister,
     reply,
     messenger,
+    broadcaster,
     isEntityOnLocalShards,
     isShuttingDown,
     initReply,
     registerSingleton,
     registerScoped,
     registerEntity,
+    registerTopic,
+    getShardingRegistrationEvents,
     refreshAssignments,
     assign,
     unassign,
-    sendToLocalEntity
+    sendToLocalEntity,
+    getPods
   }
 
   return self

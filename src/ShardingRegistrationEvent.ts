@@ -3,10 +3,16 @@
  */
 import type * as RecipientType from "@effect/shardcake/RecipientType"
 
-/** @interal */
+/**
+ * @since 1.0.0
+ * @category models
+ */
 interface EntityRegistered<A> {
   _tag: "EntityRegistered"
-  entityType: RecipientType.RecipientType<A>
+  entityType: RecipientType.EntityType<A>
+}
+export function EntityRegistered<A>(entityType: RecipientType.EntityType<A>): ShardingRegistrationEvent {
+  return ({ _tag: "EntityRegistered", entityType })
 }
 
 /**
@@ -21,10 +27,16 @@ export function SingletonRegistered(name: string): ShardingRegistrationEvent {
   return ({ _tag: "SingletonRegistered", name })
 }
 
-/** @interal */
+/**
+ * @since 1.0.0
+ * @category models
+ */
 interface TopicRegistered<A> {
   _tag: "TopicRegistered"
-  topicType: RecipientType.RecipientType<A>
+  topicType: RecipientType.TopicType<A>
+}
+export function TopicRegistered<A>(topicType: RecipientType.TopicType<A>): ShardingRegistrationEvent {
+  return ({ _tag: "TopicRegistered", topicType })
 }
 
 /**

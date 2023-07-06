@@ -14,15 +14,12 @@ import * as LogLevel from "@effect/io/Logger/Level"
 import { CounterEntity, GetCurrent } from "./sample-common"
 
 const program = pipe(
-  Effect.flatMap(Sharding.Sharding, (sharding) =>
-    pipe(
-      Effect.Do(),
-      Effect.let("messenger", () => sharding.messenger(CounterEntity)),
-      Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
-      Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
-      Effect.flatMap((_) => _.messenger.send("entity1")(GetCurrent({ _tag: "GetCurrent" }))),
-      Effect.tap((_) => Effect.log("Current count is " + _))
-    )),
+  Effect.Do(),
+  Effect.bind("messenger", () => Sharding.messenger(CounterEntity)),
+  Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
+  Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
+  Effect.flatMap((_) => _.messenger.send("entity1")(GetCurrent({ _tag: "GetCurrent" }))),
+  Effect.tap((_) => Effect.log("Current count is " + _)),
   Effect.zipRight(Effect.never()),
   ShardingServiceHttp.shardingServiceHttp,
   Effect.scoped,
