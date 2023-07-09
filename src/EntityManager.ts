@@ -70,6 +70,7 @@ export function make<R, Req>(
           )
         ),
         Effect.zipRight(pipe(terminateEntity(entityId), Effect.forkDaemon, Effect.unit)),
+        Effect.interruptible,
         Effect.forkDaemon
       )
     }
