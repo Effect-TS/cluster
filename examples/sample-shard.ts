@@ -11,6 +11,7 @@ import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
 import * as ShardingServiceHttp from "@effect/shardcake/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/shardcake/ShardManagerClientHttp"
 import * as StorageFile from "@effect/shardcake/StorageFile"
+import * as SubscriptionRef from "@effect/stream/SubscriptionRef"
 
 import * as LogLevel from "@effect/io/Logger/Level"
 import { CounterEntity } from "./sample-common"
@@ -18,7 +19,7 @@ import { CounterEntity } from "./sample-common"
 const program = pipe(
   Sharding.registerEntity(CounterEntity, (counterId, dequeue) =>
     pipe(
-      Ref.make(0),
+      SubscriptionRef.make(0),
       Effect.flatMap((count) =>
         pipe(
           Queue.take(dequeue),
@@ -26,14 +27,16 @@ const program = pipe(
             (msg) => {
               switch (msg._tag) {
                 case "Increment":
-                  return Ref.update(count, (a) => a + 1)
+                  return SubscriptionRef.update(count, (a) => a + 1)
                 case "Decrement":
-                  return Ref.update(count, (a) => a + 1)
+                  return SubscriptionRef.update(count, (a) => a + 1)
                 case "GetCurrent":
                   return pipe(
-                    Ref.get(count),
+                    SubscriptionRef.get(count),
                     Effect.flatMap((_) => msg._tag === "GetCurrent" ? msg.replier.reply(_) : Effect.unit())
                   )
+                case "SubscribeChanges":
+                  return msg.replier.reply(count.changes)
               }
             }
           ),

@@ -9,6 +9,7 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import { DecodeError, EncodeError, FetchError } from "@effect/shardcake/ShardError"
+import * as Stream from "@effect/stream/Stream"
 import fetch from "node-fetch"
 
 /** @internal */
@@ -64,11 +65,11 @@ export function jsonParse<A>(value: string, schema: Schema.Schema<any, A>) {
 }
 
 /** @internal */
-export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
+export function sendInternal<A>(send: Schema.Schema<any, A>) {
   return (url: string, data: A) =>
     pipe(
       jsonStringify(data, send),
-      Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
+      // Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
       Effect.flatMap((body) =>
         Effect.tryCatchPromise(
           () => {
@@ -79,13 +80,38 @@ export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<
           },
           (error) => FetchError(url, body, String(error))
         )
-      ),
-      Effect.tap((response) => Effect.logDebug(url + " status: " + response.status)),
+      )
+      // Effect.tap((response) => Effect.logDebug(url + " status: " + response.status))
+    )
+}
+
+/** @internal */
+export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
+  return (url: string, data: A) =>
+    pipe(
+      sendInternal(send)(url, data),
       Effect.flatMap((response) => Effect.promise(() => response.text())),
-      Effect.tap((response) => Effect.logDebug(url + " body: " + response)),
       Effect.flatMap((data) => jsonParse(data, reply)),
       Effect.orDie,
       Effect.flatten
+    )
+}
+
+/** @internal */
+export function sendStream<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
+  return (url: string, data: A) =>
+    pipe(
+      sendInternal(send)(url, data),
+      Effect.map((response) =>
+        pipe(
+          Stream.fromAsyncIterable(response.body, (e) => FetchError(url, "", e)),
+          Stream.tap((response) => Effect.logDebug(url + " body: " + response)),
+          Stream.mapEffect((data) => jsonParse(typeof data === "string" ? data : data.toString(), reply)),
+          Stream.mapEffect((_) => _)
+        )
+      ),
+      Stream.fromEffect,
+      Stream.flatten
     )
 }
 

@@ -8,7 +8,8 @@ import type * as PodAddress from "@effect/shardcake/PodAddress"
 import * as Pods from "@effect/shardcake/Pods"
 import { isFetchError, PodUnavailable } from "@effect/shardcake/ShardError"
 import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp"
-import { send } from "./utils"
+import * as Stream from "@effect/stream/Stream"
+import { send, sendStream } from "./utils"
 
 /** @internal */
 function asHttpUrl(pod: PodAddress.PodAddress): string {
@@ -56,5 +57,13 @@ export const httpPods = Layer.succeed(Pods.Pods, {
         message
       }),
       Effect.orDie
+    ),
+  sendMessageStreaming: (pod, message) =>
+    pipe(
+      sendStream(ShardingProtocolHttp.SendStream_, ShardingProtocolHttp.SendStreamResultItem_)(asHttpUrl(pod), {
+        _tag: "SendStream",
+        message
+      }),
+      Stream.orDie
     )
 })

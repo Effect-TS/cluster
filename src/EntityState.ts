@@ -3,12 +3,11 @@
  */
 import * as Data from "@effect/data/Data"
 import type * as Option from "@effect/data/Option"
-import type * as Deferred from "@effect/io/Deferred"
-import type * as Queue from "@effect/io/Queue"
+import type * as Effect from "@effect/io/Effect"
+import type * as Schema from "@effect/schema/Schema"
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
-import type * as ByteArray from "@effect/shardcake/ByteArray"
 import type * as EntityManager from "@effect/shardcake/EntityManager"
-import type * as ShardError from "@effect/shardcake/ShardError"
+import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 
 /**
  * @since 1.0.0
@@ -28,14 +27,11 @@ export type TypeId = typeof TypeId
  */
 export interface EntityState {
   [TypeId]: {}
-  binaryQueue: Queue.Queue<
-    readonly [
-      BinaryMessage.BinaryMessage,
-      Deferred.Deferred<ShardError.Throwable, Option.Option<ByteArray.ByteArray>>,
-      Deferred.Deferred<never, void>
-    ]
-  >
   entityManager: EntityManager.EntityManager<never>
+  processBinary: (
+    binaryMessage: BinaryMessage.BinaryMessage,
+    replyChannel: ReplyChannel.ReplyChannel<any>
+  ) => Effect.Effect<never, never, Option.Option<Schema.Schema<any, any>>>
 }
 
 /**
@@ -43,8 +39,8 @@ export interface EntityState {
  * @category constructors
  */
 export function make(
-  binaryQueue: EntityState["binaryQueue"],
-  entityManager: EntityState["entityManager"]
+  entityManager: EntityState["entityManager"],
+  processBinary: EntityState["processBinary"]
 ): EntityState {
-  return Data.struct({ [TypeId]: {}, binaryQueue, entityManager })
+  return Data.struct({ [TypeId]: {}, entityManager, processBinary })
 }

@@ -1,11 +1,13 @@
 /**
  * @since 1.0.0
  */
+import * as Duration from "@effect/data/Duration"
 import * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import type * as Schema from "@effect/schema/Schema"
+import * as Stream from "@effect/stream/Stream"
 import * as http from "http"
 import { jsonParse, jsonStringify } from "./utils"
 
@@ -17,7 +19,10 @@ export function asHttpServer<A2, A>(
     req: A,
     reply: <RE, RA>(
       schema: Schema.Schema<any, Either.Either<RE, RA>>
-    ) => (run: Effect.Effect<never, RE, RA>) => Effect.Effect<never, never, void>
+    ) => (run: Effect.Effect<never, RE, RA>) => Effect.Effect<never, never, void>,
+    replyStream: <RE, RA>(
+      schema: Schema.Schema<any, Either.Either<RE, RA>>
+    ) => (run: Stream.Stream<never, RE, RA>) => Effect.Effect<never, never, void>
   ) => Effect.Effect<never, never, void>
 ) {
   return <R, E, B>(fa: Effect.Effect<R, E, B>) =>
@@ -48,7 +53,45 @@ export function asHttpServer<A2, A>(
                           })
                         )
                       )
-                  return handler(req, reply as any)
+                  const replyStream = <RE, RA>(schema: Schema.Schema<any, Either.Either<RE, RA>>) =>
+                    (fa: Stream.Stream<never, RE, RA>) =>
+                      pipe(
+                        Effect.sync(() =>
+                          response.writeHead(200, {
+                            "Content-Type": "text/event-stream",
+                            "Connection": "keep-alive",
+                            "Cache-Control": "no-cache"
+                          })
+                        ),
+                        Effect.flatMap(() =>
+                          pipe(
+                            fa,
+                            Stream.mapEffect((value) =>
+                              pipe(
+                                jsonStringify(Either.right(value), schema),
+                                Effect.orDie,
+                                Effect.flatMap((data) => Effect.sync(() => response.write(data))),
+                                Effect.zipLeft(Effect.sleep(Duration.millis(100))) // TODO: write buffers WTF
+                              )
+                            ),
+                            Stream.runDrain
+                          )
+                        ),
+                        Effect.catchAll((error) =>
+                          pipe(
+                            jsonStringify(Either.left(error), schema),
+                            Effect.flatMap((data) =>
+                              Effect.sync(() => {
+                                response.write(data)
+                              })
+                            )
+                          )
+                        ),
+                        Effect.catchAllCause((e) => Effect.sync(() => response.write(JSON.stringify(e)))),
+                        Effect.flatMap((_) => Effect.sync(() => response.end()))
+                      )
+
+                  return handler(req, reply as any, replyStream as any)
                 }),
                 Effect.catchAllCause((cause) =>
                   Effect.sync(() => {

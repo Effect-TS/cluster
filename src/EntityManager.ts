@@ -12,6 +12,7 @@ import * as Fiber from "@effect/io/Fiber"
 import * as Queue from "@effect/io/Queue"
 import * as RefSynchronized from "@effect/io/Ref/Synchronized"
 import type * as RecipientType from "@effect/shardcake/RecipientType"
+import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
 import * as ShardError from "@effect/shardcake/ShardError"
 import type * as ShardId from "@effect/shardcake/ShardId"
@@ -27,7 +28,7 @@ export interface EntityManager<Req> {
     entityId: string,
     req: Req,
     replyId: Option.Option<ReplyId.ReplyId>,
-    promise: Deferred.Deferred<ShardError.Throwable, Option.Option<any>>
+    replyChannel: ReplyChannel.ReplyChannel<any>
   ): Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void>
   terminateEntitiesOnShards(
     shards: HashSet.HashSet<ShardId.ShardId>
@@ -118,7 +119,7 @@ export function make<R, Req>(
       entityId: string,
       req: Req,
       replyId: Option.Option<ReplyId.ReplyId>,
-      promise: Deferred.Deferred<ShardError.Throwable, Option.Option<any>>
+      replyChannel: ReplyChannel.ReplyChannel<any>
     ): Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void> {
       function decide(
         map: HashMap.HashMap<
@@ -202,7 +203,7 @@ export function make<R, Req>(
               () =>
                 pipe(
                   Effect.sleep(Duration.millis(100)),
-                  Effect.zipRight(send(entityId, req, replyId, promise))
+                  Effect.zipRight(send(entityId, req, replyId, replyChannel))
                 ),
               (queue) => {
                 return pipe(
@@ -211,15 +212,15 @@ export function make<R, Req>(
                     () =>
                       Effect.zipLeft(
                         Queue.offer(queue, req),
-                        Deferred.succeed(promise, Option.none())
+                        replyChannel.end
                       ),
                     (replyId_) =>
                       Effect.zipRight(
-                        sharding.initReply(replyId_, promise),
+                        sharding.initReply(replyId_, replyChannel),
                         Queue.offer(queue, req)
                       )
                   ),
-                  Effect.catchAllCause(() => send(entityId, req, replyId, promise))
+                  Effect.catchAllCause(() => send(entityId, req, replyId, replyChannel))
                 )
               }
             )

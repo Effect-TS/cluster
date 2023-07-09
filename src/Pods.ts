@@ -11,6 +11,7 @@ import type * as ByteArray from "@effect/shardcake/ByteArray"
 import type * as PodAddress from "@effect/shardcake/PodAddress"
 import type { PodUnavailable } from "@effect/shardcake/ShardError"
 import type * as ShardId from "@effect/shardcake/ShardId"
+import * as Stream from "@effect/stream/Stream"
 
 /**
  * @since 1.0.0
@@ -66,6 +67,15 @@ export interface Pods {
     pod: PodAddress.PodAddress,
     message: BinaryMessage.BinaryMessage
   ): Effect.Effect<never, never, Option.Option<ByteArray.ByteArray>>
+
+  /**
+   * Send a message to a pod and receive a stream of replies
+   * @since 1.0.0
+   */
+  sendMessageStreaming(
+    pod: PodAddress.PodAddress,
+    message: BinaryMessage.BinaryMessage
+  ): Stream.Stream<never, never, ByteArray.ByteArray>
 }
 
 /**
@@ -86,5 +96,6 @@ export const noop = Layer.succeed(Pods, {
   assignShards: () => Effect.unit(),
   unassignShards: () => Effect.unit(),
   ping: () => Effect.unit(),
-  sendMessage: () => Effect.succeed(Option.none())
+  sendMessage: () => Effect.succeed(Option.none()),
+  sendMessageStreaming: () => Stream.empty
 })

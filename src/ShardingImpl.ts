@@ -7,11 +7,10 @@ import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
-import * as Cause from "@effect/io/Cause"
-import * as Deferred from "@effect/io/Deferred"
+import type * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Hub from "@effect/io/Hub"
-import * as Queue from "@effect/io/Queue"
+import type * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as Synchronized from "@effect/io/Ref/Synchronized"
 import * as BinaryMessage from "@effect/shardcake/BinaryMessage"
@@ -23,10 +22,13 @@ import * as Message from "@effect/shardcake/Message"
 import * as PodAddress from "@effect/shardcake/PodAddress"
 import { Pods } from "@effect/shardcake/Pods"
 import type { Replier } from "@effect/shardcake/Replier"
+import * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import * as ReplyId from "@effect/shardcake/ReplyId"
 import type { Throwable } from "@effect/shardcake/ShardError"
 import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
 import { ShardManagerClient } from "@effect/shardcake/ShardManagerClient"
+import * as StreamMessage from "@effect/shardcake/StreamMessage"
+import type * as StreamReplier from "@effect/shardcake/StreamReplier"
 import * as Stream from "@effect/stream/Stream"
 
 import * as Duration from "@effect/data/Duration"
@@ -65,9 +67,9 @@ function make(
   singletons: Synchronized.Synchronized<
     List.List<SingletonEntry>
   >,
-  replyPromises: Synchronized.Synchronized<
-    HashMap.HashMap<ReplyId.ReplyId, Deferred.Deferred<Throwable, Option.Option<any>>>
-  >, // promise for each pending reply,
+  replyChannels: Synchronized.Synchronized<
+    HashMap.HashMap<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>
+  >, // reply channel for each pending reply,
   // lastUnhealthyNodeReported: Ref.Ref<Date>,
   isShuttingDownRef: Ref.Ref<boolean>,
   shardManager: ShardManagerClient,
@@ -268,27 +270,59 @@ function make(
     Effect.asUnit
   )
 
-  function sendToLocalEntity(
+  function sendToLocalEntitySingleReply(
     msg: BinaryMessage.BinaryMessage
-  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<ByteArray.ByteArray>> {
+  ): Effect.Effect<
+    never,
+    Throwable,
+    Option.Option<ByteArray.ByteArray>
+  > {
+    return Effect.gen(function*(_) {
+      const replyChannel = yield* _(ReplyChannel.single<any>())
+      const schema = yield* _(sendToLocalEntity(msg, replyChannel))
+      const res = yield* _(replyChannel.output)
+      if (Option.isSome(res)) {
+        if (Option.isNone(schema)) {
+          return yield* _(Effect.die(NotAMessageWithReplier(msg)))
+        }
+        return Option.some(yield* _(serialization.encode(res.value, schema.value)))
+      }
+      return Option.none()
+    })
+  }
+
+  function sendToLocalEntityStreamingReply(
+    msg: BinaryMessage.BinaryMessage
+  ): Stream.Stream<never, Throwable, ByteArray.ByteArray> {
+    return pipe(
+      Effect.gen(function*(_) {
+        const replyChannel = yield* _(ReplyChannel.stream<any>())
+        const schema = yield* _(sendToLocalEntity(msg, replyChannel))
+        return pipe(
+          replyChannel.output,
+          Stream.mapEffect((value) => {
+            if (Option.isNone(schema)) {
+              return Effect.die(NotAMessageWithReplier(msg))
+            }
+            return serialization.encode(value, schema.value)
+          })
+        )
+      }),
+      Stream.fromEffect,
+      Stream.flatten
+    )
+  }
+
+  function sendToLocalEntity(
+    msg: BinaryMessage.BinaryMessage,
+    replyChannel: ReplyChannel.ReplyChannel<any>
+  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<any, any>>> {
     return pipe(
       Ref.get(entityStates),
       Effect.flatMap((states) => {
         const a = HashMap.get(states, msg.entityType)
         if (Option.isSome(a)) {
-          const state = a.value
-          return pipe(
-            Effect.Do(),
-            Effect.bind("p", () => Deferred.make<never, Option.Option<ByteArray.ByteArray>>()),
-            Effect.bind("interruptor", () => Deferred.make<never, void>()),
-            Effect.tap(({ interruptor, p }) => state.binaryQueue.offer([msg, p, interruptor])),
-            Effect.flatMap(({ interruptor, p }) =>
-              pipe(
-                Deferred.await(p),
-                Effect.onError((_) => Deferred.interrupt(interruptor))
-              )
-            )
-          )
+          return a.value.processBinary(msg, replyChannel)
         } else {
           return Effect.fail(EntityTypeNotRegistered(msg.entityType, address))
         }
@@ -298,29 +332,16 @@ function make(
 
   function initReply(
     id: ReplyId.ReplyId,
-    promise: Deferred.Deferred<Throwable, Option.Option<any>>
+    replyChannel: ReplyChannel.ReplyChannel<any>
   ): Effect.Effect<never, never, void> {
     return pipe(
-      replyPromises,
-      Synchronized.update(HashMap.set(id, promise)),
+      replyChannels,
+      Synchronized.update(HashMap.set(id, replyChannel)),
       Effect.zipLeft(
         pipe(
-          promise,
-          Deferred.await,
-          Effect.onError((cause) => abortReply(id, Cause.squash(cause) as any)),
+          replyChannel.await,
+          Effect.ensuring(Synchronized.update(replyChannels, HashMap.remove(id))),
           Effect.forkDaemon
-        )
-      )
-    )
-  }
-
-  function abortReply(id: ReplyId.ReplyId, ex: Throwable): Effect.Effect<never, never, void> {
-    return pipe(
-      replyPromises,
-      Synchronized.updateEffect((promises) =>
-        pipe(
-          Effect.whenCase(() => pipe(promises, HashMap.get(id)), Option.map(Deferred.fail(ex))),
-          Effect.as(pipe(promises, HashMap.remove(id)))
         )
       )
     )
@@ -328,14 +349,32 @@ function make(
 
   function reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void> {
     return pipe(
-      replyPromises,
-      Synchronized.updateEffect((promises) =>
+      replyChannels,
+      Synchronized.updateEffect((repliers) =>
         pipe(
           Effect.whenCase(
-            () => pipe(promises, HashMap.get(replier.id)),
-            Option.map((deferred) => pipe(deferred, Deferred.succeed(Option.some(reply))))
+            () => pipe(repliers, HashMap.get(replier.id)),
+            Option.map((replyChannel) => pipe((replyChannel as ReplyChannel.ReplyChannel<Reply>).replySingle(reply)))
           ),
-          Effect.as(pipe(promises, HashMap.remove(replier.id)))
+          Effect.as(pipe(repliers, HashMap.remove(replier.id)))
+        )
+      )
+    )
+  }
+
+  function replyStream<Reply>(
+    replies: Stream.Stream<never, never, Reply>,
+    replier: StreamReplier.StreamReplier<Reply>
+  ): Effect.Effect<never, never, void> {
+    return pipe(
+      replyChannels,
+      Synchronized.updateEffect((repliers) =>
+        pipe(
+          Effect.whenCase(
+            () => pipe(repliers, HashMap.get(replier.id)),
+            Option.map((replyChannel) => pipe((replyChannel as ReplyChannel.ReplyChannel<Reply>).replyStream(replies)))
+          ),
+          Effect.as(pipe(repliers, HashMap.remove(replier.id)))
         )
       )
     )
@@ -347,74 +386,81 @@ function make(
     msg: Msg,
     msgSchema: Schema.Schema<any, Msg>,
     pod: PodAddress.PodAddress,
-    replyId: Option.Option<ReplyId.ReplyId>
-  ): Effect.Effect<never, Throwable, Option.Option<Res>> {
+    replyId: Option.Option<ReplyId.ReplyId>,
+    replyChannel: ReplyChannel.ReplyChannel<Res>
+  ): Effect.Effect<never, Throwable, void> {
     if (config.simulateRemotePods && equals(pod, address)) {
       return pipe(
         serialization.encode(msg, msgSchema),
-        Effect.flatMap((bytes) => sendToLocalEntity(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId))),
-        Effect.flatMap((_) => {
-          if (Option.isSome(_)) {
-            if (Message.isMessage<Res>(msg)) {
-              return pipe(
-                serialization.decode<Res>(_.value, msg.replier.schema),
-                Effect.map(Option.some)
-              )
-            } else {
-              return Effect.die(NotAMessageWithReplier(msg))
-            }
-          }
-          return Effect.succeed(Option.none())
-        })
+        Effect.flatMap((bytes) =>
+          sendToLocalEntity(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId), replyChannel)
+        ),
+        Effect.asUnit
       )
     } else if (equals(pod, address)) {
       // if pod = self, shortcut and send directly without serialization
       return pipe(
-        Deferred.make<Throwable, Option.Option<Res>>(),
-        Effect.flatMap((p) =>
-          pipe(
-            Ref.get(entityStates),
-            Effect.flatMap(
-              (_) =>
-                pipe(
-                  HashMap.get(_, recipientTypeName),
-                  Option.match(
-                    () => Effect.fail(EntityTypeNotRegistered(recipientTypeName, pod)),
-                    (state) =>
-                      pipe(
-                        (state.entityManager as EntityManager.EntityManager<Msg>).send(entityId, msg, replyId, p),
-                        Effect.zipRight(Deferred.await(p)),
-                        Effect.onError((cause) => Deferred.failCause(p, cause))
-                      )
+        Ref.get(entityStates),
+        Effect.flatMap(
+          (_) =>
+            pipe(
+              HashMap.get(_, recipientTypeName),
+              Option.match(
+                () => Effect.fail<Throwable>(EntityTypeNotRegistered(recipientTypeName, pod)),
+                (state) =>
+                  pipe(
+                    (state.entityManager as EntityManager.EntityManager<Msg>).send(entityId, msg, replyId, replyChannel)
                   )
-                )
+              )
             )
-          )
         )
       )
     } else {
       return pipe(
         serialization.encode(msg, msgSchema),
-        Effect.flatMap((bytes) =>
-          pipe(
-            pods.sendMessage(
-              pod,
-              BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
-            ),
-            Effect.tapError(() => Effect.unit())
-          )
-        ),
-        Effect.flatMap(
-          Option.match(
-            () => Effect.succeed(Option.none()),
-            (bytes) => {
-              if (Message.isMessage<Res>(msg)) {
-                return pipe(serialization.decode(bytes, msg.replier.schema), Effect.map(Option.some))
-              }
-              return Effect.die("Error, schema is missing in request message")
-            }
-          )
-        )
+        Effect.flatMap((bytes) => {
+          const errorHandling = (_: Throwable) => Effect.unit()
+
+          const binaryMessage = BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
+
+          if (ReplyChannel.isReplyChannelFromDeferred(replyChannel)) {
+            return pipe(
+              pods.sendMessage(pod, binaryMessage),
+              Effect.tapError(errorHandling),
+              Effect.flatMap(
+                Option.match(
+                  () => replyChannel.end,
+                  (bytes) => {
+                    if (Message.isMessage(msg)) {
+                      return pipe(
+                        serialization.decode(bytes, msg.replier.schema),
+                        Effect.flatMap(replyChannel.replySingle)
+                      )
+                    }
+                    return Effect.die(NotAMessageWithReplier(msg))
+                  }
+                )
+              )
+            )
+          }
+
+          if (ReplyChannel.isReplyChannelFromQueue(replyChannel)) {
+            return pipe(
+              replyChannel.replyStream(pipe(
+                pods.sendMessageStreaming(pod, binaryMessage),
+                Stream.tapError(errorHandling),
+                Stream.mapEffect((bytes) => {
+                  if (StreamMessage.isStreamMessage(msg)) {
+                    return serialization.decode(bytes, msg.replier.schema)
+                  }
+                  return Effect.die(NotAMessageWithReplier(msg))
+                })
+              ))
+            )
+          }
+
+          return Effect.dieMessage("got unknown replyChannel type")
+        })
       )
     }
   }
@@ -433,7 +479,7 @@ function make(
     }
 
     function send(entityId: string) {
-      return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => Msg) => {
+      return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => A) => {
         return pipe(
           ReplyId.makeEffect,
           Effect.flatMap((replyId) => {
@@ -452,25 +498,66 @@ function make(
       }
     }
 
-    function sendMessage<Res>(entityId: string, msg: Msg, replyId: Option.Option<ReplyId.ReplyId>) {
+    function sendStream(entityId: string) {
+      return <A extends Msg & StreamMessage.StreamMessage<any>>(fn: (replyId: ReplyId.ReplyId) => A) => {
+        return pipe(
+          ReplyId.makeEffect,
+          Effect.flatMap((replyId) => {
+            const body = fn(replyId)
+            return sendMessageStreaming<StreamMessage.Success<A>>(entityId, body, Option.some(replyId))
+          })
+        )
+      }
+    }
+
+    function sendMessage<Res>(
+      entityId: string,
+      msg: Msg,
+      replyId: Option.Option<ReplyId.ReplyId>
+    ): Effect.Effect<never, Throwable, Option.Option<Res>> {
+      return Effect.gen(function*(_) {
+        const replyChannel = yield* _(ReplyChannel.single<Res>())
+        yield* _(sendMessageGeneric(entityId, msg, replyId, replyChannel))
+        return yield* _(replyChannel.output)
+      })
+    }
+
+    function sendMessageStreaming<Res>(
+      entityId: string,
+      msg: Msg,
+      replyId: Option.Option<ReplyId.ReplyId>
+    ): Effect.Effect<never, Throwable, Stream.Stream<never, Throwable, Res>> {
+      return Effect.gen(function*(_) {
+        const replyChannel = yield* _(ReplyChannel.stream<Res>())
+        yield* _(sendMessageGeneric(entityId, msg, replyId, replyChannel))
+        return replyChannel.output
+      })
+    }
+
+    function sendMessageGeneric<Res>(
+      entityId: string,
+      msg: Msg,
+      replyId: Option.Option<ReplyId.ReplyId>,
+      replyChannel: ReplyChannel.ReplyChannel<Res>
+    ) {
       const shardId = getShardId(entityType, entityId)
 
-      const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = pipe(
+      const trySend: Effect.Effect<never, Throwable, void> = pipe(
         Effect.Do(),
         Effect.bind("shards", () => Ref.get(shardAssignments)),
         Effect.let("pod", ({ shards }) => HashMap.get(shards, shardId)),
         Effect.bind("response", ({ pod }) => {
           if (Option.isSome(pod)) {
-            const send = sendToPod<Msg, Res>(
-              entityType.name,
-              entityId,
-              msg,
-              entityType.schema,
-              pod.value,
-              replyId
-            )
             return pipe(
-              send,
+              sendToPod<Msg, Res>(
+                entityType.name,
+                entityId,
+                msg,
+                entityType.schema,
+                pod.value,
+                replyId,
+                replyChannel
+              ),
               Effect.catchSome((_) => {
                 if (isEntityNotManagedByThisPodError(_) || isPodUnavailableError(_)) {
                   return pipe(
@@ -480,19 +567,20 @@ function make(
                   )
                 }
                 return Option.none()
-              })
+              }),
+              Effect.onError(replyChannel.fail)
             )
           }
 
           return pipe(Effect.sleep(Duration.millis(100)), Effect.zipRight(trySend))
         }),
-        Effect.map((_) => _.response)
+        Effect.asUnit
       )
 
       return trySend
     }
 
-    return { sendDiscard, send }
+    return { sendDiscard, send, sendStream }
   }
 
   function broadcaster<Msg>(
@@ -514,26 +602,33 @@ function make(
         Effect.bind("pods", () => getPods),
         Effect.bind("response", ({ pods }) =>
           Effect.forEachPar(pods, (pod) => {
-            const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = pipe(
-              sendToPod<Msg, Res>(
-                topicType.name,
-                topic,
-                body,
-                topicType.schema,
-                pod,
-                replyId
-              ),
-              Effect.catchSome((_) => {
-                if (isPodUnavailableError(_)) {
-                  return pipe(
-                    Effect.sleep(Duration.millis(200)),
-                    Effect.zipRight(trySend),
-                    Option.some
-                  )
-                }
-                return Option.none()
-              })
-            )
+            const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = Effect.gen(function*(_) {
+              const replyChannel = yield* _(ReplyChannel.single<Res>())
+              yield* _(pipe(
+                sendToPod<Msg, Res>(
+                  topicType.name,
+                  topic,
+                  body,
+                  topicType.schema,
+                  pod,
+                  replyId,
+                  replyChannel
+                ),
+                Effect.catchSome((_) => {
+                  if (isPodUnavailableError(_)) {
+                    return pipe(
+                      Effect.sleep(Duration.millis(200)),
+                      Effect.zipRight(trySend),
+                      Option.some
+                    )
+                  }
+                  return Option.none()
+                }),
+                Effect.onError(replyChannel.fail)
+              ))
+              return yield* _(replyChannel.output)
+            })
+
             return pipe(
               trySend,
               Effect.flatMap((_) => {
@@ -621,66 +716,28 @@ function make(
         )
       )
 
-      const binaryQueue = yield* $(
+      const processBinary = (msg: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) =>
         pipe(
-          Queue.unbounded<
-            readonly [
-              BinaryMessage.BinaryMessage,
-              Deferred.Deferred<Throwable, Option.Option<ByteArray.ByteArray>>,
-              Deferred.Deferred<never, void>
-            ]
-          >()
+          serialization.decode<Req>(msg.body, recipientType.schema),
+          Effect.flatMap((_) =>
+            pipe(
+              entityManager.send(msg.entityId, _, msg.replyId, replyChannel),
+              Effect.as(
+                Message.isMessage(_) ?
+                  Option.some(_.replier.schema) :
+                  StreamMessage.isStreamMessage(_) ?
+                  Option.some(_.replier.schema) :
+                  Option.none()
+              )
+            )
+          ),
+          Effect.catchAllCause((_) => Effect.as(replyChannel.fail(_), Option.none()))
         )
-      )
 
       yield* $(
         pipe(
           entityStates,
-          Ref.update(HashMap.set(recipientType.name, EntityState.make(binaryQueue, entityManager)))
-        )
-      )
-
-      yield* $(Effect.log("Starting drainer for " + recipientType.name))
-
-      yield* $(
-        pipe(
-          Stream.fromQueue(binaryQueue),
-          Stream.mapEffect(([msg, p, interruptor]) =>
-            pipe(
-              Effect.Do(),
-              Effect.bind("req", () => serialization.decode<Req>(msg.body, recipientType.schema)),
-              Effect.bind("p2", () => Deferred.make<Throwable, Option.Option<any>>()),
-              Effect.bind("resOption", (_) =>
-                pipe(
-                  entityManager.send(msg.entityId, _.req, msg.replyId, _.p2),
-                  Effect.zipRight(Deferred.await(_.p2)),
-                  Effect.onError((__) => Deferred.interrupt(_.p2))
-                )),
-              Effect.bind("res", (_) =>
-                pipe(
-                  _.resOption,
-                  Option.match(
-                    () => Effect.succeed(Option.none()),
-                    (__) => {
-                      if (Message.isMessage(_.req)) {
-                        return pipe(
-                          serialization.encode(__, _.req.replier.schema),
-                          Effect.map(Option.some)
-                        )
-                      }
-                      return Effect.die(NotAMessageWithReplier(_.req))
-                    }
-                  )
-                )),
-              Effect.tap((_) => pipe(p, Deferred.succeed(_.res))),
-              Effect.catchAllCause((cause) => pipe(p, Deferred.fail(Cause.squash(cause)))),
-              Effect.raceFirst(Deferred.await(interruptor)),
-              Effect.fork,
-              Effect.asUnit
-            )
-          ),
-          Stream.runDrain,
-          Effect.forkScoped
+          Ref.update(HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))
         )
       )
     })
@@ -707,7 +764,10 @@ function make(
     assign,
     unassign,
     sendToLocalEntity,
-    getPods
+    sendToLocalEntitySingleReply,
+    sendToLocalEntityStreamingReply,
+    getPods,
+    replyStream
   }
 
   return self
@@ -740,9 +800,9 @@ export const live = Layer.scoped(
         )*/
       )),
     Effect.bind("shuttingDown", () => Ref.make(false)),
-    Effect.bind("promises", () =>
+    Effect.bind("replyChannels", () =>
       Synchronized.make(
-        HashMap.empty<ReplyId.ReplyId, Deferred.Deferred<Throwable, Option.Option<any>>>()
+        HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>()
       )),
     Effect.bind("eventsHub", () => Hub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>()),
     Effect.let("sharding", (_) =>
@@ -752,7 +812,7 @@ export const live = Layer.scoped(
         _.shardsCache,
         _.entityStates,
         _.singletons,
-        _.promises,
+        _.replyChannels,
         _.shuttingDown,
         _.shardManager,
         _.pods,

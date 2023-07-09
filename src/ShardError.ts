@@ -183,6 +183,10 @@ export function EntityTypeNotRegistered(
   return ({ _tag: "EntityTypeNotRegistered", entityType, podAddress })
 }
 
+export function isEntityTypeNotRegistered(value: unknown): value is EntityTypeNotRegistered {
+  return typeof value === "object" && value !== null && "_tag" in value && value["_tag"] === "EntityTypeNotRegistered"
+}
+
 /**
  * @since 1.0.0
  * @category models

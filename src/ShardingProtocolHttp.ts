@@ -65,6 +65,24 @@ export const SendResult_ = Schema.either(
  * @since 1.0.0
  * @category schema
  */
+export const SendStream_ = Schema.struct({
+  _tag: Schema.literal("SendStream"),
+  message: BinaryMessage.schema
+})
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const SendStreamResultItem_ = Schema.either(
+  ShardError.EntityTypeNotRegistered_,
+  ByteArray.schema
+)
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
 export const PingShards_ = Schema.struct({
   _tag: Schema.literal("PingShards")
 })
@@ -84,4 +102,4 @@ export const PingShardsResult_ = Schema.either(
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.union(AssignShard_, UnassignShards_, Send_, PingShards_)
+export const schema = Schema.union(AssignShard_, UnassignShards_, Send_, SendStream_, PingShards_)
