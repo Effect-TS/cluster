@@ -93,9 +93,9 @@ export const Pods = Tag<Pods>()
  */
 export const noop = Layer.succeed(Pods, {
   [TypeId]: {},
-  assignShards: () => Effect.unit(),
-  unassignShards: () => Effect.unit(),
-  ping: () => Effect.unit(),
+  assignShards: () => Effect.unit,
+  unassignShards: () => Effect.unit,
+  ping: () => Effect.unit,
   sendMessage: () => Effect.succeed(Option.none()),
   sendMessageStreaming: () => Stream.empty
 })

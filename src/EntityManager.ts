@@ -69,7 +69,7 @@ export function make<R, Req>(
             Option.getOrElse(() => config.entityMaxIdleTime)
           )
         ),
-        Effect.zipRight(pipe(terminateEntity(entityId), Effect.forkDaemon, Effect.unit)),
+        Effect.zipRight(pipe(terminateEntity(entityId), Effect.forkDaemon, Effect.asUnit)),
         Effect.interruptible,
         Effect.forkDaemon
       )
@@ -79,22 +79,22 @@ export function make<R, Req>(
       return RefSynchronized.updateEffect(entities, (map) => {
         const _ = pipe(
           HashMap.get(map, entityId),
-          Option.match(
+          Option.match({
             // if no queue is found, do nothing
-            () => Effect.succeed(map),
-            ([maybeQueue, interruptionFiber]) =>
+            onNone: () => Effect.succeed(map),
+            onSome: ([maybeQueue, interruptionFiber]) =>
               pipe(
                 maybeQueue,
-                Option.match(
-                  () => Effect.succeed(map),
-                  (queue) =>
+                Option.match({
+                  onNone: () => Effect.succeed(map),
+                  onSome: (queue) =>
                     Effect.flatMap(Deferred.make<never, void>(), (p) =>
                       pipe(
                         terminateMessage(p),
-                        Option.match(
-                          () => Effect.as(Queue.shutdown(queue), HashMap.remove(map, entityId)),
+                        Option.match({
+                          onNone: () => Effect.as(Queue.shutdown(queue), HashMap.remove(map, entityId)),
                           // if a queue is found, offer the termination message, and set the queue to None so that no new message is enqueued
-                          (msg) =>
+                          onSome: (msg) =>
                             Effect.as(
                               pipe(Queue.offer(queue, msg), Effect.exit),
                               HashMap.set(
@@ -106,11 +106,11 @@ export function make<R, Req>(
                                 ] as const
                               )
                             )
-                        )
+                        })
                       ))
-                )
+                })
               )
-          )
+          })
         )
         return _
       })
@@ -151,7 +151,7 @@ export function make<R, Req>(
             } else {
               // queue doesn't exist, create a new one
               return pipe(
-                Effect.Do(),
+                Effect.Do,
                 Effect.bind("queue", () => Queue.unbounded<Req>()),
                 Effect.bind("expirationFiber", () => startExpirationFiber(entityId)),
                 Effect.tap((_) =>
@@ -182,7 +182,7 @@ export function make<R, Req>(
       }
 
       return pipe(
-        Effect.Do(),
+        Effect.Do,
         Effect.tap(() => {
           // first, verify that this entity should be handled by this pod
           if (recipientType._tag === "EntityType") {
@@ -191,40 +191,41 @@ export function make<R, Req>(
               sharding.isEntityOnLocalShards(recipientType, entityId)
             )
           } else if (recipientType._tag === "TopicType") {
-            return Effect.unit()
+            // TODO: wtf?
+            return Effect.unit
           }
 
-          return Effect.unit()
+          return Effect.unit
         }),
         Effect.bind("test", () => RefSynchronized.modifyEffect(entities, (map) => decide(map, entityId))),
         Effect.tap((_) =>
           pipe(
             _.test,
-            Option.match(
-              () =>
+            Option.match({
+              onNone: () =>
                 pipe(
                   Effect.sleep(Duration.millis(100)),
                   Effect.zipRight(send(entityId, req, replyId, replyChannel))
                 ),
-              (queue) => {
+              onSome: (queue) => {
                 return pipe(
                   replyId,
-                  Option.match(
-                    () =>
+                  Option.match({
+                    onNone: () =>
                       Effect.zipLeft(
                         Queue.offer(queue, req),
                         replyChannel.end
                       ),
-                    (replyId_) =>
+                    onSome: (replyId_) =>
                       Effect.zipRight(
                         sharding.initReply(replyId_, replyChannel),
                         Queue.offer(queue, req)
                       )
-                  ),
+                  }),
                   Effect.catchAllCause(() => send(entityId, req, replyId, replyChannel))
                 )
               }
-            )
+            })
           )
         )
       )
@@ -246,23 +247,23 @@ export function make<R, Req>(
           return Effect.tap(Deferred.make<never, boolean>(), (p) =>
             pipe(
               queue_,
-              Option.match(
-                () => Deferred.succeed(p, true),
-                (queue) =>
+              Option.match({
+                onNone: () => Deferred.succeed(p, true),
+                onSome: (queue) =>
                   pipe(
                     terminateMessage(p),
-                    Option.match(
-                      () => Effect.zipRight(Queue.shutdown(queue), Deferred.succeed(p, true)),
-                      (terminate) =>
+                    Option.match({
+                      onNone: () => Effect.zipRight(Queue.shutdown(queue), Deferred.succeed(p, true)),
+                      onSome: (terminate) =>
                         Effect.catchAllCause(Queue.offer(queue, terminate), () => Deferred.succeed(p, true))
-                    )
+                    })
                   )
-              )
+              })
             ))
         }),
         Effect.flatMap((promises) =>
           Effect.timeout(
-            Effect.forEachDiscard(promises, Deferred.await),
+            Effect.forEach(promises, Deferred.await, { discard: true }),
             config.entityTerminationTimeout
           )
         )

@@ -83,37 +83,45 @@ function make(
   }
 
   const register: Effect.Effect<never, never, void> = pipe(
-    Effect.logDebug(`Registering pod ${PodAddress.show(address)} to Shard Manager`),
+    Effect.log(`Registering pod ${PodAddress.show(address)} to Shard Manager`, { level: "Debug" }),
     Effect.zipRight(pipe(isShuttingDownRef, Ref.set(false))),
     Effect.zipRight(shardManager.register(address))
   )
 
   const unregister: Effect.Effect<never, never, void> = pipe(
     shardManager.getAssignments,
-    Effect.matchCauseEffect(
-      (_) => Effect.logWarningCauseMessage("Shard Manager not available. Can't unregister cleanly", _),
-      () =>
+    Effect.matchCauseEffect({
+      onFailure: Effect.logCause({
+        level: "Warning",
+        message: "Shard Manager not available. Can't unregister cleanly"
+      }),
+      onSuccess: () =>
         pipe(
-          Effect.logDebug(`Stopping local entities`),
+          Effect.log(`Stopping local entities`, { level: "Debug" }),
           Effect.zipRight(pipe(isShuttingDownRef, Ref.set(true))),
           Effect.zipRight(
             pipe(
               Ref.get(entityStates),
               Effect.flatMap(
-                Effect.forEachDiscard(
+                Effect.forEach(
                   ([name, entityState]) =>
                     pipe(
                       entityState.entityManager.terminateAllEntities,
-                      Effect.catchAllCause((_) => Effect.logErrorCauseMessage("Error during stop of entity " + name, _))
-                    )
+                      Effect.catchAllCause(
+                        Effect.logCause({ level: "Error", message: "Error during stop of entity " + name })
+                      )
+                    ),
+                  { discard: true }
                 )
               )
             )
           ),
-          Effect.zipRight(Effect.logDebug(`Unregistering pod ${PodAddress.show(address)} to Shard Manager`)),
+          Effect.zipRight(
+            Effect.log(`Unregistering pod ${PodAddress.show(address)} to Shard Manager`, { level: "Debug" })
+          ),
           Effect.zipRight(shardManager.unregister(address))
         )
-    )
+    })
   )
 
   const isSingletonNode: Effect.Effect<never, never, boolean> = pipe(
@@ -121,7 +129,7 @@ function make(
     Effect.map((_) =>
       pipe(
         HashMap.get(_, ShardId.make(1)),
-        Option.match(() => false, equals(address))
+        Option.match({ onNone: () => false, onSome: equals(address) })
       )
     )
   )
@@ -134,14 +142,16 @@ function make(
           Effect.forEach(singletons, ([name, run, fa]) =>
             Option.match(
               fa,
-              () =>
-                pipe(
-                  Effect.logDebug("Starting singleton " + name),
-                  Effect.zipRight(
-                    Effect.map(Effect.forkDaemon(run), (fiber) => [name, run, Option.some(fiber)] as SingletonEntry)
-                  )
-                ),
-              (_) => Effect.succeed([name, run, fa] as SingletonEntry)
+              {
+                onNone: () =>
+                  pipe(
+                    Effect.log("Starting singleton " + name, { level: "Debug" }),
+                    Effect.zipRight(
+                      Effect.map(Effect.forkDaemon(run), (fiber) => [name, run, Option.some(fiber)] as SingletonEntry)
+                    )
+                  ),
+                onSome: (_) => Effect.succeed([name, run, fa] as SingletonEntry)
+              }
             )),
           Effect.map(List.fromIterable)
         )
@@ -158,14 +168,16 @@ function make(
           Effect.forEach(singletons, ([name, run, fa]) =>
             Option.match(
               fa,
-              () => Effect.succeed([name, run, fa] as SingletonEntry),
-              (fiber) =>
-                pipe(
-                  Effect.logDebug("Stopping singleton " + name),
-                  Effect.zipRight(
-                    Effect.as(Fiber.interrupt(fiber), [name, run, Option.none()] as SingletonEntry)
+              {
+                onNone: () => Effect.succeed([name, run, fa] as SingletonEntry),
+                onSome: (fiber) =>
+                  pipe(
+                    Effect.log("Stopping singleton " + name, { level: "Debug" }),
+                    Effect.zipRight(
+                      Effect.as(Fiber.interrupt(fiber), [name, run, Option.none()] as SingletonEntry)
+                    )
                   )
-                )
+              }
             )),
           Effect.map(List.fromIterable)
         )
@@ -188,7 +200,7 @@ function make(
     return pipe(
       Ref.update(shardAssignments, (_) => HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address))),
       Effect.zipRight(startSingletonsIfNeeded),
-      Effect.zipLeft(Effect.logDebug("Assigned shards: " + showHashSet(ShardId.show)(shards))),
+      Effect.zipLeft(Effect.log("Assigned shards: " + showHashSet(ShardId.show)(shards), { level: "Debug" })),
       Effect.unlessEffect(isShuttingDown),
       Effect.asUnit
     )
@@ -205,7 +217,7 @@ function make(
           return _
         })),
       Effect.zipRight(stopSingletonsIfNeeded),
-      Effect.zipLeft(Effect.logDebug("Unassigning shards: " + showHashSet(ShardId.show)(shards)))
+      Effect.zipLeft(Effect.log("Unassigning shards: " + showHashSet(ShardId.show)(shards), { level: "Debug" }))
     )
   }
 
@@ -214,7 +226,7 @@ function make(
     entityId: string
   ): Effect.Effect<never, never, boolean> {
     return pipe(
-      Effect.Do(),
+      Effect.Do,
       Effect.bind("shards", () => Ref.get(shardAssignments)),
       Effect.let("shardId", () => getShardId(recipientType, entityId)),
       Effect.let("pod", ({ shardId, shards }) => pipe(shards, HashMap.get(shardId))),
@@ -348,36 +360,36 @@ function make(
   }
 
   function reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void> {
-    return pipe(
-      replyChannels,
-      Synchronized.updateEffect((repliers) =>
-        pipe(
-          Effect.whenCase(
-            () => pipe(repliers, HashMap.get(replier.id)),
-            Option.map((replyChannel) => pipe((replyChannel as ReplyChannel.ReplyChannel<Reply>).replySingle(reply)))
-          ),
-          Effect.as(pipe(repliers, HashMap.remove(replier.id)))
-        )
-      )
-    )
+    return Synchronized.updateEffect(replyChannels, (repliers) =>
+      pipe(
+        Effect.suspend(() => {
+          const replyChannel = HashMap.get(repliers, replier.id)
+
+          if (Option.isSome(replyChannel)) {
+            return (replyChannel.value as ReplyChannel.ReplyChannel<Reply>).replySingle(reply)
+          }
+          return Effect.unit
+        }),
+        Effect.as(pipe(repliers, HashMap.remove(replier.id)))
+      ))
   }
 
   function replyStream<Reply>(
     replies: Stream.Stream<never, never, Reply>,
     replier: StreamReplier.StreamReplier<Reply>
   ): Effect.Effect<never, never, void> {
-    return pipe(
-      replyChannels,
-      Synchronized.updateEffect((repliers) =>
-        pipe(
-          Effect.whenCase(
-            () => pipe(repliers, HashMap.get(replier.id)),
-            Option.map((replyChannel) => pipe((replyChannel as ReplyChannel.ReplyChannel<Reply>).replyStream(replies)))
-          ),
-          Effect.as(pipe(repliers, HashMap.remove(replier.id)))
-        )
-      )
-    )
+    return Synchronized.updateEffect(replyChannels, (repliers) =>
+      pipe(
+        Effect.suspend(() => {
+          const replyChannel = HashMap.get(repliers, replier.id)
+
+          if (Option.isSome(replyChannel)) {
+            return (replyChannel.value as ReplyChannel.ReplyChannel<Reply>).replyStream(replies)
+          }
+          return Effect.unit
+        }),
+        Effect.as(pipe(repliers, HashMap.remove(replier.id)))
+      ))
   }
 
   function sendToPod<Msg, Res>(
@@ -406,11 +418,18 @@ function make(
             pipe(
               HashMap.get(_, recipientTypeName),
               Option.match(
-                () => Effect.fail<Throwable>(EntityTypeNotRegistered(recipientTypeName, pod)),
-                (state) =>
-                  pipe(
-                    (state.entityManager as EntityManager.EntityManager<Msg>).send(entityId, msg, replyId, replyChannel)
-                  )
+                {
+                  onNone: () => Effect.fail<Throwable>(EntityTypeNotRegistered(recipientTypeName, pod)),
+                  onSome: (state) =>
+                    pipe(
+                      (state.entityManager as EntityManager.EntityManager<Msg>).send(
+                        entityId,
+                        msg,
+                        replyId,
+                        replyChannel
+                      )
+                    )
+                }
               )
             )
         )
@@ -419,7 +438,7 @@ function make(
       return pipe(
         serialization.encode(msg, msgSchema),
         Effect.flatMap((bytes) => {
-          const errorHandling = (_: Throwable) => Effect.unit()
+          const errorHandling = (_: Throwable) => Effect.unit
 
           const binaryMessage = BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
 
@@ -429,15 +448,17 @@ function make(
               Effect.tapError(errorHandling),
               Effect.flatMap(
                 Option.match(
-                  () => replyChannel.end,
-                  (bytes) => {
-                    if (Message.isMessage(msg)) {
-                      return pipe(
-                        serialization.decode(bytes, msg.replier.schema),
-                        Effect.flatMap(replyChannel.replySingle)
-                      )
+                  {
+                    onNone: () => replyChannel.end,
+                    onSome: (bytes) => {
+                      if (Message.isMessage(msg)) {
+                        return pipe(
+                          serialization.decode(bytes, msg.replier.schema),
+                          Effect.flatMap(replyChannel.replySingle)
+                        )
+                      }
+                      return Effect.die(NotAMessageWithReplier(msg))
                     }
-                    return Effect.die(NotAMessageWithReplier(msg))
                   }
                 )
               )
@@ -490,7 +511,10 @@ function make(
                 if (Option.isSome(_)) return Effect.succeed(_.value)
                 return Effect.fail(MessageReturnedNoting(entityId, body))
               }),
-              Effect.timeoutFail(() => SendTimeoutException(entityType, entityId, body), timeout),
+              Effect.timeoutFail({
+                onTimeout: () => SendTimeoutException(entityType, entityId, body),
+                duration: timeout
+              }),
               Effect.interruptible
             )
           })
@@ -543,7 +567,7 @@ function make(
       const shardId = getShardId(entityType, entityId)
 
       const trySend: Effect.Effect<never, Throwable, void> = pipe(
-        Effect.Do(),
+        Effect.Do,
         Effect.bind("shards", () => Ref.get(shardAssignments)),
         Effect.let("pod", ({ shards }) => HashMap.get(shards, shardId)),
         Effect.bind("response", ({ pod }) => {
@@ -598,10 +622,10 @@ function make(
       replyId: Option.Option<ReplyId.ReplyId>
     ): Effect.Effect<never, Throwable, HashMap.HashMap<PodAddress.PodAddress, Either.Either<Throwable, Res>>> {
       return pipe(
-        Effect.Do(),
+        Effect.Do,
         Effect.bind("pods", () => getPods),
         Effect.bind("response", ({ pods }) =>
-          Effect.forEachPar(pods, (pod) => {
+          Effect.forEach(pods, (pod) => {
             const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = Effect.gen(function*(_) {
               const replyChannel = yield* _(ReplyChannel.single<Res>())
               yield* _(pipe(
@@ -635,11 +659,14 @@ function make(
                 if (Option.isSome(_)) return Effect.succeed(_.value)
                 return Effect.fail(MessageReturnedNoting(topic, body))
               }),
-              Effect.timeoutFail(() => SendTimeoutException(topicType, topic, body), timeout),
+              Effect.timeoutFail({
+                onTimeout: () => SendTimeoutException(topicType, topic, body),
+                duration: timeout
+              }),
               Effect.either,
               Effect.map((res) => [pod, res] as const)
             )
-          })),
+          }, { concurrency: "unbounded" })),
         Effect.map((_) => _.response),
         Effect.map(HashMap.fromIterable)
       )
@@ -780,7 +807,7 @@ function make(
 export const live = Layer.scoped(
   Sharding,
   pipe(
-    Effect.Do(),
+    Effect.Do,
     Effect.bind("config", () => ShardingConfig.ShardingConfig),
     Effect.bind("pods", () => Pods),
     Effect.bind("shardManager", () => ShardManagerClient),

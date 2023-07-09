@@ -178,13 +178,13 @@ export function simulate(events: Iterable<SimulationEvent>) {
   return Effect.flatMap(
     ShardManager.ShardManager,
     (shardManager) =>
-      Effect.forEachDiscard(events, (event) => {
+      Effect.forEach(events, (event) => {
         switch (event._tag) {
           case "PodRegister":
             return shardManager.register(event.pod)
           case "PodUnregister":
             return shardManager.unregister(event.podAddress)
         }
-      })
+      }, { discard: true })
   )
 }

@@ -12,7 +12,7 @@ import * as LogLevel from "@effect/io/Logger/Level"
 import * as ShardManagerHttp from "@effect/shardcake/ShardManagerHttp"
 
 const program = pipe(
-  Effect.never(),
+  Effect.never,
   ShardManagerHttp.shardManagerHttp,
   Effect.provideSomeLayer(ShardManager.live),
   Effect.provideSomeLayer(StorageFile.storageFile),

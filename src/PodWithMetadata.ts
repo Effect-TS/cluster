@@ -62,7 +62,7 @@ export function extractVersion(pod: PodWithMetadata): List.List<number> {
 export function compareVersion(a: List.List<number>, b: List.List<number>): 0 | 1 | -1 {
   let restA = a
   let restB = b
-  while (List.length(restA) > 0 || List.length(restB) > 0) {
+  while (List.size(restA) > 0 || List.size(restB) > 0) {
     const numA = pipe(
       List.head(restA),
       Option.getOrElse(() => 0)

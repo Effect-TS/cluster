@@ -41,7 +41,7 @@ export function make(
   const maxVersion = pipe(
     podVersions,
     List.reduce(List.empty<number>(), (curr, a) => PodWithMetadata.compareVersion(curr, a) === -1 ? a : curr),
-    (result) => (List.length(result) === 0 ? Option.none() : Option.some(result))
+    (result) => (List.size(result) === 0 ? Option.none() : Option.some(result))
   )
   const shardsPerPodPods = pipe(
     HashMap.reduceWithIndex(

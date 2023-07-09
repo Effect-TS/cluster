@@ -27,7 +27,7 @@ import * as ShardingEvent from "@effect/shardcake/ShardingEvent"
 import * as ShardManagerState from "@effect/shardcake/ShardManagerState"
 import * as Storage from "@effect/shardcake/Storage"
 import * as Stream from "@effect/stream/Stream"
-import { groupBy, minByOption, showHashMap, showHashSet } from "./utils"
+import { groupBy, minByOption, showHashSet } from "./utils"
 
 /**
  * @since 1.0.0
@@ -79,11 +79,11 @@ function make(
 
   function register(pod: Pod.Pod) {
     return pipe(
-      Effect.logInfo("Registering " + PodAddress.show(pod.address) + "@" + pod.version),
+      Effect.log("Registering " + PodAddress.show(pod.address) + "@" + pod.version, { level: "Info" }),
       Effect.zipRight(
         RefSynchronized.updateAndGetEffect(stateRef, (state) =>
           pipe(
-            Effect.flatMap(Effect.clock(), (_) => _.currentTimeMillis()),
+            Effect.flatMap(Effect.clock, (_) => _.currentTimeMillis),
             Effect.map((cdt) =>
               ShardManagerState.make(
                 HashMap.set(state.pods, pod.address, PodWithMetadata.make(pod, cdt)),
@@ -114,7 +114,7 @@ function make(
           Effect.zipRight(
             Effect.unlessEffect(
               Effect.zipRight(
-                Effect.logWarning(`${podAddress} is not alive, unregistering`),
+                Effect.log(`${podAddress} is not alive, unregistering`, { level: "Warning" }),
                 unregister(podAddress)
               ),
               healthApi.isAlive(podAddress)
@@ -130,13 +130,13 @@ function make(
   const checkAllPodsHealth = pipe(
     RefSynchronized.get(stateRef),
     Effect.map((_) => HashMap.keySet(_.pods)),
-    Effect.flatMap((_) => Effect.withParallelism(Effect.forEachDiscard(_, notifyUnhealthyPod), 4))
+    Effect.flatMap((_) => (Effect.forEach(_, notifyUnhealthyPod, { concurrency: 4, discard: true })))
   )
 
   function unregister(podAddress: PodAddress.PodAddress) {
     const eff = pipe(
-      Effect.Do(),
-      Effect.zipLeft(Effect.logInfo(`Unregistering ${podAddress}`)),
+      Effect.Do,
+      Effect.zipLeft(Effect.log(`Unregistering ${podAddress}`, { level: "Info" })),
       Effect.bind("unassignments", (_) =>
         pipe(
           stateRef,
@@ -197,33 +197,23 @@ function make(
     shards: HashSet.HashSet<ShardId.ShardId>,
     pod: Option.Option<PodAddress.PodAddress>
   ) {
-    return pipe(
-      stateRef,
-      RefSynchronized.updateEffect((state) =>
-        pipe(
-          Effect.logDebug(
-            "state pods: " + (Option.isSome(pod) ? HashMap.has(state.pods, pod.value) : "") + " " +
-              showHashMap(PodAddress.show, PodWithMetadata.show)(state.pods)
-          ),
-          Effect.zipRight(Effect.whenCase(
-            () => Option.isSome(pod) && !HashMap.has(state.pods, pod.value),
-            (b) => b ? Option.map(pod, (_) => Effect.fail(ShardError.PodNoLongerRegistered(_))) : Option.none()
-          )),
-          Effect.as({
-            ...state,
-            shards: pipe(
-              state.shards,
-              HashMap.mapWithIndex((assignment, shard) => HashSet.has(shards, shard) ? pod : assignment)
-            )
-          })
+    return RefSynchronized.updateEffect(stateRef, (state) => {
+      if (Option.isSome(pod) && !HashMap.has(state.pods, pod.value)) {
+        return Effect.fail(ShardError.PodNoLongerRegistered(pod.value))
+      }
+      return Effect.succeed({
+        ...state,
+        shards: pipe(
+          state.shards,
+          HashMap.mapWithIndex((assignment, shard) => HashSet.has(shards, shard) ? pod : assignment)
         )
-      )
-    )
+      })
+    })
   }
 
   function rebalance(rebalanceImmediately: boolean): Effect.Effect<never, never, void> {
     const algo1 = pipe(
-      Effect.Do(),
+      Effect.Do,
       Effect.bind("state", () => RefSynchronized.get(stateRef)),
       Effect.let("_1", ({ state }) =>
         rebalanceImmediately || HashSet.size(state.unassignedShards) > 0
@@ -237,8 +227,9 @@ function make(
       ),
       Effect.tap((_) =>
         Effect.when(
-          Effect.logDebug(
-            "Rebalance (rebalanceImmidiately=" + JSON.stringify(rebalanceImmediately) + ")"
+          Effect.log(
+            "Rebalance (rebalanceImmidiately=" + JSON.stringify(rebalanceImmediately) + ")",
+            { level: "Debug" }
           ),
           () => _.areChanges
         )
@@ -246,18 +237,19 @@ function make(
       // ping pods first to make sure they are ready and remove those who aren't
       Effect.bind("failedPingedPods", (_) =>
         pipe(
-          Effect.forEachPar(
+          Effect.forEach(
             HashSet.union(HashMap.keySet(_.assignments), HashMap.keySet(_.unassignments)),
             (pod) =>
               pipe(
                 podApi.ping(pod),
                 Effect.timeout(config.pingTimeout),
-                Effect.someOrFailException,
-                Effect.match(
-                  () => Chunk.fromIterable([pod]),
-                  () => Chunk.empty()
-                )
-              )
+                Effect.flatMap(Option.match({ onNone: () => Effect.fail(1), onSome: () => Effect.succeed(2) })),
+                Effect.match({
+                  onFailure: () => Chunk.fromIterable([pod]),
+                  onSuccess: () => Chunk.empty()
+                })
+              ),
+            { concurrency: "unbounded" }
           ),
           Effect.map(Chunk.fromIterable),
           Effect.map(Chunk.flatten),
@@ -266,7 +258,7 @@ function make(
       Effect.let("shardsToRemove", (_) =>
         pipe(
           List.fromIterable(_.assignments),
-          List.concat(List.fromIterable(_.unassignments)),
+          List.appendAll(List.fromIterable(_.unassignments)),
           List.filter(([pod, __]) => HashSet.has(_.failedPingedPods, pod)),
           List.map(([_, shards]) => List.fromIterable(shards)),
           List.flatMap((_) => _), // TODO: List is missing flatMap
@@ -290,13 +282,13 @@ function make(
       // do the unassignments first
       Effect.bind("failed", (_) =>
         pipe(
-          Effect.forEachPar(_.readyUnassignments, ([pod, shards]) =>
+          Effect.forEach(_.readyUnassignments, ([pod, shards]) =>
             pipe(
               podApi.unassignShards(pod, shards),
               Effect.zipRight(updateShardsState(shards, Option.none())),
-              Effect.matchEffect(
-                () => Effect.succeed([HashSet.fromIterable([pod]), shards] as const),
-                () =>
+              Effect.matchEffect({
+                onFailure: () => Effect.succeed([HashSet.fromIterable([pod]), shards] as const),
+                onSuccess: () =>
                   pipe(
                     Hub.publish(eventsHub, ShardingEvent.ShardsUnassigned(pod, shards)),
                     Effect.as(
@@ -306,8 +298,8 @@ function make(
                       ] as const
                     )
                   )
-              )
-            )),
+              })
+            ), { concurrency: "unbounded" }),
           Effect.map(Chunk.fromIterable),
           Effect.map((_) => Chunk.unzip(_)),
           Effect.map(
@@ -332,20 +324,19 @@ function make(
       // then do the assignments
       Effect.bind("failedAssignedPods", (_) =>
         pipe(
-          Effect.forEachPar(_.filteredAssignments, ([pod, shards]) =>
+          Effect.forEach(_.filteredAssignments, ([pod, shards]) =>
             pipe(
               podApi.assignShards(pod, shards),
               Effect.zipRight(updateShardsState(shards, Option.some(pod))),
-              Effect.tapError((e) => Effect.logError("ERROR: " + JSON.stringify(e))),
-              Effect.matchEffect(
-                () => Effect.succeed(Chunk.fromIterable([pod])),
-                () =>
+              Effect.matchEffect({
+                onFailure: () => Effect.succeed(Chunk.fromIterable([pod])),
+                onSuccess: () =>
                   pipe(
                     Hub.publish(eventsHub, ShardingEvent.ShardsAssigned(pod, shards)),
                     Effect.as(Chunk.empty())
                   )
-              )
-            )),
+              })
+            ), { concurrency: "unbounded" }),
           Effect.map(Chunk.fromIterable),
           Effect.map(Chunk.flatten),
           Effect.map(HashSet.fromIterable)
@@ -356,15 +347,16 @@ function make(
           _.failedAssignedPods
         )),
       // check if failing pods are still up
-      Effect.tap((_) => Effect.forkDaemon(Effect.forEachDiscard(_.failedPods, notifyUnhealthyPod))),
+      Effect.tap((_) => Effect.forkDaemon(Effect.forEach(_.failedPods, notifyUnhealthyPod, { discard: true }))),
       Effect.tap((_) =>
         Effect.when(
-          Effect.logWarning(
+          Effect.log(
             "Failed to rebalance pods: " +
               showHashSet(PodAddress.show)(_.failedPods) +
               " failed pinged: " + showHashSet(PodAddress.show)(_.failedPingedPods) +
               " failed assigned: " + showHashSet(PodAddress.show)(_.failedAssignedPods) +
-              " failed unassigned: " + showHashSet(PodAddress.show)(_.failedUnassignedPods)
+              " failed unassigned: " + showHashSet(PodAddress.show)(_.failedUnassignedPods),
+            { level: "Debug" }
           ),
           () => HashSet.size(_.failedPods) > 0
         )
@@ -497,7 +489,7 @@ function pickNewPods(
               pipe(
                 assignments,
                 List.filter(([_, p]) => equals(p)(pod)),
-                List.length
+                List.size
               ) <
                 HashMap.size(state.shards) * rebalanceRate
             )
@@ -507,20 +499,23 @@ function pickNewPods(
             (_, pod) => !Option.isSome(List.findFirst(unassignedPods, equals(pod)))
           ),
           minByOption(([_, pods]) => HashSet.size(pods)),
-          Option.match(
-            () => [shardsPerPod, assignments] as const,
-            ([pod, shards]) => {
+          Option.match({
+            onNone: () => [shardsPerPod, assignments] as const,
+            onSome: ([pod, shards]) => {
               const oldPod = Option.flatten(HashMap.get(state.shards, shard))
               // if old pod is same as new pod, don't change anything
               if (equals(oldPod)(pod)) {
                 return [shardsPerPod, assignments] as const
                 // if the new pod has more, as much, or only 1 less shard than the old pod, don't change anything
               } else if (
-                Option.match(HashMap.get(shardsPerPod, pod), () => 0, HashSet.size) + 1 >=
+                Option.match(HashMap.get(shardsPerPod, pod), { onNone: () => 0, onSome: HashSet.size }) + 1 >=
                   Option.match(
                     oldPod,
-                    () => Number.MAX_SAFE_INTEGER,
-                    (_) => Option.match(HashMap.get(shardsPerPod, _), () => 0, HashSet.size)
+                    {
+                      onNone: () => Number.MAX_SAFE_INTEGER,
+                      onSome: (_) =>
+                        Option.match(HashMap.get(shardsPerPod, _), { onNone: () => 0, onSome: HashSet.size })
+                    }
                   )
               ) {
                 return [shardsPerPod, assignments] as const
@@ -529,8 +524,10 @@ function pickNewPods(
               } else {
                 const unassigned = Option.match(
                   oldPod,
-                  () => shardsPerPod,
-                  (oldPod) => HashMap.modify(shardsPerPod, oldPod, HashSet.remove(shard))
+                  {
+                    onNone: () => shardsPerPod,
+                    onSome: (oldPod) => HashMap.modify(shardsPerPod, oldPod, HashSet.remove(shard))
+                  }
                 )
                 return [
                   HashMap.modify(unassigned, pod, (_) => HashSet.add(shards, shard)),
@@ -538,7 +535,7 @@ function pickNewPods(
                 ] as const
               }
             }
-          )
+          })
         )
       }
     )
@@ -548,7 +545,7 @@ function pickNewPods(
     pipe(
       Option.flatten(HashMap.get(state.shards, shard)),
       Option.map((_) => [shard, _] as const),
-      Option.match(List.empty, List.of)
+      Option.match({ onNone: List.empty, onSome: List.of })
     ))
 
   const assignmentsPerPod = pipe(
@@ -565,7 +562,7 @@ function pickNewPods(
 }
 
 const live0 = pipe(
-  Effect.Do(),
+  Effect.Do,
   Effect.bind("config", (_) => ManagerConfig.ManagerConfig),
   Effect.bind("stateRepository", (_) => Storage.Storage),
   Effect.bind("healthApi", (_) => PodsHealth.PodsHealth),
@@ -575,7 +572,7 @@ const live0 = pipe(
   // remove unhealthy pods on startup
   Effect.bind("filteredPods", (_) =>
     pipe(
-      Effect.filterPar(_.pods, ([podAddress]) => _.healthApi.isAlive(podAddress)),
+      Effect.filter(_.pods, ([podAddress]) => _.healthApi.isAlive(podAddress), { concurrency: "unbounded" }),
       Effect.map(HashMap.fromIterable)
     )),
   Effect.let("filteredAssignments", (_) =>
@@ -585,7 +582,7 @@ const live0 = pipe(
         (pod) => Option.isSome(pod) && HashMap.has(_.filteredPods, pod.value)
       )
     )),
-  Effect.bind("cdt", (_) => Clock.currentTimeMillis()),
+  Effect.bind("cdt", (_) => Clock.currentTimeMillis),
   Effect.let("initialState", (_) =>
     ShardManagerState.make(
       HashMap.map(_.filteredPods, (pod) => PodWithMetadata.make(pod, _.cdt)),
@@ -628,12 +625,12 @@ const live1 = pipe(
   Effect.tap((_) =>
     pipe(
       _.shardManager.getShardingEvents,
-      Stream.mapEffect((_) => Effect.logInfo(JSON.stringify(_))),
+      Stream.mapEffect((_) => Effect.log(JSON.stringify(_), { level: "Info" })),
       Stream.runDrain,
       Effect.forkDaemon
     )
   ),
-  Effect.tap((_) => Effect.logInfo("Shard Manager loaded")),
+  Effect.tap((_) => Effect.log("Shard Manager loaded", { level: "Info" })),
   Effect.map((_) => _.shardManager)
 )
 

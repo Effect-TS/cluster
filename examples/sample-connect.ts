@@ -6,7 +6,6 @@ import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
-import * as ShardingServiceHttp from "@effect/shardcake/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/shardcake/ShardManagerClientHttp"
 import * as StorageFile from "@effect/shardcake/StorageFile"
 import * as Stream from "@effect/stream/Stream"
@@ -15,15 +14,15 @@ import * as LogLevel from "@effect/io/Logger/Level"
 import { CounterEntity, GetCurrent, SubscribeChanges } from "./sample-common"
 
 const program = pipe(
-  Effect.Do(),
+  Effect.Do,
   Effect.bind("messenger", () => Sharding.messenger(CounterEntity)),
   Effect.bind("changes", (_) => _.messenger.sendStream("entity1")(SubscribeChanges({ _tag: "SubscribeChanges" }))),
   Effect.tap((_) =>
     pipe(
       _.changes,
-      Stream.mapEffect((_) => Effect.logInfo("SubscribeChanges: " + _)),
+      Stream.mapEffect((_) => Effect.log("SubscribeChanges: " + _, { level: "Info" })),
       Stream.runDrain,
-      Effect.catchAllCause(Effect.logInfoCause),
+      Effect.catchAllCause(Effect.logCause({ level: "Info" })),
       Logger.withMinimumLogLevel(LogLevel.All),
       Effect.forkDaemon
     )
@@ -32,9 +31,7 @@ const program = pipe(
   Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
   Effect.flatMap((_) => _.messenger.send("entity1")(GetCurrent({ _tag: "GetCurrent" }))),
   Effect.tap((_) => Effect.log("Current count is " + _)),
-  Effect.zipRight(Effect.never()),
-  Effect.zipRight(Sharding.registerScoped),
-  ShardingServiceHttp.shardingServiceHttp,
+  Effect.zipRight(Effect.never),
   Effect.scoped,
   Effect.provideSomeLayer(ShardingImpl.live),
   Effect.provideSomeLayer(StorageFile.storageFile),
@@ -42,7 +39,7 @@ const program = pipe(
   Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),
   Effect.provideSomeLayer(ShardingConfig.defaultsWithShardingPort(54322)),
   Effect.provideSomeLayer(Serialization.json),
-  Effect.catchAllCause(Effect.logErrorCause),
+  Effect.catchAllCause(Effect.logCause({ level: "Error" })),
   Logger.withMinimumLogLevel(LogLevel.All)
 )
 

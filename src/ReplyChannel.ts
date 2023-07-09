@@ -126,7 +126,9 @@ export function fromQueue<A>(queue: Queue.Queue<Take.Take<Throwable, A>>): Queue
     replyStream: (stream) =>
       pipe(
         Stream.runForEach(stream, (a) => Queue.offer(queue, Take.of(a))),
-        Effect.onExit((_) => Queue.offer(queue, Exit.match(_, (e) => Take.failCause(e), () => Take.end))),
+        Effect.onExit((_) =>
+          Queue.offer(queue, Exit.match(_, { onFailure: (e) => Take.failCause(e), onSuccess: () => Take.end }))
+        ),
         Effect.fork,
         Effect.asUnit
       ),

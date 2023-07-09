@@ -8,6 +8,7 @@ import * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
+import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import { DecodeError, EncodeError, FetchError } from "@effect/shardcake/ShardError"
 import * as Stream from "@effect/stream/Stream"
 import fetch from "node-fetch"
@@ -49,7 +50,7 @@ export function groupBy<A, K>(f: (value: A) => K) {
 export function jsonStringify<A>(value: A, schema: Schema.Schema<any, A>) {
   return pipe(
     value,
-    Schema.encodeEffect(schema),
+    Schema.encode(schema),
     Effect.mapError((e) => EncodeError(e)),
     Effect.map((_) => JSON.stringify(_))
   )
@@ -59,8 +60,8 @@ export function jsonStringify<A>(value: A, schema: Schema.Schema<any, A>) {
 export function jsonParse<A>(value: string, schema: Schema.Schema<any, A>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
-    Effect.flatMap(Schema.decodeEffect(schema)),
-    Effect.mapError((e) => DecodeError(e))
+    Effect.flatMap(Schema.decode(schema)),
+    Effect.mapError((e) => DecodeError(TreeFormatter.formatErrors(e.errors)))
   )
 }
 
@@ -71,15 +72,15 @@ export function sendInternal<A>(send: Schema.Schema<any, A>) {
       jsonStringify(data, send),
       // Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
       Effect.flatMap((body) =>
-        Effect.tryCatchPromise(
-          () => {
+        Effect.tryPromise({
+          try: () => {
             return fetch(url, {
               method: "POST",
               body
             })
           },
-          (error) => FetchError(url, body, String(error))
-        )
+          catch: (error) => FetchError(url, body, String(error))
+        })
       )
       // Effect.tap((response) => Effect.logDebug(url + " status: " + response.status))
     )
@@ -105,8 +106,10 @@ export function sendStream<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.S
       Effect.map((response) =>
         pipe(
           Stream.fromAsyncIterable(response.body, (e) => FetchError(url, "", e)),
-          Stream.tap((response) => Effect.logDebug(url + " body: " + response)),
-          Stream.mapEffect((data) => jsonParse(typeof data === "string" ? data : data.toString(), reply)),
+          Stream.map(value => typeof value === "string" ? value : value.toString()),
+          Stream.splitLines,
+          Stream.tap((response) => Effect.log(url + " data: " + response, { level: "Debug" })),
+          Stream.mapEffect((data) => jsonParse(data, reply)),
           Stream.mapEffect((_) => _)
         )
       ),
@@ -132,6 +135,8 @@ export function showHashMap<K, A>(fnK: (value: K) => string, fn: (value: A) => s
 /** @internal */
 export function showOption<A>(fn: (value: A) => string) {
   return (fa: Option.Option<A>) => {
-    return Option.match(fa, () => "None()", (_) => "Some(" + fn(_) + ")")
+    return Option.match(fa, { onNone: () => "None()", onSome: (_) => "Some(" + fn(_) + ")" })
   }
 }
+
+

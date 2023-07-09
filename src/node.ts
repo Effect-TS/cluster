@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Duration from "@effect/data/Duration"
+
 import * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as Cause from "@effect/io/Cause"
@@ -31,27 +31,30 @@ export function asHttpServer<A2, A>(
         Effect.sync(() =>
           http.createServer((request, response) => {
             let body = ""
+            let interrupt = () => {}
+            request.on("close", () => interrupt())
             request.on("data", (data) => (body += data))
             request.on("end", () => {
-              return pipe(
+              pipe(
                 jsonParse(body, RequestSchema),
                 Effect.flatMap((req) => {
                   const reply = <RE, RA>(schema: Schema.Schema<any, Either.Either<RE, RA>>) =>
                     (fa: Effect.Effect<never, RE, RA>) =>
                       pipe(
                         fa,
-                        Effect.matchEffect(
-                          (error) => jsonStringify(Either.left(error), schema),
-                          (value) => jsonStringify(Either.right(value), schema)
-                        ),
+                        Effect.matchEffect({
+                          onFailure: (error) => jsonStringify(Either.left(error), schema),
+                          onSuccess: (value) => jsonStringify(Either.right(value), schema)
+                        }),
                         Effect.map((body) => [200, body] as const),
                         Effect.catchAllCause((cause) => Effect.sync(() => [500, JSON.stringify(cause)] as const)),
+                        Effect.tap(() => Effect.sync(() => interrupt = () => {})),
                         Effect.flatMap(([status, data]) =>
                           Effect.sync(() => {
                             response.writeHead(status, { "Content-Type": "application/json" })
                             response.end(data)
                           })
-                        )
+                        ),
                       )
                   const replyStream = <RE, RA>(schema: Schema.Schema<any, Either.Either<RE, RA>>) =>
                     (fa: Stream.Stream<never, RE, RA>) =>
@@ -70,8 +73,7 @@ export function asHttpServer<A2, A>(
                               pipe(
                                 jsonStringify(Either.right(value), schema),
                                 Effect.orDie,
-                                Effect.flatMap((data) => Effect.sync(() => response.write(data))),
-                                Effect.zipLeft(Effect.sleep(Duration.millis(100))) // TODO: write buffers WTF
+                                Effect.flatMap((data) => Effect.sync(() => response.write(data + "\n")))
                               )
                             ),
                             Stream.runDrain
@@ -82,12 +84,13 @@ export function asHttpServer<A2, A>(
                             jsonStringify(Either.left(error), schema),
                             Effect.flatMap((data) =>
                               Effect.sync(() => {
-                                response.write(data)
+                                response.write(data + "\n")
                               })
                             )
                           )
                         ),
                         Effect.catchAllCause((e) => Effect.sync(() => response.write(JSON.stringify(e)))),
+                        Effect.tap(() => Effect.sync(() => interrupt = () => {})),
                         Effect.flatMap((_) => Effect.sync(() => response.end()))
                       )
 
@@ -105,7 +108,7 @@ export function asHttpServer<A2, A>(
           })
         ),
         Effect.tap((http) => Effect.sync(() => http.listen(port))),
-        Effect.tap(() => Effect.logDebug("Starting server on port " + port))
+        Effect.tap(() => Effect.log("Starting HTTP server on port " + port, { level: "Info" }))
       ),
       () => fa,
       (http) => Effect.sync(() => http.close())

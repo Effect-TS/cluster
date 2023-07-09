@@ -3,6 +3,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Logger from "@effect/io/Logger"
 import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
+import * as Stream from "@effect/stream/Stream"
 import * as PodsHttp from "@effect/shardcake/PodsHttp"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
@@ -33,10 +34,10 @@ const program = pipe(
                 case "GetCurrent":
                   return pipe(
                     SubscriptionRef.get(count),
-                    Effect.flatMap((_) => msg._tag === "GetCurrent" ? msg.replier.reply(_) : Effect.unit())
+                    Effect.flatMap((_) => msg._tag === "GetCurrent" ? msg.replier.reply(_) : Effect.unit)
                   )
                 case "SubscribeChanges":
-                  return msg.replier.reply(count.changes)
+                  return msg.replier.reply(Stream.changes(count.changes))
               }
             }
           ),
@@ -47,7 +48,7 @@ const program = pipe(
       )
     )),
   Effect.zipRight(Sharding.register),
-  Effect.zipRight(Effect.never()),
+  Effect.zipRight(Effect.never),
   ShardingServiceHttp.shardingServiceHttp,
   Effect.scoped,
   Effect.provideSomeLayer(ShardingImpl.live),
@@ -56,7 +57,7 @@ const program = pipe(
   Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),
   Effect.provideSomeLayer(ShardingConfig.defaults),
   Effect.provideSomeLayer(Serialization.json),
-  Effect.catchAllCause(Effect.logErrorCause),
+  Effect.catchAllCause(Effect.logCause({ level: "Error" })),
   Logger.withMinimumLogLevel(LogLevel.All)
 )
 

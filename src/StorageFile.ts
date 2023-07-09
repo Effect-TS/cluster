@@ -86,9 +86,10 @@ function getChangesStream(fileName: string) {
             () => [fs.watchFile(fileName, () => Effect.runSync(queue.offer(true))), queue] as const
           ),
           ([watcher, queue]) =>
-            Effect.zipPar(
+            Effect.zip(
               queue.shutdown(),
-              Effect.sync(() => watcher.unref())
+              Effect.sync(() => watcher.unref()),
+              { parallel: true }
             )
         ),
         Effect.map(([_, queue]) => Stream.fromQueue(queue))
