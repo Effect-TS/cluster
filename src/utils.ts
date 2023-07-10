@@ -106,9 +106,9 @@ export function sendStream<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.S
       Effect.map((response) =>
         pipe(
           Stream.fromAsyncIterable(response.body, (e) => FetchError(url, "", e)),
-          Stream.map(value => typeof value === "string" ? value : value.toString()),
+          Stream.map((value) => typeof value === "string" ? value : value.toString()),
           Stream.splitLines,
-          //Stream.tap((response) => Effect.log(url + " data: " + response, { level: "Debug" })),
+          // Stream.tap((response) => Effect.log(url + " data: " + response, { level: "Debug" })),
           Stream.mapEffect((data) => jsonParse(data, reply)),
           Stream.mapEffect((_) => _)
         )
@@ -138,5 +138,3 @@ export function showOption<A>(fn: (value: A) => string) {
     return Option.match(fa, { onNone: () => "None()", onSome: (_) => "Some(" + fn(_) + ")" })
   }
 }
-
-
