@@ -31,17 +31,38 @@ describe.concurrent("SampleTests", () => {
     Layer.use(ShardingConfig.defaults)
   )
 
-  it("Succefully delivers a message to an entity", () => {
+  it("Succefully delivers a message", () => {
     return Effect.gen(function*(_) {
-      const deferred = yield* _(Deferred.make<never, boolean>())
+      const received = yield* _(Deferred.make<never, boolean>())
 
       const SampleEntity = RecipientType.makeEntityType("Sample", Schema.number)
-      yield* _(Sharding.registerEntity(SampleEntity, () => Deferred.succeed(deferred, true)))
+      yield* _(Sharding.registerEntity(SampleEntity, () => Deferred.succeed(received, true)))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")(1))
 
-      assertTrue(yield* _(Deferred.await(deferred)))
+      assertTrue(yield* _(Deferred.await(received)))
+    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+  })
+
+  it("Succefully delivers a message to the correct entity", () => {
+    return Effect.gen(function*(_) {
+      const result1 = yield* _(Deferred.make<never, number>())
+      const result2 = yield* _(Deferred.make<never, number>())
+
+      const SampleEntity = RecipientType.makeEntityType("Sample", Schema.number)
+      yield* _(Sharding.registerEntity(SampleEntity, (entityId, queue) =>
+        pipe(
+          Queue.take(queue),
+          Effect.flatMap((msg) => Deferred.succeed(entityId === "entity1" ? result1 : result2, msg))
+        )))
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      yield* _(messenger.sendDiscard("entity1")(1))
+      yield* _(messenger.sendDiscard("entity2")(2))
+
+      assertTrue(1 === (yield* _(Deferred.await(result1))))
+      assertTrue(2 === (yield* _(Deferred.await(result2))))
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
   })
 
