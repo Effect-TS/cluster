@@ -89,7 +89,7 @@ function getChangesStream(fileName: string) {
             Effect.zip(
               queue.shutdown(),
               Effect.sync(() => watcher.unref()),
-              { parallel: true }
+              { concurrent: true }
             )
         ),
         Effect.map(([_, queue]) => Stream.fromQueue(queue))

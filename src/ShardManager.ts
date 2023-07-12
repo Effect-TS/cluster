@@ -249,7 +249,7 @@ function make(
                   onSuccess: () => Chunk.empty()
                 })
               ),
-            { concurrency: "unbounded" }
+            { concurrency: "inherit" }
           ),
           Effect.map(Chunk.fromIterable),
           Effect.map(Chunk.flatten),
@@ -299,7 +299,7 @@ function make(
                     )
                   )
               })
-            ), { concurrency: "unbounded" }),
+            ), { concurrency: "inherit" }),
           Effect.map(Chunk.fromIterable),
           Effect.map((_) => Chunk.unzip(_)),
           Effect.map(
@@ -336,7 +336,7 @@ function make(
                     Effect.as(Chunk.empty())
                   )
               })
-            ), { concurrency: "unbounded" }),
+            ), { concurrency: "inherit" }),
           Effect.map(Chunk.fromIterable),
           Effect.map(Chunk.flatten),
           Effect.map(HashSet.fromIterable)
@@ -572,7 +572,7 @@ const live0 = pipe(
   // remove unhealthy pods on startup
   Effect.bind("filteredPods", (_) =>
     pipe(
-      Effect.filter(_.pods, ([podAddress]) => _.healthApi.isAlive(podAddress), { concurrency: "unbounded" }),
+      Effect.filter(_.pods, ([podAddress]) => _.healthApi.isAlive(podAddress), { concurrency: "inherit" }),
       Effect.map(HashMap.fromIterable)
     )),
   Effect.let("filteredAssignments", (_) =>

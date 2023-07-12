@@ -681,7 +681,7 @@ function make(
               Effect.either,
               Effect.map((res) => [pod, res] as const)
             )
-          }, { concurrency: "unbounded" })),
+          }, { concurrency: "inherit" })),
         Effect.map((_) => _.response),
         Effect.map(HashMap.fromIterable)
       )
