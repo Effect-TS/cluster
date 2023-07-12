@@ -1,6 +1,6 @@
 ---
 title: ShardManagerHttp.ts
-nav_order: 32
+nav_order: 33
 parent: Modules
 ---
 
@@ -24,7 +24,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const shardManagerHttp: <R, E, B>(fa: Effect.Effect<R, E, B>) => unknown
+export declare const shardManagerHttp: <R, E, B>(
+  fa: Effect.Effect<R, E, B>
+) => Effect.Effect<ManagerConfig.ManagerConfig | ShardManager.ShardManager | R, E, B>
 ```
 
 Added in v1.0.0

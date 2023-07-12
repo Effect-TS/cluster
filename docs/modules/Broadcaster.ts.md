@@ -31,20 +31,20 @@ export interface Broadcaster<Msg> {
    * Broadcast a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  broadcastDiscard(topic: string): (msg: Msg) => Effect.Effect<never, never, void>
+  broadcastDiscard(topic: string): (msg: Msg) => Effect.Effect<never, ShardError.Throwable, void>
 
   /**
    * Broadcast a message and wait for a response from each consumer
    * @since 1.0.0
    */
-  broadcast<Res>(
+  broadcast(
     topic: string
-  ): (
-    msg: (replier: Replier.Replier<Res>) => Msg
+  ): <A extends Msg & Message.Message<any>>(
+    msg: (replyId: ReplyId.ReplyId) => A
   ) => Effect.Effect<
     never,
-    never,
-    HashMap.HashMap<PodAddress.PodAddress, Effect.Effect<never, ShardError.ReplyFailure, Res>>
+    ShardError.Throwable,
+    HashMap.HashMap<PodAddress.PodAddress, Either.Either<ShardError.Throwable, Message.Success<A>>>
   >
 }
 ```

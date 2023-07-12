@@ -14,13 +14,13 @@ import * as Take from "@effect/stream/Take"
 
 /**
  * @since 1.0.0
- * @category symbol
+ * @category symbols
  */
 export const TypeId = "@effect/shardcake/ReplyChannel"
 
 /**
  * @since 1.0.0
- * @category symbol
+ * @category symbols
  */
 export type TypeId = typeof TypeId
 

@@ -18,7 +18,7 @@ Added in v1.0.0
   - [ByteArray (interface)](#bytearray-interface)
 - [schema](#schema)
   - [schema](#schema-1)
-- [symbol](#symbol)
+- [symbols](#symbols)
   - [TypeId](#typeid)
 
 ---
@@ -60,13 +60,13 @@ This is the schema for a value.
 ```ts
 export declare const schema: Schema.Schema<
   { readonly _id: '@effect/shardcake/ByteArray'; readonly value: string },
-  Data<{ readonly _id: '@effect/shardcake/ByteArray'; readonly value: string }>
+  Data.Data<{ readonly _id: '@effect/shardcake/ByteArray'; readonly value: string }>
 >
 ```
 
 Added in v1.0.0
 
-# symbol
+# symbols
 
 ## TypeId
 

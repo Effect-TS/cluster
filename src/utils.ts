@@ -1,5 +1,6 @@
 /**
  * @since 1.0.0
+ * @internal
  */
 import type * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"

@@ -1,6 +1,6 @@
 ---
 title: ReplyId.ts
-nav_order: 18
+nav_order: 19
 parent: Modules
 ---
 
@@ -19,7 +19,7 @@ Added in v1.0.0
   - [ReplyId (interface)](#replyid-interface)
 - [schema](#schema)
   - [schema](#schema-1)
-- [symbol](#symbol)
+- [symbols](#symbols)
   - [TypeId](#typeid)
   - [TypeId (type alias)](#typeid-type-alias)
 
@@ -74,13 +74,13 @@ This is the schema for a value.
 ```ts
 export declare const schema: Schema.Schema<
   { readonly _id: '@effect/shardcake/ReplyId'; readonly value: string },
-  Data<{ readonly _id: '@effect/shardcake/ReplyId'; readonly value: string }>
+  Data.Data<{ readonly _id: '@effect/shardcake/ReplyId'; readonly value: string }>
 >
 ```
 
 Added in v1.0.0
 
-# symbol
+# symbols
 
 ## TypeId
 

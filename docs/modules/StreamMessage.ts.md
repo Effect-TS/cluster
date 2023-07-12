@@ -1,10 +1,10 @@
 ---
-title: Message.ts
-nav_order: 7
+title: StreamMessage.ts
+nav_order: 38
 parent: Modules
 ---
 
-## Message overview
+## StreamMessage overview
 
 Added in v1.0.0
 
@@ -13,7 +13,7 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [models](#models)
-  - [Message (interface)](#message-interface)
+  - [StreamMessage (interface)](#streammessage-interface)
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
@@ -26,15 +26,15 @@ Added in v1.0.0
 
 # models
 
-## Message (interface)
+## StreamMessage (interface)
 
 A `Message<A>` is a request from a data source for a value of type `A`
 
 **Signature**
 
 ```ts
-export interface Message<A> {
-  readonly replier: Replier.Replier<A>
+export interface StreamMessage<A> {
+  readonly replier: StreamReplier.StreamReplier<A>
 }
 ```
 
@@ -85,7 +85,7 @@ Extracts the success type from a `Message<A>`.
 **Signature**
 
 ```ts
-export type Success<A> = A extends Message<infer X> ? X : never
+export type Success<A> = A extends StreamMessage<infer X> ? X : never
 ```
 
 Added in v1.0.0

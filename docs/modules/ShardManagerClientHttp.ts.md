@@ -1,6 +1,6 @@
 ---
 title: ShardManagerClientHttp.ts
-nav_order: 31
+nav_order: 32
 parent: Modules
 ---
 
@@ -24,7 +24,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const shardManagerClientHttp: Layer.Layer<unknown, unknown, ShardManagerClient.ShardManagerClient>
+export declare const shardManagerClientHttp: Layer.Layer<
+  ShardingConfig.ShardingConfig,
+  never,
+  ShardManagerClient.ShardManagerClient
+>
 ```
 
 Added in v1.0.0

@@ -1,10 +1,10 @@
 ---
-title: Replier.ts
-nav_order: 17
+title: StreamReplier.ts
+nav_order: 39
 parent: Modules
 ---
 
-## Replier overview
+## StreamReplier overview
 
 Added in v1.0.0
 
@@ -13,9 +13,9 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructors](#constructors)
-  - [replier](#replier)
+  - [streamReplier](#streamreplier)
 - [models](#models)
-  - [Replier (interface)](#replier-interface)
+  - [StreamReplier (interface)](#streamreplier-interface)
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
@@ -26,28 +26,28 @@ Added in v1.0.0
 
 # constructors
 
-## replier
+## streamReplier
 
 **Signature**
 
 ```ts
-export declare const replier: <R>(id: ReplyId.ReplyId, schema: Schema.Schema<any, R>) => Replier<R>
+export declare const streamReplier: <R>(id: ReplyId.ReplyId, schema: Schema.Schema<any, R>) => StreamReplier<R>
 ```
 
 Added in v1.0.0
 
 # models
 
-## Replier (interface)
+## StreamReplier (interface)
 
 **Signature**
 
 ```ts
-export interface Replier<R> {
+export interface StreamReplier<R> {
   [TypeId]: {}
   id: ReplyId.ReplyId
   schema: Schema.Schema<any, R>
-  reply: (reply: R) => Effect.Effect<Sharding.Sharding, never, void>
+  reply: (reply: Stream.Stream<never, never, R>) => Effect.Effect<Sharding.Sharding, never, void>
 }
 ```
 
@@ -60,7 +60,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const schema: <A>(schema: Schema.Schema<any, A>) => Schema.Schema<any, Replier<A>>
+export declare const schema: <A>(schema: Schema.Schema<any, A>) => Schema.Schema<any, StreamReplier<A>>
 ```
 
 Added in v1.0.0
@@ -72,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/shardcake/Replier'
+export declare const TypeId: '@effect/shardcake/StreamReplier'
 ```
 
 Added in v1.0.0

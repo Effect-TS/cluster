@@ -13,9 +13,12 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructors](#constructors)
-  - [make](#make)
+  - [makeEntityType](#makeentitytype)
+  - [makeTopicType](#maketopictype)
 - [models](#models)
+  - [EntityType (interface)](#entitytype-interface)
   - [RecipientType (type alias)](#recipienttype-type-alias)
+  - [TopicType (interface)](#topictype-interface)
 - [utils](#utils)
   - [getShardId](#getshardid)
 
@@ -23,17 +26,41 @@ Added in v1.0.0
 
 # constructors
 
-## make
+## makeEntityType
 
 **Signature**
 
 ```ts
-export declare function make<Msg>(name: string, schema: Schema.Schema<any, Msg>): RecipientType<Msg>
+export declare function makeEntityType<Msg>(name: string, schema: Schema.Schema<any, Msg>): EntityType<Msg>
+```
+
+Added in v1.0.0
+
+## makeTopicType
+
+**Signature**
+
+```ts
+export declare function makeTopicType<Msg>(name: string, schema: Schema.Schema<any, Msg>): TopicType<Msg>
 ```
 
 Added in v1.0.0
 
 # models
+
+## EntityType (interface)
+
+**Signature**
+
+```ts
+export interface EntityType<Msg> {
+  _tag: 'EntityType'
+  name: string
+  schema: Schema.Schema<any, Msg>
+}
+```
+
+Added in v1.0.0
 
 ## RecipientType (type alias)
 
@@ -43,6 +70,20 @@ An abstract type to extend for each type of entity or topic
 
 ```ts
 export type RecipientType<Msg> = EntityType<Msg> | TopicType<Msg>
+```
+
+Added in v1.0.0
+
+## TopicType (interface)
+
+**Signature**
+
+```ts
+export interface TopicType<Msg> {
+  _tag: 'TopicType'
+  name: string
+  schema: Schema.Schema<any, Msg>
+}
 ```
 
 Added in v1.0.0

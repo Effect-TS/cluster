@@ -50,7 +50,7 @@ export interface EntityManager<Req> {
     entityId: string,
     req: Req,
     replyId: Option.Option<ReplyId.ReplyId>,
-    promise: Deferred.Deferred<ShardError.Throwable, Option.Option<any>>
+    replyChannel: ReplyChannel.ReplyChannel<any>
   ): Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void>
   terminateEntitiesOnShards(shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<never, never, void>
   terminateAllEntities: Effect.Effect<never, never, void>

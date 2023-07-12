@@ -9,13 +9,13 @@ import * as crypto from "crypto"
 
 /**
  * @since 1.0.0
- * @category symbol
+ * @category symbols
  */
 export const TypeId = "@effect/shardcake/ReplyId"
 
 /**
  * @since 1.0.0
- * @category symbol
+ * @category symbols
  */
 export type TypeId = typeof TypeId
 

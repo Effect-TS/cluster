@@ -15,7 +15,7 @@ export const TypeId: unique symbol = Symbol.for("@effect/shardcake/StreamMessage
 
 /**
  * @since 1.0.0
- * @category symbol
+ * @category symbols
  */
 export type TypeId = typeof TypeId
 

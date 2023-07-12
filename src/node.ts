@@ -1,5 +1,6 @@
 /**
  * @since 1.0.0
+ * @internal
  */
 
 import * as Either from "@effect/data/Either"
@@ -31,8 +32,6 @@ export function asHttpServer<A2, A>(
         Effect.sync(() =>
           http.createServer((request, response) => {
             let body = ""
-            let interrupt = () => {}
-            request.on("close", () => interrupt())
             request.on("data", (data) => (body += data))
             request.on("end", () => {
               pipe(
@@ -48,13 +47,12 @@ export function asHttpServer<A2, A>(
                         }),
                         Effect.map((body) => [200, body] as const),
                         Effect.catchAllCause((cause) => Effect.sync(() => [500, JSON.stringify(cause)] as const)),
-                        Effect.tap(() => Effect.sync(() => interrupt = () => {})),
                         Effect.flatMap(([status, data]) =>
                           Effect.sync(() => {
                             response.writeHead(status, { "Content-Type": "application/json" })
                             response.end(data)
                           })
-                        ),
+                        )
                       )
                   const replyStream = <RE, RA>(schema: Schema.Schema<any, Either.Either<RE, RA>>) =>
                     (fa: Stream.Stream<never, RE, RA>) =>
@@ -90,7 +88,6 @@ export function asHttpServer<A2, A>(
                           )
                         ),
                         Effect.catchAllCause((e) => Effect.sync(() => response.write(JSON.stringify(e)))),
-                        Effect.tap(() => Effect.sync(() => interrupt = () => {})),
                         Effect.flatMap((_) => Effect.sync(() => response.end()))
                       )
 

@@ -68,11 +68,11 @@ export declare const schema: Schema.Schema<
     }
     readonly registered: number
   },
-  Data<{
+  Data.Data<{
     readonly _id: '@effect/shardcake/PodWithMetadata'
-    readonly pod: Data<{
+    readonly pod: Data.Data<{
       readonly _id: '@effect/shardcake/Pod'
-      readonly address: Data<{
+      readonly address: Data.Data<{
         readonly _id: '@effect/shardcake/PodAddress'
         readonly host: string
         readonly port: number

@@ -1,6 +1,6 @@
 ---
 title: ShardingRegistrationEvent.ts
-nav_order: 27
+nav_order: 28
 parent: Modules
 ---
 
@@ -12,10 +12,46 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [constructors](#constructors)
+  - [EntityRegistered](#entityregistered)
+  - [SingletonRegistered](#singletonregistered)
+  - [TopicRegistered](#topicregistered)
 - [models](#models)
   - [ShardingRegistrationEvent (type alias)](#shardingregistrationevent-type-alias)
 
 ---
+
+# constructors
+
+## EntityRegistered
+
+**Signature**
+
+```ts
+export declare function EntityRegistered<A>(entityType: RecipientType.EntityType<A>): ShardingRegistrationEvent
+```
+
+Added in v1.0.0
+
+## SingletonRegistered
+
+**Signature**
+
+```ts
+export declare function SingletonRegistered(name: string): ShardingRegistrationEvent
+```
+
+Added in v1.0.0
+
+## TopicRegistered
+
+**Signature**
+
+```ts
+export declare function TopicRegistered<A>(topicType: RecipientType.TopicType<A>): ShardingRegistrationEvent
+```
+
+Added in v1.0.0
 
 # models
 

@@ -6,7 +6,7 @@ import * as Schema from "@effect/schema/Schema"
 
 /**
  * @since 1.0.0
- * @category symbol
+ * @category symbols
  */
 export const TypeId = "@effect/shardcake/ByteArray"
 

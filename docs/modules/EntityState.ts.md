@@ -30,8 +30,8 @@ Added in v1.0.0
 
 ```ts
 export declare function make(
-  binaryQueue: EntityState['binaryQueue'],
-  entityManager: EntityState['entityManager']
+  entityManager: EntityState['entityManager'],
+  processBinary: EntityState['processBinary']
 ): EntityState
 ```
 
@@ -46,14 +46,11 @@ Added in v1.0.0
 ```ts
 export interface EntityState {
   [TypeId]: {}
-  binaryQueue: Queue.Queue<
-    readonly [
-      BinaryMessage.BinaryMessage,
-      Deferred.Deferred<ShardError.Throwable, Option.Option<ByteArray.ByteArray>>,
-      Deferred.Deferred<never, void>
-    ]
-  >
   entityManager: EntityManager.EntityManager<never>
+  processBinary: (
+    binaryMessage: BinaryMessage.BinaryMessage,
+    replyChannel: ReplyChannel.ReplyChannel<any>
+  ) => Effect.Effect<never, never, Option.Option<Schema.Schema<any, any>>>
 }
 ```
 

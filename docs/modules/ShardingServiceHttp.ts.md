@@ -1,6 +1,6 @@
 ---
 title: ShardingServiceHttp.ts
-nav_order: 28
+nav_order: 29
 parent: Modules
 ---
 
@@ -24,7 +24,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const shardingServiceHttp: <R, E, B>(fa: Effect.Effect<R, E, B>) => unknown
+export declare const shardingServiceHttp: <R, E, B>(
+  fa: Effect.Effect<R, E, B>
+) => Effect.Effect<Sharding.Sharding | ShardingConfig.ShardingConfig | R, E, B>
 ```
 
 Added in v1.0.0
