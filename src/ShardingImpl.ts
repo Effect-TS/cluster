@@ -24,7 +24,13 @@ import { Pods } from "@effect/shardcake/Pods"
 import type { Replier } from "@effect/shardcake/Replier"
 import * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import * as ReplyId from "@effect/shardcake/ReplyId"
-import type { Throwable } from "@effect/shardcake/ShardError"
+import type {
+  DecodeError,
+  EncodeError,
+  EntityNotManagedByThisPod,
+  PodUnavailable,
+  Throwable
+} from "@effect/shardcake/ShardError"
 import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
 import { ShardManagerClient } from "@effect/shardcake/ShardManagerClient"
 import * as StreamMessage from "@effect/shardcake/StreamMessage"
@@ -400,7 +406,11 @@ function make(
     pod: PodAddress.PodAddress,
     replyId: Option.Option<ReplyId.ReplyId>,
     replyChannel: ReplyChannel.ReplyChannel<Res>
-  ): Effect.Effect<never, Throwable, void> {
+  ): Effect.Effect<
+    never,
+    EntityTypeNotRegistered | EncodeError | DecodeError | EntityNotManagedByThisPod | PodUnavailable,
+    void
+  > {
     if (config.simulateRemotePods && equals(pod, address)) {
       return pipe(
         serialization.encode(msg, msgSchema),
@@ -419,7 +429,12 @@ function make(
               HashMap.get(_, recipientTypeName),
               Option.match(
                 {
-                  onNone: () => Effect.fail<Throwable>(EntityTypeNotRegistered(recipientTypeName, pod)),
+                  onNone: () =>
+                    Effect.fail<
+                      EntityTypeNotRegistered | EncodeError | DecodeError | EntityNotManagedByThisPod | PodUnavailable
+                    >(
+                      EntityTypeNotRegistered(recipientTypeName, pod)
+                    ),
                   onSome: (state) =>
                     pipe(
                       (state.entityManager as EntityManager.EntityManager<Msg>).send(
@@ -438,7 +453,7 @@ function make(
       return pipe(
         serialization.encode(msg, msgSchema),
         Effect.flatMap((bytes) => {
-          const errorHandling = (_: Throwable) => Effect.unit
+          const errorHandling = (_: never) => Effect.unit
 
           const binaryMessage = BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
 

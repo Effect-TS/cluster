@@ -191,11 +191,10 @@ export function make<R, Req>(
               sharding.isEntityOnLocalShards(recipientType, entityId)
             )
           } else if (recipientType._tag === "TopicType") {
-            // TODO: wtf?
             return Effect.unit
           }
 
-          return Effect.unit
+          return Effect.die("Unhandled recipientType")
         }),
         Effect.bind("test", () => RefSynchronized.modifyEffect(entities, (map) => decide(map, entityId))),
         Effect.tap((_) =>
