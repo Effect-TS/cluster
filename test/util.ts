@@ -1,3 +1,4 @@
+import { equals } from "@effect/data/Equal"
 import * as assert from "assert"
 
 export const assertTrue = (self: boolean) => {
@@ -16,7 +17,9 @@ export const strictEqual = <A>(actual: A, expected: A) => {
   assert.strictEqual(actual, expected)
 }
 
-export const double = (n: number): number => n * 2
+export const assertEqual = <A>(actual: A, expected: A) => {
+  assert.strictEqual(true, equals(actual, expected), JSON.stringify(actual) + " is not " + JSON.stringify(expected))
+}
 
 export const ownKeys = (o: object): ReadonlyArray<PropertyKey> =>
   (Object.keys(o) as ReadonlyArray<PropertyKey>).concat(Object.getOwnPropertySymbols(o))

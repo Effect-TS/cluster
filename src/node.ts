@@ -31,6 +31,9 @@ export function asHttpServer<A2, A>(
       pipe(
         Effect.sync(() =>
           http.createServer((request, response) => {
+            const writeResponse = (data: string) => Effect.sync(() => response.write(data))
+            const writeEventData = (data: string) => writeResponse("data: " + data + "\n\n")
+
             let body = ""
             request.on("data", (data) => (body += data))
             request.on("end", () => {
@@ -45,11 +48,9 @@ export function asHttpServer<A2, A>(
                           onFailure: (error) => jsonStringify(Either.left(error), schema),
                           onSuccess: (value) => jsonStringify(Either.right(value), schema)
                         }),
-                        Effect.map((body) => [200, body] as const),
-                        Effect.catchAllCause((cause) => Effect.sync(() => [500, JSON.stringify(cause)] as const)),
-                        Effect.flatMap(([status, data]) =>
+                        Effect.flatMap((data) =>
                           Effect.sync(() => {
-                            response.writeHead(status, { "Content-Type": "application/json" })
+                            response.writeHead(200, { "Content-Type": "application/json" })
                             response.end(data)
                           })
                         )
@@ -71,7 +72,7 @@ export function asHttpServer<A2, A>(
                               pipe(
                                 jsonStringify(Either.right(value), schema),
                                 Effect.orDie,
-                                Effect.flatMap((data) => Effect.sync(() => response.write(data + "\n")))
+                                Effect.flatMap(writeEventData)
                               )
                             ),
                             Stream.runDrain
@@ -80,14 +81,9 @@ export function asHttpServer<A2, A>(
                         Effect.catchAll((error) =>
                           pipe(
                             jsonStringify(Either.left(error), schema),
-                            Effect.flatMap((data) =>
-                              Effect.sync(() => {
-                                response.write(data + "\n")
-                              })
-                            )
+                            Effect.flatMap(writeEventData)
                           )
                         ),
-                        Effect.catchAllCause((e) => Effect.sync(() => response.write(JSON.stringify(e)))),
                         Effect.flatMap((_) => Effect.sync(() => response.end()))
                       )
 

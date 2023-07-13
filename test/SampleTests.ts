@@ -2,8 +2,11 @@ import * as Chunk from "@effect/data/Chunk"
 import * as Duration from "@effect/data/Duration"
 import { equals } from "@effect/data/Equal"
 import { pipe } from "@effect/data/Function"
+import * as Option from "@effect/data/Option"
+import * as Cause from "@effect/io/Cause"
 import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
+import * as Exit from "@effect/io/Exit"
 import * as Layer from "@effect/io/Layer"
 import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
@@ -13,6 +16,7 @@ import * as Pods from "@effect/shardcake/Pods"
 import * as PodsHealth from "@effect/shardcake/PodsHealth"
 import * as RecipientType from "@effect/shardcake/RecipientType"
 import * as Serialization from "@effect/shardcake/Serialization"
+import { isEntityTypeNotRegistered } from "@effect/shardcake/ShardError"
 import * as Sharding from "@effect/shardcake/Sharding"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
@@ -44,6 +48,25 @@ describe.concurrent("SampleTests", () => {
       yield* _(messenger.sendDiscard("entity1")(1))
 
       assertTrue(yield* _(Ref.get(received)))
+    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+  })
+
+  it("Fails with if entity not registered", () => {
+    return Effect.gen(function*(_) {
+      const SampleEntity = RecipientType.makeEntityType("Sample", Schema.number)
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      const exit = yield* _(messenger.sendDiscard("entity1")(1).pipe(Effect.exit))
+
+      assertTrue(Exit.isFailure(exit))
+
+      if (Exit.isFailure(exit)) {
+        const error = Cause.failureOption(exit.cause)
+        assertTrue(Option.isSome(error))
+        if (Option.isSome(error)) {
+          assertTrue(isEntityTypeNotRegistered(error.value))
+        }
+      }
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
   })
 
@@ -108,9 +131,9 @@ describe.concurrent("SampleTests", () => {
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
   })
 
-  it("When the messager interrupts, the stream on the entity should too", () => {
+  it("When the messenger interrupts, the stream on the entity should too", () => {
     return Effect.gen(function*(_) {
-      const exit = yield* _(Deferred.make<never, any>())
+      const exit = yield* _(Deferred.make<never, boolean>())
       const [SampleMessage_, SampleMessage] = StreamMessage.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
@@ -138,6 +161,37 @@ describe.concurrent("SampleTests", () => {
 
       yield* _(Deferred.await(exit)) // <- hangs
       assertTrue(true)
+    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+  })
+
+  it("When the stream on entity interrupts, the stream on the messenger should close", () => {
+    return Effect.gen(function*(_) {
+      const exit = yield* _(Deferred.make<never, boolean>())
+      const [SampleMessage_, SampleMessage] = StreamMessage.schema(Schema.number)(Schema.struct({
+        _tag: Schema.literal("SampleMessage")
+      }))
+      const SampleEntity = RecipientType.makeEntityType("Sample", SampleMessage_)
+      yield* _(Sharding.registerEntity(SampleEntity, (entityId, queue) =>
+        pipe(
+          Queue.take(queue),
+          Effect.flatMap((msg) =>
+            msg.replier.reply(pipe(
+              Stream.never(),
+              Stream.ensuring(Deferred.succeed(exit, true)), // <- signal interruption on shard side
+              Stream.interruptAfter(Duration.millis(500))
+            ))
+          ),
+          Effect.forever
+        )))
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
+      const result = yield* _(
+        Stream.runCollect(stream)
+      )
+
+      assertTrue(yield* _(Deferred.await(exit)))
+      assertTrue(Chunk.size(result) === 0)
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
   })
 })

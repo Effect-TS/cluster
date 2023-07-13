@@ -109,7 +109,8 @@ export function sendStream<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.S
           Stream.fromAsyncIterable(response.body, (e) => FetchError(url, "", e)),
           Stream.map((value) => typeof value === "string" ? value : value.toString()),
           Stream.splitLines,
-          // Stream.tap((response) => Effect.log(url + " data: " + response, { level: "Debug" })),
+          Stream.filter((line) => line.length > 0),
+          Stream.map((line) => line.startsWith("data:") ? line.substring("data:".length).trim() : line),
           Stream.mapEffect((data) => jsonParse(data, reply)),
           Stream.mapEffect((_) => _)
         )
