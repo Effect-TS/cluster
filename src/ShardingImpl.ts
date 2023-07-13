@@ -40,6 +40,7 @@ import * as Stream from "@effect/stream/Stream"
 import * as Duration from "@effect/data/Duration"
 import { equals } from "@effect/data/Equal"
 import * as List from "@effect/data/List"
+// import { Cause } from "@effect/io/Cause"
 import * as Fiber from "@effect/io/Fiber"
 import * as Layer from "@effect/io/Layer"
 import * as Schedule from "@effect/io/Schedule"
@@ -453,7 +454,7 @@ function make(
       return pipe(
         serialization.encode(msg, msgSchema),
         Effect.flatMap((bytes) => {
-          const errorHandling = (_: never) => Effect.unit
+          const errorHandling = (_: never) => Effect.die("Not handled yet")
 
           const binaryMessage = BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
 

@@ -121,7 +121,7 @@ describe.concurrent("SampleTests", () => {
           Effect.flatMap((msg) =>
             msg.replier.reply(pipe(
               Stream.never(),
-              Stream.ensuring(Deferred.succeed(exit, true)), // <- signal completion
+              Stream.ensuring(Deferred.succeed(exit, true)), // <- signal interruption on shard side
               Stream.map(() => 42)
             ))
           ),
@@ -132,8 +132,7 @@ describe.concurrent("SampleTests", () => {
       const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
       yield* _(
         Stream.runDrain(stream.pipe(
-          Stream.ensuring(Effect.sync(() => console.log("interrupting stream"))),
-          Stream.interruptAfter(Duration.millis(2000))
+          Stream.interruptAfter(Duration.millis(500)) // <- interrupts after a while
         ))
       )
 

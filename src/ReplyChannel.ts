@@ -116,10 +116,11 @@ export function fromQueue<A>(queue: Queue.Queue<Take.Take<Throwable, A>>): Queue
   const end = pipe(Queue.offer(queue, Take.end), Effect.exit, Effect.asUnit)
   const fail = (cause: Cause.Cause<Throwable>) =>
     pipe(Queue.offer(queue, Take.failCause(cause)), Effect.exit, Effect.asUnit)
+  const await_ = Queue.awaitShutdown(queue)
   return ({
     _id: TypeId,
     _tag: "FromQueue",
-    await: Queue.awaitShutdown(queue),
+    await: await_,
     end,
     fail,
     replySingle: (a) => pipe(Queue.offer(queue, Take.of(a)), Effect.exit, Effect.zipRight(end)),
@@ -129,6 +130,7 @@ export function fromQueue<A>(queue: Queue.Queue<Take.Take<Throwable, A>>): Queue
         Effect.onExit((_) =>
           Queue.offer(queue, Exit.match(_, { onFailure: (e) => Take.failCause(e), onSuccess: () => Take.end }))
         ),
+        Effect.race(await_),
         Effect.fork,
         Effect.asUnit
       ),
