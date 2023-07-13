@@ -33,7 +33,6 @@ export function asHttpServer<A2, A>(
           http.createServer((request, response) => {
             const writeResponse = (data: string) => Effect.sync(() => response.write(data))
             const writeEventData = (data: string) => writeResponse("data: " + data + "\n\n")
-
             let body = ""
             request.on("data", (data) => (body += data))
             request.on("end", () => {

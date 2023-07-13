@@ -73,9 +73,10 @@ export function sendInternal<A>(send: Schema.Schema<any, A>) {
       jsonStringify(data, send),
       // Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
       Effect.flatMap((body) =>
-        Effect.tryPromise({
-          try: () => {
+        Effect.tryPromiseInterrupt({
+          try: (signal) => {
             return fetch(url, {
+              signal,
               method: "POST",
               body
             })
