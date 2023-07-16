@@ -270,7 +270,8 @@ describe.concurrent("SampleTests", () => {
                         shutdownCompleted = true
                       })
                     ),
-                    Effect.flatMap(() => Deferred.succeed(shutdownEnded, true))
+                    Effect.flatMap(() => Deferred.succeed(shutdownEnded, true)),
+                    Effect.uninterruptible
                   )
               }
             }),
@@ -323,7 +324,8 @@ describe.concurrent("SampleTests", () => {
                         shutdownCompleted = true
                       })
                     ),
-                    Effect.flatMap(() => Deferred.succeed(shutdownEnded, true))
+                    Effect.flatMap(() => Deferred.succeed(shutdownEnded, true)),
+                    Effect.uninterruptible
                   )
               }
             }),
