@@ -234,4 +234,110 @@ describe.concurrent("SampleTests", () => {
       assertTrue(Chunk.size(result) === 0)
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
   })
+
+  it("Ensure graceful shutdown is completed if shard is terminated", () => {
+    let shutdownCompleted = false
+
+    return Effect.gen(function*(_) {
+      const shutdownReceived = yield* _(Deferred.make<never, boolean>())
+      const shutdownEnded = yield* _(Deferred.make<never, boolean>())
+
+      const SampleMessage = Schema.union(
+        Schema.struct({
+          _tag: Schema.literal("Awake")
+        }),
+        Schema.struct({
+          _tag: Schema.literal("Shutdown")
+        })
+      )
+      const SampleEntity = RecipientType.makeEntityType("Sample", SampleMessage)
+
+      yield* _(Sharding.registerEntity(
+        SampleEntity,
+        (entityId, queue) =>
+          pipe(
+            Queue.take(queue),
+            Effect.flatMap((msg) => {
+              switch (msg._tag) {
+                case "Awake":
+                  return Deferred.succeed(shutdownReceived, true)
+                case "Shutdown":
+                  return pipe(
+                    Deferred.succeed(shutdownReceived, true),
+                    Effect.flatMap(() => Effect.sleep(Duration.seconds(3))),
+                    Effect.flatMap(() =>
+                      Effect.sync(() => {
+                        shutdownCompleted = true
+                      })
+                    ),
+                    Effect.flatMap(() => Deferred.succeed(shutdownEnded, true))
+                  )
+              }
+            }),
+            Effect.forever
+          ),
+        () => Option.some({ _tag: "Shutdown" } as const),
+        Option.some(Duration.minutes(10))
+      ))
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
+      yield* _(Deferred.await(shutdownReceived))
+    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
+      assertTrue(shutdownCompleted)
+    )
+  })
+
+  it("Ensure graceful shutdown is completed if entity terminates, and then shard is terminated too", () => {
+    let shutdownCompleted = false
+
+    return Effect.gen(function*(_) {
+      const shutdownReceived = yield* _(Deferred.make<never, boolean>())
+      const shutdownEnded = yield* _(Deferred.make<never, boolean>())
+
+      const SampleMessage = Schema.union(
+        Schema.struct({
+          _tag: Schema.literal("Awake")
+        }),
+        Schema.struct({
+          _tag: Schema.literal("Shutdown")
+        })
+      )
+      const SampleEntity = RecipientType.makeEntityType("Sample", SampleMessage)
+
+      yield* _(Sharding.registerEntity(
+        SampleEntity,
+        (entityId, queue) =>
+          pipe(
+            Queue.take(queue),
+            Effect.flatMap((msg) => {
+              switch (msg._tag) {
+                case "Awake":
+                  return Effect.unit
+                case "Shutdown":
+                  return pipe(
+                    Deferred.succeed(shutdownReceived, true),
+                    Effect.flatMap(() => Effect.sleep(Duration.seconds(3))),
+                    Effect.flatMap(() =>
+                      Effect.sync(() => {
+                        shutdownCompleted = true
+                      })
+                    ),
+                    Effect.flatMap(() => Deferred.succeed(shutdownEnded, true))
+                  )
+              }
+            }),
+            Effect.forever
+          ),
+        () => Option.some({ _tag: "Shutdown" } as const),
+        Option.some(Duration.millis(100))
+      ))
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
+      yield* _(Deferred.await(shutdownReceived))
+    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
+      assertTrue(shutdownCompleted)
+    )
+  })
 })
