@@ -2,6 +2,7 @@ import * as Chunk from "@effect/data/Chunk"
 import * as Duration from "@effect/data/Duration"
 import { equals } from "@effect/data/Equal"
 import { pipe } from "@effect/data/Function"
+import * as HashMap from "@effect/data/HashMap"
 import * as Option from "@effect/data/Option"
 import * as Cause from "@effect/io/Cause"
 import * as Deferred from "@effect/io/Deferred"
@@ -34,7 +35,7 @@ describe.concurrent("SampleTests", () => {
     Layer.use(Storage.memory),
     Layer.use(Serialization.json),
     Layer.use(ShardManagerClient.local),
-    Layer.use(ShardingConfig.defaults)
+    Layer.use(ShardingConfig.withDefaults({ simulateRemotePods: true }))
   )
 
   it("Succefully delivers a message", () => {
@@ -107,6 +108,45 @@ describe.concurrent("SampleTests", () => {
       const result = yield* _(messenger.send("entity1")(SampleMessage({ _tag: "SampleMessage" })))
 
       assertTrue(result === 42)
+    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+  })
+
+  it("Succefully broadcasts a message", () => {
+    return Effect.gen(function*(_) {
+      const [GetIncrement_, GetIncrement] = Message.schema(Schema.number)(Schema.struct({
+        _tag: Schema.literal("GetIncrement")
+      }))
+
+      const SampleMessage = Schema.union(
+        Schema.struct({
+          _tag: Schema.literal("BroadcastIncrement")
+        }),
+        GetIncrement_
+      )
+
+      const SampleTopic = RecipientType.makeTopicType("Sample", SampleMessage)
+      yield* _(Sharding.registerTopic(SampleTopic, (entityId, queue) =>
+        Effect.flatMap(Ref.make(0), (ref) =>
+          pipe(
+            Queue.take(queue),
+            Effect.flatMap((msg) => {
+              switch (msg._tag) {
+                case "BroadcastIncrement":
+                  return Ref.update(ref, (_) => _ + 1)
+                case "GetIncrement":
+                  return Effect.flatMap(Ref.get(ref), (_) => msg.replier.reply(_))
+              }
+            }),
+            Effect.forever
+          ))))
+
+      const broadcaster = yield* _(Sharding.broadcaster(SampleTopic))
+      yield* _(broadcaster.broadcastDiscard("c1")({ _tag: "BroadcastIncrement" }))
+      yield* _(Effect.sleep(Duration.seconds(2)))
+
+      const c1 = yield* _(broadcaster.broadcast("c1")(GetIncrement({ _tag: "GetIncrement" })))
+
+      assertTrue(1 === HashMap.size(c1)) // Here we have just one pod, so there will be just one incrementer
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
   })
 

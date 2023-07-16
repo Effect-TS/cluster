@@ -75,11 +75,11 @@ export const defaults = Layer.succeed(ShardingConfig, {
  * @since 1.0.0
  * @category layers
  */
-export function defaultsWithShardingPort(shardingPort: number) {
+export function withDefaults(customs: Partial<ShardingConfig>) {
   return Layer.succeed(ShardingConfig, {
     numberOfShards: 300,
     selfHost: "localhost",
-    shardingPort,
+    shardingPort: 54321,
     shardManagerUri: "http://localhost:8080/api/rest",
     serverVersion: "1.0.0",
     entityMaxIdleTime: Duration.minutes(1),
@@ -87,6 +87,7 @@ export function defaultsWithShardingPort(shardingPort: number) {
     sendTimeout: Duration.seconds(5),
     refreshAssignmentsRetryInterval: Duration.seconds(5),
     unhealthyPodReportInterval: Duration.seconds(5),
-    simulateRemotePods: false
+    simulateRemotePods: false,
+    ...customs
   })
 }

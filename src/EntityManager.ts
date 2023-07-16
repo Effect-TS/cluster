@@ -76,8 +76,8 @@ export function make<R, Req>(
     }
 
     function terminateEntity(entityId: string) {
-      return RefSynchronized.updateEffect(entities, (map) => {
-        const _ = pipe(
+      return RefSynchronized.updateEffect(entities, (map) =>
+        pipe(
           HashMap.get(map, entityId),
           Option.match({
             // if no queue is found, do nothing
@@ -111,9 +111,7 @@ export function make<R, Req>(
                 })
               )
           })
-        )
-        return _
-      })
+        ))
     }
 
     function send(

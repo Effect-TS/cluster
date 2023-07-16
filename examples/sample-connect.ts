@@ -37,7 +37,7 @@ const program = pipe(
   Effect.provideSomeLayer(StorageFile.storageFile),
   Effect.provideSomeLayer(PodsHttp.httpPods),
   Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),
-  Effect.provideSomeLayer(ShardingConfig.defaultsWithShardingPort(54322)),
+  Effect.provideSomeLayer(ShardingConfig.withDefaults({ shardingPort: 54322 })),
   Effect.provideSomeLayer(Serialization.json),
   Effect.catchAllCause(Effect.logCause({ level: "Error" })),
   Logger.withMinimumLogLevel(LogLevel.All)
