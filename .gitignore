@@ -6,7 +6,6 @@ yarn-error.log
 .DS_Store
 tmp/
 build/
-dist/
 .cache/
 .direnv/
 .idea/
