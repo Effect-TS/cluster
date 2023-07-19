@@ -1,4 +1,3 @@
-import { pipe } from "@effect/data/Function";
 import * as HashMap from "@effect/data/HashMap";
 import * as HashSet from "@effect/data/HashSet";
 import * as Option from "@effect/data/Option";
@@ -41,15 +40,15 @@ export function groupBy(f) {
 }
 /** @internal */
 export function jsonStringify(value, schema) {
-  return pipe(value, Schema.encode(schema), Effect.mapError(e => EncodeError(e)), Effect.map(_ => JSON.stringify(_)));
+  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => EncodeError(e))(Schema.encode(schema)(value)));
 }
 /** @internal */
 export function jsonParse(value, schema) {
-  return pipe(Effect.sync(() => JSON.parse(value)), Effect.flatMap(Schema.decode(schema)), Effect.mapError(e => DecodeError(TreeFormatter.formatErrors(e.errors))));
+  return Effect.mapError(e => DecodeError(TreeFormatter.formatErrors(e.errors)))(Effect.flatMap(Schema.decode(schema))(Effect.sync(() => JSON.parse(value))));
 }
 /** @internal */
 export function sendInternal(send) {
-  return (url, data) => pipe(jsonStringify(data, send),
+  return (url, data) =>
   // Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
   Effect.flatMap(body => Effect.tryPromiseInterrupt({
     try: signal => {
@@ -62,15 +61,15 @@ export function sendInternal(send) {
     catch: error => FetchError(url, body, String(error))
   }))
   // Effect.tap((response) => Effect.logDebug(url + " status: " + response.status))
-  );
+  (jsonStringify(data, send));
 }
 /** @internal */
 export function send(send, reply) {
-  return (url, data) => pipe(sendInternal(send)(url, data), Effect.flatMap(response => Effect.promise(() => response.text())), Effect.flatMap(data => jsonParse(data, reply)), Effect.orDie, Effect.flatten);
+  return (url, data) => Effect.flatten(Effect.orDie(Effect.flatMap(data => jsonParse(data, reply))(Effect.flatMap(response => Effect.promise(() => response.text()))(sendInternal(send)(url, data)))));
 }
 /** @internal */
 export function sendStream(send, reply) {
-  return (url, data) => pipe(sendInternal(send)(url, data), Effect.map(response => pipe(Stream.fromAsyncIterable(response.body, e => FetchError(url, "", e)), Stream.map(value => typeof value === "string" ? value : value.toString()), Stream.splitLines, Stream.filter(line => line.length > 0), Stream.map(line => line.startsWith("data:") ? line.substring("data:".length).trim() : line), Stream.mapEffect(data => jsonParse(data, reply)), Stream.mapEffect(_ => _))), Stream.fromEffect, Stream.flatten);
+  return (url, data) => Stream.flatten(Stream.fromEffect(Effect.map(response => Stream.mapEffect(_ => _)(Stream.mapEffect(data => jsonParse(data, reply))(Stream.map(line => line.startsWith("data:") ? line.substring("data:".length).trim() : line)(Stream.filter(line => line.length > 0)(Stream.splitLines(Stream.map(value => typeof value === "string" ? value : value.toString())(Stream.fromAsyncIterable(response.body, e => FetchError(url, "", e)))))))))(sendInternal(send)(url, data))));
 }
 /** @internal */
 export function showHashSet(fn) {

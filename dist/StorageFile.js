@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.storageFile = void 0;
-var _Function = /*#__PURE__*/require("@effect/data/Function");
 var HashMap = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/HashMap"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Layer = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Layer"));
@@ -28,16 +27,16 @@ const ASSIGNMENTS_FILE = "assignments.json";
 const AssignmentsSchema = /*#__PURE__*/Schema.array( /*#__PURE__*/Schema.tuple(ShardId.schema, /*#__PURE__*/Schema.optionFromNullable(PodAddress.schema)));
 const PodsSchema = /*#__PURE__*/Schema.array( /*#__PURE__*/Schema.tuple(PodAddress.schema, Pod.schema));
 function writeJsonData(fileName, schema, data) {
-  return (0, _Function.pipe)((0, _utils.jsonStringify)(data, schema), Effect.flatMap(data => Effect.sync(() => fs.writeFileSync(fileName, data))), Effect.orDie);
+  return Effect.orDie(Effect.flatMap(data => Effect.sync(() => fs.writeFileSync(fileName, data)))((0, _utils.jsonStringify)(data, schema)));
 }
 function readJsonData(fileName, schema, empty) {
-  return (0, _Function.pipe)(Effect.sync(() => fs.existsSync(fileName)), Effect.flatMap(exists => exists ? (0, _Function.pipe)(Effect.sync(() => fs.readFileSync(fileName)), Effect.flatMap(data => (0, _utils.jsonParse)(data.toString(), schema))) : Effect.succeed(empty)), Effect.orDie);
+  return Effect.orDie(Effect.flatMap(exists => exists ? Effect.flatMap(data => (0, _utils.jsonParse)(data.toString(), schema))(Effect.sync(() => fs.readFileSync(fileName))) : Effect.succeed(empty))(Effect.sync(() => fs.existsSync(fileName))));
 }
-const getAssignments = /*#__PURE__*/(0, _Function.pipe)( /*#__PURE__*/readJsonData(ASSIGNMENTS_FILE, AssignmentsSchema, []), /*#__PURE__*/Effect.map(HashMap.fromIterable));
+const getAssignments = /*#__PURE__*/Effect.map(HashMap.fromIterable)( /*#__PURE__*/readJsonData(ASSIGNMENTS_FILE, AssignmentsSchema, []));
 function saveAssignments(assignments) {
   return writeJsonData(ASSIGNMENTS_FILE, AssignmentsSchema, Array.from(assignments));
 }
-const getPods = /*#__PURE__*/(0, _Function.pipe)( /*#__PURE__*/readJsonData(PODS_FILE, PodsSchema, []), /*#__PURE__*/Effect.map(HashMap.fromIterable));
+const getPods = /*#__PURE__*/Effect.map(HashMap.fromIterable)( /*#__PURE__*/readJsonData(PODS_FILE, PodsSchema, []));
 function savePods(pods) {
   return writeJsonData("pods.json", PodsSchema, Array.from(pods));
 }
@@ -46,11 +45,11 @@ function savePods(pods) {
  * This is useful for testing with a single pod only.
  */
 function getChangesStream(fileName) {
-  return (0, _Function.pipe)(Queue.unbounded(), Effect.flatMap(queue => (0, _Function.pipe)(Effect.acquireRelease(Effect.sync(() => [fs.watchFile(fileName, () => Effect.runSync(queue.offer(true))), queue]), ([watcher, queue]) => Effect.zip(queue.shutdown(), Effect.sync(() => watcher.unref()), {
+  return Stream.unwrapScoped(Effect.flatMap(queue => Effect.map(([_, queue]) => Stream.fromQueue(queue))(Effect.acquireRelease(Effect.sync(() => [fs.watchFile(fileName, () => Effect.runSync(queue.offer(true))), queue]), ([watcher, queue]) => Effect.zip(queue.shutdown(), Effect.sync(() => watcher.unref()), {
     concurrent: true
-  })), Effect.map(([_, queue]) => Stream.fromQueue(queue)))), Stream.unwrapScoped);
+  }))))(Queue.unbounded()));
 }
-const assignmentsStream = /*#__PURE__*/(0, _Function.pipe)( /*#__PURE__*/getChangesStream(ASSIGNMENTS_FILE), /*#__PURE__*/Stream.mapEffect(() => getAssignments));
+const assignmentsStream = /*#__PURE__*/Stream.mapEffect(() => getAssignments)( /*#__PURE__*/getChangesStream(ASSIGNMENTS_FILE));
 /**
  * @since 1.0.0
  * @category layers

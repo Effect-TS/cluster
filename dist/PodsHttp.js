@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.httpPods = void 0;
-var _Function = /*#__PURE__*/require("@effect/data/Function");
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Layer = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Layer"));
 var Pods = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Pods"));
@@ -28,30 +27,30 @@ function asHttpUrl(pod) {
  */
 const httpPods = /*#__PURE__*/Layer.succeed(Pods.Pods, {
   [Pods.TypeId]: {},
-  assignShards: (pod, shards) => (0, _Function.pipe)((0, _utils.send)(ShardingProtocolHttp.AssignShard_, ShardingProtocolHttp.AssignShardResult_)(asHttpUrl(pod), {
+  assignShards: (pod, shards) => Effect.orDie((0, _utils.send)(ShardingProtocolHttp.AssignShard_, ShardingProtocolHttp.AssignShardResult_)(asHttpUrl(pod), {
     _tag: "AssignShards",
     shards: Array.from(shards)
-  }), Effect.orDie),
-  unassignShards: (pod, shards) => (0, _Function.pipe)((0, _utils.send)(ShardingProtocolHttp.UnassignShards_, ShardingProtocolHttp.UnassignShardsResult_)(asHttpUrl(pod), {
+  })),
+  unassignShards: (pod, shards) => Effect.orDie((0, _utils.send)(ShardingProtocolHttp.UnassignShards_, ShardingProtocolHttp.UnassignShardsResult_)(asHttpUrl(pod), {
     _tag: "UnassignShards",
     shards: Array.from(shards)
-  }), Effect.orDie),
-  ping: pod => (0, _Function.pipe)((0, _utils.send)(ShardingProtocolHttp.PingShards_, ShardingProtocolHttp.PingShardsResult_)(asHttpUrl(pod), {
-    _tag: "PingShards"
-  }), Effect.catchAllDefect(e => {
+  })),
+  ping: pod => Effect.catchAllDefect(e => {
     if ((0, _ShardError.isFetchError)(e)) {
       return Effect.fail((0, _ShardError.PodUnavailable)(pod));
     }
     return Effect.die(e);
+  })((0, _utils.send)(ShardingProtocolHttp.PingShards_, ShardingProtocolHttp.PingShardsResult_)(asHttpUrl(pod), {
+    _tag: "PingShards"
   })),
-  sendMessage: (pod, message) => (0, _Function.pipe)((0, _utils.send)(ShardingProtocolHttp.Send_, ShardingProtocolHttp.SendResult_)(asHttpUrl(pod), {
+  sendMessage: (pod, message) => Effect.orDie((0, _utils.send)(ShardingProtocolHttp.Send_, ShardingProtocolHttp.SendResult_)(asHttpUrl(pod), {
     _tag: "Send",
     message
-  }), Effect.orDie),
-  sendMessageStreaming: (pod, message) => (0, _Function.pipe)((0, _utils.sendStream)(ShardingProtocolHttp.SendStream_, ShardingProtocolHttp.SendStreamResultItem_)(asHttpUrl(pod), {
+  })),
+  sendMessageStreaming: (pod, message) => Stream.orDie((0, _utils.sendStream)(ShardingProtocolHttp.SendStream_, ShardingProtocolHttp.SendStreamResultItem_)(asHttpUrl(pod), {
     _tag: "SendStream",
     message
-  }), Stream.orDie)
+  }))
 });
 exports.httpPods = httpPods;
 //# sourceMappingURL=PodsHttp.js.map

@@ -8,7 +8,6 @@ exports.isReplyId = isReplyId;
 exports.make = make;
 exports.schema = exports.makeEffect = void 0;
 var Data = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Data"));
-var _Function = /*#__PURE__*/require("@effect/data/Function");
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Schema = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/Schema"));
 var crypto = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("crypto"));
@@ -50,7 +49,7 @@ const makeUUID = typeof crypto !== undefined && typeof crypto.getRandomValues ==
  * @since 1.0.0
  * @category constructors
  */
-const makeEffect = /*#__PURE__*/(0, _Function.pipe)(makeUUID, /*#__PURE__*/Effect.map(make));
+const makeEffect = /*#__PURE__*/Effect.map(make)(makeUUID);
 /**
  * This is the schema for a value.
  *

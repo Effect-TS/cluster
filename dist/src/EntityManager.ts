@@ -148,32 +148,28 @@ export function make<R, Req>(
               return Effect.fail(ShardError.EntityNotManagedByThisPod(entityId))
             } else {
               // queue doesn't exist, create a new one
-              return pipe(
-                Effect.Do,
-                Effect.bind("queue", () => Queue.unbounded<Req>()),
-                Effect.bind("expirationFiber", () => startExpirationFiber(entityId)),
-                Effect.tap((_) =>
-                  pipe(
-                    behavior(entityId, _.queue),
+              return Effect.gen(function*(_) {
+                const queue = yield* _(Queue.unbounded<Req>())
+                const expirationFiber = yield* _(startExpirationFiber(entityId))
+                yield* _(
+                  Effect.forkDaemon(
                     Effect.ensuring(
+                      behavior(entityId, queue),
                       pipe(
                         RefSynchronized.update(entities, HashMap.remove(entityId)),
-                        Effect.zipRight(Queue.shutdown(_.queue)),
-                        Effect.zipRight(Fiber.interrupt(_.expirationFiber))
+                        Effect.zipRight(Queue.shutdown(queue)),
+                        Effect.zipRight(Fiber.interrupt(expirationFiber))
                       )
-                    ),
-                    Effect.forkDaemon
+                    )
                   )
-                ),
-                Effect.let("someQueue", (_) => Option.some(_.queue)),
-                Effect.map(
-                  (_) =>
-                    [
-                      _.someQueue,
-                      HashMap.set(map, entityId, [_.someQueue, _.expirationFiber] as const)
-                    ] as const
                 )
-              )
+
+                const someQueue = Option.some(queue)
+                return [
+                  someQueue,
+                  HashMap.set(map, entityId, [someQueue, expirationFiber] as const)
+                ] as const
+              })
             }
           })
         }

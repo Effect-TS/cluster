@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.noop = exports.local = exports.TypeId = exports.PodsHealth = void 0;
 var _Context = /*#__PURE__*/require("@effect/data/Context");
-var _Function = /*#__PURE__*/require("@effect/data/Function");
 var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Option"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Layer = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Layer"));
@@ -47,7 +46,7 @@ const noop = /*#__PURE__*/Layer.succeed(PodsHealth, {
 exports.noop = noop;
 const local = /*#__PURE__*/Layer.effect(PodsHealth, /*#__PURE__*/Effect.map(Pods.Pods, podApi => ({
   [TypeId]: {},
-  isAlive: address => (0, _Function.pipe)(podApi.ping(address), Effect.option, Effect.map(Option.isSome))
+  isAlive: address => Effect.map(Option.isSome)(Effect.option(podApi.ping(address)))
 })));
 exports.local = local;
 //# sourceMappingURL=PodsHealth.js.map

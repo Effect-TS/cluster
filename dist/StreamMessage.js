@@ -7,7 +7,6 @@ exports.TypeId = void 0;
 exports.isStreamMessage = isStreamMessage;
 exports.schema = schema;
 var Data = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Data"));
-var _Function = /*#__PURE__*/require("@effect/data/Function");
 var Schema = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/Schema"));
 var StreamReplier = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/StreamReplier"));
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -34,9 +33,9 @@ function isStreamMessage(value) {
  */
 function schema(success) {
   return function (item) {
-    const result = (0, _Function.pipe)(item, Schema.extend(Schema.struct({
+    const result = Schema.extend(Schema.struct({
       replier: StreamReplier.schema(success)
-    })));
+    }))(item);
     const make = arg => replyId => Data.struct({
       ...arg,
       replier: StreamReplier.streamReplier(replyId, success)

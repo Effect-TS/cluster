@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import * as Data from "@effect/data/Data";
-import { pipe } from "@effect/data/Function";
 import * as Schema from "@effect/schema/Schema";
 import * as Replier from "@effect/shardcake/Replier";
 /**
@@ -22,9 +21,9 @@ export function isMessage(value) {
  */
 export function schema(success) {
   return function (item) {
-    const result = pipe(item, Schema.extend(Schema.struct({
+    const result = Schema.extend(Schema.struct({
       replier: Replier.schema(success)
-    })));
+    }))(item);
     const make = arg => replyId => Data.struct({
       ...arg,
       replier: Replier.replier(replyId, success)

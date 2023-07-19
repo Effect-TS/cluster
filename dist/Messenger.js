@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.sendStreamAutoRestart = sendStreamAutoRestart;
 var Duration = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Duration"));
 var Either = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Either"));
-var _Function = /*#__PURE__*/require("@effect/data/Function");
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var _ShardError = /*#__PURE__*/require("@effect/shardcake/ShardError");
 var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/stream/Stream"));
@@ -28,13 +27,13 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  */
 function sendStreamAutoRestart(messenger, entityId, cursor) {
   return fn => updateCursor => {
-    return (0, _Function.pipe)(Stream.unwrap(messenger.sendStream(entityId)(fn(cursor))), Stream.either, Stream.mapAccum(cursor, (c, either) => Either.match(either, {
+    return Stream.flatMap(Either.match({
+      onRight: res => Stream.succeed(res),
+      onLeft: ([cursor, err]) => (0, _ShardError.isPodUnavailableError)(err) ? Stream.zipRight(sendStreamAutoRestart(messenger, entityId, cursor)(fn)(updateCursor))(Stream.fromEffect(Effect.sleep(Duration.millis(200)))) : Stream.fail(err)
+    }))(Stream.mapAccum(cursor, (c, either) => Either.match(either, {
       onLeft: err => [c, Either.left([c, err])],
       onRight: res => [updateCursor(c, res), Either.right(res)]
-    })), Stream.flatMap(Either.match({
-      onRight: res => Stream.succeed(res),
-      onLeft: ([cursor, err]) => (0, _ShardError.isPodUnavailableError)(err) ? (0, _Function.pipe)(Effect.sleep(Duration.millis(200)), Stream.fromEffect, Stream.zipRight(sendStreamAutoRestart(messenger, entityId, cursor)(fn)(updateCursor))) : Stream.fail(err)
-    })));
+    }))(Stream.either(Stream.unwrap(messenger.sendStream(entityId)(fn(cursor))))));
   };
 }
 //# sourceMappingURL=Messenger.js.map

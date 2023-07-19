@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import * as Data from "@effect/data/Data";
-import { pipe } from "@effect/data/Function";
 import * as List from "@effect/data/List";
 import * as Option from "@effect/data/Option";
 import * as Schema from "@effect/schema/Schema";
@@ -32,7 +31,7 @@ export function make(pod, registered) {
  * @category utils
  */
 export function extractVersion(pod) {
-  return pipe(List.fromIterable(pod.pod.version.split(".")), List.map(_ => parseInt(_, 10)));
+  return List.map(_ => parseInt(_, 10))(List.fromIterable(pod.pod.version.split(".")));
 }
 /**
  * @since 1.0.0
@@ -42,12 +41,12 @@ export function compareVersion(a, b) {
   let restA = a;
   let restB = b;
   while (List.size(restA) > 0 || List.size(restB) > 0) {
-    const numA = pipe(List.head(restA), Option.getOrElse(() => 0));
-    const numB = pipe(List.head(restB), Option.getOrElse(() => 0));
+    const numA = Option.getOrElse(() => 0)(List.head(restA));
+    const numB = Option.getOrElse(() => 0)(List.head(restB));
     if (numA < numB) return -1;
     if (numB > numA) return 1;
-    restA = pipe(List.tail(restA), Option.getOrElse(() => List.empty()));
-    restB = pipe(List.tail(restB), Option.getOrElse(() => List.empty()));
+    restA = Option.getOrElse(() => List.empty())(List.tail(restA));
+    restB = Option.getOrElse(() => List.empty())(List.tail(restB));
   }
   return 0;
 }

@@ -1,6 +1,6 @@
 {
   "plugins": [
-    ["@effect/babel-plugin", { "rewritePipe": false, "rewriteIdentity": false}],
+    ["@effect/babel-plugin"],
     ["@babel/transform-modules-commonjs"],
     ["annotate-pure-calls"]
   ]

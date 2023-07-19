@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context";
-import { pipe } from "@effect/data/Function";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import * as ByteArray from "@effect/shardcake/ByteArray";
@@ -26,7 +25,7 @@ export const Serialization = /*#__PURE__*/Tag();
  */
 export const json = /*#__PURE__*/Layer.succeed(Serialization, {
   [TypeId]: {},
-  encode: (message, schema) => pipe(jsonStringify(message, schema), Effect.mapError(ShardError.EncodeError), Effect.map(ByteArray.make)),
-  decode: (body, schema) => pipe(jsonParse(body.value, schema), Effect.mapError(ShardError.DecodeError))
+  encode: (message, schema) => Effect.map(ByteArray.make)(Effect.mapError(ShardError.EncodeError)(jsonStringify(message, schema))),
+  decode: (body, schema) => Effect.mapError(ShardError.DecodeError)(jsonParse(body.value, schema))
 });
 //# sourceMappingURL=Serialization.mjs.map

@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.json = exports.TypeId = exports.Serialization = void 0;
 var _Context = /*#__PURE__*/require("@effect/data/Context");
-var _Function = /*#__PURE__*/require("@effect/data/Function");
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Layer = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Layer"));
 var ByteArray = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ByteArray"));
@@ -37,8 +36,8 @@ const Serialization = /*#__PURE__*/(0, _Context.Tag)();
 exports.Serialization = Serialization;
 const json = /*#__PURE__*/Layer.succeed(Serialization, {
   [TypeId]: {},
-  encode: (message, schema) => (0, _Function.pipe)((0, _utils.jsonStringify)(message, schema), Effect.mapError(ShardError.EncodeError), Effect.map(ByteArray.make)),
-  decode: (body, schema) => (0, _Function.pipe)((0, _utils.jsonParse)(body.value, schema), Effect.mapError(ShardError.DecodeError))
+  encode: (message, schema) => Effect.map(ByteArray.make)(Effect.mapError(ShardError.EncodeError)((0, _utils.jsonStringify)(message, schema))),
+  decode: (body, schema) => Effect.mapError(ShardError.DecodeError)((0, _utils.jsonParse)(body.value, schema))
 });
 exports.json = json;
 //# sourceMappingURL=Serialization.js.map

@@ -3,7 +3,6 @@
  */
 import * as Duration from "@effect/data/Duration";
 import * as Either from "@effect/data/Either";
-import { pipe } from "@effect/data/Function";
 import * as Effect from "@effect/io/Effect";
 import { isPodUnavailableError } from "@effect/shardcake/ShardError";
 import * as Stream from "@effect/stream/Stream";
@@ -19,13 +18,13 @@ import * as Stream from "@effect/stream/Stream";
  */
 export function sendStreamAutoRestart(messenger, entityId, cursor) {
   return fn => updateCursor => {
-    return pipe(Stream.unwrap(messenger.sendStream(entityId)(fn(cursor))), Stream.either, Stream.mapAccum(cursor, (c, either) => Either.match(either, {
+    return Stream.flatMap(Either.match({
+      onRight: res => Stream.succeed(res),
+      onLeft: ([cursor, err]) => isPodUnavailableError(err) ? Stream.zipRight(sendStreamAutoRestart(messenger, entityId, cursor)(fn)(updateCursor))(Stream.fromEffect(Effect.sleep(Duration.millis(200)))) : Stream.fail(err)
+    }))(Stream.mapAccum(cursor, (c, either) => Either.match(either, {
       onLeft: err => [c, Either.left([c, err])],
       onRight: res => [updateCursor(c, res), Either.right(res)]
-    })), Stream.flatMap(Either.match({
-      onRight: res => Stream.succeed(res),
-      onLeft: ([cursor, err]) => isPodUnavailableError(err) ? pipe(Effect.sleep(Duration.millis(200)), Stream.fromEffect, Stream.zipRight(sendStreamAutoRestart(messenger, entityId, cursor)(fn)(updateCursor))) : Stream.fail(err)
-    })));
+    }))(Stream.either(Stream.unwrap(messenger.sendStream(entityId)(fn(cursor))))));
   };
 }
 //# sourceMappingURL=Messenger.mjs.map

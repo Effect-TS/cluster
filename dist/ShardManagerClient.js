@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.local = exports.ShardManagerClient = void 0;
 var _Context = /*#__PURE__*/require("@effect/data/Context");
-var _Function = /*#__PURE__*/require("@effect/data/Function");
 var HashMap = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/HashMap"));
 var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Option"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
@@ -29,7 +28,7 @@ const ShardManagerClient = /*#__PURE__*/(0, _Context.Tag)();
  * @category layers
  */
 exports.ShardManagerClient = ShardManagerClient;
-const local = /*#__PURE__*/(0, _Function.pipe)( /*#__PURE__*/Layer.effect(ShardManagerClient, /*#__PURE__*/Effect.gen(function* ($) {
+const local = /*#__PURE__*/Layer.effect(ShardManagerClient, /*#__PURE__*/Effect.gen(function* ($) {
   const config = yield* $(ShardingConfig.ShardingConfig);
   const pod = PodAddress.make(config.selfHost, config.shardingPort);
   let shards = HashMap.empty();
@@ -42,6 +41,6 @@ const local = /*#__PURE__*/(0, _Function.pipe)( /*#__PURE__*/Layer.effect(ShardM
     notifyUnhealthyPod: () => Effect.unit,
     getAssignments: Effect.succeed(shards)
   };
-})));
+}));
 exports.local = local;
 //# sourceMappingURL=ShardManagerClient.js.map

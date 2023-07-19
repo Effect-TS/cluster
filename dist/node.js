@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.asHttpServer = asHttpServer;
 var Either = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Either"));
-var _Function = /*#__PURE__*/require("@effect/data/Function");
 var Cause = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Cause"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/stream/Stream"));
@@ -20,33 +19,33 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
 
 /** @internal */
 function asHttpServer(port, RequestSchema, handler) {
-  return fa => Effect.acquireUseRelease((0, _Function.pipe)(Effect.sync(() => http.createServer((request, response) => {
+  return fa => Effect.acquireUseRelease(Effect.tap(() => Effect.log("Starting HTTP server on port " + port, "Info"))(Effect.tap(http => Effect.sync(() => http.listen(port)))(Effect.sync(() => http.createServer((request, response) => {
     const writeResponse = data => Effect.sync(() => response.write(data));
     const writeEventData = data => writeResponse("data: " + data + "\n\n");
     let body = "";
     request.on("data", data => body += data);
     request.on("end", () => {
-      (0, _Function.pipe)((0, _utils.jsonParse)(body, RequestSchema), Effect.flatMap(req => {
-        const reply = schema => fa => (0, _Function.pipe)(fa, Effect.matchEffect({
-          onFailure: error => (0, _utils.jsonStringify)(Either.left(error), schema),
-          onSuccess: value => (0, _utils.jsonStringify)(Either.right(value), schema)
-        }), Effect.flatMap(data => Effect.sync(() => {
+      Effect.runCallback(Effect.catchAllCause(cause => Effect.sync(() => {
+        response.writeHead(500);
+        response.end(Cause.pretty(cause));
+      }))(Effect.flatMap(req => {
+        const reply = schema => fa => Effect.flatMap(data => Effect.sync(() => {
           response.writeHead(200, {
             "Content-Type": "application/json"
           });
           response.end(data);
-        })));
-        const replyStream = schema => fa => (0, _Function.pipe)(Effect.sync(() => response.writeHead(200, {
+        }))(Effect.matchEffect({
+          onFailure: error => (0, _utils.jsonStringify)(Either.left(error), schema),
+          onSuccess: value => (0, _utils.jsonStringify)(Either.right(value), schema)
+        })(fa));
+        const replyStream = schema => fa => Effect.flatMap(_ => Effect.sync(() => response.end()))(Effect.catchAll(error => Effect.flatMap(writeEventData)((0, _utils.jsonStringify)(Either.left(error), schema)))(Effect.flatMap(() => Stream.runDrain(Stream.mapEffect(value => Effect.flatMap(writeEventData)(Effect.orDie((0, _utils.jsonStringify)(Either.right(value), schema))))(fa)))(Effect.sync(() => response.writeHead(200, {
           "Content-Type": "text/event-stream",
           "Connection": "keep-alive",
           "Cache-Control": "no-cache"
-        })), Effect.flatMap(() => (0, _Function.pipe)(fa, Stream.mapEffect(value => (0, _Function.pipe)((0, _utils.jsonStringify)(Either.right(value), schema), Effect.orDie, Effect.flatMap(writeEventData))), Stream.runDrain)), Effect.catchAll(error => (0, _Function.pipe)((0, _utils.jsonStringify)(Either.left(error), schema), Effect.flatMap(writeEventData))), Effect.flatMap(_ => Effect.sync(() => response.end())));
+        })))));
         return handler(req, reply, replyStream);
-      }), Effect.catchAllCause(cause => Effect.sync(() => {
-        response.writeHead(500);
-        response.end(Cause.pretty(cause));
-      })), Effect.runCallback);
+      })((0, _utils.jsonParse)(body, RequestSchema))));
     });
-  })), Effect.tap(http => Effect.sync(() => http.listen(port))), Effect.tap(() => Effect.log("Starting HTTP server on port " + port, "Info"))), () => fa, http => Effect.sync(() => http.close()));
+  })))), () => fa, http => Effect.sync(() => http.close()));
 }
 //# sourceMappingURL=node.js.map
