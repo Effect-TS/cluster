@@ -153,13 +153,16 @@ export function make<R, Req>(
                 const expirationFiber = yield* _(startExpirationFiber(entityId))
                 yield* _(
                   Effect.forkDaemon(
-                    Effect.ensuring(
-                      behavior(entityId, queue),
-                      pipe(
-                        RefSynchronized.update(entities, HashMap.remove(entityId)),
-                        Effect.zipRight(Queue.shutdown(queue)),
-                        Effect.zipRight(Fiber.interrupt(expirationFiber))
-                      )
+                    Effect.catchAllCause(
+                      Effect.ensuring(
+                        behavior(entityId, queue),
+                        pipe(
+                          RefSynchronized.update(entities, HashMap.remove(entityId)),
+                          Effect.zipRight(Queue.shutdown(queue)),
+                          Effect.zipRight(Fiber.interrupt(expirationFiber))
+                        )
+                      ),
+                      Effect.logCause("Error", { message: "Behavior error" })
                     )
                   )
                 )

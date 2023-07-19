@@ -66,7 +66,9 @@ function make(recipientType, behavior_, terminateMessage, sharding, config, enti
               return Effect.gen(function* (_) {
                 const queue = yield* _(Queue.unbounded());
                 const expirationFiber = yield* _(startExpirationFiber(entityId));
-                yield* _(Effect.forkDaemon(Effect.ensuring(behavior(entityId, queue), Effect.zipRight(Fiber.interrupt(expirationFiber))(Effect.zipRight(Queue.shutdown(queue))(RefSynchronized.update(entities, HashMap.remove(entityId)))))));
+                yield* _(Effect.forkDaemon(Effect.catchAllCause(Effect.ensuring(behavior(entityId, queue), Effect.zipRight(Fiber.interrupt(expirationFiber))(Effect.zipRight(Queue.shutdown(queue))(RefSynchronized.update(entities, HashMap.remove(entityId))))), Effect.logCause("Error", {
+                  message: "Behavior error"
+                }))));
                 const someQueue = Option.some(queue);
                 return [someQueue, HashMap.set(map, entityId, [someQueue, expirationFiber])];
               });
