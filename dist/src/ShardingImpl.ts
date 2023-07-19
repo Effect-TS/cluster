@@ -611,9 +611,11 @@ function make(
             )
           }
 
-          console.log("waiting for pod ", showHashMap(ShardId.show, PodAddress.show))
-
-          return pipe(Effect.sleep(Duration.millis(100)), Effect.zipRight(trySend))
+          return pipe(
+            Effect.log("waiting for pod " + showHashMap(ShardId.show, PodAddress.show)),
+            Effect.zipRight(Effect.sleep(Duration.millis(100))),
+            Effect.zipRight(trySend)
+          )
         }),
         Effect.asUnit
       )
