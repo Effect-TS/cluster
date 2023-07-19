@@ -31,7 +31,7 @@ import { EntityTypeNotRegistered, isEntityNotManagedByThisPodError, isPodUnavail
 import * as ShardId from "@effect/shardcake/ShardId";
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig";
 import * as Storage from "@effect/shardcake/Storage";
-import { showHashSet } from "@effect/shardcake/utils";
+import { showHashMap, showHashSet } from "@effect/shardcake/utils";
 import { Sharding } from "./Sharding";
 /** @internal */
 function make(address, config, shardAssignments, entityStates, singletons, replyChannels,
@@ -248,6 +248,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
             return Option.none();
           })(sendToPod(entityType.name, entityId, msg, entityType.schema, pod.value, replyId, replyChannel)));
         }
+        console.log("waiting for pod ", showHashMap(ShardId.show, PodAddress.show));
         return Effect.zipRight(trySend)(Effect.sleep(Duration.millis(100)));
       })(Effect.let("pod", ({
         shards

@@ -60,7 +60,7 @@ import {
 import * as ShardId from "@effect/shardcake/ShardId"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as Storage from "@effect/shardcake/Storage"
-import { showHashSet } from "@effect/shardcake/utils"
+import { showHashMap, showHashSet } from "@effect/shardcake/utils"
 import { Sharding } from "./Sharding"
 
 type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
@@ -610,6 +610,8 @@ function make(
               Effect.onError(replyChannel.fail)
             )
           }
+
+          console.log("waiting for pod ", showHashMap(ShardId.show, PodAddress.show))
 
           return pipe(Effect.sleep(Duration.millis(100)), Effect.zipRight(trySend))
         }),
