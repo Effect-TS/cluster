@@ -10,6 +10,7 @@ exports.isReplyChannel = isReplyChannel;
 exports.isReplyChannelFromDeferred = isReplyChannelFromDeferred;
 exports.isReplyChannelFromQueue = isReplyChannelFromQueue;
 exports.stream = exports.single = void 0;
+var _Function = /*#__PURE__*/require("@effect/data/Function");
 var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Option"));
 var Deferred = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Deferred"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
@@ -47,8 +48,8 @@ function isReplyChannelFromDeferred(value) {
  * @internal
  */
 function fromQueue(queue) {
-  const end = Effect.asUnit(Effect.exit(Queue.offer(queue, Take.end)));
-  const fail = cause => Effect.asUnit(Effect.exit(Queue.offer(queue, Take.failCause(cause))));
+  const end = (0, _Function.pipe)(Queue.offer(queue, Take.end), Effect.exit, Effect.asUnit);
+  const fail = cause => (0, _Function.pipe)(Queue.offer(queue, Take.failCause(cause)), Effect.exit, Effect.asUnit);
   const await_ = Queue.awaitShutdown(queue);
   return {
     _id: TypeId,
@@ -56,12 +57,12 @@ function fromQueue(queue) {
     await: await_,
     end,
     fail,
-    replySingle: a => Effect.zipRight(end)(Effect.exit(Queue.offer(queue, Take.of(a)))),
-    replyStream: stream => Effect.asUnit(Effect.fork(Effect.race(await_)(Effect.onExit(_ => Queue.offer(queue, Exit.match(_, {
+    replySingle: a => (0, _Function.pipe)(Queue.offer(queue, Take.of(a)), Effect.exit, Effect.zipRight(end)),
+    replyStream: stream => (0, _Function.pipe)(Stream.runForEach(stream, a => Queue.offer(queue, Take.of(a))), Effect.onExit(_ => Queue.offer(queue, Exit.match(_, {
       onFailure: e => Take.failCause(e),
       onSuccess: () => Take.end
-    })))(Stream.runForEach(stream, a => Queue.offer(queue, Take.of(a))))))),
-    output: Stream.onError(fail)(Stream.flattenTake(Stream.fromQueueWithShutdown(queue)))
+    }))), Effect.race(await_), Effect.fork, Effect.asUnit),
+    output: (0, _Function.pipe)(Stream.fromQueueWithShutdown(queue), Stream.flattenTake, Stream.onError(fail))
   };
 }
 /**
@@ -70,23 +71,23 @@ function fromQueue(queue) {
  * @internal
  */
 function fromDeferred(deferred) {
-  const end = Effect.asUnit(Deferred.succeed(deferred, Option.none()));
-  const fail = cause => Effect.asUnit(Deferred.failCause(deferred, cause));
+  const end = (0, _Function.pipe)(Deferred.succeed(deferred, Option.none()), Effect.asUnit);
+  const fail = cause => (0, _Function.pipe)(Deferred.failCause(deferred, cause), Effect.asUnit);
   return {
     _id: TypeId,
     _tag: "FromDeferred",
-    await: Effect.asUnit(Effect.exit(Deferred.await(deferred))),
+    await: (0, _Function.pipe)(Deferred.await(deferred), Effect.exit, Effect.asUnit),
     end,
     fail,
-    replySingle: a => Effect.asUnit(Deferred.succeed(deferred, Option.some(a))),
-    replyStream: stream => Effect.asUnit(Effect.fork(Effect.catchAllCause(fail)(Effect.flatMap(_ => Deferred.succeed(deferred, _))(Stream.runHead(stream))))),
-    output: Effect.onError(fail)(Deferred.await(deferred))
+    replySingle: a => (0, _Function.pipe)(Deferred.succeed(deferred, Option.some(a)), Effect.asUnit),
+    replyStream: stream => (0, _Function.pipe)(Stream.runHead(stream), Effect.flatMap(_ => Deferred.succeed(deferred, _)), Effect.catchAllCause(fail), Effect.fork, Effect.asUnit),
+    output: (0, _Function.pipe)(Deferred.await(deferred), Effect.onError(fail))
   };
 }
 /** @internal */
-const single = () => Effect.map(fromDeferred)(Deferred.make());
+const single = () => (0, _Function.pipe)(Deferred.make(), Effect.map(fromDeferred));
 /** @internal */
 exports.single = single;
-const stream = () => Effect.map(fromQueue)(Queue.unbounded());
+const stream = () => (0, _Function.pipe)(Queue.unbounded(), Effect.map(fromQueue));
 exports.stream = stream;
 //# sourceMappingURL=ReplyChannel.js.map

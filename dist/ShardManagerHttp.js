@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.shardManagerHttp = void 0;
+var _Function = /*#__PURE__*/require("@effect/data/Function");
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var ManagerConfig = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ManagerConfig"));
 var ShardManager = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardManager"));
@@ -19,7 +20,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category layers
  */
-const shardManagerHttp = fa => Effect.flatMap(shardManager => Effect.flatMap(managerConfig => (0, _node.asHttpServer)(managerConfig.apiPort, ShardManagerProtocolHttp.schema, (req, reply) => {
+const shardManagerHttp = fa => (0, _Function.pipe)(ShardManager.ShardManager, Effect.flatMap(shardManager => (0, _Function.pipe)(ManagerConfig.ManagerConfig, Effect.flatMap(managerConfig => (0, _Function.pipe)(fa, (0, _node.asHttpServer)(managerConfig.apiPort, ShardManagerProtocolHttp.schema, (req, reply) => {
   switch (req._tag) {
     case "Register":
       return reply(ShardManagerProtocolHttp.RegisterResult_)(Effect.as(shardManager.register(req.pod), true));
@@ -30,6 +31,6 @@ const shardManagerHttp = fa => Effect.flatMap(shardManager => Effect.flatMap(man
     case "GetAssignments":
       return reply(ShardManagerProtocolHttp.GetAssignmentsResult_)(Effect.map(shardManager.getAssignments, _ => Array.from(_)));
   }
-})(fa))(ManagerConfig.ManagerConfig))(ShardManager.ShardManager);
+}))))));
 exports.shardManagerHttp = shardManagerHttp;
 //# sourceMappingURL=ShardManagerHttp.js.map

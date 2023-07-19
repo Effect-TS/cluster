@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context";
+import { pipe } from "@effect/data/Function";
 import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
@@ -34,6 +35,6 @@ export const noop = /*#__PURE__*/Layer.succeed(PodsHealth, {
  */
 export const local = /*#__PURE__*/Layer.effect(PodsHealth, /*#__PURE__*/Effect.map(Pods.Pods, podApi => ({
   [TypeId]: {},
-  isAlive: address => Effect.map(Option.isSome)(Effect.option(podApi.ping(address)))
+  isAlive: address => pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome))
 })));
 //# sourceMappingURL=PodsHealth.mjs.map

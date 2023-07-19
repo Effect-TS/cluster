@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.shardManagerClientHttp = void 0;
+var _Function = /*#__PURE__*/require("@effect/data/Function");
 var HashMap = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/HashMap"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Layer = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Layer"));
@@ -22,7 +23,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category layers
  */
-const shardManagerClientHttp = /*#__PURE__*/Layer.effect(ShardManagerClient.ShardManagerClient, /*#__PURE__*/Effect.map(config => ({
+const shardManagerClientHttp = /*#__PURE__*/Layer.effect(ShardManagerClient.ShardManagerClient, /*#__PURE__*/(0, _Function.pipe)(ShardingConfig.ShardingConfig, /*#__PURE__*/Effect.map(config => ({
   register: podAddress => (0, _utils.send)(ShardManagerProtocolHttp.Register_, ShardManagerProtocolHttp.RegisterResult_)(config.shardManagerUri, {
     _tag: "Register",
     pod: Pod.make(podAddress, config.serverVersion)
@@ -35,9 +36,9 @@ const shardManagerClientHttp = /*#__PURE__*/Layer.effect(ShardManagerClient.Shar
     _tag: "NotifyUnhealthyPod",
     podAddress
   }),
-  getAssignments: Effect.map(data => HashMap.fromIterable(data))((0, _utils.send)(ShardManagerProtocolHttp.GetAssignments_, ShardManagerProtocolHttp.GetAssignmentsResult_)(config.shardManagerUri, {
+  getAssignments: (0, _Function.pipe)((0, _utils.send)(ShardManagerProtocolHttp.GetAssignments_, ShardManagerProtocolHttp.GetAssignmentsResult_)(config.shardManagerUri, {
     _tag: "GetAssignments"
-  }))
-}))(ShardingConfig.ShardingConfig));
+  }), Effect.map(data => HashMap.fromIterable(data)))
+}))));
 exports.shardManagerClientHttp = shardManagerClientHttp;
 //# sourceMappingURL=ShardManagerClientHttp.js.map

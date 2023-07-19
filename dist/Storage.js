@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.noop = exports.memory = exports.TypeId = exports.Storage = void 0;
 var _Context = /*#__PURE__*/require("@effect/data/Context");
+var _Function = /*#__PURE__*/require("@effect/data/Function");
 var HashMap = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/HashMap"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Layer = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Layer"));
@@ -41,10 +42,10 @@ const memory = /*#__PURE__*/Layer.effect(Storage, /*#__PURE__*/Effect.gen(functi
   const podsRef = yield* $(Ref.make(HashMap.empty()));
   return {
     getAssignments: SubscriptionRef.get(assignmentsRef),
-    saveAssignments: assignments => SubscriptionRef.set(assignments)(assignmentsRef),
+    saveAssignments: assignments => (0, _Function.pipe)(assignmentsRef, SubscriptionRef.set(assignments)),
     assignmentsStream: assignmentsRef.changes,
     getPods: Ref.get(podsRef),
-    savePods: pods => Ref.set(pods)(podsRef)
+    savePods: pods => (0, _Function.pipe)(podsRef, Ref.set(pods))
   };
 }));
 /**

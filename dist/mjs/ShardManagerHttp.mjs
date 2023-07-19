@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-
+import { pipe } from "@effect/data/Function";
 import * as Effect from "@effect/io/Effect";
 import * as ManagerConfig from "@effect/shardcake/ManagerConfig";
 import * as ShardManager from "@effect/shardcake/ShardManager";
@@ -11,7 +11,7 @@ import { asHttpServer } from "./node";
  * @since 1.0.0
  * @category layers
  */
-export const shardManagerHttp = fa => Effect.flatMap(shardManager => Effect.flatMap(managerConfig => asHttpServer(managerConfig.apiPort, ShardManagerProtocolHttp.schema, (req, reply) => {
+export const shardManagerHttp = fa => pipe(ShardManager.ShardManager, Effect.flatMap(shardManager => pipe(ManagerConfig.ManagerConfig, Effect.flatMap(managerConfig => pipe(fa, asHttpServer(managerConfig.apiPort, ShardManagerProtocolHttp.schema, (req, reply) => {
   switch (req._tag) {
     case "Register":
       return reply(ShardManagerProtocolHttp.RegisterResult_)(Effect.as(shardManager.register(req.pod), true));
@@ -22,5 +22,5 @@ export const shardManagerHttp = fa => Effect.flatMap(shardManager => Effect.flat
     case "GetAssignments":
       return reply(ShardManagerProtocolHttp.GetAssignmentsResult_)(Effect.map(shardManager.getAssignments, _ => Array.from(_)));
   }
-})(fa))(ManagerConfig.ManagerConfig))(ShardManager.ShardManager);
+}))))));
 //# sourceMappingURL=ShardManagerHttp.mjs.map

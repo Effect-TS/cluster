@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context";
+import { pipe } from "@effect/data/Function";
 import * as HashMap from "@effect/data/HashMap";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
@@ -30,10 +31,10 @@ export const memory = /*#__PURE__*/Layer.effect(Storage, /*#__PURE__*/Effect.gen
   const podsRef = yield* $(Ref.make(HashMap.empty()));
   return {
     getAssignments: SubscriptionRef.get(assignmentsRef),
-    saveAssignments: assignments => SubscriptionRef.set(assignments)(assignmentsRef),
+    saveAssignments: assignments => pipe(assignmentsRef, SubscriptionRef.set(assignments)),
     assignmentsStream: assignmentsRef.changes,
     getPods: Ref.get(podsRef),
-    savePods: pods => Ref.set(pods)(podsRef)
+    savePods: pods => pipe(podsRef, Ref.set(pods))
   };
 }));
 /**

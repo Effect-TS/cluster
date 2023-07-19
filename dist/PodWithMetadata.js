@@ -11,6 +11,7 @@ exports.make = make;
 exports.schema = void 0;
 exports.show = show;
 var Data = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Data"));
+var _Function = /*#__PURE__*/require("@effect/data/Function");
 var List = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/List"));
 var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Option"));
 var Schema = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/Schema"));
@@ -47,7 +48,7 @@ function make(pod, registered) {
  * @category utils
  */
 function extractVersion(pod) {
-  return List.map(_ => parseInt(_, 10))(List.fromIterable(pod.pod.version.split(".")));
+  return (0, _Function.pipe)(List.fromIterable(pod.pod.version.split(".")), List.map(_ => parseInt(_, 10)));
 }
 /**
  * @since 1.0.0
@@ -57,12 +58,12 @@ function compareVersion(a, b) {
   let restA = a;
   let restB = b;
   while (List.size(restA) > 0 || List.size(restB) > 0) {
-    const numA = Option.getOrElse(() => 0)(List.head(restA));
-    const numB = Option.getOrElse(() => 0)(List.head(restB));
+    const numA = (0, _Function.pipe)(List.head(restA), Option.getOrElse(() => 0));
+    const numB = (0, _Function.pipe)(List.head(restB), Option.getOrElse(() => 0));
     if (numA < numB) return -1;
     if (numB > numA) return 1;
-    restA = Option.getOrElse(() => List.empty())(List.tail(restA));
-    restB = Option.getOrElse(() => List.empty())(List.tail(restB));
+    restA = (0, _Function.pipe)(List.tail(restA), Option.getOrElse(() => List.empty()));
+    restB = (0, _Function.pipe)(List.tail(restB), Option.getOrElse(() => List.empty()));
   }
   return 0;
 }
