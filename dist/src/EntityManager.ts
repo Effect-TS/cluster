@@ -219,7 +219,12 @@ export function make<R, Req>(
                         Queue.offer(queue, req)
                       )
                   }),
-                  Effect.catchAllCause(() => send(entityId, req, replyId, replyChannel))
+                  Effect.catchAllCause((e) =>
+                    pipe(
+                      Effect.logCause("Debug", { message: "Send failed with the following cause:" })(e),
+                      Effect.zipRight(send(entityId, req, replyId, replyChannel))
+                    )
+                  )
                 )
               }
             })

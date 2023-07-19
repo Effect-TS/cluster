@@ -71,7 +71,9 @@ function make(recipientType, behavior_, terminateMessage, sharding, config, enti
       return Effect.tap(_ => Option.match({
         onNone: () => Effect.zipRight(send(entityId, req, replyId, replyChannel))(Effect.sleep(Duration.millis(100))),
         onSome: queue => {
-          return Effect.catchAllCause(() => send(entityId, req, replyId, replyChannel))(Option.match({
+          return Effect.catchAllCause(e => Effect.zipRight(send(entityId, req, replyId, replyChannel))(Effect.logCause("Debug", {
+            message: "Send failed with the following cause:"
+          })(e)))(Option.match({
             onNone: () => Effect.zipLeft(Queue.offer(queue, req), replyChannel.end),
             onSome: replyId_ => Effect.zipRight(sharding.initReply(replyId_, replyChannel), Queue.offer(queue, req))
           })(replyId));
