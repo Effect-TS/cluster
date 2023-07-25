@@ -33,5 +33,5 @@ export type Success<A> = A extends StreamMessage<infer X> ? X : never;
  * @since 1.0.0
  * @category schema
  */
-export declare function schema<A>(success: Schema.Schema<any, A>): <I extends object>(item: Schema.Schema<any, I>) => readonly [Schema.Schema<any, I & StreamMessage<A>>, (arg: I) => (replyId: ReplyId.ReplyId) => I & StreamMessage<A>];
+export declare function schema<A>(success: Schema.Schema<any, A>): <I extends object>(item: Schema.Schema<any, I>) => readonly [Schema.Schema<any, Schema.Spread<I & StreamMessage<A>>>, (arg: I) => (replyId: ReplyId.ReplyId) => Schema.Spread<I & StreamMessage<A>>];
 //# sourceMappingURL=StreamMessage.d.ts.map

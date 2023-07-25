@@ -58,7 +58,7 @@ function groupBy(f) {
 }
 /** @internal */
 function jsonStringify(value, schema) {
-  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => (0, _ShardError.EncodeError)(e))(Schema.encode(schema)(value)));
+  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => (0, _ShardError.EncodeError)(TreeFormatter.formatErrors(e.errors)))(Schema.encode(schema)(value)));
 }
 /** @internal */
 function jsonParse(value, schema) {

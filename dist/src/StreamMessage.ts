@@ -57,14 +57,14 @@ export function schema<A>(success: Schema.Schema<any, A>) {
   return function<I extends object>(
     item: Schema.Schema<any, I>
   ): readonly [
-    Schema.Schema<any, I & StreamMessage<A>>,
-    (arg: I) => (replyId: ReplyId.ReplyId) => I & StreamMessage<A>
+    Schema.Schema<any, Schema.Spread<I & StreamMessage<A>>>,
+    (arg: I) => (replyId: ReplyId.ReplyId) => Schema.Spread<I & StreamMessage<A>>
   ] {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: StreamReplier.schema(success) })))
 
     const make = (arg: I) =>
-      (replyId: ReplyId.ReplyId): I & StreamMessage<A> =>
-        Data.struct({ ...arg, replier: StreamReplier.streamReplier(replyId, success) })
+      (replyId: ReplyId.ReplyId): Schema.Spread<I & StreamMessage<A>> =>
+        Data.struct({ ...arg, replier: StreamReplier.streamReplier(replyId, success) }) as any
 
     return [result as any, make] as const
   }

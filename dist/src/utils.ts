@@ -52,7 +52,7 @@ export function jsonStringify<A>(value: A, schema: Schema.Schema<any, A>) {
   return pipe(
     value,
     Schema.encode(schema),
-    Effect.mapError((e) => EncodeError(e)),
+    Effect.mapError((e) => EncodeError(TreeFormatter.formatErrors(e.errors))),
     Effect.map((_) => JSON.stringify(_))
   )
 }

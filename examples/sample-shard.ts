@@ -30,11 +30,11 @@ const program = pipe(
                 case "Increment":
                   return SubscriptionRef.update(count, (a) => a + 1)
                 case "Decrement":
-                  return SubscriptionRef.update(count, (a) => a + 1)
+                  return SubscriptionRef.update(count, (a) => a - 1)
                 case "GetCurrent":
                   return pipe(
                     SubscriptionRef.get(count),
-                    Effect.flatMap((_) => msg._tag === "GetCurrent" ? msg.replier.reply(_) : Effect.unit)
+                    Effect.flatMap((_) => msg.replier.reply(_))
                   )
                 case "SubscribeChanges":
                   return msg.replier.reply(Stream.changes(count.changes))

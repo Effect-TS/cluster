@@ -9,5 +9,5 @@ import { Sharding } from "./Sharding";
  * @since 1.0.0
  * @category layers
  */
-export declare const live: Layer.Layer<Storage.Storage | ShardingConfig.ShardingConfig | ShardManagerClient | Pods | Serialization.Serialization, never, Sharding>;
+export declare const live: Layer.Layer<ShardingConfig.ShardingConfig | ShardManagerClient | Pods | Storage.Storage | Serialization.Serialization, never, Sharding>;
 //# sourceMappingURL=ShardingImpl.d.ts.map
