@@ -135,7 +135,7 @@ export function fromQueue<A>(queue: Queue.Queue<Take.Take<Throwable, A>>): Queue
         Effect.asUnit
       ),
     output: pipe(
-      Stream.fromQueueWithShutdown(queue),
+      Stream.fromQueue(queue, { shutdown: true }),
       Stream.flattenTake,
       Stream.onError(fail)
     )

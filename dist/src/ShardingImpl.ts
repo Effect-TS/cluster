@@ -90,7 +90,7 @@ function make(
   }
 
   const register: Effect.Effect<never, never, void> = pipe(
-    Effect.log(`Registering pod ${PodAddress.show(address)} to Shard Manager`, "Debug"),
+    Effect.logDebug(`Registering pod ${PodAddress.show(address)} to Shard Manager`),
     Effect.zipRight(pipe(isShuttingDownRef, Ref.set(false))),
     Effect.zipRight(shardManager.register(address))
   )
@@ -98,12 +98,10 @@ function make(
   const unregister: Effect.Effect<never, never, void> = pipe(
     shardManager.getAssignments,
     Effect.matchCauseEffect({
-      onFailure: Effect.logCause("Warning", {
-        message: "Shard Manager not available. Can't unregister cleanly"
-      }),
+      onFailure: (_) => Effect.logWarning("Shard Manager not available. Can't unregister cleanly", _),
       onSuccess: () =>
         pipe(
-          Effect.log(`Stopping local entities`, "Debug"),
+          Effect.logDebug(`Stopping local entities`),
           Effect.zipRight(pipe(isShuttingDownRef, Ref.set(true))),
           Effect.zipRight(
             pipe(
@@ -114,7 +112,7 @@ function make(
                     pipe(
                       entityState.entityManager.terminateAllEntities,
                       Effect.catchAllCause(
-                        Effect.logCause("Error", { message: "Error during stop of entity " + name })
+                        (_) => Effect.logError("Error during stop of entity " + name, _)
                       )
                     ),
                   { discard: true }
@@ -123,7 +121,7 @@ function make(
             )
           ),
           Effect.zipRight(
-            Effect.log(`Unregistering pod ${PodAddress.show(address)} to Shard Manager`, "Debug")
+            Effect.logDebug(`Unregistering pod ${PodAddress.show(address)} to Shard Manager`)
           ),
           Effect.zipRight(shardManager.unregister(address))
         )
@@ -151,7 +149,7 @@ function make(
               {
                 onNone: () =>
                   pipe(
-                    Effect.log("Starting singleton " + name, "Debug"),
+                    Effect.logDebug("Starting singleton " + name),
                     Effect.zipRight(
                       Effect.map(Effect.forkDaemon(run), (fiber) => [name, run, Option.some(fiber)] as SingletonEntry)
                     )
@@ -178,7 +176,7 @@ function make(
                 onNone: () => Effect.succeed([name, run, fa] as SingletonEntry),
                 onSome: (fiber) =>
                   pipe(
-                    Effect.log("Stopping singleton " + name, "Debug"),
+                    Effect.logDebug("Stopping singleton " + name),
                     Effect.zipRight(
                       Effect.as(Fiber.interrupt(fiber), [name, run, Option.none()] as SingletonEntry)
                     )
@@ -206,7 +204,7 @@ function make(
     return pipe(
       Ref.update(shardAssignments, (_) => HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address))),
       Effect.zipRight(startSingletonsIfNeeded),
-      Effect.zipLeft(Effect.log("Assigned shards: " + showHashSet(ShardId.show)(shards), "Debug")),
+      Effect.zipLeft(Effect.logDebug("Assigned shards: " + showHashSet(ShardId.show)(shards))),
       Effect.unlessEffect(isShuttingDown),
       Effect.asUnit
     )
@@ -223,7 +221,7 @@ function make(
           return _
         })),
       Effect.zipRight(stopSingletonsIfNeeded),
-      Effect.zipLeft(Effect.log("Unassigning shards: " + showHashSet(ShardId.show)(shards), "Debug"))
+      Effect.zipLeft(Effect.logDebug("Unassigning shards: " + showHashSet(ShardId.show)(shards)))
     )
   }
 
@@ -326,8 +324,8 @@ function make(
           })
         )
       }),
-      Stream.fromEffect,
-      Stream.flatten
+      (_) => Stream.fromEffect(_),
+      Stream.flatten()
     )
   }
 

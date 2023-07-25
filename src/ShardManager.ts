@@ -79,7 +79,7 @@ function make(
 
   function register(pod: Pod.Pod) {
     return pipe(
-      Effect.log("Registering " + PodAddress.show(pod.address) + "@" + pod.version, "Info"),
+      Effect.logInfo("Registering " + PodAddress.show(pod.address) + "@" + pod.version),
       Effect.zipRight(
         RefSynchronized.updateAndGetEffect(stateRef, (state) =>
           pipe(
@@ -114,7 +114,7 @@ function make(
           Effect.zipRight(
             Effect.unlessEffect(
               Effect.zipRight(
-                Effect.log(`${podAddress} is not alive, unregistering`, "Warning"),
+                Effect.logWarning(`${podAddress} is not alive, unregistering`),
                 unregister(podAddress)
               ),
               healthApi.isAlive(podAddress)
@@ -136,7 +136,7 @@ function make(
   function unregister(podAddress: PodAddress.PodAddress) {
     const eff = pipe(
       Effect.Do,
-      Effect.zipLeft(Effect.log(`Unregistering ${podAddress}`, "Info")),
+      Effect.zipLeft(Effect.logInfo(`Unregistering ${podAddress}`)),
       Effect.bind("unassignments", (_) =>
         pipe(
           stateRef,
@@ -227,9 +227,8 @@ function make(
       ),
       Effect.tap((_) =>
         Effect.when(
-          Effect.log(
-            "Rebalance (rebalanceImmidiately=" + JSON.stringify(rebalanceImmediately) + ")",
-            "Debug"
+          Effect.logDebug(
+            "Rebalance (rebalanceImmidiately=" + JSON.stringify(rebalanceImmediately) + ")"
           ),
           () => _.areChanges
         )
@@ -350,13 +349,12 @@ function make(
       Effect.tap((_) => Effect.forkDaemon(Effect.forEach(_.failedPods, notifyUnhealthyPod, { discard: true }))),
       Effect.tap((_) =>
         Effect.when(
-          Effect.log(
+          Effect.logDebug(
             "Failed to rebalance pods: " +
               showHashSet(PodAddress.show)(_.failedPods) +
               " failed pinged: " + showHashSet(PodAddress.show)(_.failedPingedPods) +
               " failed assigned: " + showHashSet(PodAddress.show)(_.failedAssignedPods) +
-              " failed unassigned: " + showHashSet(PodAddress.show)(_.failedUnassignedPods),
-            "Debug"
+              " failed unassigned: " + showHashSet(PodAddress.show)(_.failedUnassignedPods)
           ),
           () => HashSet.size(_.failedPods) > 0
         )
@@ -625,12 +623,12 @@ const live1 = pipe(
   Effect.tap((_) =>
     pipe(
       _.shardManager.getShardingEvents,
-      Stream.mapEffect((_) => Effect.log(JSON.stringify(_), "Info")),
+      Stream.mapEffect((_) => Effect.logInfo(JSON.stringify(_))),
       Stream.runDrain,
       Effect.forkDaemon
     )
   ),
-  Effect.tap((_) => Effect.log("Shard Manager loaded", "Info")),
+  Effect.tap((_) => Effect.logInfo("Shard Manager loaded")),
   Effect.map((_) => _.shardManager)
 )
 

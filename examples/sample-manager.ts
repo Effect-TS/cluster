@@ -1,5 +1,4 @@
 import { pipe } from "@effect/data/Function"
-import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import * as Logger from "@effect/io/Logger"
 import * as ManagerConfig from "@effect/shardcake/ManagerConfig"
@@ -19,7 +18,7 @@ const program = pipe(
   Effect.provideSomeLayer(PodsHealth.local),
   Effect.provideSomeLayer(PodsHttp.httpPods),
   Effect.provideService(ManagerConfig.ManagerConfig, ManagerConfig.defaults),
-  Effect.catchAllCause((_) => Effect.log(Cause.pretty(_))),
+  Effect.catchAllCause(Effect.logError),
   Logger.withMinimumLogLevel(LogLevel.All)
 )
 

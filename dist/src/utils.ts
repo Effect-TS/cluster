@@ -90,7 +90,7 @@ export function sendInternal<A>(send: Schema.Schema<any, A>) {
 
 /** @internal */
 export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
-  return (url: string, data: A) =>
+  return (url: string, data: A): Effect.Effect<never, E, R> =>
     pipe(
       sendInternal(send)(url, data),
       Effect.flatMap((response) => Effect.promise(() => response.text())),
@@ -102,7 +102,7 @@ export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<
 
 /** @internal */
 export function sendStream<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
-  return (url: string, data: A) =>
+  return (url: string, data: A): Stream.Stream<never, E | DecodeError | EncodeError | FetchError, R> =>
     pipe(
       sendInternal(send)(url, data),
       Effect.map((response) =>
@@ -117,7 +117,7 @@ export function sendStream<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.S
         )
       ),
       Stream.fromEffect,
-      Stream.flatten
+      Stream.flatten()
     )
 }
 

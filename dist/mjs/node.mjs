@@ -10,7 +10,7 @@ import * as http from "http";
 import { jsonParse, jsonStringify } from "./utils";
 /** @internal */
 export function asHttpServer(port, RequestSchema, handler) {
-  return fa => Effect.acquireUseRelease(Effect.tap(() => Effect.log("Starting HTTP server on port " + port, "Info"))(Effect.tap(http => Effect.sync(() => http.listen(port)))(Effect.sync(() => http.createServer((request, response) => {
+  return fa => Effect.acquireUseRelease(Effect.tap(() => Effect.logInfo("Starting HTTP server on port " + port))(Effect.tap(http => Effect.sync(() => http.listen(port)))(Effect.sync(() => http.createServer((request, response) => {
     const writeResponse = data => Effect.sync(() => response.write(data));
     const writeEventData = data => writeResponse("data: " + data + "\n\n");
     let body = "";

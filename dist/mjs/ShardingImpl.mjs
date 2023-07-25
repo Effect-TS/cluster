@@ -41,38 +41,34 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
   function getShardId(recipientType, entityId) {
     return RecipientType.getShardId(entityId, config.numberOfShards);
   }
-  const register = Effect.zipRight(shardManager.register(address))(Effect.zipRight(Ref.set(false)(isShuttingDownRef))(Effect.log(`Registering pod ${PodAddress.show(address)} to Shard Manager`, "Debug")));
+  const register = Effect.zipRight(shardManager.register(address))(Effect.zipRight(Ref.set(false)(isShuttingDownRef))(Effect.logDebug(`Registering pod ${PodAddress.show(address)} to Shard Manager`)));
   const unregister = Effect.matchCauseEffect({
-    onFailure: Effect.logCause("Warning", {
-      message: "Shard Manager not available. Can't unregister cleanly"
-    }),
-    onSuccess: () => Effect.zipRight(shardManager.unregister(address))(Effect.zipRight(Effect.log(`Unregistering pod ${PodAddress.show(address)} to Shard Manager`, "Debug"))(Effect.zipRight(Effect.flatMap(Effect.forEach(([name, entityState]) => Effect.catchAllCause(Effect.logCause("Error", {
-      message: "Error during stop of entity " + name
-    }))(entityState.entityManager.terminateAllEntities), {
+    onFailure: _ => Effect.logWarning("Shard Manager not available. Can't unregister cleanly", _),
+    onSuccess: () => Effect.zipRight(shardManager.unregister(address))(Effect.zipRight(Effect.logDebug(`Unregistering pod ${PodAddress.show(address)} to Shard Manager`))(Effect.zipRight(Effect.flatMap(Effect.forEach(([name, entityState]) => Effect.catchAllCause(_ => Effect.logError("Error during stop of entity " + name, _))(entityState.entityManager.terminateAllEntities), {
       discard: true
-    }))(Ref.get(entityStates)))(Effect.zipRight(Ref.set(true)(isShuttingDownRef))(Effect.log(`Stopping local entities`, "Debug")))))
+    }))(Ref.get(entityStates)))(Effect.zipRight(Ref.set(true)(isShuttingDownRef))(Effect.logDebug(`Stopping local entities`)))))
   })(shardManager.getAssignments);
   const isSingletonNode = Effect.map(_ => Option.match({
     onNone: () => false,
     onSome: equals(address)
   })(HashMap.get(_, ShardId.make(1))))(Ref.get(shardAssignments));
   const startSingletonsIfNeeded = Effect.asUnit(Effect.whenEffect(isSingletonNode)(Synchronized.updateEffect(singletons, singletons => Effect.map(List.fromIterable)(Effect.forEach(singletons, ([name, run, fa]) => Option.match(fa, {
-    onNone: () => Effect.zipRight(Effect.map(Effect.forkDaemon(run), fiber => [name, run, Option.some(fiber)]))(Effect.log("Starting singleton " + name, "Debug")),
+    onNone: () => Effect.zipRight(Effect.map(Effect.forkDaemon(run), fiber => [name, run, Option.some(fiber)]))(Effect.logDebug("Starting singleton " + name)),
     onSome: _ => Effect.succeed([name, run, fa])
   }))))));
   const stopSingletonsIfNeeded = Effect.asUnit(Effect.unlessEffect(isSingletonNode)(Synchronized.updateEffect(singletons, singletons => Effect.map(List.fromIterable)(Effect.forEach(singletons, ([name, run, fa]) => Option.match(fa, {
     onNone: () => Effect.succeed([name, run, fa]),
-    onSome: fiber => Effect.zipRight(Effect.as(Fiber.interrupt(fiber), [name, run, Option.none()]))(Effect.log("Stopping singleton " + name, "Debug"))
+    onSome: fiber => Effect.zipRight(Effect.as(Fiber.interrupt(fiber), [name, run, Option.none()]))(Effect.logDebug("Stopping singleton " + name))
   }))))));
   function registerSingleton(name, run) {
     return Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))(Effect.zipRight(startSingletonsIfNeeded)(Synchronized.update(singletons, list => List.prepend(list, [name, run, Option.none()]))));
   }
   const isShuttingDown = Ref.get(isShuttingDownRef);
   function assign(shards) {
-    return Effect.asUnit(Effect.unlessEffect(isShuttingDown)(Effect.zipLeft(Effect.log("Assigned shards: " + showHashSet(ShardId.show)(shards), "Debug"))(Effect.zipRight(startSingletonsIfNeeded)(Ref.update(shardAssignments, _ => HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address)))))));
+    return Effect.asUnit(Effect.unlessEffect(isShuttingDown)(Effect.zipLeft(Effect.logDebug("Assigned shards: " + showHashSet(ShardId.show)(shards)))(Effect.zipRight(startSingletonsIfNeeded)(Ref.update(shardAssignments, _ => HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address)))))));
   }
   function unassign(shards) {
-    return Effect.zipLeft(Effect.log("Unassigning shards: " + showHashSet(ShardId.show)(shards), "Debug"))(Effect.zipRight(stopSingletonsIfNeeded)(Ref.update(shardAssignments, _ => HashSet.reduce(shards, _, (_, shardId) => {
+    return Effect.zipLeft(Effect.logDebug("Unassigning shards: " + showHashSet(ShardId.show)(shards)))(Effect.zipRight(stopSingletonsIfNeeded)(Ref.update(shardAssignments, _ => HashSet.reduce(shards, _, (_, shardId) => {
       const value = HashMap.get(_, shardId);
       if (Option.isSome(value) && equals(value.value, address)) {
         return HashMap.remove(_, shardId);
@@ -116,7 +112,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
     });
   }
   function sendToLocalEntityStreamingReply(msg) {
-    return Stream.flatten(Stream.fromEffect(Effect.gen(function* (_) {
+    return Stream.flatten()((_ => Stream.fromEffect(_))(Effect.gen(function* (_) {
       const replyChannel = yield* _(ReplyChannel.stream());
       const schema = yield* _(sendToLocalEntity(msg, replyChannel));
       return Stream.mapEffect(value => {

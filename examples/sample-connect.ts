@@ -20,9 +20,9 @@ const program = pipe(
   Effect.tap((_) =>
     pipe(
       _.changes,
-      Stream.mapEffect((_) => Effect.log("SubscribeChanges: " + _, "Info")),
+      Stream.mapEffect((_) => Effect.logInfo("SubscribeChanges: " + _)),
       Stream.runDrain,
-      Effect.catchAllCause(Effect.logCause("Info")),
+      Effect.catchAllCause(Effect.logInfo),
       Logger.withMinimumLogLevel(LogLevel.All),
       Effect.forkDaemon
     )
@@ -39,7 +39,7 @@ const program = pipe(
   Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),
   Effect.provideSomeLayer(ShardingConfig.withDefaults({ shardingPort: 54322 })),
   Effect.provideSomeLayer(Serialization.json),
-  Effect.catchAllCause(Effect.logCause("Error")),
+  Effect.catchAllCause(Effect.logError),
   Logger.withMinimumLogLevel(LogLevel.All)
 )
 

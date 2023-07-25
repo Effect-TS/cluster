@@ -100,7 +100,7 @@ export function asHttpServer<A2, A>(
           })
         ),
         Effect.tap((http) => Effect.sync(() => http.listen(port))),
-        Effect.tap(() => Effect.log("Starting HTTP server on port " + port, "Info"))
+        Effect.tap(() => Effect.logInfo("Starting HTTP server on port " + port))
       ),
       () => fa,
       (http) => Effect.sync(() => http.close())

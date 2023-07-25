@@ -16,7 +16,7 @@ Added in v1.0.0
   - [ShardingConfig](#shardingconfig)
 - [layers](#layers)
   - [defaults](#defaults)
-  - [defaultsWithShardingPort](#defaultswithshardingport)
+  - [withDefaults](#withdefaults)
 - [models](#models)
   - [ShardingConfig (interface)](#shardingconfig-interface)
 - [symbols](#symbols)
@@ -49,12 +49,12 @@ export declare const defaults: Layer.Layer<never, never, ShardingConfig>
 
 Added in v1.0.0
 
-## defaultsWithShardingPort
+## withDefaults
 
 **Signature**
 
 ```ts
-export declare function defaultsWithShardingPort(shardingPort: number)
+export declare function withDefaults(customs: Partial<ShardingConfig>)
 ```
 
 Added in v1.0.0

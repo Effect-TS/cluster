@@ -162,7 +162,7 @@ export function make<R, Req>(
                           Effect.zipRight(Fiber.interrupt(expirationFiber))
                         )
                       ),
-                      Effect.logCause("Error", { message: "Behavior error" })
+                      Effect.logError
                     )
                   )
                 )
@@ -220,7 +220,7 @@ export function make<R, Req>(
                   }),
                   Effect.catchAllCause((e) =>
                     pipe(
-                      Effect.logCause("Debug", { message: "Send failed with the following cause:" })(e),
+                      Effect.logDebug("Send failed with the following cause:", e),
                       Effect.zipRight(send(entityId, req, replyId, replyChannel))
                     )
                   )

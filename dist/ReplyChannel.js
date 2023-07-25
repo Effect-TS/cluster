@@ -61,7 +61,9 @@ function fromQueue(queue) {
       onFailure: e => Take.failCause(e),
       onSuccess: () => Take.end
     })))(Stream.runForEach(stream, a => Queue.offer(queue, Take.of(a))))))),
-    output: Stream.onError(fail)(Stream.flattenTake(Stream.fromQueueWithShutdown(queue)))
+    output: Stream.onError(fail)(Stream.flattenTake(Stream.fromQueue(queue, {
+      shutdown: true
+    })))
   };
 }
 /**

@@ -48,13 +48,13 @@ function make(stateRef, rebalanceSemaphore, eventsHub, healthApi, podApi, stateR
   const getAssignments = Effect.map(_ => _.shards)(RefSynchronized.get(stateRef));
   const getShardingEvents = Stream.fromHub(eventsHub);
   function register(pod) {
-    return Effect.asUnit(Effect.zipRight(Effect.forkDaemon(persistPods))(Effect.flatMap(state => Effect.when(rebalance(false), () => HashSet.size(state.unassignedShards) > 0))(Effect.zipLeft(Hub.publish(eventsHub, ShardingEvent.PodRegistered(pod.address)))(Effect.zipRight(RefSynchronized.updateAndGetEffect(stateRef, state => Effect.map(cdt => ShardManagerState.make(HashMap.set(state.pods, pod.address, PodWithMetadata.make(pod, cdt)), state.shards))(Effect.flatMap(Effect.clock, _ => _.currentTimeMillis))))(Effect.log("Registering " + PodAddress.show(pod.address) + "@" + pod.version, "Info"))))));
+    return Effect.asUnit(Effect.zipRight(Effect.forkDaemon(persistPods))(Effect.flatMap(state => Effect.when(rebalance(false), () => HashSet.size(state.unassignedShards) > 0))(Effect.zipLeft(Hub.publish(eventsHub, ShardingEvent.PodRegistered(pod.address)))(Effect.zipRight(RefSynchronized.updateAndGetEffect(stateRef, state => Effect.map(cdt => ShardManagerState.make(HashMap.set(state.pods, pod.address, PodWithMetadata.make(pod, cdt)), state.shards))(Effect.flatMap(Effect.clock, _ => _.currentTimeMillis))))(Effect.logInfo("Registering " + PodAddress.show(pod.address) + "@" + pod.version))))));
   }
   function stateHasPod(podAddress) {
     return Effect.map(_ => HashMap.has(_.pods, podAddress))(RefSynchronized.get(stateRef));
   }
   function notifyUnhealthyPod(podAddress) {
-    return Effect.asUnit(Effect.whenEffect(Effect.zipRight(Effect.unlessEffect(Effect.zipRight(Effect.log(`${podAddress} is not alive, unregistering`, "Warning"), unregister(podAddress)), healthApi.isAlive(podAddress)))(Hub.publish(eventsHub, ShardingEvent.PodHealthChecked(podAddress))), stateHasPod(podAddress)));
+    return Effect.asUnit(Effect.whenEffect(Effect.zipRight(Effect.unlessEffect(Effect.zipRight(Effect.logWarning(`${podAddress} is not alive, unregistering`), unregister(podAddress)), healthApi.isAlive(podAddress)))(Hub.publish(eventsHub, ShardingEvent.PodHealthChecked(podAddress))), stateHasPod(podAddress)));
   }
   const checkAllPodsHealth = Effect.flatMap(_ => Effect.forEach(_, notifyUnhealthyPod, {
     concurrency: 4,
@@ -65,7 +65,7 @@ function make(stateRef, rebalanceSemaphore, eventsHub, healthApi, podApi, stateR
       ...state,
       pods: HashMap.remove(state.pods, podAddress),
       shards: HashMap.map(state.shards, _ => (0, _Equal.equals)(_)(Option.some(podAddress)) ? Option.none() : _)
-    }])(stateRef))(Effect.zipLeft(Effect.log(`Unregistering ${podAddress}`, "Info"))(Effect.Do))))));
+    }])(stateRef))(Effect.zipLeft(Effect.logInfo(`Unregistering ${podAddress}`))(Effect.Do))))));
     return Effect.asUnit(Effect.whenEffect(eff, stateHasPod(podAddress)));
   }
   function withRetry(zio) {
@@ -97,14 +97,14 @@ function make(stateRef, rebalanceSemaphore, eventsHub, healthApi, podApi, stateR
       onSome: () => Effect.succeed(2)
     }))(Effect.timeout(config.pingTimeout)(podApi.ping(pod)))), {
       concurrency: "inherit"
-    })))))(Effect.tap(_ => Effect.when(Effect.log("Rebalance (rebalanceImmidiately=" + JSON.stringify(rebalanceImmediately) + ")", "Debug"), () => _.areChanges))(Effect.let("areChanges", _ => HashMap.size(_.assignments) > 0 || HashMap.size(_.unassignments) > 0)(Effect.let("unassignments", _ => _._1[1])(Effect.let("assignments", _ => _._1[0])(Effect.let("_1", ({
+    })))))(Effect.tap(_ => Effect.when(Effect.logDebug("Rebalance (rebalanceImmidiately=" + JSON.stringify(rebalanceImmediately) + ")"), () => _.areChanges))(Effect.let("areChanges", _ => HashMap.size(_.assignments) > 0 || HashMap.size(_.unassignments) > 0)(Effect.let("unassignments", _ => _._1[1])(Effect.let("assignments", _ => _._1[0])(Effect.let("_1", ({
       state
     }) => rebalanceImmediately || HashSet.size(state.unassignedShards) > 0 ? decideAssignmentsForUnassignedShards(state) : decideAssignmentsForUnbalancedShards(state, config.rebalanceRate))(Effect.bind("state", () => RefSynchronized.get(stateRef))(Effect.Do))))))));
     const algo2 =
     // persist state changes to Redis
     Effect.tap(_ => Effect.when(() => _.areChanges)(Effect.forkDaemon(persistAssignments)))(
     // retry rebalancing later if there was any failure
-    Effect.tap(_ => Effect.when(() => HashSet.size(_.failedPods) > 0 && rebalanceImmediately)(Effect.forkDaemon(Effect.zipRight(rebalance(rebalanceImmediately))(Effect.sleep(config.rebalanceRetryInterval)))))(Effect.tap(_ => Effect.when(Effect.log("Failed to rebalance pods: " + (0, _utils.showHashSet)(PodAddress.show)(_.failedPods) + " failed pinged: " + (0, _utils.showHashSet)(PodAddress.show)(_.failedPingedPods) + " failed assigned: " + (0, _utils.showHashSet)(PodAddress.show)(_.failedAssignedPods) + " failed unassigned: " + (0, _utils.showHashSet)(PodAddress.show)(_.failedUnassignedPods), "Debug"), () => HashSet.size(_.failedPods) > 0))(
+    Effect.tap(_ => Effect.when(() => HashSet.size(_.failedPods) > 0 && rebalanceImmediately)(Effect.forkDaemon(Effect.zipRight(rebalance(rebalanceImmediately))(Effect.sleep(config.rebalanceRetryInterval)))))(Effect.tap(_ => Effect.when(Effect.logDebug("Failed to rebalance pods: " + (0, _utils.showHashSet)(PodAddress.show)(_.failedPods) + " failed pinged: " + (0, _utils.showHashSet)(PodAddress.show)(_.failedPingedPods) + " failed assigned: " + (0, _utils.showHashSet)(PodAddress.show)(_.failedAssignedPods) + " failed unassigned: " + (0, _utils.showHashSet)(PodAddress.show)(_.failedUnassignedPods)), () => HashSet.size(_.failedPods) > 0))(
     // check if failing pods are still up
     Effect.tap(_ => Effect.forkDaemon(Effect.forEach(_.failedPods, notifyUnhealthyPod, {
       discard: true
@@ -225,7 +225,7 @@ const live0 = /*#__PURE__*/Effect.let("initialState", _ => ShardManagerState.mak
 Effect.bind("filteredPods", _ => Effect.map(HashMap.fromIterable)(Effect.filter(_.pods, ([podAddress]) => _.healthApi.isAlive(podAddress), {
   concurrency: "inherit"
 })))( /*#__PURE__*/Effect.bind("assignments", _ => _.stateRepository.getAssignments)( /*#__PURE__*/Effect.bind("pods", _ => _.stateRepository.getPods)( /*#__PURE__*/Effect.bind("podApi", _ => Pods.Pods)( /*#__PURE__*/Effect.bind("healthApi", _ => PodsHealth.PodsHealth)( /*#__PURE__*/Effect.bind("stateRepository", _ => Storage.Storage)( /*#__PURE__*/Effect.bind("config", _ => ManagerConfig.ManagerConfig)(Effect.Do))))))))));
-const live1 = /*#__PURE__*/Effect.map(_ => _.shardManager)( /*#__PURE__*/Effect.tap(_ => Effect.log("Shard Manager loaded", "Info"))( /*#__PURE__*/Effect.tap(_ => Effect.forkDaemon(Stream.runDrain(Stream.mapEffect(_ => Effect.log(JSON.stringify(_), "Info"))(_.shardManager.getShardingEvents))))( /*#__PURE__*/
+const live1 = /*#__PURE__*/Effect.map(_ => _.shardManager)( /*#__PURE__*/Effect.tap(_ => Effect.logInfo("Shard Manager loaded"))( /*#__PURE__*/Effect.tap(_ => Effect.forkDaemon(Stream.runDrain(Stream.mapEffect(_ => Effect.logInfo(JSON.stringify(_)))(_.shardManager.getShardingEvents))))( /*#__PURE__*/
 // start a regular rebalance at the given interval
 Effect.tap(_ => Effect.forkDaemon(Effect.repeat(Schedule.spaced(_.config.rebalanceInterval))(_.shardManager.rebalance(false))))( /*#__PURE__*/
 // rebalance immediately if there are unassigned shards

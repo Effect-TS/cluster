@@ -57,7 +57,7 @@ const program = pipe(
   Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),
   Effect.provideSomeLayer(ShardingConfig.defaults),
   Effect.provideSomeLayer(Serialization.json),
-  Effect.catchAllCause(Effect.logCause("Error")),
+  Effect.catchAllCause(Effect.logError),
   Logger.withMinimumLogLevel(LogLevel.All)
 )
 

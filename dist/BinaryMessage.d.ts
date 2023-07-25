@@ -37,32 +37,32 @@ export declare function make(entityId: string, entityType: string, body: ByteArr
  */
 export declare const schema: Schema.Schema<{
     readonly _id: "@effect/shardcake/BinaryMessage";
-    readonly entityId: string;
     readonly entityType: string;
+    readonly entityId: string;
     readonly body: {
-        readonly _id: "@effect/shardcake/ByteArray";
         readonly value: string;
+        readonly _id: "@effect/shardcake/ByteArray";
     };
     readonly replyId: {
         readonly _tag: "None";
     } | {
         readonly _tag: "Some";
         readonly value: {
-            readonly _id: "@effect/shardcake/ReplyId";
             readonly value: string;
+            readonly _id: "@effect/shardcake/ReplyId";
         };
     };
 }, Data.Data<{
     readonly _id: "@effect/shardcake/BinaryMessage";
-    readonly entityId: string;
     readonly entityType: string;
+    readonly entityId: string;
     readonly body: Data.Data<{
-        readonly _id: "@effect/shardcake/ByteArray";
         readonly value: string;
+        readonly _id: "@effect/shardcake/ByteArray";
     }>;
     readonly replyId: Option.Option<Data.Data<{
-        readonly _id: "@effect/shardcake/ReplyId";
         readonly value: string;
+        readonly _id: "@effect/shardcake/ReplyId";
     }>>;
 }>>;
 //# sourceMappingURL=BinaryMessage.d.ts.map
