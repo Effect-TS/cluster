@@ -127,55 +127,62 @@ export function make<R, Req>(
         >,
         entityId: string
       ) {
-        const test = HashMap.get(map, entityId)
-        if (Option.isSome(test) && Option.isSome(test.value[0])) {
-          const [queue, interruptionFiber] = test.value
-          // queue exists, delay the interruption fiber and return the queue
-          return pipe(
-            Fiber.interrupt(interruptionFiber),
-            Effect.zipRight(startExpirationFiber(entityId)),
-            Effect.map(
-              (fiber) => [queue, HashMap.set(map, entityId, [queue, fiber] as const)] as const
-            )
-          )
-        } else if (Option.isSome(test) && Option.isNone(test.value[0])) {
-          // the queue is shutting down, stash and retry
-          return Effect.succeed([Option.none(), map] as const)
-        } else {
-          return Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
-            if (isGoingDown) {
-              // don't start any fiber while sharding is shutting down
-              return Effect.fail(ShardError.EntityNotManagedByThisPod(entityId))
-            } else {
-              // queue doesn't exist, create a new one
-              return Effect.gen(function*(_) {
-                const queue = yield* _(Queue.unbounded<Req>())
-                const expirationFiber = yield* _(startExpirationFiber(entityId))
-                yield* _(
-                  Effect.forkDaemon(
-                    Effect.catchAllCause(
-                      Effect.ensuring(
-                        behavior(entityId, queue),
-                        pipe(
-                          RefSynchronized.update(entities, HashMap.remove(entityId)),
-                          Effect.zipRight(Queue.shutdown(queue)),
-                          Effect.zipRight(Fiber.interrupt(expirationFiber))
+        return pipe(
+          HashMap.get(map, entityId),
+          Option.match({
+            onNone: () =>
+              Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
+                if (isGoingDown) {
+                  // don't start any fiber while sharding is shutting down
+                  return Effect.fail(ShardError.EntityNotManagedByThisPod(entityId))
+                } else {
+                  // queue doesn't exist, create a new one
+                  return Effect.gen(function*(_) {
+                    const queue = yield* _(Queue.unbounded<Req>())
+                    const expirationFiber = yield* _(startExpirationFiber(entityId))
+                    yield* _(
+                      Effect.forkDaemon(
+                        Effect.catchAllCause(
+                          Effect.ensuring(
+                            behavior(entityId, queue),
+                            pipe(
+                              RefSynchronized.update(entities, HashMap.remove(entityId)),
+                              Effect.zipRight(Queue.shutdown(queue)),
+                              Effect.zipRight(Fiber.interrupt(expirationFiber))
+                            )
+                          ),
+                          Effect.logError
                         )
-                      ),
-                      Effect.logError
+                      )
                     )
-                  )
-                )
 
-                const someQueue = Option.some(queue)
-                return [
-                  someQueue,
-                  HashMap.set(map, entityId, [someQueue, expirationFiber] as const)
-                ] as const
-              })
-            }
+                    const someQueue = Option.some(queue)
+                    return [
+                      someQueue,
+                      HashMap.set(map, entityId, [someQueue, expirationFiber] as const)
+                    ] as const
+                  })
+                }
+              }),
+            onSome: ([maybeQueue, interruptionFiber]) =>
+              pipe(
+                maybeQueue,
+                Option.match({
+                  // queue exists, delay the interruption fiber and return the queue
+                  onSome: () =>
+                    pipe(
+                      Fiber.interrupt(interruptionFiber),
+                      Effect.zipRight(startExpirationFiber(entityId)),
+                      Effect.map(
+                        (fiber) => [maybeQueue, HashMap.set(map, entityId, [maybeQueue, fiber] as const)] as const
+                      )
+                    ),
+                  // the queue is shutting down, stash and retry
+                  onNone: () => Effect.succeed([Option.none(), map] as const)
+                })
+              )
           })
-        }
+        )
       }
 
       return pipe(
