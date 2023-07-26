@@ -27,5 +27,5 @@ export interface EntityManager<Req> {
  * @since 1.0.0
  * @category constructors
  */
-export declare function make<R, Req>(recipientType: RecipientType.RecipientType<Req>, behavior_: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>, terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req>, sharding: Sharding.Sharding, config: ShardingConfig.ShardingConfig, entityMaxIdle: Option.Option<Duration.Duration>): Effect.Effect<R, never, EntityManager<Req>>;
+export declare function make<R, Req>(recipientType: RecipientType.RecipientType<Req>, behavior_: (entityId: string, dequeue: Queue.Dequeue<Req>, terminatedSignal: Deferred.Deferred<never, boolean>) => Effect.Effect<R, never, void>, terminateMessage: () => Option.Option<Req>, sharding: Sharding.Sharding, config: ShardingConfig.ShardingConfig, entityMaxIdle: Option.Option<Duration.Duration>): Effect.Effect<R, never, EntityManager<Req>>;
 //# sourceMappingURL=EntityManager.d.ts.map

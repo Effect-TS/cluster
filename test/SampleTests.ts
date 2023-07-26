@@ -235,12 +235,11 @@ describe.concurrent("SampleTests", () => {
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
   })
 
-  it("Ensure graceful shutdown is completed if shard is terminated", () => {
+  it("Queue is interrupted if shard is terminated", () => {
     let shutdownCompleted = false
 
     return Effect.gen(function*(_) {
-      const shutdownReceived = yield* _(Deferred.make<never, boolean>())
-      const shutdownEnded = yield* _(Deferred.make<never, boolean>())
+      const entityStarted = yield* _(Deferred.make<never, boolean>())
 
       const SampleMessage = Schema.union(
         Schema.struct({
@@ -260,18 +259,64 @@ describe.concurrent("SampleTests", () => {
             Effect.flatMap((msg) => {
               switch (msg._tag) {
                 case "Awake":
-                  return Deferred.succeed(shutdownReceived, true)
+                  return Deferred.succeed(entityStarted, true)
+                case "Shutdown":
+                  return Effect.unit
+              }
+            }),
+            Effect.forever,
+            Effect.onInterrupt(() => {
+              shutdownCompleted = true
+              return Effect.unit
+            })
+          ),
+        () => Option.some({ _tag: "Shutdown" } as const),
+        Option.some(Duration.minutes(10))
+      ))
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
+      yield* _(Deferred.await(entityStarted))
+      yield* _(Sharding.registerScoped)
+    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
+      assertTrue(shutdownCompleted)
+    )
+  })
+
+  it("Ensure graceful shutdown is completed if shard is terminated", () => {
+    let shutdownCompleted = false
+
+    return Effect.gen(function*(_) {
+      const entityStarted = yield* _(Deferred.make<never, boolean>())
+
+      const SampleMessage = Schema.union(
+        Schema.struct({
+          _tag: Schema.literal("Awake")
+        }),
+        Schema.struct({
+          _tag: Schema.literal("Shutdown")
+        })
+      )
+      const SampleEntity = RecipientType.makeEntityType("Sample", SampleMessage)
+
+      yield* _(Sharding.registerEntity(
+        SampleEntity,
+        (entityId, queue, terminatedSignal) =>
+          pipe(
+            Queue.take(queue),
+            Effect.flatMap((msg) => {
+              switch (msg._tag) {
+                case "Awake":
+                  return Deferred.succeed(entityStarted, true)
                 case "Shutdown":
                   return pipe(
-                    Deferred.succeed(shutdownReceived, true),
-                    Effect.flatMap(() => Effect.sleep(Duration.seconds(3))),
-                    Effect.flatMap(() =>
+                    Effect.sleep(Duration.seconds(3)),
+                    Effect.zipRight(
                       Effect.sync(() => {
                         shutdownCompleted = true
                       })
                     ),
-                    Effect.flatMap(() => Deferred.succeed(shutdownEnded, true)),
-                    Effect.uninterruptible
+                    Effect.zipRight(Deferred.succeed(terminatedSignal, true))
                   )
               }
             }),
@@ -283,7 +328,8 @@ describe.concurrent("SampleTests", () => {
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
-      yield* _(Deferred.await(shutdownReceived))
+      yield* _(Deferred.await(entityStarted))
+      yield* _(Sharding.registerScoped)
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
       assertTrue(shutdownCompleted)
     )
@@ -294,7 +340,6 @@ describe.concurrent("SampleTests", () => {
 
     return Effect.gen(function*(_) {
       const shutdownReceived = yield* _(Deferred.make<never, boolean>())
-      const shutdownEnded = yield* _(Deferred.make<never, boolean>())
 
       const SampleMessage = Schema.union(
         Schema.struct({
@@ -308,7 +353,7 @@ describe.concurrent("SampleTests", () => {
 
       yield* _(Sharding.registerEntity(
         SampleEntity,
-        (entityId, queue) =>
+        (entityId, queue, terminatedSignal) =>
           pipe(
             Queue.take(queue),
             Effect.flatMap((msg) => {
@@ -318,14 +363,11 @@ describe.concurrent("SampleTests", () => {
                 case "Shutdown":
                   return pipe(
                     Deferred.succeed(shutdownReceived, true),
-                    Effect.flatMap(() => Effect.sleep(Duration.seconds(3))),
-                    Effect.flatMap(() =>
-                      Effect.sync(() => {
-                        shutdownCompleted = true
-                      })
-                    ),
-                    Effect.flatMap(() => Deferred.succeed(shutdownEnded, true)),
-                    Effect.uninterruptible
+                    Effect.zipRight(Effect.sleep(Duration.seconds(3))),
+                    Effect.zipRight(Effect.sync(() => {
+                      shutdownCompleted = true
+                    })),
+                    Effect.zipRight(Deferred.succeed(terminatedSignal, true))
                   )
               }
             }),
@@ -338,6 +380,7 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(shutdownReceived))
+      yield* _(Sharding.registerScoped)
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
       assertTrue(shutdownCompleted)
     )

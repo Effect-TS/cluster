@@ -709,8 +709,12 @@ function make(
 
   function registerEntity<R, Req>(
     entityType: RecipientType.EntityType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none(),
+    behavior: (
+      entityId: string,
+      dequeue: Queue.Dequeue<Req>,
+      terminatedSignal: Deferred.Deferred<never, boolean>
+    ) => Effect.Effect<R, never, void>,
+    terminateMessage: () => Option.Option<Req> = () => Option.none(),
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ): Effect.Effect<Scope | R, never, void> {
     return pipe(
@@ -722,8 +726,12 @@ function make(
 
   function registerTopic<R, Req>(
     topicType: RecipientType.TopicType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none()
+    behavior: (
+      entityId: string,
+      dequeue: Queue.Dequeue<Req>,
+      terminatedSignal: Deferred.Deferred<never, boolean>
+    ) => Effect.Effect<R, never, void>,
+    terminateMessage: () => Option.Option<Req> = () => Option.none()
   ): Effect.Effect<Scope | R, never, void> {
     return pipe(
       registerRecipient(topicType, behavior, terminateMessage, Option.none()),
@@ -740,8 +748,12 @@ function make(
 
   function registerRecipient<R, Req>(
     recipientType: RecipientType.RecipientType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req> = () => Option.none(),
+    behavior: (
+      entityId: string,
+      dequeue: Queue.Dequeue<Req>,
+      terminatedSignal: Deferred.Deferred<never, boolean>
+    ) => Effect.Effect<R, never, void>,
+    terminateMessage: () => Option.Option<Req> = () => Option.none(),
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ) {
     return Effect.gen(function*($) {

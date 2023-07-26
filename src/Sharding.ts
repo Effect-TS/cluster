@@ -59,14 +59,22 @@ export interface Sharding {
   registerScoped: Effect.Effect<Scope, never, void>
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
+    behavior: (
+      entityId: string,
+      dequeue: Queue.Dequeue<Req>,
+      terminatedSignal: Deferred.Deferred<never, boolean>
+    ) => Effect.Effect<R, never, void>,
+    terminateMessage?: () => Option.Option<Req>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>
+    behavior: (
+      entityId: string,
+      dequeue: Queue.Dequeue<Req>,
+      terminatedSignal: Deferred.Deferred<never, boolean>
+    ) => Effect.Effect<R, never, void>,
+    terminateMessage?: () => Option.Option<Req>
   ): Effect.Effect<Scope | R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>
@@ -136,8 +144,12 @@ export function registerSingleton(
  */
 export function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
-  behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-  terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
+  behavior: (
+    entityId: string,
+    dequeue: Queue.Dequeue<Req>,
+    terminatedSignal: Deferred.Deferred<never, boolean>
+  ) => Effect.Effect<R, never, void>,
+  terminateMessage?: () => Option.Option<Req>,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | Scope | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, terminateMessage, entityMaxIdleTime))
@@ -153,8 +165,12 @@ export function registerEntity<Req, R>(
  */
 export function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
-  behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-  terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>
+  behavior: (
+    entityId: string,
+    dequeue: Queue.Dequeue<Req>,
+    terminatedSignal: Deferred.Deferred<never, boolean>
+  ) => Effect.Effect<R, never, void>,
+  terminateMessage?: () => Option.Option<Req>
 ): Effect.Effect<Sharding | Scope | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior, terminateMessage))
 }

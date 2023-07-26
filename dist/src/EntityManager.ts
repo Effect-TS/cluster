@@ -42,8 +42,12 @@ export interface EntityManager<Req> {
  */
 export function make<R, Req>(
   recipientType: RecipientType.RecipientType<Req>,
-  behavior_: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-  terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
+  behavior_: (
+    entityId: string,
+    dequeue: Queue.Dequeue<Req>,
+    terminatedSignal: Deferred.Deferred<never, boolean>
+  ) => Effect.Effect<R, never, void>,
+  terminateMessage: () => Option.Option<Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>
@@ -53,13 +57,20 @@ export function make<R, Req>(
       RefSynchronized.make<
         HashMap.HashMap<
           string,
-          readonly [Option.Option<Queue.Queue<Req>>, Fiber.RuntimeFiber<never, void>]
+          readonly [
+            Option.Option<Queue.Queue<Req>>,
+            Fiber.RuntimeFiber<never, void>,
+            Deferred.Deferred<never, boolean>
+          ]
         >
       >(HashMap.empty())
     )
     const env = yield* $(Effect.context<R>())
-    const behavior = (entityId: string, dequeue: Queue.Dequeue<Req>) =>
-      Effect.provideContext(behavior_(entityId, dequeue), env)
+    const behavior = (
+      entityId: string,
+      dequeue: Queue.Dequeue<Req>,
+      terminatedSignal: Deferred.Deferred<never, boolean>
+    ) => Effect.provideContext(behavior_(entityId, dequeue, terminatedSignal), env)
 
     function startExpirationFiber(entityId: string) {
       return pipe(
@@ -82,32 +93,40 @@ export function make<R, Req>(
           Option.match({
             // if no queue is found, do nothing
             onNone: () => Effect.succeed(map),
-            onSome: ([maybeQueue, interruptionFiber]) =>
+            onSome: ([maybeQueue, interruptionFiber, terminatedSignal]) =>
               pipe(
                 maybeQueue,
                 Option.match({
                   onNone: () => Effect.succeed(map),
                   onSome: (queue) =>
-                    Effect.flatMap(Deferred.make<never, void>(), (p) =>
-                      pipe(
-                        terminateMessage(p),
-                        Option.match({
-                          onNone: () => Effect.as(Queue.shutdown(queue), HashMap.remove(map, entityId)),
-                          // if a queue is found, offer the termination message, and set the queue to None so that no new message is enqueued
-                          onSome: (msg) =>
+                    pipe(
+                      terminateMessage(),
+                      Option.match({
+                        onNone: () =>
+                          pipe(
+                            Queue.shutdown(queue),
+                            Effect.zipRight(Deferred.succeed(terminatedSignal, true)),
+                            Effect.as(HashMap.remove(map, entityId))
+                          ),
+                        // if a queue is found, offer the termination message, and set the queue to None so that no new message is enqueued
+                        onSome: (msg) =>
+                          pipe(
+                            Queue.offer(queue, msg),
+                            Effect.exit,
                             Effect.as(
-                              pipe(Queue.offer(queue, msg), Effect.exit),
                               HashMap.set(
                                 map,
                                 entityId,
                                 [
                                   Option.none(),
-                                  interruptionFiber
+                                  interruptionFiber,
+                                  terminatedSignal
                                 ] as const
                               )
                             )
-                        })
-                      ))
+                          )
+                      })
+                    )
                 })
               )
           })
@@ -123,73 +142,92 @@ export function make<R, Req>(
       function decide(
         map: HashMap.HashMap<
           string,
-          readonly [Option.Option<Queue.Queue<Req>>, Fiber.RuntimeFiber<never, void>]
+          readonly [
+            Option.Option<Queue.Queue<Req>>,
+            Fiber.RuntimeFiber<never, void>,
+            Deferred.Deferred<never, boolean>
+          ]
         >,
         entityId: string
       ) {
-        const test = HashMap.get(map, entityId)
-        if (Option.isSome(test) && Option.isSome(test.value[0])) {
-          const [queue, interruptionFiber] = test.value
-          // queue exists, delay the interruption fiber and return the queue
-          return pipe(
-            Fiber.interrupt(interruptionFiber),
-            Effect.zipRight(startExpirationFiber(entityId)),
-            Effect.map(
-              (fiber) => [queue, HashMap.set(map, entityId, [queue, fiber] as const)] as const
-            )
-          )
-        } else if (Option.isSome(test) && Option.isNone(test.value[0])) {
-          // the queue is shutting down, stash and retry
-          return Effect.succeed([Option.none(), map] as const)
-        } else {
-          return Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
-            if (isGoingDown) {
-              // don't start any fiber while sharding is shutting down
-              return Effect.fail(ShardError.EntityNotManagedByThisPod(entityId))
-            } else {
-              // queue doesn't exist, create a new one
-              return Effect.gen(function*(_) {
-                const queue = yield* _(Queue.unbounded<Req>())
-                const expirationFiber = yield* _(startExpirationFiber(entityId))
-                yield* _(
-                  Effect.forkDaemon(
-                    Effect.catchAllCause(
-                      Effect.ensuring(
-                        behavior(entityId, queue),
-                        pipe(
-                          RefSynchronized.update(entities, HashMap.remove(entityId)),
-                          Effect.zipRight(Queue.shutdown(queue)),
-                          Effect.zipRight(Fiber.interrupt(expirationFiber))
+        return pipe(
+          HashMap.get(map, entityId),
+          Option.match({
+            onNone: () =>
+              Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
+                if (isGoingDown) {
+                  // don't start any fiber while sharding is shutting down
+                  return Effect.fail(ShardError.EntityNotManagedByThisPod(entityId))
+                } else {
+                  // queue doesn't exist, create a new one
+                  return Effect.gen(function*(_) {
+                    const queue = yield* _(Queue.unbounded<Req>())
+                    const expirationFiber = yield* _(startExpirationFiber(entityId))
+                    const terminatedSignal = yield* _(Deferred.make<never, boolean>())
+                    yield* _(
+                      Effect.forkDaemon(
+                        Effect.catchAllCause(
+                          Effect.ensuring(
+                            behavior(entityId, queue, terminatedSignal),
+                            pipe(
+                              RefSynchronized.update(entities, HashMap.remove(entityId)),
+                              Effect.zipRight(Queue.shutdown(queue)),
+                              Effect.zipRight(Fiber.interrupt(expirationFiber)),
+                              Effect.zipRight(Deferred.succeed(terminatedSignal, false))
+                            )
+                          ),
+                          Effect.logError
                         )
-                      ),
-                      Effect.logError
+                      )
                     )
-                  )
-                )
 
-                const someQueue = Option.some(queue)
-                return [
-                  someQueue,
-                  HashMap.set(map, entityId, [someQueue, expirationFiber] as const)
-                ] as const
-              })
-            }
+                    const someQueue = Option.some(queue)
+                    return [
+                      someQueue,
+                      HashMap.set(map, entityId, [someQueue, expirationFiber, terminatedSignal] as const)
+                    ] as const
+                  })
+                }
+              }),
+            onSome: ([maybeQueue, interruptionFiber, terminatedSignal]) =>
+              pipe(
+                maybeQueue,
+                Option.match({
+                  // queue exists, delay the interruption fiber and return the queue
+                  onSome: () =>
+                    pipe(
+                      Fiber.interrupt(interruptionFiber),
+                      Effect.zipRight(startExpirationFiber(entityId)),
+                      Effect.map(
+                        (fiber) =>
+                          [
+                            maybeQueue,
+                            HashMap.set(map, entityId, [maybeQueue, fiber, terminatedSignal] as const)
+                          ] as const
+                      )
+                    ),
+                  // the queue is shutting down, stash and retry
+                  onNone: () => Effect.succeed([Option.none(), map] as const)
+                })
+              )
           })
-        }
+        )
       }
 
       return pipe(
         Effect.Do,
         Effect.tap(() => {
           // first, verify that this entity should be handled by this pod
-          if (recipientType._tag === "EntityType") {
-            return Effect.unlessEffect(
-              Effect.fail(ShardError.EntityNotManagedByThisPod(entityId)),
-              sharding.isEntityOnLocalShards(recipientType, entityId)
-            )
-          } else if (recipientType._tag === "TopicType") {
-            return Effect.unit
-          }
+          /// TODO: uncomment
+          // if (recipientType._tag === "EntityType") {
+          //   return Effect.unlessEffect(
+          //     Effect.fail(ShardError.EntityNotManagedByThisPod(entityId)),
+          //     sharding.isEntityOnLocalShards(recipientType, entityId)
+          //   )
+          // } else if (recipientType._tag === "TopicType") {
+          //   return Effect.unit
+          // }
+          return Effect.unit
 
           return Effect.die("Unhandled recipientType")
         }),
@@ -233,41 +271,23 @@ export function make<R, Req>(
     }
 
     const terminateAllEntities = Effect.flatMap(
-      RefSynchronized.getAndSet(entities, HashMap.empty()),
+      RefSynchronized.get(entities),
       terminateEntities
     )
 
     function terminateEntities(
       entitiesToTerminate: HashMap.HashMap<
         string,
-        readonly [Option.Option<Queue.Queue<Req>>, Fiber.RuntimeFiber<never, void>]
+        readonly [Option.Option<Queue.Queue<Req>>, Fiber.RuntimeFiber<never, void>, Deferred.Deferred<never, boolean>]
       >
     ) {
-      return pipe(
-        Effect.forEach(entitiesToTerminate, ([_, [queue_, __]]) => {
-          return Effect.tap(Deferred.make<never, boolean>(), (p) =>
-            pipe(
-              queue_,
-              Option.match({
-                onNone: () => Deferred.succeed(p, true),
-                onSome: (queue) =>
-                  pipe(
-                    terminateMessage(p),
-                    Option.match({
-                      onNone: () => Effect.zipRight(Queue.shutdown(queue), Deferred.succeed(p, true)),
-                      onSome: (terminate) =>
-                        Effect.catchAllCause(Queue.offer(queue, terminate), () => Deferred.succeed(p, true))
-                    })
-                  )
-              })
-            ))
-        }),
-        Effect.flatMap((promises) =>
-          Effect.timeout(
-            Effect.forEach(promises, Deferred.await, { discard: true }),
-            config.entityTerminationTimeout
+      return Effect.forEach(
+        entitiesToTerminate,
+        ([entityId, [_, __, terminatedSignal]]) =>
+          pipe(
+            terminateEntity(entityId),
+            Effect.zipRight(Deferred.await(terminatedSignal))
           )
-        )
       )
     }
 
