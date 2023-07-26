@@ -236,7 +236,7 @@ describe.concurrent("SampleTests", () => {
   })
 
   it("Queue is interrupted if shard is terminated", () => {
-    let shutdownCompleted = false
+    let entityInterrupted = false
 
     return Effect.gen(function*(_) {
       const entityStarted = yield* _(Deferred.make<never, boolean>())
@@ -244,9 +244,6 @@ describe.concurrent("SampleTests", () => {
       const SampleMessage = Schema.union(
         Schema.struct({
           _tag: Schema.literal("Awake")
-        }),
-        Schema.struct({
-          _tag: Schema.literal("Shutdown")
         })
       )
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleMessage)
@@ -260,26 +257,25 @@ describe.concurrent("SampleTests", () => {
               switch (msg._tag) {
                 case "Awake":
                   return Deferred.succeed(entityStarted, true)
-                case "Shutdown":
-                  return Effect.unit
               }
             }),
             Effect.forever,
-            Effect.onInterrupt(() => {
-              shutdownCompleted = true
+            Effect.catchAllCause(() => {
+              entityInterrupted = true
               return Effect.unit
             })
           ),
-        () => Option.some({ _tag: "Shutdown" } as const),
+        () => Option.none(),
         Option.some(Duration.minutes(10))
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(entityStarted))
+      console.log("entity started")
       yield* _(Sharding.registerScoped)
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
-      assertTrue(shutdownCompleted)
+      assertTrue(entityInterrupted)
     )
   })
 

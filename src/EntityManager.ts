@@ -60,7 +60,8 @@ export function make<R, Req>(
           readonly [
             Option.Option<Queue.Queue<Req>>,
             Fiber.RuntimeFiber<never, void>,
-            Deferred.Deferred<never, boolean>
+            Deferred.Deferred<never, boolean>,
+            Fiber.RuntimeFiber<never, void>
           ]
         >
       >(HashMap.empty())
@@ -93,7 +94,7 @@ export function make<R, Req>(
           Option.match({
             // if no queue is found, do nothing
             onNone: () => Effect.succeed(map),
-            onSome: ([maybeQueue, interruptionFiber, terminatedSignal]) =>
+            onSome: ([maybeQueue, interruptionFiber, terminatedSignal, runningFiber]) =>
               pipe(
                 maybeQueue,
                 Option.match({
@@ -106,6 +107,7 @@ export function make<R, Req>(
                           pipe(
                             Queue.shutdown(queue),
                             Effect.zipRight(Deferred.succeed(terminatedSignal, true)),
+                            Effect.zipRight(Effect.sync(() => console.log("queue shut down"))),
                             Effect.as(HashMap.remove(map, entityId))
                           ),
                         // if a queue is found, offer the termination message, and set the queue to None so that no new message is enqueued
@@ -120,7 +122,8 @@ export function make<R, Req>(
                                 [
                                   Option.none(),
                                   interruptionFiber,
-                                  terminatedSignal
+                                  terminatedSignal,
+                                  runningFiber
                                 ] as const
                               )
                             )
@@ -145,7 +148,8 @@ export function make<R, Req>(
           readonly [
             Option.Option<Queue.Queue<Req>>,
             Fiber.RuntimeFiber<never, void>,
-            Deferred.Deferred<never, boolean>
+            Deferred.Deferred<never, boolean>,
+            Fiber.RuntimeFiber<never, void>
           ]
         >,
         entityId: string
@@ -164,7 +168,7 @@ export function make<R, Req>(
                     const queue = yield* _(Queue.unbounded<Req>())
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const terminatedSignal = yield* _(Deferred.make<never, boolean>())
-                    yield* _(
+                    const runningFiber = yield* _(
                       Effect.forkDaemon(
                         Effect.catchAllCause(
                           Effect.ensuring(
@@ -184,12 +188,12 @@ export function make<R, Req>(
                     const someQueue = Option.some(queue)
                     return [
                       someQueue,
-                      HashMap.set(map, entityId, [someQueue, expirationFiber, terminatedSignal] as const)
+                      HashMap.set(map, entityId, [someQueue, expirationFiber, terminatedSignal, runningFiber] as const)
                     ] as const
                   })
                 }
               }),
-            onSome: ([maybeQueue, interruptionFiber, terminatedSignal]) =>
+            onSome: ([maybeQueue, interruptionFiber, terminatedSignal, runningFiber]) =>
               pipe(
                 maybeQueue,
                 Option.match({
@@ -202,7 +206,7 @@ export function make<R, Req>(
                         (fiber) =>
                           [
                             maybeQueue,
-                            HashMap.set(map, entityId, [maybeQueue, fiber, terminatedSignal] as const)
+                            HashMap.set(map, entityId, [maybeQueue, fiber, terminatedSignal, runningFiber] as const)
                           ] as const
                       )
                     ),
@@ -278,15 +282,20 @@ export function make<R, Req>(
     function terminateEntities(
       entitiesToTerminate: HashMap.HashMap<
         string,
-        readonly [Option.Option<Queue.Queue<Req>>, Fiber.RuntimeFiber<never, void>, Deferred.Deferred<never, boolean>]
+        readonly [
+          Option.Option<Queue.Queue<Req>>,
+          Fiber.RuntimeFiber<never, void>,
+          Deferred.Deferred<never, boolean>,
+          Fiber.RuntimeFiber<never, void>
+        ]
       >
     ) {
       return Effect.forEach(
         entitiesToTerminate,
-        ([entityId, [_, __, terminatedSignal]]) =>
+        ([entityId, [_, __, ___, runningFiber]]) =>
           pipe(
             terminateEntity(entityId),
-            Effect.zipRight(Deferred.await(terminatedSignal))
+            Effect.zipRight(Fiber.await(runningFiber))
           )
       )
     }
