@@ -51,7 +51,6 @@ export function make<R, Req>(
     entityId: string,
     dequeue: Queue.Dequeue<Req>
   ) => Effect.Effect<R, never, void>,
-  interruptible: boolean,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>
@@ -101,9 +100,9 @@ export function make<R, Req>(
                   // termination has already begun, keep everything as-is
                   onNone: () => Effect.succeed([Option.some(runningFiber), map] as const),
                   // begin to terminate the queue
-                  onSome: (queue) =>
+                  onSome: () =>
                     pipe(
-                      interruptible ? Fiber.interruptFork(runningFiber) : Queue.shutdown(queue),
+                      Fiber.interruptFork(runningFiber),
                       Effect.as(
                         [
                           Option.some(runningFiber),

@@ -14,7 +14,7 @@ import * as ShardError from "@effect/shardcake/ShardError";
  * @since 1.0.0
  * @category constructors
  */
-export function make(recipientType, behavior_, interruptible, sharding, config, entityMaxIdle) {
+export function make(recipientType, behavior_, sharding, config, entityMaxIdle) {
   return Effect.gen(function* ($) {
     const entities = yield* $(RefSynchronized.make(HashMap.empty()));
     const env = yield* $(Effect.context());
@@ -31,7 +31,7 @@ export function make(recipientType, behavior_, interruptible, sharding, config, 
           // termination has already begun, keep everything as-is
           onNone: () => Effect.succeed([Option.some(runningFiber), map]),
           // begin to terminate the queue
-          onSome: queue => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(interruptible ? Fiber.interruptFork(runningFiber) : Queue.shutdown(queue))
+          onSome: () => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(Fiber.interruptFork(runningFiber))
         })(maybeQueue)
       })(HashMap.get(map, entityId)));
     }
@@ -47,7 +47,7 @@ export function make(recipientType, behavior_, interruptible, sharding, config, 
               return Effect.gen(function* (_) {
                 const queue = yield* _(Queue.unbounded());
                 const expirationFiber = yield* _(startExpirationFiber(entityId));
-                const executionFiber = yield* _(Effect.forkDaemon(Effect.catchAllCause(Effect.logError)(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(Effect.zipRight(Queue.shutdown(queue))(RefSynchronized.update(entities, HashMap.remove(entityId)))))(behavior(entityId, queue)))));
+                const executionFiber = yield* _(Effect.forkDaemon(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(Effect.zipRight(Queue.shutdown(queue))(RefSynchronized.update(entities, HashMap.remove(entityId)))))(behavior(entityId, queue))));
                 const someQueue = Option.some(queue);
                 return [someQueue, HashMap.set(map, entityId, [someQueue, expirationFiber, executionFiber])];
               });

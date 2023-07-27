@@ -235,49 +235,6 @@ describe.concurrent("SampleTests", () => {
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
   })
 
-  it("Queue is shutdown if shard is terminated", () => {
-    let entityInterrupted = false
-
-    return Effect.gen(function*(_) {
-      const entityStarted = yield* _(Deferred.make<never, boolean>())
-
-      const SampleMessage = Schema.union(
-        Schema.struct({
-          _tag: Schema.literal("Awake")
-        })
-      )
-      const SampleEntity = RecipientType.makeEntityType("Sample", SampleMessage)
-
-      yield* _(Sharding.registerEntity(
-        SampleEntity,
-        (entityId, queue) =>
-          pipe(
-            Queue.take(queue),
-            Effect.flatMap((msg) => {
-              switch (msg._tag) {
-                case "Awake":
-                  return Deferred.succeed(entityStarted, true)
-              }
-            }),
-            Effect.forever,
-            Effect.catchAllCause(() => {
-              entityInterrupted = true
-              return Effect.unit
-            })
-          ),
-        false,
-        Option.some(Duration.minutes(10))
-      ))
-
-      const messenger = yield* _(Sharding.messenger(SampleEntity))
-      yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
-      yield* _(Deferred.await(entityStarted))
-      yield* _(Sharding.registerScoped)
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
-      assertTrue(entityInterrupted)
-    )
-  })
-
   it("Behaviour is interrupted if shard is terminated", () => {
     let entityInterrupted = false
 
@@ -308,7 +265,6 @@ describe.concurrent("SampleTests", () => {
               return Effect.unit
             })
           ),
-        false,
         Option.some(Duration.minutes(10))
       ))
 
@@ -353,7 +309,6 @@ describe.concurrent("SampleTests", () => {
               )
             )
           ),
-        true,
         Option.some(Duration.minutes(10))
       ))
 
@@ -402,7 +357,6 @@ describe.concurrent("SampleTests", () => {
               )
             )
           ),
-        true,
         Option.some(Duration.millis(100))
       ))
 

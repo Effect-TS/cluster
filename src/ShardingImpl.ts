@@ -712,11 +712,10 @@ function make(
       entityId: string,
       dequeue: Queue.Dequeue<Req>
     ) => Effect.Effect<R, never, void>,
-    interruptible = false,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ): Effect.Effect<Scope | R, never, void> {
     return pipe(
-      registerRecipient(entityType, behavior, interruptible, entityMaxIdleTime),
+      registerRecipient(entityType, behavior, entityMaxIdleTime),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
       Effect.asUnit
     )
@@ -727,11 +726,10 @@ function make(
     behavior: (
       entityId: string,
       dequeue: Queue.Dequeue<Req>
-    ) => Effect.Effect<R, never, void>,
-    interruptible = false
+    ) => Effect.Effect<R, never, void>
   ): Effect.Effect<Scope | R, never, void> {
     return pipe(
-      registerRecipient(topicType, behavior, interruptible, Option.none()),
+      registerRecipient(topicType, behavior, Option.none()),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
       Effect.asUnit
     )
@@ -749,7 +747,6 @@ function make(
       entityId: string,
       dequeue: Queue.Dequeue<Req>
     ) => Effect.Effect<R, never, void>,
-    interruptible = false,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ) {
     return Effect.gen(function*($) {
@@ -757,7 +754,6 @@ function make(
         EntityManager.make(
           recipientType,
           behavior,
-          interruptible,
           self,
           config,
           entityMaxIdleTime

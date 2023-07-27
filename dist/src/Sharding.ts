@@ -62,7 +62,6 @@ export interface Sharding {
       entityId: string,
       dequeue: Queue.Dequeue<Req>
     ) => Effect.Effect<R, never, void>,
-    interruptible?: boolean,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>
   registerTopic<Req, R>(
@@ -70,8 +69,7 @@ export interface Sharding {
     behavior: (
       entityId: string,
       dequeue: Queue.Dequeue<Req>
-    ) => Effect.Effect<R, never, void>,
-    interruptible?: boolean
+    ) => Effect.Effect<R, never, void>
   ): Effect.Effect<Scope | R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>
@@ -135,8 +133,7 @@ export function registerSingleton(
  * Register a new entity type, allowing pods to send messages to entities of this type.
  * It takes a `behavior` which is a function from an entity ID and a queue of messages to a ZIO computation that runs forever and consumes those messages.
  * You can use `ZIO.interrupt` from the behavior to stop it (it will be restarted the next time the entity receives a message).
- * If interruptible is set to false, the queue will be shutdown to signal entity shutdown.
- * If interruptible is set to true, the entire behavior will be interrupted to signal entity shutdown.
+ * If entity goes to idle timeout, it will be interrupted from outside.
  * @since 1.0.0
  * @category utils
  */
@@ -146,18 +143,16 @@ export function registerEntity<Req, R>(
     entityId: string,
     dequeue: Queue.Dequeue<Req>
   ) => Effect.Effect<R, never, void>,
-  interruptible?: boolean,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | Scope | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, interruptible, entityMaxIdleTime))
+  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, entityMaxIdleTime))
 }
 
 /**
  * Register a new topic type, allowing pods to broadcast messages to subscribers.
  * It takes a `behavior` which is a function from a topic and a queue of messages to a ZIO computation that runs forever and consumes those messages.
  * You can use `ZIO.interrupt` from the behavior to stop it (it will be restarted the next time the topic receives a message).
- * If interruptible is set to false, the queue will be shutdown to signal entity shutdown.
- * If interruptible is set to true, the entire behavior will be interrupted to signal entity shutdown.
+ * If entity goes to idle timeout, it will be interrupted from outside.
  * @since 1.0.0
  * @category utils
  */
@@ -166,10 +161,9 @@ export function registerTopic<Req, R>(
   behavior: (
     entityId: string,
     dequeue: Queue.Dequeue<Req>
-  ) => Effect.Effect<R, never, void>,
-  interruptible?: boolean
+  ) => Effect.Effect<R, never, void>
 ): Effect.Effect<Sharding | Scope | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior, interruptible))
+  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior))
 }
 
 /**
