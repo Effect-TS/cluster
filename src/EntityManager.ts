@@ -6,7 +6,6 @@ import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
-import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Queue from "@effect/io/Queue"
@@ -36,6 +35,12 @@ export interface EntityManager<Req> {
   terminateAllEntities: Effect.Effect<never, never, void>
 }
 
+type EntityManagerEntry<Req> = readonly [
+  messageQueue: Option.Option<Queue.Queue<Req>>,
+  expirationFiber: Fiber.RuntimeFiber<never, void>,
+  executionFiber: Fiber.RuntimeFiber<never, void>
+]
+
 /**
  * @since 1.0.0
  * @category constructors
@@ -44,10 +49,9 @@ export function make<R, Req>(
   recipientType: RecipientType.RecipientType<Req>,
   behavior_: (
     entityId: string,
-    dequeue: Queue.Dequeue<Req>,
-    terminatedSignal: Deferred.Deferred<never, boolean>
+    dequeue: Queue.Dequeue<Req>
   ) => Effect.Effect<R, never, void>,
-  terminateMessage: () => Option.Option<Req>,
+  interruptible: boolean,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>
@@ -57,21 +61,15 @@ export function make<R, Req>(
       RefSynchronized.make<
         HashMap.HashMap<
           string,
-          readonly [
-            Option.Option<Queue.Queue<Req>>,
-            Fiber.RuntimeFiber<never, void>,
-            Deferred.Deferred<never, boolean>,
-            Fiber.RuntimeFiber<never, void>
-          ]
+          EntityManagerEntry<Req>
         >
       >(HashMap.empty())
     )
     const env = yield* $(Effect.context<R>())
     const behavior = (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>,
-      terminatedSignal: Deferred.Deferred<never, boolean>
-    ) => Effect.provideContext(behavior_(entityId, dequeue, terminatedSignal), env)
+      dequeue: Queue.Dequeue<Req>
+    ) => Effect.provideContext(behavior_(entityId, dequeue), env)
 
     function startExpirationFiber(entityId: string) {
       return pipe(
@@ -81,54 +79,41 @@ export function make<R, Req>(
             Option.getOrElse(() => config.entityMaxIdleTime)
           )
         ),
-        Effect.zipRight(pipe(terminateEntity(entityId), Effect.forkDaemon, Effect.asUnit)),
+        Effect.zipRight(forkEntityTermination(entityId)),
+        Effect.asUnit,
         Effect.interruptible,
         Effect.forkDaemon
       )
     }
 
-    function terminateEntity(entityId: string) {
-      return RefSynchronized.updateEffect(entities, (map) =>
+    function forkEntityTermination(entityId: string) {
+      return RefSynchronized.modifyEffect(entities, (map) =>
         pipe(
           HashMap.get(map, entityId),
           Option.match({
-            // if no queue is found, do nothing
-            onNone: () => Effect.succeed(map),
-            onSome: ([maybeQueue, interruptionFiber, terminatedSignal, runningFiber]) =>
+            // if no entry is found, the entity has succefully shut down
+            onNone: () => Effect.succeed([Option.none(), map] as const),
+            // there is an entry, so we should begin termination
+            onSome: ([maybeQueue, expirationFiber, runningFiber]) =>
               pipe(
                 maybeQueue,
                 Option.match({
-                  onNone: () => Effect.succeed(map),
+                  // termination has already begun, keep everything as-is
+                  onNone: () => Effect.succeed([Option.some(runningFiber), map] as const),
+                  // begin to terminate the queue
                   onSome: (queue) =>
                     pipe(
-                      terminateMessage(),
-                      Option.match({
-                        onNone: () =>
-                          pipe(
-                            Queue.shutdown(queue),
-                            Effect.zipRight(Deferred.succeed(terminatedSignal, true)),
-                            Effect.zipRight(Effect.sync(() => console.log("queue shut down"))),
-                            Effect.as(HashMap.remove(map, entityId))
-                          ),
-                        // if a queue is found, offer the termination message, and set the queue to None so that no new message is enqueued
-                        onSome: (msg) =>
-                          pipe(
-                            Queue.offer(queue, msg),
-                            Effect.exit,
-                            Effect.as(
-                              HashMap.set(
-                                map,
-                                entityId,
-                                [
-                                  Option.none(),
-                                  interruptionFiber,
-                                  terminatedSignal,
-                                  runningFiber
-                                ] as const
-                              )
-                            )
-                          )
-                      })
+                      interruptible ? Fiber.interruptFork(runningFiber) : Queue.shutdown(queue),
+                      Effect.as(
+                        [
+                          Option.some(runningFiber),
+                          HashMap.set(map, entityId, [
+                            Option.none(),
+                            expirationFiber,
+                            runningFiber
+                          ])
+                        ] as const
+                      )
                     )
                 })
               )
@@ -145,12 +130,7 @@ export function make<R, Req>(
       function decide(
         map: HashMap.HashMap<
           string,
-          readonly [
-            Option.Option<Queue.Queue<Req>>,
-            Fiber.RuntimeFiber<never, void>,
-            Deferred.Deferred<never, boolean>,
-            Fiber.RuntimeFiber<never, void>
-          ]
+          EntityManagerEntry<Req>
         >,
         entityId: string
       ) {
@@ -167,33 +147,29 @@ export function make<R, Req>(
                   return Effect.gen(function*(_) {
                     const queue = yield* _(Queue.unbounded<Req>())
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
-                    const terminatedSignal = yield* _(Deferred.make<never, boolean>())
-                    const runningFiber = yield* _(
-                      Effect.forkDaemon(
-                        Effect.catchAllCause(
-                          Effect.ensuring(
-                            behavior(entityId, queue, terminatedSignal),
-                            pipe(
-                              RefSynchronized.update(entities, HashMap.remove(entityId)),
-                              Effect.zipRight(Queue.shutdown(queue)),
-                              Effect.zipRight(Fiber.interrupt(expirationFiber)),
-                              Effect.zipRight(Deferred.succeed(terminatedSignal, false))
-                            )
-                          ),
-                          Effect.logError
-                        )
+                    const executionFiber = yield* _(
+                      pipe(
+                        behavior(entityId, queue),
+                        Effect.ensuring(
+                          pipe(
+                            RefSynchronized.update(entities, HashMap.remove(entityId)),
+                            Effect.zipRight(Queue.shutdown(queue)),
+                            Effect.zipRight(Fiber.interrupt(expirationFiber))
+                          )
+                        ),
+                        Effect.forkDaemon
                       )
                     )
 
                     const someQueue = Option.some(queue)
                     return [
                       someQueue,
-                      HashMap.set(map, entityId, [someQueue, expirationFiber, terminatedSignal, runningFiber] as const)
+                      HashMap.set(map, entityId, [someQueue, expirationFiber, executionFiber] as const)
                     ] as const
                   })
                 }
               }),
-            onSome: ([maybeQueue, interruptionFiber, terminatedSignal, runningFiber]) =>
+            onSome: ([maybeQueue, interruptionFiber, executionFiber]) =>
               pipe(
                 maybeQueue,
                 Option.match({
@@ -206,7 +182,7 @@ export function make<R, Req>(
                         (fiber) =>
                           [
                             maybeQueue,
-                            HashMap.set(map, entityId, [maybeQueue, fiber, terminatedSignal, runningFiber] as const)
+                            HashMap.set(map, entityId, [maybeQueue, fiber, executionFiber] as const)
                           ] as const
                       )
                     ),
@@ -274,29 +250,31 @@ export function make<R, Req>(
       )
     }
 
-    const terminateAllEntities = Effect.flatMap(
+    const terminateAllEntities = pipe(
       RefSynchronized.get(entities),
-      terminateEntities
+      Effect.map(HashMap.keySet),
+      Effect.flatMap(terminateEntities)
     )
 
     function terminateEntities(
-      entitiesToTerminate: HashMap.HashMap<
-        string,
-        readonly [
-          Option.Option<Queue.Queue<Req>>,
-          Fiber.RuntimeFiber<never, void>,
-          Deferred.Deferred<never, boolean>,
-          Fiber.RuntimeFiber<never, void>
-        ]
+      entitiesToTerminate: HashSet.HashSet<
+        string
       >
     ) {
-      return Effect.forEach(
+      return pipe(
         entitiesToTerminate,
-        ([entityId, [_, __, ___, runningFiber]]) =>
-          pipe(
-            terminateEntity(entityId),
-            Effect.zipRight(Fiber.await(runningFiber))
-          )
+        Effect.forEach(
+          (entityId) =>
+            pipe(
+              forkEntityTermination(entityId),
+              Effect.flatMap(Option.match({
+                onNone: () => Effect.unit,
+                onSome: (executionFiber) => Fiber.await(executionFiber)
+              }))
+            ),
+          { concurrency: "inherit" }
+        ),
+        Effect.asUnit
       )
     }
 
@@ -309,6 +287,7 @@ export function make<R, Req>(
           ),
           entities
         ]),
+        Effect.map(HashMap.keySet),
         Effect.flatMap(terminateEntities)
       )
     }

@@ -4,7 +4,6 @@
 import { Tag } from "@effect/data/Context"
 import type * as HashSet from "@effect/data/HashSet"
 import type * as Option from "@effect/data/Option"
-import type * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import type * as Queue from "@effect/io/Queue"
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
@@ -61,20 +60,18 @@ export interface Sharding {
     entityType: RecipentType.EntityType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>,
-      terminatedSignal: Deferred.Deferred<never, boolean>
+      dequeue: Queue.Dequeue<Req>
     ) => Effect.Effect<R, never, void>,
-    terminateMessage?: () => Option.Option<Req>,
+    interruptible?: boolean,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>,
-      terminatedSignal: Deferred.Deferred<never, boolean>
+      dequeue: Queue.Dequeue<Req>
     ) => Effect.Effect<R, never, void>,
-    terminateMessage?: () => Option.Option<Req>
+    interruptible?: boolean
   ): Effect.Effect<Scope | R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>
@@ -138,7 +135,8 @@ export function registerSingleton(
  * Register a new entity type, allowing pods to send messages to entities of this type.
  * It takes a `behavior` which is a function from an entity ID and a queue of messages to a ZIO computation that runs forever and consumes those messages.
  * You can use `ZIO.interrupt` from the behavior to stop it (it will be restarted the next time the entity receives a message).
- * If provided, the optional `terminateMessage` will be sent to the entity before it is stopped, allowing for cleanup logic.
+ * If interruptible is set to false, the queue will be shutdown to signal entity shutdown.
+ * If interruptible is set to true, the entire behavior will be interrupted to signal entity shutdown.
  * @since 1.0.0
  * @category utils
  */
@@ -146,20 +144,20 @@ export function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: (
     entityId: string,
-    dequeue: Queue.Dequeue<Req>,
-    terminatedSignal: Deferred.Deferred<never, boolean>
+    dequeue: Queue.Dequeue<Req>
   ) => Effect.Effect<R, never, void>,
-  terminateMessage?: () => Option.Option<Req>,
+  interruptible?: boolean,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | Scope | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, terminateMessage, entityMaxIdleTime))
+  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, interruptible, entityMaxIdleTime))
 }
 
 /**
  * Register a new topic type, allowing pods to broadcast messages to subscribers.
  * It takes a `behavior` which is a function from a topic and a queue of messages to a ZIO computation that runs forever and consumes those messages.
  * You can use `ZIO.interrupt` from the behavior to stop it (it will be restarted the next time the topic receives a message).
- * If provided, the optional `terminateMessage` will be sent to the topic before it is stopped, allowing for cleanup logic.
+ * If interruptible is set to false, the queue will be shutdown to signal entity shutdown.
+ * If interruptible is set to true, the entire behavior will be interrupted to signal entity shutdown.
  * @since 1.0.0
  * @category utils
  */
@@ -167,12 +165,11 @@ export function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: (
     entityId: string,
-    dequeue: Queue.Dequeue<Req>,
-    terminatedSignal: Deferred.Deferred<never, boolean>
+    dequeue: Queue.Dequeue<Req>
   ) => Effect.Effect<R, never, void>,
-  terminateMessage?: () => Option.Option<Req>
+  interruptible?: boolean
 ): Effect.Effect<Sharding | Scope | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior, terminateMessage))
+  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior, interruptible))
 }
 
 /**

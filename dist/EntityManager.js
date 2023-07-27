@@ -8,7 +8,6 @@ var Duration = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effe
 var HashMap = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/HashMap"));
 var HashSet = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/HashSet"));
 var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Option"));
-var Deferred = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Deferred"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Fiber = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Fiber"));
 var Queue = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Queue"));
@@ -24,25 +23,24 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category constructors
  */
-function make(recipientType, behavior_, terminateMessage, sharding, config, entityMaxIdle) {
+function make(recipientType, behavior_, interruptible, sharding, config, entityMaxIdle) {
   return Effect.gen(function* ($) {
     const entities = yield* $(RefSynchronized.make(HashMap.empty()));
     const env = yield* $(Effect.context());
-    const behavior = (entityId, dequeue, terminatedSignal) => Effect.provideContext(behavior_(entityId, dequeue, terminatedSignal), env);
+    const behavior = (entityId, dequeue) => Effect.provideContext(behavior_(entityId, dequeue), env);
     function startExpirationFiber(entityId) {
-      return Effect.forkDaemon(Effect.interruptible(Effect.zipRight(Effect.asUnit(Effect.forkDaemon(terminateEntity(entityId))))(Effect.sleep(Option.getOrElse(() => config.entityMaxIdleTime)(entityMaxIdle)))));
+      return Effect.forkDaemon(Effect.interruptible(Effect.asUnit(Effect.zipRight(forkEntityTermination(entityId))(Effect.sleep(Option.getOrElse(() => config.entityMaxIdleTime)(entityMaxIdle))))));
     }
-    function terminateEntity(entityId) {
-      return RefSynchronized.updateEffect(entities, map => Option.match({
-        // if no queue is found, do nothing
-        onNone: () => Effect.succeed(map),
-        onSome: ([maybeQueue, interruptionFiber, terminatedSignal]) => Option.match({
-          onNone: () => Effect.succeed(map),
-          onSome: queue => Option.match({
-            onNone: () => Effect.as(HashMap.remove(map, entityId))(Effect.zipRight(Deferred.succeed(terminatedSignal, true))(Queue.shutdown(queue))),
-            // if a queue is found, offer the termination message, and set the queue to None so that no new message is enqueued
-            onSome: msg => Effect.as(HashMap.set(map, entityId, [Option.none(), interruptionFiber, terminatedSignal]))(Effect.exit(Queue.offer(queue, msg)))
-          })(terminateMessage())
+    function forkEntityTermination(entityId) {
+      return RefSynchronized.modifyEffect(entities, map => Option.match({
+        // if no entry is found, the entity has succefully shut down
+        onNone: () => Effect.succeed([Option.none(), map]),
+        // there is an entry, so we should begin termination
+        onSome: ([maybeQueue, expirationFiber, runningFiber]) => Option.match({
+          // termination has already begun, keep everything as-is
+          onNone: () => Effect.succeed([Option.some(runningFiber), map]),
+          // begin to terminate the queue
+          onSome: queue => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(interruptible ? Fiber.interruptFork(runningFiber) : Queue.shutdown(queue))
         })(maybeQueue)
       })(HashMap.get(map, entityId)));
     }
@@ -58,16 +56,15 @@ function make(recipientType, behavior_, terminateMessage, sharding, config, enti
               return Effect.gen(function* (_) {
                 const queue = yield* _(Queue.unbounded());
                 const expirationFiber = yield* _(startExpirationFiber(entityId));
-                const terminatedSignal = yield* _(Deferred.make());
-                yield* _(Effect.forkDaemon(Effect.catchAllCause(Effect.ensuring(behavior(entityId, queue, terminatedSignal), Effect.zipRight(Deferred.succeed(terminatedSignal, false))(Effect.zipRight(Fiber.interrupt(expirationFiber))(Effect.zipRight(Queue.shutdown(queue))(RefSynchronized.update(entities, HashMap.remove(entityId)))))), Effect.logError)));
+                const executionFiber = yield* _(Effect.forkDaemon(Effect.catchAllCause(Effect.logError)(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(Effect.zipRight(Queue.shutdown(queue))(RefSynchronized.update(entities, HashMap.remove(entityId)))))(behavior(entityId, queue)))));
                 const someQueue = Option.some(queue);
-                return [someQueue, HashMap.set(map, entityId, [someQueue, expirationFiber, terminatedSignal])];
+                return [someQueue, HashMap.set(map, entityId, [someQueue, expirationFiber, executionFiber])];
               });
             }
           }),
-          onSome: ([maybeQueue, interruptionFiber, terminatedSignal]) => Option.match({
+          onSome: ([maybeQueue, interruptionFiber, executionFiber]) => Option.match({
             // queue exists, delay the interruption fiber and return the queue
-            onSome: () => Effect.map(fiber => [maybeQueue, HashMap.set(map, entityId, [maybeQueue, fiber, terminatedSignal])])(Effect.zipRight(startExpirationFiber(entityId))(Fiber.interrupt(interruptionFiber))),
+            onSome: () => Effect.map(fiber => [maybeQueue, HashMap.set(map, entityId, [maybeQueue, fiber, executionFiber])])(Effect.zipRight(startExpirationFiber(entityId))(Fiber.interrupt(interruptionFiber))),
             // the queue is shutting down, stash and retry
             onNone: () => Effect.succeed([Option.none(), map])
           })(maybeQueue)
@@ -96,12 +93,17 @@ function make(recipientType, behavior_, terminateMessage, sharding, config, enti
         return Effect.die("Unhandled recipientType");
       })(Effect.Do)));
     }
-    const terminateAllEntities = Effect.flatMap(RefSynchronized.get(entities), terminateEntities);
+    const terminateAllEntities = Effect.flatMap(terminateEntities)(Effect.map(HashMap.keySet)(RefSynchronized.get(entities)));
     function terminateEntities(entitiesToTerminate) {
-      return Effect.forEach(entitiesToTerminate, ([entityId, [_, __, terminatedSignal]]) => Effect.zipRight(Deferred.await(terminatedSignal))(terminateEntity(entityId)));
+      return Effect.asUnit(Effect.forEach(entityId => Effect.flatMap(Option.match({
+        onNone: () => Effect.unit,
+        onSome: executionFiber => Fiber.await(executionFiber)
+      }))(forkEntityTermination(entityId)), {
+        concurrency: "inherit"
+      })(entitiesToTerminate));
     }
     function terminateEntitiesOnShards(shards) {
-      return Effect.flatMap(terminateEntities)(RefSynchronized.modify(entities, entities => [HashMap.filter(entities, (_, entityId) => HashSet.has(shards, sharding.getShardId(recipientType, entityId))), entities]));
+      return Effect.flatMap(terminateEntities)(Effect.map(HashMap.keySet)(RefSynchronized.modify(entities, entities => [HashMap.filter(entities, (_, entityId) => HashSet.has(shards, sharding.getShardId(recipientType, entityId))), entities])));
     }
     const self = {
       send,

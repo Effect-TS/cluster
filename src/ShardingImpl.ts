@@ -7,7 +7,6 @@ import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
-import type * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Hub from "@effect/io/Hub"
 import type * as Queue from "@effect/io/Queue"
@@ -711,14 +710,13 @@ function make(
     entityType: RecipientType.EntityType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>,
-      terminatedSignal: Deferred.Deferred<never, boolean>
+      dequeue: Queue.Dequeue<Req>
     ) => Effect.Effect<R, never, void>,
-    terminateMessage: () => Option.Option<Req> = () => Option.none(),
+    interruptible = false,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ): Effect.Effect<Scope | R, never, void> {
     return pipe(
-      registerRecipient(entityType, behavior, terminateMessage, entityMaxIdleTime),
+      registerRecipient(entityType, behavior, interruptible, entityMaxIdleTime),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
       Effect.asUnit
     )
@@ -728,13 +726,12 @@ function make(
     topicType: RecipientType.TopicType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>,
-      terminatedSignal: Deferred.Deferred<never, boolean>
+      dequeue: Queue.Dequeue<Req>
     ) => Effect.Effect<R, never, void>,
-    terminateMessage: () => Option.Option<Req> = () => Option.none()
+    interruptible = false
   ): Effect.Effect<Scope | R, never, void> {
     return pipe(
-      registerRecipient(topicType, behavior, terminateMessage, Option.none()),
+      registerRecipient(topicType, behavior, interruptible, Option.none()),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
       Effect.asUnit
     )
@@ -750,10 +747,9 @@ function make(
     recipientType: RecipientType.RecipientType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>,
-      terminatedSignal: Deferred.Deferred<never, boolean>
+      dequeue: Queue.Dequeue<Req>
     ) => Effect.Effect<R, never, void>,
-    terminateMessage: () => Option.Option<Req> = () => Option.none(),
+    interruptible = false,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ) {
     return Effect.gen(function*($) {
@@ -761,7 +757,7 @@ function make(
         EntityManager.make(
           recipientType,
           behavior,
-          terminateMessage,
+          interruptible,
           self,
           config,
           entityMaxIdleTime

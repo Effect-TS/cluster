@@ -39,23 +39,25 @@ export function registerSingleton(name, run) {
  * Register a new entity type, allowing pods to send messages to entities of this type.
  * It takes a `behavior` which is a function from an entity ID and a queue of messages to a ZIO computation that runs forever and consumes those messages.
  * You can use `ZIO.interrupt` from the behavior to stop it (it will be restarted the next time the entity receives a message).
- * If provided, the optional `terminateMessage` will be sent to the entity before it is stopped, allowing for cleanup logic.
+ * If interruptible is set to false, the queue will be shutdown to signal entity shutdown.
+ * If interruptible is set to true, the entire behavior will be interrupted to signal entity shutdown.
  * @since 1.0.0
  * @category utils
  */
-export function registerEntity(entityType, behavior, terminateMessage, entityMaxIdleTime) {
-  return Effect.flatMap(Sharding, _ => _.registerEntity(entityType, behavior, terminateMessage, entityMaxIdleTime));
+export function registerEntity(entityType, behavior, interruptible, entityMaxIdleTime) {
+  return Effect.flatMap(Sharding, _ => _.registerEntity(entityType, behavior, interruptible, entityMaxIdleTime));
 }
 /**
  * Register a new topic type, allowing pods to broadcast messages to subscribers.
  * It takes a `behavior` which is a function from a topic and a queue of messages to a ZIO computation that runs forever and consumes those messages.
  * You can use `ZIO.interrupt` from the behavior to stop it (it will be restarted the next time the topic receives a message).
- * If provided, the optional `terminateMessage` will be sent to the topic before it is stopped, allowing for cleanup logic.
+ * If interruptible is set to false, the queue will be shutdown to signal entity shutdown.
+ * If interruptible is set to true, the entire behavior will be interrupted to signal entity shutdown.
  * @since 1.0.0
  * @category utils
  */
-export function registerTopic(topicType, behavior, terminateMessage) {
-  return Effect.flatMap(Sharding, _ => _.registerTopic(topicType, behavior, terminateMessage));
+export function registerTopic(topicType, behavior, interruptible) {
+  return Effect.flatMap(Sharding, _ => _.registerTopic(topicType, behavior, interruptible));
 }
 /**
  * Get an object that allows sending messages to a given entity type.

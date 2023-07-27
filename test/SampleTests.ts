@@ -235,7 +235,7 @@ describe.concurrent("SampleTests", () => {
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
   })
 
-  it("Queue is interrupted if shard is terminated", () => {
+  it("Queue is shutdown if shard is terminated", () => {
     let entityInterrupted = false
 
     return Effect.gen(function*(_) {
@@ -265,14 +265,56 @@ describe.concurrent("SampleTests", () => {
               return Effect.unit
             })
           ),
-        () => Option.none(),
+        false,
         Option.some(Duration.minutes(10))
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(entityStarted))
-      console.log("entity started")
+      yield* _(Sharding.registerScoped)
+    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
+      assertTrue(entityInterrupted)
+    )
+  })
+
+  it("Behaviour is interrupted if shard is terminated", () => {
+    let entityInterrupted = false
+
+    return Effect.gen(function*(_) {
+      const entityStarted = yield* _(Deferred.make<never, boolean>())
+
+      const SampleMessage = Schema.union(
+        Schema.struct({
+          _tag: Schema.literal("Awake")
+        })
+      )
+      const SampleEntity = RecipientType.makeEntityType("Sample", SampleMessage)
+
+      yield* _(Sharding.registerEntity(
+        SampleEntity,
+        (entityId, queue) =>
+          pipe(
+            Queue.take(queue),
+            Effect.flatMap((msg) => {
+              switch (msg._tag) {
+                case "Awake":
+                  return Deferred.succeed(entityStarted, true)
+              }
+            }),
+            Effect.forever,
+            Effect.onInterrupt(() => {
+              entityInterrupted = true
+              return Effect.unit
+            })
+          ),
+        false,
+        Option.some(Duration.minutes(10))
+      ))
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
+      yield* _(Deferred.await(entityStarted))
       yield* _(Sharding.registerScoped)
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
       assertTrue(entityInterrupted)
@@ -288,37 +330,30 @@ describe.concurrent("SampleTests", () => {
       const SampleMessage = Schema.union(
         Schema.struct({
           _tag: Schema.literal("Awake")
-        }),
-        Schema.struct({
-          _tag: Schema.literal("Shutdown")
         })
       )
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleMessage)
 
       yield* _(Sharding.registerEntity(
         SampleEntity,
-        (entityId, queue, terminatedSignal) =>
+        (entityId, queue) =>
           pipe(
             Queue.take(queue),
-            Effect.flatMap((msg) => {
-              switch (msg._tag) {
-                case "Awake":
-                  return Deferred.succeed(entityStarted, true)
-                case "Shutdown":
-                  return pipe(
-                    Effect.sleep(Duration.seconds(3)),
-                    Effect.zipRight(
-                      Effect.sync(() => {
-                        shutdownCompleted = true
-                      })
-                    ),
-                    Effect.zipRight(Deferred.succeed(terminatedSignal, true))
-                  )
-              }
-            }),
-            Effect.forever
+            Effect.flatMap(() => Deferred.succeed(entityStarted, true)),
+            Effect.forever,
+            Effect.onInterrupt(() =>
+              pipe(
+                Effect.sleep(Duration.seconds(3)),
+                Effect.zipRight(
+                  Effect.sync(() => {
+                    shutdownCompleted = true
+                  })
+                ),
+                Effect.uninterruptible
+              )
+            )
           ),
-        () => Option.some({ _tag: "Shutdown" } as const),
+        true,
         Option.some(Duration.minutes(10))
       ))
 
@@ -340,36 +375,34 @@ describe.concurrent("SampleTests", () => {
       const SampleMessage = Schema.union(
         Schema.struct({
           _tag: Schema.literal("Awake")
-        }),
-        Schema.struct({
-          _tag: Schema.literal("Shutdown")
         })
       )
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleMessage)
 
       yield* _(Sharding.registerEntity(
         SampleEntity,
-        (entityId, queue, terminatedSignal) =>
+        (entityId, queue) =>
           pipe(
             Queue.take(queue),
             Effect.flatMap((msg) => {
               switch (msg._tag) {
                 case "Awake":
                   return Effect.unit
-                case "Shutdown":
-                  return pipe(
-                    Deferred.succeed(shutdownReceived, true),
-                    Effect.zipRight(Effect.sleep(Duration.seconds(3))),
-                    Effect.zipRight(Effect.sync(() => {
-                      shutdownCompleted = true
-                    })),
-                    Effect.zipRight(Deferred.succeed(terminatedSignal, true))
-                  )
               }
             }),
-            Effect.forever
+            Effect.forever,
+            Effect.onInterrupt(() =>
+              pipe(
+                Deferred.succeed(shutdownReceived, true),
+                Effect.zipRight(Effect.sleep(Duration.seconds(3))),
+                Effect.zipRight(Effect.sync(() => {
+                  shutdownCompleted = true
+                })),
+                Effect.uninterruptible
+              )
+            )
           ),
-        () => Option.some({ _tag: "Shutdown" } as const),
+        true,
         Option.some(Duration.millis(100))
       ))
 
