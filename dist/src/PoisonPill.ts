@@ -52,6 +52,10 @@ export const schema = Schema.data(
   })
 )
 
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function takeOrInterrupt<Req>(dequeue: Queue.Dequeue<Req | PoisonPill>): Effect.Effect<never, never, Req> {
   return pipe(
     Queue.take(dequeue),
