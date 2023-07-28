@@ -205,7 +205,7 @@ describe.concurrent("SampleTests", () => {
           Queue.take(queue),
           Effect.flatMap((msg) =>
             PoisonPill.isPoisonPill(msg) ? Effect.interrupt : msg.replier.reply(pipe(
-              Stream.never(),
+              Stream.never,
               Stream.ensuring(Deferred.succeed(exit, true)), // <- signal interruption on shard side
               Stream.map(() => 42)
             ))
@@ -242,7 +242,7 @@ describe.concurrent("SampleTests", () => {
           Queue.take(queue),
           Effect.flatMap((msg) =>
             PoisonPill.isPoisonPill(msg) ? Effect.interrupt : msg.replier.reply(pipe(
-              Stream.never(),
+              Stream.never,
               Stream.ensuring(Deferred.succeed(exit, true)), // <- signal interruption on shard side
               Stream.interruptAfter(Duration.millis(500))
             ))
