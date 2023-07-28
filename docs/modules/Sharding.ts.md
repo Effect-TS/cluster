@@ -1,6 +1,6 @@
 ---
 title: Sharding.ts
-nav_order: 23
+nav_order: 24
 parent: Modules
 ---
 
@@ -75,13 +75,13 @@ export interface Sharding {
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
+    poisonPill: Req,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>
+    poisonPill: Req
   ): Effect.Effect<Scope | R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>
@@ -91,7 +91,7 @@ export interface Sharding {
   sendToLocalEntity(
     msg: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<any, any>>>
+  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<JsonData, any>>>
   sendToLocalEntityStreamingReply(
     msg: BinaryMessage.BinaryMessage
   ): Stream.Stream<never, Throwable, ByteArray.ByteArray>
@@ -167,7 +167,7 @@ Added in v1.0.0
 Register a new entity type, allowing pods to send messages to entities of this type.
 It takes a `behavior` which is a function from an entity ID and a queue of messages to a ZIO computation that runs forever and consumes those messages.
 You can use `ZIO.interrupt` from the behavior to stop it (it will be restarted the next time the entity receives a message).
-If provided, the optional `terminateMessage` will be sent to the entity before it is stopped, allowing for cleanup logic.
+If entity goes to idle timeout, it will be interrupted from outside.
 
 **Signature**
 
@@ -175,7 +175,7 @@ If provided, the optional `terminateMessage` will be sent to the entity before i
 export declare function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-  terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
+  poisonPill: Req,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | Scope | R, never, void>
 ```
@@ -215,7 +215,7 @@ Added in v1.0.0
 Register a new topic type, allowing pods to broadcast messages to subscribers.
 It takes a `behavior` which is a function from a topic and a queue of messages to a ZIO computation that runs forever and consumes those messages.
 You can use `ZIO.interrupt` from the behavior to stop it (it will be restarted the next time the topic receives a message).
-If provided, the optional `terminateMessage` will be sent to the topic before it is stopped, allowing for cleanup logic.
+If entity goes to idle timeout, it will be interrupted from outside.
 
 **Signature**
 
@@ -223,7 +223,7 @@ If provided, the optional `terminateMessage` will be sent to the topic before it
 export declare function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-  terminateMessage?: (p: Deferred.Deferred<never, void>) => Option.Option<Req>
+  poisonPill: Req
 ): Effect.Effect<Sharding | Scope | R, never, void>
 ```
 

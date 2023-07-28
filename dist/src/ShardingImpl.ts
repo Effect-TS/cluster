@@ -59,6 +59,7 @@ import {
 import * as ShardId from "@effect/shardcake/ShardId"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as Storage from "@effect/shardcake/Storage"
+import type { JsonData } from "@effect/shardcake/utils"
 import { showHashSet } from "@effect/shardcake/utils"
 import { Sharding } from "./Sharding"
 
@@ -331,7 +332,7 @@ function make(
   function sendToLocalEntity(
     msg: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<any, any>>> {
+  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<JsonData, any>>> {
     return pipe(
       Ref.get(entityStates),
       Effect.flatMap((states) => {
@@ -399,7 +400,7 @@ function make(
     recipientTypeName: string,
     entityId: string,
     msg: Msg,
-    msgSchema: Schema.Schema<any, Msg>,
+    msgSchema: Schema.Schema<JsonData, Msg>,
     pod: PodAddress.PodAddress,
     replyId: Option.Option<ReplyId.ReplyId>,
     replyChannel: ReplyChannel.ReplyChannel<Res>

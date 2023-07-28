@@ -1,6 +1,6 @@
 ---
 title: Serialization.ts
-nav_order: 20
+nav_order: 21
 parent: Modules
 ---
 
@@ -69,14 +69,17 @@ export interface Serialization {
    */
   encode<A>(
     message: A,
-    schema: Schema.Schema<any, A>
+    schema: Schema.Schema<JsonData, A>
   ): Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>
 
   /**
    * Transform binary back into the given type
    * @since 1.0.0
    */
-  decode<A>(bytes: ByteArray.ByteArray, schema: Schema.Schema<any, A>): Effect.Effect<never, ShardError.DecodeError, A>
+  decode<A>(
+    bytes: ByteArray.ByteArray,
+    schema: Schema.Schema<JsonData, A>
+  ): Effect.Effect<never, ShardError.DecodeError, A>
 }
 ```
 

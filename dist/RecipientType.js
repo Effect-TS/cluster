@@ -22,7 +22,7 @@ function makeEntityType(name, schema) {
   return {
     _tag: "EntityType",
     name,
-    schema
+    schema: schema
   };
 }
 /**
@@ -33,7 +33,7 @@ function makeTopicType(name, schema) {
   return {
     _tag: "TopicType",
     name,
-    schema
+    schema: schema
   };
 }
 /**

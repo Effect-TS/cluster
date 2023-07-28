@@ -6,6 +6,7 @@ import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
 import * as Replier from "@effect/shardcake/Replier"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
+import type { JsonData } from "@effect/shardcake/utils"
 
 /**
  * @since 1.0.0
@@ -53,18 +54,18 @@ export function isMessage<R>(value: unknown): value is Message<R> {
  * @since 1.0.0
  * @category schema
  */
-export function schema<A>(success: Schema.Schema<any, A>) {
-  return function<I extends object>(
-    item: Schema.Schema<any, I>
+export function schema<RI extends JsonData, RA>(replySchema: Schema.Schema<RI, RA>) {
+  return function<I extends JsonData, A extends object>(
+    item: Schema.Schema<I, A>
   ): readonly [
-    Schema.Schema<any, Schema.Spread<I & Message<A>>>,
-    (arg: I) => (replyId: ReplyId.ReplyId) => Schema.Spread<I & Message<A>>
+    Schema.Schema<I, Schema.Spread<A & Message<RA>>>,
+    (arg: A) => (replyId: ReplyId.ReplyId) => Schema.Spread<A & Message<RA>>
   ] {
-    const result = pipe(item, Schema.extend(Schema.struct({ replier: Replier.schema(success) })))
+    const result = pipe(item, Schema.extend(Schema.struct({ replier: Replier.schema(replySchema) })))
 
-    const make = (arg: I) =>
-      (replyId: ReplyId.ReplyId): Schema.Spread<I & Message<A>> =>
-        Data.struct({ ...arg, replier: Replier.replier(replyId, success) }) as any
+    const make = (arg: A) =>
+      (replyId: ReplyId.ReplyId): Schema.Spread<A & Message<RA>> =>
+        Data.struct({ ...arg, replier: Replier.replier(replyId, replySchema) }) as any
 
     return [result as any, make] as const
   }

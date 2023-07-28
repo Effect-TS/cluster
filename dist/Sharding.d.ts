@@ -23,6 +23,7 @@ import type * as RecipentType from "@effect/shardcake/RecipientType";
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel";
 import type * as ShardId from "@effect/shardcake/ShardId";
 import type * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent";
+import type { JsonData } from "@effect/shardcake/utils";
 /**
  * @since 1.0.0
  * @category models
@@ -46,7 +47,7 @@ export interface Sharding {
     refreshAssignments: Effect.Effect<never, never, void>;
     assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
     unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
-    sendToLocalEntity(msg: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<any, any>>>;
+    sendToLocalEntity(msg: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<JsonData, any>>>;
     sendToLocalEntityStreamingReply(msg: BinaryMessage.BinaryMessage): Stream.Stream<never, Throwable, ByteArray.ByteArray>;
     sendToLocalEntitySingleReply(msg: BinaryMessage.BinaryMessage): Effect.Effect<never, Throwable, Option.Option<ByteArray.ByteArray>>;
     getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>;

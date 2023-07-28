@@ -1,6 +1,6 @@
 ---
 title: Replier.ts
-nav_order: 17
+nav_order: 18
 parent: Modules
 ---
 
@@ -31,7 +31,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const replier: <R>(id: ReplyId.ReplyId, schema: Schema.Schema<any, R>) => Replier<R>
+export declare const replier: <I extends JsonData, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>) => Replier<A>
 ```
 
 Added in v1.0.0
@@ -43,11 +43,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Replier<R> {
+export interface Replier<A> {
   [TypeId]: {}
   id: ReplyId.ReplyId
-  schema: Schema.Schema<any, R>
-  reply: (reply: R) => Effect.Effect<Sharding.Sharding, never, void>
+  schema: Schema.Schema<JsonData, A>
+  reply: (reply: A) => Effect.Effect<Sharding.Sharding, never, void>
 }
 ```
 
@@ -60,7 +60,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const schema: <A>(schema: Schema.Schema<any, A>) => Schema.Schema<any, Replier<A>>
+export declare const schema: <I extends JsonData, A>(schema: Schema.Schema<I, A>) => Schema.Schema<I, Replier<A>>
 ```
 
 Added in v1.0.0

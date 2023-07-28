@@ -6,6 +6,7 @@ import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
 import * as StreamReplier from "@effect/shardcake/StreamReplier"
+import type { JsonData } from "@effect/shardcake/utils"
 
 /**
  * @since 1.0.0
@@ -53,11 +54,11 @@ export function isStreamMessage<R>(value: unknown): value is StreamMessage<R> {
  * @since 1.0.0
  * @category schema
  */
-export function schema<A>(success: Schema.Schema<any, A>) {
-  return function<I extends object>(
-    item: Schema.Schema<any, I>
+export function schema<I2 extends JsonData, A>(success: Schema.Schema<I2, A>) {
+  return function<I1 extends JsonData, I extends object>(
+    item: Schema.Schema<I1, I>
   ): readonly [
-    Schema.Schema<any, Schema.Spread<I & StreamMessage<A>>>,
+    Schema.Schema<I1, Schema.Spread<I & StreamMessage<A>>>,
     (arg: I) => (replyId: ReplyId.ReplyId) => Schema.Spread<I & StreamMessage<A>>
   ] {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: StreamReplier.schema(success) })))

@@ -24,6 +24,7 @@ import type * as RecipentType from "@effect/shardcake/RecipientType"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import type * as ShardId from "@effect/shardcake/ShardId"
 import type * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
+import type { JsonData } from "@effect/shardcake/utils"
 
 /**
  * @since 1.0.0
@@ -81,7 +82,7 @@ export interface Sharding {
   sendToLocalEntity(
     msg: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<any, any>>>
+  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<JsonData, any>>>
   sendToLocalEntityStreamingReply(
     msg: BinaryMessage.BinaryMessage
   ): Stream.Stream<never, Throwable, ByteArray.ByteArray>

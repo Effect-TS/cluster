@@ -14,6 +14,7 @@ import * as ShardId from "@effect/shardcake/ShardId"
 import * as Storage from "@effect/shardcake/Storage"
 import * as Stream from "@effect/stream/Stream"
 import * as fs from "fs"
+import type { JsonData } from "./utils"
 import { jsonParse, jsonStringify } from "./utils"
 
 const PODS_FILE = "pods.json"
@@ -25,7 +26,7 @@ const AssignmentsSchema = Schema.array(
 
 const PodsSchema = Schema.array(Schema.tuple(PodAddress.schema, Pod.schema))
 
-function writeJsonData<A>(fileName: string, schema: Schema.Schema<any, A>, data: A) {
+function writeJsonData<I extends JsonData, A>(fileName: string, schema: Schema.Schema<I, A>, data: A) {
   return pipe(
     jsonStringify(data, schema),
     Effect.flatMap((data) => Effect.sync(() => fs.writeFileSync(fileName, data))),
@@ -33,7 +34,7 @@ function writeJsonData<A>(fileName: string, schema: Schema.Schema<any, A>, data:
   )
 }
 
-function readJsonData<A>(fileName: string, schema: Schema.Schema<any, A>, empty: A) {
+function readJsonData<I extends JsonData, A>(fileName: string, schema: Schema.Schema<I, A>, empty: A) {
   return pipe(
     Effect.sync(() => fs.existsSync(fileName)),
     Effect.flatMap((exists) =>

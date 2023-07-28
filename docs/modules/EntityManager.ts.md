@@ -29,7 +29,7 @@ Added in v1.0.0
 export declare function make<R, Req>(
   recipientType: RecipientType.RecipientType<Req>,
   behavior_: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-  terminateMessage: (p: Deferred.Deferred<never, void>) => Option.Option<Req>,
+  poisonPill: Req,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>

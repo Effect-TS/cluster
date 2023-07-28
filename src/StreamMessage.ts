@@ -6,6 +6,7 @@ import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
 import * as StreamReplier from "@effect/shardcake/StreamReplier"
+import type { JsonData } from "@effect/shardcake/utils"
 
 /**
  * @since 1.0.0
@@ -38,7 +39,7 @@ export interface StreamMessage<A> {
 export type Success<A> = A extends StreamMessage<infer X> ? X : never
 
 /** @internal */
-export function isStreamMessage<R>(value: unknown): value is StreamMessage<R> {
+export function isStreamMessage<A>(value: unknown): value is StreamMessage<A> {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -53,17 +54,17 @@ export function isStreamMessage<R>(value: unknown): value is StreamMessage<R> {
  * @since 1.0.0
  * @category schema
  */
-export function schema<A>(success: Schema.Schema<any, A>) {
-  return function<I extends object>(
-    item: Schema.Schema<any, I>
+export function schema<RI extends JsonData, RA>(success: Schema.Schema<RI, RA>) {
+  return function<I extends JsonData, A extends object>(
+    item: Schema.Schema<I, A>
   ): readonly [
-    Schema.Schema<any, Schema.Spread<I & StreamMessage<A>>>,
-    (arg: I) => (replyId: ReplyId.ReplyId) => Schema.Spread<I & StreamMessage<A>>
+    Schema.Schema<I, Schema.Spread<A & StreamMessage<RA>>>,
+    (arg: A) => (replyId: ReplyId.ReplyId) => Schema.Spread<A & StreamMessage<RA>>
   ] {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: StreamReplier.schema(success) })))
 
-    const make = (arg: I) =>
-      (replyId: ReplyId.ReplyId): Schema.Spread<I & StreamMessage<A>> =>
+    const make = (arg: A) =>
+      (replyId: ReplyId.ReplyId): Schema.Spread<A & StreamMessage<RA>> =>
         Data.struct({ ...arg, replier: StreamReplier.streamReplier(replyId, success) }) as any
 
     return [result as any, make] as const

@@ -14,6 +14,27 @@ import { DecodeError, EncodeError, FetchError } from "@effect/shardcake/ShardErr
 import * as Stream from "@effect/stream/Stream"
 import fetch from "node-fetch"
 
+/**
+ * @since 1.0.0
+ */
+export type JsonArray = ReadonlyArray<JsonData>
+
+/**
+ * @since 1.0.0
+ */
+export type JsonObject = { readonly [key: string]: JsonData }
+
+/**
+ * @since 1.0.0
+ */
+export type JsonData =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonArray
+  | JsonObject
+
 /** @internal */
 export function minByOption<A>(f: (value: A) => number) {
   return (fa: Iterable<A>) => {
@@ -48,7 +69,7 @@ export function groupBy<A, K>(f: (value: A) => K) {
 }
 
 /** @internal */
-export function jsonStringify<A>(value: A, schema: Schema.Schema<any, A>) {
+export function jsonStringify<I extends JsonData, A>(value: A, schema: Schema.Schema<I, A>) {
   return pipe(
     value,
     Schema.encode(schema),
@@ -58,7 +79,7 @@ export function jsonStringify<A>(value: A, schema: Schema.Schema<any, A>) {
 }
 
 /** @internal */
-export function jsonParse<A>(value: string, schema: Schema.Schema<any, A>) {
+export function jsonParse<I extends JsonData, A>(value: string, schema: Schema.Schema<I, A>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
     Effect.flatMap(Schema.decode(schema)),
@@ -67,7 +88,7 @@ export function jsonParse<A>(value: string, schema: Schema.Schema<any, A>) {
 }
 
 /** @internal */
-export function sendInternal<A>(send: Schema.Schema<any, A>) {
+export function sendInternal<I extends JsonData, A>(send: Schema.Schema<I, A>) {
   return (url: string, data: A) =>
     pipe(
       jsonStringify(data, send),
@@ -89,7 +110,10 @@ export function sendInternal<A>(send: Schema.Schema<any, A>) {
 }
 
 /** @internal */
-export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
+export function send<I extends JsonData, A, I2 extends JsonData, E, R>(
+  send: Schema.Schema<I, A>,
+  reply: Schema.Schema<I2, Either.Either<E, R>>
+) {
   return (url: string, data: A): Effect.Effect<never, E, R> =>
     pipe(
       sendInternal(send)(url, data),
@@ -101,7 +125,10 @@ export function send<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<
 }
 
 /** @internal */
-export function sendStream<A, E, R>(send: Schema.Schema<any, A>, reply: Schema.Schema<any, Either.Either<E, R>>) {
+export function sendStream<I extends JsonData, A, I2 extends JsonData, E, R>(
+  send: Schema.Schema<I, A>,
+  reply: Schema.Schema<I2, Either.Either<E, R>>
+) {
   return (url: string, data: A): Stream.Stream<never, E | DecodeError | EncodeError | FetchError, R> =>
     pipe(
       sendInternal(send)(url, data),

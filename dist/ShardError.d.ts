@@ -111,16 +111,16 @@ export declare function isPodUnavailableError(value: any): value is PodUnavailab
  * @category schema
  */
 export declare const EntityTypeNotRegistered_: Schema.Schema<{
-    readonly entityType: string;
     readonly _tag: "EntityTypeNotRegistered";
+    readonly entityType: string;
     readonly podAddress: {
         readonly _id: "@effect/shardcake/PodAddress";
         readonly host: string;
         readonly port: number;
     };
 }, {
-    readonly entityType: string;
     readonly _tag: "EntityTypeNotRegistered";
+    readonly entityType: string;
     readonly podAddress: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/PodAddress";
         readonly host: string;

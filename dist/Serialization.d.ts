@@ -7,6 +7,7 @@ import * as Layer from "@effect/io/Layer";
 import type * as Schema from "@effect/schema/Schema";
 import * as ByteArray from "@effect/shardcake/ByteArray";
 import * as ShardError from "@effect/shardcake/ShardError";
+import type { JsonData } from "./utils";
 /**
  * @since 1.0.0
  * @category symbols
@@ -28,12 +29,12 @@ export interface Serialization {
      * Transforms the given message into binary
      * @since 1.0.0
      */
-    encode<A>(message: A, schema: Schema.Schema<any, A>): Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>;
+    encode<A>(message: A, schema: Schema.Schema<JsonData, A>): Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>;
     /**
      * Transform binary back into the given type
      * @since 1.0.0
      */
-    decode<A>(bytes: ByteArray.ByteArray, schema: Schema.Schema<any, A>): Effect.Effect<never, ShardError.DecodeError, A>;
+    decode<A>(bytes: ByteArray.ByteArray, schema: Schema.Schema<JsonData, A>): Effect.Effect<never, ShardError.DecodeError, A>;
 }
 /**
  * @since 1.0.0

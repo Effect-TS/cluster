@@ -4,6 +4,7 @@ import type * as Schema from "@effect/schema/Schema";
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage";
 import type * as EntityManager from "@effect/shardcake/EntityManager";
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel";
+import type { JsonData } from "@effect/shardcake/utils";
 /**
  * @since 1.0.0
  * @category symbols
@@ -21,7 +22,7 @@ export type TypeId = typeof TypeId;
 export interface EntityState {
     [TypeId]: {};
     entityManager: EntityManager.EntityManager<never>;
-    processBinary: (binaryMessage: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, never, Option.Option<Schema.Schema<any, any>>>;
+    processBinary: (binaryMessage: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, never, Option.Option<Schema.Schema<JsonData, any>>>;
 }
 /**
  * @since 1.0.0

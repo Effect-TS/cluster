@@ -30,7 +30,7 @@ const streamReplier = (id, schema) => {
   const self = {
     [TypeId]: {},
     id,
-    schema,
+    schema: schema,
     reply: reply => Effect.flatMap(Sharding.Sharding, _ => _.replyStream(reply, self))
   };
   return self;

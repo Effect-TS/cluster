@@ -31,14 +31,14 @@ function isMessage(value) {
  * @since 1.0.0
  * @category schema
  */
-function schema(success) {
+function schema(replySchema) {
   return function (item) {
     const result = Schema.extend(Schema.struct({
-      replier: Replier.schema(success)
+      replier: Replier.schema(replySchema)
     }))(item);
     const make = arg => replyId => Data.struct({
       ...arg,
-      replier: Replier.replier(replyId, success)
+      replier: Replier.replier(replyId, replySchema)
     });
     return [result, make];
   };

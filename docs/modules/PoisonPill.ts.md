@@ -1,10 +1,10 @@
 ---
-title: ShardId.ts
-nav_order: 23
+title: PoisonPill.ts
+nav_order: 16
 parent: Modules
 ---
 
-## ShardId overview
+## PoisonPill overview
 
 Added in v1.0.0
 
@@ -15,12 +15,13 @@ Added in v1.0.0
 - [constructors](#constructors)
   - [make](#make)
 - [models](#models)
-  - [ShardId (interface)](#shardid-interface)
+  - [PoisonPill (interface)](#poisonpill-interface)
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
   - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+- [utils](#utils)
+  - [isPoisonPill](#ispoisonpill)
 
 ---
 
@@ -28,22 +29,24 @@ Added in v1.0.0
 
 ## make
 
+`PoisonPill`
+
 **Signature**
 
 ```ts
-export declare function make(value: number): ShardId
+export declare const make: PoisonPill
 ```
 
 Added in v1.0.0
 
 # models
 
-## ShardId (interface)
+## PoisonPill (interface)
 
 **Signature**
 
 ```ts
-export interface ShardId extends Schema.To<typeof schema> {}
+export interface PoisonPill extends Schema.To<typeof schema> {}
 ```
 
 Added in v1.0.0
@@ -58,8 +61,8 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: '@effect/shardcake/ShardId'; readonly value: number },
-  Data.Data<{ readonly _id: '@effect/shardcake/ShardId'; readonly value: number }>
+  { readonly _id: '@effect/shardcake/PoisonPill' },
+  Data.Data<{ readonly _id: '@effect/shardcake/PoisonPill' }>
 >
 ```
 
@@ -72,17 +75,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/shardcake/ShardId'
+export declare const TypeId: '@effect/shardcake/PoisonPill'
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+# utils
+
+## isPoisonPill
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export declare function isPoisonPill(value: unknown): value is PoisonPill
 ```
 
 Added in v1.0.0

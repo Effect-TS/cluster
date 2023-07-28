@@ -1,6 +1,6 @@
 ---
 title: RecipientType.ts
-nav_order: 16
+nav_order: 17
 parent: Modules
 ---
 
@@ -31,7 +31,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function makeEntityType<Msg>(name: string, schema: Schema.Schema<any, Msg>): EntityType<Msg>
+export declare function makeEntityType<I extends JsonData, Msg>(
+  name: string,
+  schema: Schema.Schema<I, Msg>
+): EntityType<Msg>
 ```
 
 Added in v1.0.0
@@ -41,7 +44,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function makeTopicType<Msg>(name: string, schema: Schema.Schema<any, Msg>): TopicType<Msg>
+export declare function makeTopicType<I extends JsonData, Msg>(
+  name: string,
+  schema: Schema.Schema<I, Msg>
+): TopicType<Msg>
 ```
 
 Added in v1.0.0
@@ -56,7 +62,7 @@ Added in v1.0.0
 export interface EntityType<Msg> {
   _tag: 'EntityType'
   name: string
-  schema: Schema.Schema<any, Msg>
+  schema: Schema.Schema<JsonData, Msg>
 }
 ```
 
@@ -82,7 +88,7 @@ Added in v1.0.0
 export interface TopicType<Msg> {
   _tag: 'TopicType'
   name: string
-  schema: Schema.Schema<any, Msg>
+  schema: Schema.Schema<JsonData, Msg>
 }
 ```
 

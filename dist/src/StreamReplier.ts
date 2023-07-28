@@ -5,6 +5,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as ReplyId from "@effect/shardcake/ReplyId"
 import * as Sharding from "@effect/shardcake/Sharding"
+import type { JsonData } from "@effect/shardcake/utils"
 import type * as Stream from "@effect/stream/Stream"
 
 /**
@@ -26,7 +27,7 @@ export type TypeId = typeof TypeId
 export interface StreamReplier<R> {
   [TypeId]: {}
   id: ReplyId.ReplyId
-  schema: Schema.Schema<any, R>
+  schema: Schema.Schema<JsonData, R>
   reply: (reply: Stream.Stream<never, never, R>) => Effect.Effect<Sharding.Sharding, never, void>
 }
 
@@ -34,11 +35,14 @@ export interface StreamReplier<R> {
  * @since 1.0.0
  * @category constructors
  */
-export const streamReplier = <R>(id: ReplyId.ReplyId, schema: Schema.Schema<any, R>): StreamReplier<R> => {
-  const self: StreamReplier<R> = {
+export const streamReplier = <I extends JsonData, A>(
+  id: ReplyId.ReplyId,
+  schema: Schema.Schema<I, A>
+): StreamReplier<A> => {
+  const self: StreamReplier<A> = {
     [TypeId]: {},
     id,
-    schema,
+    schema: schema as any,
     reply: (reply) => Effect.flatMap(Sharding.Sharding, (_) => _.replyStream(reply, self))
   }
   return self
@@ -53,7 +57,7 @@ export function isStreamReplier<R>(value: unknown): value is StreamReplier<R> {
  * @since 1.0.0
  * @category schema
  */
-export const schema = <A>(schema: Schema.Schema<any, A>): Schema.Schema<any, StreamReplier<A>> => {
+export const schema = <I extends JsonData, A>(schema: Schema.Schema<I, A>): Schema.Schema<I, StreamReplier<A>> => {
   return Schema.transform(
     ReplyId.schema,
     Schema.unknown,

@@ -1,6 +1,6 @@
 ---
 title: StreamReplier.ts
-nav_order: 39
+nav_order: 40
 parent: Modules
 ---
 
@@ -31,7 +31,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const streamReplier: <R>(id: ReplyId.ReplyId, schema: Schema.Schema<any, R>) => StreamReplier<R>
+export declare const streamReplier: <I extends JsonData, A>(
+  id: ReplyId.ReplyId,
+  schema: Schema.Schema<I, A>
+) => StreamReplier<A>
 ```
 
 Added in v1.0.0
@@ -43,11 +46,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface StreamReplier<R> {
+export interface StreamReplier<A> {
   [TypeId]: {}
   id: ReplyId.ReplyId
-  schema: Schema.Schema<any, R>
-  reply: (reply: Stream.Stream<never, never, R>) => Effect.Effect<Sharding.Sharding, never, void>
+  schema: Schema.Schema<JsonData, A>
+  reply: (reply: Stream.Stream<never, never, A>) => Effect.Effect<Sharding.Sharding, never, void>
 }
 ```
 
@@ -60,7 +63,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const schema: <A>(schema: Schema.Schema<any, A>) => Schema.Schema<any, StreamReplier<A>>
+export declare const schema: <I extends JsonData, A>(schema: Schema.Schema<I, A>) => Schema.Schema<I, StreamReplier<A>>
 ```
 
 Added in v1.0.0

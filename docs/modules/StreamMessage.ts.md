@@ -1,6 +1,6 @@
 ---
 title: StreamMessage.ts
-nav_order: 38
+nav_order: 39
 parent: Modules
 ---
 
@@ -49,7 +49,7 @@ Creates both the schema and a constructor for a `Message<A>`
 **Signature**
 
 ```ts
-export declare function schema<A>(success: Schema.Schema<any, A>)
+export declare function schema<RI extends JsonData, RA>(success: Schema.Schema<RI, RA>)
 ```
 
 Added in v1.0.0

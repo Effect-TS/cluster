@@ -5,6 +5,7 @@ import * as Effect from "@effect/io/Effect";
 import * as Schema from "@effect/schema/Schema";
 import * as ReplyId from "@effect/shardcake/ReplyId";
 import * as Sharding from "@effect/shardcake/Sharding";
+import type { JsonData } from "@effect/shardcake/utils";
 import type * as Stream from "@effect/stream/Stream";
 /**
  * @since 1.0.0
@@ -23,17 +24,17 @@ export type TypeId = typeof TypeId;
 export interface StreamReplier<R> {
     [TypeId]: {};
     id: ReplyId.ReplyId;
-    schema: Schema.Schema<any, R>;
+    schema: Schema.Schema<JsonData, R>;
     reply: (reply: Stream.Stream<never, never, R>) => Effect.Effect<Sharding.Sharding, never, void>;
 }
 /**
  * @since 1.0.0
  * @category constructors
  */
-export declare const streamReplier: <R>(id: ReplyId.ReplyId, schema: Schema.Schema<any, R>) => StreamReplier<R>;
+export declare const streamReplier: <I extends JsonData, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>) => StreamReplier<A>;
 /**
  * @since 1.0.0
  * @category schema
  */
-export declare const schema: <A>(schema: Schema.Schema<any, A>) => Schema.Schema<any, StreamReplier<A>>;
+export declare const schema: <I extends JsonData, A>(schema: Schema.Schema<I, A>) => Schema.Schema<I, StreamReplier<A>>;
 //# sourceMappingURL=StreamReplier.d.ts.map
