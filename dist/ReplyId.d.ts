@@ -41,10 +41,10 @@ export declare const makeEffect: Effect.Effect<never, never, ReplyId>;
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly value: string;
     readonly _id: "@effect/shardcake/ReplyId";
+    readonly value: string;
 }, Data.Data<{
-    readonly value: string;
     readonly _id: "@effect/shardcake/ReplyId";
+    readonly value: string;
 }>>;
 //# sourceMappingURL=ReplyId.d.ts.map

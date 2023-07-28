@@ -62,6 +62,7 @@ export interface Sharding {
       entityId: string,
       dequeue: Queue.Dequeue<Req>
     ) => Effect.Effect<R, never, void>,
+    poisonPill: Req,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>
   registerTopic<Req, R>(
@@ -69,7 +70,8 @@ export interface Sharding {
     behavior: (
       entityId: string,
       dequeue: Queue.Dequeue<Req>
-    ) => Effect.Effect<R, never, void>
+    ) => Effect.Effect<R, never, void>,
+    poisonPill: Req
   ): Effect.Effect<Scope | R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>
@@ -143,9 +145,10 @@ export function registerEntity<Req, R>(
     entityId: string,
     dequeue: Queue.Dequeue<Req>
   ) => Effect.Effect<R, never, void>,
+  poisonPill: Req,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | Scope | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, entityMaxIdleTime))
+  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, poisonPill, entityMaxIdleTime))
 }
 
 /**
@@ -161,9 +164,10 @@ export function registerTopic<Req, R>(
   behavior: (
     entityId: string,
     dequeue: Queue.Dequeue<Req>
-  ) => Effect.Effect<R, never, void>
+  ) => Effect.Effect<R, never, void>,
+  poisonPill: Req
 ): Effect.Effect<Sharding | Scope | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior))
+  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior, poisonPill))
 }
 
 /**

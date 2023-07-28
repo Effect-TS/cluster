@@ -65,8 +65,8 @@ function registerSingleton(name, run) {
  * @since 1.0.0
  * @category utils
  */
-function registerEntity(entityType, behavior, entityMaxIdleTime) {
-  return Effect.flatMap(Sharding, _ => _.registerEntity(entityType, behavior, entityMaxIdleTime));
+function registerEntity(entityType, behavior, poisonPill, entityMaxIdleTime) {
+  return Effect.flatMap(Sharding, _ => _.registerEntity(entityType, behavior, poisonPill, entityMaxIdleTime));
 }
 /**
  * Register a new topic type, allowing pods to broadcast messages to subscribers.
@@ -76,8 +76,8 @@ function registerEntity(entityType, behavior, entityMaxIdleTime) {
  * @since 1.0.0
  * @category utils
  */
-function registerTopic(topicType, behavior) {
-  return Effect.flatMap(Sharding, _ => _.registerTopic(topicType, behavior));
+function registerTopic(topicType, behavior, poisonPill) {
+  return Effect.flatMap(Sharding, _ => _.registerTopic(topicType, behavior, poisonPill));
 }
 /**
  * Get an object that allows sending messages to a given entity type.

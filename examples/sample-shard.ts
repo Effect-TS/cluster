@@ -4,6 +4,7 @@ import * as Logger from "@effect/io/Logger"
 import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as PodsHttp from "@effect/shardcake/PodsHttp"
+import * as PoisonPill from "@effect/shardcake/PoisonPill"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
@@ -26,6 +27,9 @@ const program = pipe(
           Queue.take(dequeue),
           Effect.flatMap(
             (msg) => {
+              if (PoisonPill.isPoisonPill(msg)) {
+                return Effect.interrupt
+              }
               switch (msg._tag) {
                 case "Increment":
                   return SubscriptionRef.update(count, (a) => a + 1)
@@ -46,7 +50,7 @@ const program = pipe(
           Effect.forever
         )
       )
-    )),
+    ), PoisonPill.make),
   Effect.zipRight(Sharding.register),
   Effect.zipRight(Effect.never),
   ShardingServiceHttp.shardingServiceHttp,

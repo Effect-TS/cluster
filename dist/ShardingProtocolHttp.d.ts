@@ -7,17 +7,17 @@ import * as Schema from "@effect/schema/Schema";
  * @category schema
  */
 export declare const AssignShard_: Schema.Schema<{
+    readonly _tag: "AssignShards";
     readonly shards: readonly {
-        readonly value: number;
         readonly _id: "@effect/shardcake/ShardId";
+        readonly value: number;
     }[];
-    readonly _tag: "AssignShards";
 }, {
-    readonly shards: readonly import("@effect/data/Data").Data<{
-        readonly value: number;
-        readonly _id: "@effect/shardcake/ShardId";
-    }>[];
     readonly _tag: "AssignShards";
+    readonly shards: readonly import("@effect/data/Data").Data<{
+        readonly _id: "@effect/shardcake/ShardId";
+        readonly value: number;
+    }>[];
 }>;
 /**
  * @since 1.0.0
@@ -35,17 +35,17 @@ export declare const AssignShardResult_: Schema.Schema<{
  * @category schema
  */
 export declare const UnassignShards_: Schema.Schema<{
+    readonly _tag: "UnassignShards";
     readonly shards: readonly {
-        readonly value: number;
         readonly _id: "@effect/shardcake/ShardId";
+        readonly value: number;
     }[];
-    readonly _tag: "UnassignShards";
 }, {
-    readonly shards: readonly import("@effect/data/Data").Data<{
-        readonly value: number;
-        readonly _id: "@effect/shardcake/ShardId";
-    }>[];
     readonly _tag: "UnassignShards";
+    readonly shards: readonly import("@effect/data/Data").Data<{
+        readonly _id: "@effect/shardcake/ShardId";
+        readonly value: number;
+    }>[];
 }>;
 /**
  * @since 1.0.0
@@ -66,19 +66,19 @@ export declare const Send_: Schema.Schema<{
     readonly _tag: "Send";
     readonly message: {
         readonly _id: "@effect/shardcake/BinaryMessage";
-        readonly entityType: string;
         readonly entityId: string;
+        readonly entityType: string;
         readonly body: {
-            readonly value: string;
             readonly _id: "@effect/shardcake/ByteArray";
+            readonly value: string;
         };
         readonly replyId: {
             readonly _tag: "None";
         } | {
             readonly _tag: "Some";
             readonly value: {
-                readonly value: string;
                 readonly _id: "@effect/shardcake/ReplyId";
+                readonly value: string;
             };
         };
     };
@@ -86,15 +86,15 @@ export declare const Send_: Schema.Schema<{
     readonly _tag: "Send";
     readonly message: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/BinaryMessage";
-        readonly entityType: string;
         readonly entityId: string;
+        readonly entityType: string;
         readonly body: import("@effect/data/Data").Data<{
-            readonly value: string;
             readonly _id: "@effect/shardcake/ByteArray";
+            readonly value: string;
         }>;
         readonly replyId: import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
-            readonly value: string;
             readonly _id: "@effect/shardcake/ReplyId";
+            readonly value: string;
         }>>;
     }>;
 }>;
@@ -105,8 +105,8 @@ export declare const Send_: Schema.Schema<{
 export declare const SendResult_: Schema.Schema<{
     readonly _tag: "Left";
     readonly left: {
-        readonly _tag: "EntityTypeNotRegistered";
         readonly entityType: string;
+        readonly _tag: "EntityTypeNotRegistered";
         readonly podAddress: {
             readonly _id: "@effect/shardcake/PodAddress";
             readonly host: string;
@@ -120,21 +120,21 @@ export declare const SendResult_: Schema.Schema<{
     } | {
         readonly _tag: "Some";
         readonly value: {
-            readonly value: string;
             readonly _id: "@effect/shardcake/ByteArray";
+            readonly value: string;
         };
     };
 }, import("@effect/data/Either").Either<{
-    readonly _tag: "EntityTypeNotRegistered";
     readonly entityType: string;
+    readonly _tag: "EntityTypeNotRegistered";
     readonly podAddress: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/PodAddress";
         readonly host: string;
         readonly port: number;
     }>;
 }, import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
-    readonly value: string;
     readonly _id: "@effect/shardcake/ByteArray";
+    readonly value: string;
 }>>>>;
 /**
  * @since 1.0.0
@@ -144,19 +144,19 @@ export declare const SendStream_: Schema.Schema<{
     readonly _tag: "SendStream";
     readonly message: {
         readonly _id: "@effect/shardcake/BinaryMessage";
-        readonly entityType: string;
         readonly entityId: string;
+        readonly entityType: string;
         readonly body: {
-            readonly value: string;
             readonly _id: "@effect/shardcake/ByteArray";
+            readonly value: string;
         };
         readonly replyId: {
             readonly _tag: "None";
         } | {
             readonly _tag: "Some";
             readonly value: {
-                readonly value: string;
                 readonly _id: "@effect/shardcake/ReplyId";
+                readonly value: string;
             };
         };
     };
@@ -164,15 +164,15 @@ export declare const SendStream_: Schema.Schema<{
     readonly _tag: "SendStream";
     readonly message: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/BinaryMessage";
-        readonly entityType: string;
         readonly entityId: string;
+        readonly entityType: string;
         readonly body: import("@effect/data/Data").Data<{
-            readonly value: string;
             readonly _id: "@effect/shardcake/ByteArray";
+            readonly value: string;
         }>;
         readonly replyId: import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
-            readonly value: string;
             readonly _id: "@effect/shardcake/ReplyId";
+            readonly value: string;
         }>>;
     }>;
 }>;
@@ -183,8 +183,8 @@ export declare const SendStream_: Schema.Schema<{
 export declare const SendStreamResultItem_: Schema.Schema<{
     readonly _tag: "Left";
     readonly left: {
-        readonly _tag: "EntityTypeNotRegistered";
         readonly entityType: string;
+        readonly _tag: "EntityTypeNotRegistered";
         readonly podAddress: {
             readonly _id: "@effect/shardcake/PodAddress";
             readonly host: string;
@@ -194,20 +194,20 @@ export declare const SendStreamResultItem_: Schema.Schema<{
 } | {
     readonly _tag: "Right";
     readonly right: {
-        readonly value: string;
         readonly _id: "@effect/shardcake/ByteArray";
+        readonly value: string;
     };
 }, import("@effect/data/Either").Either<{
-    readonly _tag: "EntityTypeNotRegistered";
     readonly entityType: string;
+    readonly _tag: "EntityTypeNotRegistered";
     readonly podAddress: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/PodAddress";
         readonly host: string;
         readonly port: number;
     }>;
 }, import("@effect/data/Data").Data<{
-    readonly value: string;
     readonly _id: "@effect/shardcake/ByteArray";
+    readonly value: string;
 }>>>;
 /**
  * @since 1.0.0
@@ -236,36 +236,34 @@ export declare const PingShardsResult_: Schema.Schema<{
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly shards: readonly {
-        readonly value: number;
-        readonly _id: "@effect/shardcake/ShardId";
-    }[];
     readonly _tag: "AssignShards";
-} | {
     readonly shards: readonly {
-        readonly value: number;
         readonly _id: "@effect/shardcake/ShardId";
+        readonly value: number;
     }[];
-    readonly _tag: "UnassignShards";
 } | {
-    readonly _tag: "PingShards";
+    readonly _tag: "UnassignShards";
+    readonly shards: readonly {
+        readonly _id: "@effect/shardcake/ShardId";
+        readonly value: number;
+    }[];
 } | {
     readonly _tag: "Send";
     readonly message: {
         readonly _id: "@effect/shardcake/BinaryMessage";
-        readonly entityType: string;
         readonly entityId: string;
+        readonly entityType: string;
         readonly body: {
-            readonly value: string;
             readonly _id: "@effect/shardcake/ByteArray";
+            readonly value: string;
         };
         readonly replyId: {
             readonly _tag: "None";
         } | {
             readonly _tag: "Some";
             readonly value: {
-                readonly value: string;
                 readonly _id: "@effect/shardcake/ReplyId";
+                readonly value: string;
             };
         };
     };
@@ -273,65 +271,67 @@ export declare const schema: Schema.Schema<{
     readonly _tag: "SendStream";
     readonly message: {
         readonly _id: "@effect/shardcake/BinaryMessage";
-        readonly entityType: string;
         readonly entityId: string;
+        readonly entityType: string;
         readonly body: {
-            readonly value: string;
             readonly _id: "@effect/shardcake/ByteArray";
+            readonly value: string;
         };
         readonly replyId: {
             readonly _tag: "None";
         } | {
             readonly _tag: "Some";
             readonly value: {
-                readonly value: string;
                 readonly _id: "@effect/shardcake/ReplyId";
+                readonly value: string;
             };
         };
     };
+} | {
+    readonly _tag: "PingShards";
 }, {
-    readonly shards: readonly import("@effect/data/Data").Data<{
-        readonly value: number;
-        readonly _id: "@effect/shardcake/ShardId";
-    }>[];
     readonly _tag: "AssignShards";
-} | {
     readonly shards: readonly import("@effect/data/Data").Data<{
-        readonly value: number;
         readonly _id: "@effect/shardcake/ShardId";
+        readonly value: number;
     }>[];
-    readonly _tag: "UnassignShards";
 } | {
-    readonly _tag: "PingShards";
+    readonly _tag: "UnassignShards";
+    readonly shards: readonly import("@effect/data/Data").Data<{
+        readonly _id: "@effect/shardcake/ShardId";
+        readonly value: number;
+    }>[];
 } | {
     readonly _tag: "Send";
     readonly message: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/BinaryMessage";
-        readonly entityType: string;
         readonly entityId: string;
+        readonly entityType: string;
         readonly body: import("@effect/data/Data").Data<{
-            readonly value: string;
             readonly _id: "@effect/shardcake/ByteArray";
+            readonly value: string;
         }>;
         readonly replyId: import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
-            readonly value: string;
             readonly _id: "@effect/shardcake/ReplyId";
+            readonly value: string;
         }>>;
     }>;
 } | {
     readonly _tag: "SendStream";
     readonly message: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/BinaryMessage";
-        readonly entityType: string;
         readonly entityId: string;
+        readonly entityType: string;
         readonly body: import("@effect/data/Data").Data<{
-            readonly value: string;
             readonly _id: "@effect/shardcake/ByteArray";
+            readonly value: string;
         }>;
         readonly replyId: import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
-            readonly value: string;
             readonly _id: "@effect/shardcake/ReplyId";
+            readonly value: string;
         }>>;
     }>;
+} | {
+    readonly _tag: "PingShards";
 }>;
 //# sourceMappingURL=ShardingProtocolHttp.d.ts.map

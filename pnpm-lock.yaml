@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 dependencies:
   '@effect/data':
     specifier: ~0.16.2
@@ -8047,3 +8043,7 @@ packages:
     dev: true
 
 publishDirectory: dist
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false

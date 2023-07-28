@@ -36,7 +36,10 @@ export type RecipientType<Msg> = EntityType<Msg> | TopicType<Msg>
  * @since 1.0.0
  * @category constructors
  */
-export function makeEntityType<Msg>(name: string, schema: Schema.Schema<any, Msg>): EntityType<Msg> {
+export function makeEntityType<Msg>(
+  name: string,
+  schema: Schema.Schema<any, Msg>
+): EntityType<Msg> {
   return { _tag: "EntityType", name, schema }
 }
 
@@ -44,7 +47,10 @@ export function makeEntityType<Msg>(name: string, schema: Schema.Schema<any, Msg
  * @since 1.0.0
  * @category constructors
  */
-export function makeTopicType<Msg>(name: string, schema: Schema.Schema<any, Msg>): TopicType<Msg> {
+export function makeTopicType<Msg>(
+  name: string,
+  schema: Schema.Schema<any, Msg>
+): TopicType<Msg> {
   return { _tag: "TopicType", name, schema }
 }
 

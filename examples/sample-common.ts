@@ -1,5 +1,6 @@
 import * as Schema from "@effect/schema/Schema"
 import * as Message from "@effect/shardcake/Message"
+import * as PoisonPill from "@effect/shardcake/PoisonPill"
 import * as RecipientType from "@effect/shardcake/RecipientType"
 import * as StreamMessage from "@effect/shardcake/StreamMessage"
 
@@ -16,6 +17,7 @@ export const [SubscribeChanges_, SubscribeChanges] = StreamMessage.schema(Schema
 )
 
 export const CounterMsg = Schema.union(
+  PoisonPill.schema,
   Schema.struct({
     _tag: Schema.literal("Increment")
   }),

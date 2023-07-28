@@ -51,6 +51,7 @@ export function make<R, Req>(
     entityId: string,
     dequeue: Queue.Dequeue<Req>
   ) => Effect.Effect<R, never, void>,
+  poisonPill: Req,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>
@@ -100,9 +101,9 @@ export function make<R, Req>(
                   // termination has already begun, keep everything as-is
                   onNone: () => Effect.succeed([Option.some(runningFiber), map] as const),
                   // begin to terminate the queue
-                  onSome: () =>
+                  onSome: (queue) =>
                     pipe(
-                      Fiber.interruptFork(runningFiber),
+                      Queue.offer(queue, poisonPill),
                       Effect.as(
                         [
                           Option.some(runningFiber),
@@ -197,17 +198,14 @@ export function make<R, Req>(
         Effect.Do,
         Effect.tap(() => {
           // first, verify that this entity should be handled by this pod
-          /// TODO: uncomment
-          // if (recipientType._tag === "EntityType") {
-          //   return Effect.unlessEffect(
-          //     Effect.fail(ShardError.EntityNotManagedByThisPod(entityId)),
-          //     sharding.isEntityOnLocalShards(recipientType, entityId)
-          //   )
-          // } else if (recipientType._tag === "TopicType") {
-          //   return Effect.unit
-          // }
-          return Effect.unit
-
+          if (recipientType._tag === "EntityType") {
+            return Effect.unlessEffect(
+              Effect.fail(ShardError.EntityNotManagedByThisPod(entityId)),
+              sharding.isEntityOnLocalShards(recipientType, entityId)
+            )
+          } else if (recipientType._tag === "TopicType") {
+            return Effect.unit
+          }
           return Effect.die("Unhandled recipientType")
         }),
         Effect.bind("test", () => RefSynchronized.modifyEffect(entities, (map) => decide(map, entityId))),
@@ -268,7 +266,12 @@ export function make<R, Req>(
               forkEntityTermination(entityId),
               Effect.flatMap(Option.match({
                 onNone: () => Effect.unit,
-                onSome: (executionFiber) => Fiber.await(executionFiber)
+                onSome: (executionFiber) =>
+                  pipe(
+                    Fiber.await(executionFiber),
+                    Effect.timeout(config.entityTerminationTimeout),
+                    Effect.asUnit
+                  )
               }))
             ),
           { concurrency: "inherit" }

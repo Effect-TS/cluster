@@ -14,7 +14,7 @@ import * as ShardError from "@effect/shardcake/ShardError";
  * @since 1.0.0
  * @category constructors
  */
-export function make(recipientType, behavior_, sharding, config, entityMaxIdle) {
+export function make(recipientType, behavior_, poisonPill, sharding, config, entityMaxIdle) {
   return Effect.gen(function* ($) {
     const entities = yield* $(RefSynchronized.make(HashMap.empty()));
     const env = yield* $(Effect.context());
@@ -31,7 +31,7 @@ export function make(recipientType, behavior_, sharding, config, entityMaxIdle) 
           // termination has already begun, keep everything as-is
           onNone: () => Effect.succeed([Option.some(runningFiber), map]),
           // begin to terminate the queue
-          onSome: () => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(Fiber.interruptFork(runningFiber))
+          onSome: queue => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(Queue.offer(queue, poisonPill))
         })(maybeQueue)
       })(HashMap.get(map, entityId)));
     }
@@ -71,16 +71,11 @@ export function make(recipientType, behavior_, sharding, config, entityMaxIdle) 
         }
       })(_.test))(Effect.bind("test", () => RefSynchronized.modifyEffect(entities, map => decide(map, entityId)))(Effect.tap(() => {
         // first, verify that this entity should be handled by this pod
-        /// TODO: uncomment
-        // if (recipientType._tag === "EntityType") {
-        //   return Effect.unlessEffect(
-        //     Effect.fail(ShardError.EntityNotManagedByThisPod(entityId)),
-        //     sharding.isEntityOnLocalShards(recipientType, entityId)
-        //   )
-        // } else if (recipientType._tag === "TopicType") {
-        //   return Effect.unit
-        // }
-        return Effect.unit;
+        if (recipientType._tag === "EntityType") {
+          return Effect.unlessEffect(Effect.fail(ShardError.EntityNotManagedByThisPod(entityId)), sharding.isEntityOnLocalShards(recipientType, entityId));
+        } else if (recipientType._tag === "TopicType") {
+          return Effect.unit;
+        }
         return Effect.die("Unhandled recipientType");
       })(Effect.Do)));
     }
@@ -88,7 +83,7 @@ export function make(recipientType, behavior_, sharding, config, entityMaxIdle) 
     function terminateEntities(entitiesToTerminate) {
       return Effect.asUnit(Effect.forEach(entityId => Effect.flatMap(Option.match({
         onNone: () => Effect.unit,
-        onSome: executionFiber => Fiber.await(executionFiber)
+        onSome: executionFiber => Effect.asUnit(Effect.timeout(config.entityTerminationTimeout)(Fiber.await(executionFiber)))
       }))(forkEntityTermination(entityId)), {
         concurrency: "inherit"
       })(entitiesToTerminate));
