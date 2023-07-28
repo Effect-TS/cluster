@@ -2,6 +2,9 @@
  * @since 1.0.0
  */
 import * as Data from "@effect/data/Data"
+import { pipe } from "@effect/data/Function"
+import * as Effect from "@effect/io/Effect"
+import * as Queue from "@effect/io/Queue"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -48,3 +51,10 @@ export const schema = Schema.data(
     _id: Schema.literal(TypeId)
   })
 )
+
+export function takeOrInterrupt<Req>(dequeue: Queue.Dequeue<Req | PoisonPill>): Effect.Effect<never, never, Req> {
+  return pipe(
+    Queue.take(dequeue),
+    Effect.flatMap((msg) => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed(msg))
+  )
+}

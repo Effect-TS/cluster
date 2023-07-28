@@ -9,12 +9,13 @@ import * as Effect from "@effect/io/Effect";
 import * as Fiber from "@effect/io/Fiber";
 import * as Queue from "@effect/io/Queue";
 import * as RefSynchronized from "@effect/io/Ref/Synchronized";
+import * as PoisonPill from "@effect/shardcake/PoisonPill";
 import * as ShardError from "@effect/shardcake/ShardError";
 /**
  * @since 1.0.0
  * @category constructors
  */
-export function make(recipientType, behavior_, poisonPill, sharding, config, entityMaxIdle) {
+export function make(recipientType, behavior_, sharding, config, entityMaxIdle) {
   return Effect.gen(function* ($) {
     const entities = yield* $(RefSynchronized.make(HashMap.empty()));
     const env = yield* $(Effect.context());
@@ -31,7 +32,7 @@ export function make(recipientType, behavior_, poisonPill, sharding, config, ent
           // termination has already begun, keep everything as-is
           onNone: () => Effect.succeed([Option.some(runningFiber), map]),
           // begin to terminate the queue
-          onSome: queue => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(Queue.offer(queue, poisonPill))
+          onSome: queue => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(Queue.offer(queue, PoisonPill.make))
         })(maybeQueue)
       })(HashMap.get(map, entityId)));
     }

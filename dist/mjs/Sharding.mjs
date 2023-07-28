@@ -43,8 +43,8 @@ export function registerSingleton(name, run) {
  * @since 1.0.0
  * @category utils
  */
-export function registerEntity(entityType, behavior, poisonPill, entityMaxIdleTime) {
-  return Effect.flatMap(Sharding, _ => _.registerEntity(entityType, behavior, poisonPill, entityMaxIdleTime));
+export function registerEntity(entityType, behavior, entityMaxIdleTime) {
+  return Effect.flatMap(Sharding, _ => _.registerEntity(entityType, behavior, entityMaxIdleTime));
 }
 /**
  * Register a new topic type, allowing pods to broadcast messages to subscribers.
@@ -54,8 +54,8 @@ export function registerEntity(entityType, behavior, poisonPill, entityMaxIdleTi
  * @since 1.0.0
  * @category utils
  */
-export function registerTopic(topicType, behavior, poisonPill) {
-  return Effect.flatMap(Sharding, _ => _.registerTopic(topicType, behavior, poisonPill));
+export function registerTopic(topicType, behavior) {
+  return Effect.flatMap(Sharding, _ => _.registerTopic(topicType, behavior));
 }
 /**
  * Get an object that allows sending messages to a given entity type.

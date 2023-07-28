@@ -23,11 +23,11 @@ export type TypeId = typeof TypeId
  * @since 1.0.0
  * @category models
  */
-export interface Replier<R> {
+export interface Replier<A> {
   [TypeId]: {}
   id: ReplyId.ReplyId
-  schema: Schema.Schema<JsonData, R>
-  reply: (reply: R) => Effect.Effect<Sharding.Sharding, never, void>
+  schema: Schema.Schema<JsonData, A>
+  reply: (reply: A) => Effect.Effect<Sharding.Sharding, never, void>
 }
 
 /**
@@ -45,7 +45,7 @@ export const replier = <I extends JsonData, A>(id: ReplyId.ReplyId, schema: Sche
 }
 
 /** @internal */
-export function isReplier<R>(value: unknown): value is Replier<R> {
+export function isReplier<A>(value: unknown): value is Replier<A> {
   return typeof value === "object" && value !== null && TypeId in value
 }
 

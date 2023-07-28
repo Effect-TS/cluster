@@ -24,11 +24,11 @@ export type TypeId = typeof TypeId
  * @since 1.0.0
  * @category models
  */
-export interface StreamReplier<R> {
+export interface StreamReplier<A> {
   [TypeId]: {}
   id: ReplyId.ReplyId
-  schema: Schema.Schema<JsonData, R>
-  reply: (reply: Stream.Stream<never, never, R>) => Effect.Effect<Sharding.Sharding, never, void>
+  schema: Schema.Schema<JsonData, A>
+  reply: (reply: Stream.Stream<never, never, A>) => Effect.Effect<Sharding.Sharding, never, void>
 }
 
 /**

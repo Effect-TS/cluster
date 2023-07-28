@@ -39,7 +39,7 @@ export interface StreamMessage<A> {
 export type Success<A> = A extends StreamMessage<infer X> ? X : never
 
 /** @internal */
-export function isStreamMessage<R>(value: unknown): value is StreamMessage<R> {
+export function isStreamMessage<A>(value: unknown): value is StreamMessage<A> {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -54,17 +54,17 @@ export function isStreamMessage<R>(value: unknown): value is StreamMessage<R> {
  * @since 1.0.0
  * @category schema
  */
-export function schema<I2 extends JsonData, A>(success: Schema.Schema<I2, A>) {
-  return function<I1 extends JsonData, I extends object>(
-    item: Schema.Schema<I1, I>
+export function schema<RI extends JsonData, RA>(success: Schema.Schema<RI, RA>) {
+  return function<I extends JsonData, A extends object>(
+    item: Schema.Schema<I, A>
   ): readonly [
-    Schema.Schema<I1, Schema.Spread<I & StreamMessage<A>>>,
-    (arg: I) => (replyId: ReplyId.ReplyId) => Schema.Spread<I & StreamMessage<A>>
+    Schema.Schema<I, Schema.Spread<A & StreamMessage<RA>>>,
+    (arg: A) => (replyId: ReplyId.ReplyId) => Schema.Spread<A & StreamMessage<RA>>
   ] {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: StreamReplier.schema(success) })))
 
-    const make = (arg: I) =>
-      (replyId: ReplyId.ReplyId): Schema.Spread<I & StreamMessage<A>> =>
+    const make = (arg: A) =>
+      (replyId: ReplyId.ReplyId): Schema.Spread<A & StreamMessage<RA>> =>
         Data.struct({ ...arg, replier: StreamReplier.streamReplier(replyId, success) }) as any
 
     return [result as any, make] as const

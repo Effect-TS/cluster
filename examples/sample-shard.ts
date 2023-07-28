@@ -50,7 +50,7 @@ const program = pipe(
           Effect.forever
         )
       )
-    ), PoisonPill.make),
+    )),
   Effect.zipRight(Sharding.register),
   Effect.zipRight(Effect.never),
   ShardingServiceHttp.shardingServiceHttp,

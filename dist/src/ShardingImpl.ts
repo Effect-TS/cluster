@@ -20,6 +20,7 @@ import * as EntityState from "@effect/shardcake/EntityState"
 import * as Message from "@effect/shardcake/Message"
 import * as PodAddress from "@effect/shardcake/PodAddress"
 import { Pods } from "@effect/shardcake/Pods"
+import type * as PoisonPill from "@effect/shardcake/PoisonPill"
 import type { Replier } from "@effect/shardcake/Replier"
 import * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import * as ReplyId from "@effect/shardcake/ReplyId"
@@ -711,13 +712,12 @@ function make(
     entityType: RecipientType.EntityType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>
+      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
     ) => Effect.Effect<R, never, void>,
-    poisonPill: Req,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ): Effect.Effect<Scope | R, never, void> {
     return pipe(
-      registerRecipient(entityType, behavior, poisonPill, entityMaxIdleTime),
+      registerRecipient(entityType, behavior, entityMaxIdleTime),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
       Effect.asUnit
     )
@@ -727,12 +727,11 @@ function make(
     topicType: RecipientType.TopicType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>
-    ) => Effect.Effect<R, never, void>,
-    poisonPill: Req
+      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
+    ) => Effect.Effect<R, never, void>
   ): Effect.Effect<Scope | R, never, void> {
     return pipe(
-      registerRecipient(topicType, behavior, poisonPill, Option.none()),
+      registerRecipient(topicType, behavior, Option.none()),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
       Effect.asUnit
     )
@@ -748,9 +747,8 @@ function make(
     recipientType: RecipientType.RecipientType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>
+      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
     ) => Effect.Effect<R, never, void>,
-    poisonPill: Req,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ) {
     return Effect.gen(function*($) {
@@ -758,7 +756,6 @@ function make(
         EntityManager.make(
           recipientType,
           behavior,
-          poisonPill,
           self,
           config,
           entityMaxIdleTime

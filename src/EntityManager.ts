@@ -10,6 +10,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Queue from "@effect/io/Queue"
 import * as RefSynchronized from "@effect/io/Ref/Synchronized"
+import * as PoisonPill from "@effect/shardcake/PoisonPill"
 import type * as RecipientType from "@effect/shardcake/RecipientType"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
@@ -36,7 +37,7 @@ export interface EntityManager<Req> {
 }
 
 type EntityManagerEntry<Req> = readonly [
-  messageQueue: Option.Option<Queue.Queue<Req>>,
+  messageQueue: Option.Option<Queue.Queue<Req | PoisonPill.PoisonPill>>,
   expirationFiber: Fiber.RuntimeFiber<never, void>,
   executionFiber: Fiber.RuntimeFiber<never, void>
 ]
@@ -49,9 +50,8 @@ export function make<R, Req>(
   recipientType: RecipientType.RecipientType<Req>,
   behavior_: (
     entityId: string,
-    dequeue: Queue.Dequeue<Req>
+    dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
   ) => Effect.Effect<R, never, void>,
-  poisonPill: Req,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>
@@ -68,7 +68,7 @@ export function make<R, Req>(
     const env = yield* $(Effect.context<R>())
     const behavior = (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>
+      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
     ) => Effect.provideContext(behavior_(entityId, dequeue), env)
 
     function startExpirationFiber(entityId: string) {
@@ -103,7 +103,7 @@ export function make<R, Req>(
                   // begin to terminate the queue
                   onSome: (queue) =>
                     pipe(
-                      Queue.offer(queue, poisonPill),
+                      Queue.offer(queue, PoisonPill.make),
                       Effect.as(
                         [
                           Option.some(runningFiber),
@@ -145,7 +145,7 @@ export function make<R, Req>(
                 } else {
                   // queue doesn't exist, create a new one
                   return Effect.gen(function*(_) {
-                    const queue = yield* _(Queue.unbounded<Req>())
+                    const queue = yield* _(Queue.unbounded<Req | PoisonPill.PoisonPill>())
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const executionFiber = yield* _(
                       pipe(

@@ -8,6 +8,7 @@ import * as Effect from "@effect/io/Effect"
 import type * as Queue from "@effect/io/Queue"
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
 import type * as ByteArray from "@effect/shardcake/ByteArray"
+import type * as PoisonPill from "@effect/shardcake/PoisonPill"
 import type { Replier } from "@effect/shardcake/Replier"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
 import type { EntityTypeNotRegistered, Throwable } from "@effect/shardcake/ShardError"
@@ -61,18 +62,16 @@ export interface Sharding {
     entityType: RecipentType.EntityType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>
+      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
     ) => Effect.Effect<R, never, void>,
-    poisonPill: Req,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behavior: (
       entityId: string,
-      dequeue: Queue.Dequeue<Req>
-    ) => Effect.Effect<R, never, void>,
-    poisonPill: Req
+      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
+    ) => Effect.Effect<R, never, void>
   ): Effect.Effect<Scope | R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>
@@ -144,12 +143,11 @@ export function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: (
     entityId: string,
-    dequeue: Queue.Dequeue<Req>
+    dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
   ) => Effect.Effect<R, never, void>,
-  poisonPill: Req,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | Scope | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, poisonPill, entityMaxIdleTime))
+  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, entityMaxIdleTime))
 }
 
 /**
@@ -164,11 +162,10 @@ export function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: (
     entityId: string,
-    dequeue: Queue.Dequeue<Req>
-  ) => Effect.Effect<R, never, void>,
-  poisonPill: Req
+    dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
+  ) => Effect.Effect<R, never, void>
 ): Effect.Effect<Sharding | Scope | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior, poisonPill))
+  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior))
 }
 
 /**

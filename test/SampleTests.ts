@@ -44,7 +44,12 @@ describe.concurrent("SampleTests", () => {
       const received = yield* _(Ref.make(false))
 
       const SampleEntity = RecipientType.makeEntityType("Sample", Schema.number)
-      yield* _(Sharding.registerEntity(SampleEntity, () => Ref.set(received, true), 0))
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity,
+          (_, queue) => pipe(PoisonPill.takeOrInterrupt(queue), Effect.zipRight(Ref.set(received, true)))
+        )
+      )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")(1))
@@ -81,9 +86,9 @@ describe.concurrent("SampleTests", () => {
 
       yield* _(Sharding.registerEntity(SampleEntity, (entityId, queue) =>
         pipe(
-          Queue.take(queue),
+          PoisonPill.takeOrInterrupt(queue),
           Effect.flatMap((msg) => Ref.set(entityId === "entity1" ? result1 : result2, msg))
-        ), 0))
+        )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")(1))
@@ -100,15 +105,15 @@ describe.concurrent("SampleTests", () => {
         _tag: Schema.literal("SampleMessage")
       }))
 
-      const SampleProtocol = Schema.union(SampleMessage_, PoisonPill.schema)
+      const SampleProtocol = Schema.union(SampleMessage_)
 
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
 
       yield* _(Sharding.registerEntity(SampleEntity, (entityId, queue) =>
         pipe(
-          Queue.take(queue),
-          Effect.flatMap((msg) => PoisonPill.isPoisonPill(msg) ? Effect.interrupt : msg.replier.reply(42))
-        ), PoisonPill.make))
+          PoisonPill.takeOrInterrupt(queue),
+          Effect.flatMap((msg) => msg.replier.reply(42))
+        )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       const result = yield* _(messenger.send("entity1")(SampleMessage({ _tag: "SampleMessage" })))
@@ -124,7 +129,6 @@ describe.concurrent("SampleTests", () => {
       }))
 
       const SampleProtocol = Schema.union(
-        PoisonPill.schema,
         Schema.struct({
           _tag: Schema.literal("BroadcastIncrement")
         }),
@@ -135,11 +139,8 @@ describe.concurrent("SampleTests", () => {
       yield* _(Sharding.registerTopic(SampleTopic, (entityId, queue) =>
         Effect.flatMap(Ref.make(0), (ref) =>
           pipe(
-            Queue.take(queue),
+            PoisonPill.takeOrInterrupt(queue),
             Effect.flatMap((msg) => {
-              if (PoisonPill.isPoisonPill(msg)) {
-                return Effect.interrupt
-              }
               switch (msg._tag) {
                 case "BroadcastIncrement":
                   return Ref.update(ref, (_) => _ + 1)
@@ -148,7 +149,7 @@ describe.concurrent("SampleTests", () => {
               }
             }),
             Effect.forever
-          )), PoisonPill.make))
+          ))))
 
       const broadcaster = yield* _(Sharding.broadcaster(SampleTopic))
       yield* _(broadcaster.broadcastDiscard("c1")({ _tag: "BroadcastIncrement" }))
@@ -166,17 +167,15 @@ describe.concurrent("SampleTests", () => {
         _tag: Schema.literal("SampleMessage")
       }))
 
-      const SampleProtocol = Schema.union(PoisonPill.schema, SampleMessage_)
+      const SampleProtocol = Schema.union(SampleMessage_)
 
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
       yield* _(Sharding.registerEntity(SampleEntity, (entityId, queue) =>
         pipe(
-          Queue.take(queue),
-          Effect.flatMap((msg) =>
-            PoisonPill.isPoisonPill(msg) ? Effect.interrupt : msg.replier.reply(Stream.fromIterable([1, 2, 3]))
-          ),
+          PoisonPill.takeOrInterrupt(queue),
+          Effect.flatMap((msg) => msg.replier.reply(Stream.fromIterable([1, 2, 3]))),
           Effect.forever
-        ), PoisonPill.make))
+        )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
@@ -194,7 +193,6 @@ describe.concurrent("SampleTests", () => {
       }))
 
       const SampleProtocol = Schema.union(
-        PoisonPill.schema,
         SampleMessage_
       )
 
@@ -202,16 +200,16 @@ describe.concurrent("SampleTests", () => {
 
       yield* _(Sharding.registerEntity(SampleEntity, (entityId, queue) =>
         pipe(
-          Queue.take(queue),
+          PoisonPill.takeOrInterrupt(queue),
           Effect.flatMap((msg) =>
-            PoisonPill.isPoisonPill(msg) ? Effect.interrupt : msg.replier.reply(pipe(
+            msg.replier.reply(pipe(
               Stream.never,
               Stream.ensuring(Deferred.succeed(exit, true)), // <- signal interruption on shard side
               Stream.map(() => 42)
             ))
           ),
           Effect.forever
-        ), PoisonPill.make))
+        )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
@@ -233,22 +231,22 @@ describe.concurrent("SampleTests", () => {
         _tag: Schema.literal("SampleMessage")
       }))
 
-      const SampleProtocol = Schema.union(PoisonPill.schema, SampleMessage_)
+      const SampleProtocol = Schema.union(SampleMessage_)
 
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
 
       yield* _(Sharding.registerEntity(SampleEntity, (entityId, queue) =>
         pipe(
-          Queue.take(queue),
+          PoisonPill.takeOrInterrupt(queue),
           Effect.flatMap((msg) =>
-            PoisonPill.isPoisonPill(msg) ? Effect.interrupt : msg.replier.reply(pipe(
+            msg.replier.reply(pipe(
               Stream.never,
               Stream.ensuring(Deferred.succeed(exit, true)), // <- signal interruption on shard side
               Stream.interruptAfter(Duration.millis(500))
             ))
           ),
           Effect.forever
-        ), PoisonPill.make))
+        )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
@@ -268,7 +266,6 @@ describe.concurrent("SampleTests", () => {
       const entityStarted = yield* _(Deferred.make<never, boolean>())
 
       const SampleProtocol = Schema.union(
-        PoisonPill.schema,
         Schema.struct({
           _tag: Schema.literal("Awake")
         })
@@ -296,7 +293,6 @@ describe.concurrent("SampleTests", () => {
             }),
             Effect.forever
           ),
-        PoisonPill.make,
         Option.some(Duration.minutes(10))
       ))
 
@@ -315,12 +311,10 @@ describe.concurrent("SampleTests", () => {
     return Effect.gen(function*(_) {
       const entityStarted = yield* _(Deferred.make<never, boolean>())
 
-      const SampleProtocol = Schema.union(
-        PoisonPill.schema,
-        Schema.struct({
-          _tag: Schema.literal("Awake")
-        })
-      )
+      const SampleProtocol = Schema.struct({
+        _tag: Schema.literal("Awake")
+      })
+
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
 
       yield* _(Sharding.registerEntity(
@@ -344,7 +338,6 @@ describe.concurrent("SampleTests", () => {
             }),
             Effect.forever
           ),
-        PoisonPill.make,
         Option.some(Duration.minutes(10))
       ))
 
@@ -364,7 +357,6 @@ describe.concurrent("SampleTests", () => {
       const shutdownReceived = yield* _(Deferred.make<never, boolean>())
 
       const SampleProtocol = Schema.union(
-        PoisonPill.schema,
         Schema.struct({
           _tag: Schema.literal("Awake")
         })
@@ -394,7 +386,6 @@ describe.concurrent("SampleTests", () => {
             }),
             Effect.forever
           ),
-        PoisonPill.make,
         Option.some(Duration.millis(100))
       ))
 

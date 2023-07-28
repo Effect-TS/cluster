@@ -2,6 +2,8 @@
  * @since 1.0.0
  */
 import * as Data from "@effect/data/Data";
+import * as Effect from "@effect/io/Effect";
+import * as Queue from "@effect/io/Queue";
 import * as Schema from "@effect/schema/Schema";
 /**
  * @since 1.0.0
@@ -37,4 +39,5 @@ export declare const schema: Schema.Schema<{
 }, Data.Data<{
     readonly _id: "@effect/shardcake/PoisonPill";
 }>>;
+export declare function takeOrInterrupt<Req>(dequeue: Queue.Dequeue<Req | PoisonPill>): Effect.Effect<never, never, Req>;
 //# sourceMappingURL=PoisonPill.d.ts.map

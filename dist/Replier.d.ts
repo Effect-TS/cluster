@@ -20,11 +20,11 @@ export type TypeId = typeof TypeId;
  * @since 1.0.0
  * @category models
  */
-export interface Replier<R> {
+export interface Replier<A> {
     [TypeId]: {};
     id: ReplyId.ReplyId;
-    schema: Schema.Schema<JsonData, R>;
-    reply: (reply: R) => Effect.Effect<Sharding.Sharding, never, void>;
+    schema: Schema.Schema<JsonData, A>;
+    reply: (reply: A) => Effect.Effect<Sharding.Sharding, never, void>;
 }
 /**
  * @since 1.0.0

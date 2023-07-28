@@ -2,6 +2,8 @@
  * @since 1.0.0
  */
 import * as Data from "@effect/data/Data";
+import * as Effect from "@effect/io/Effect";
+import * as Queue from "@effect/io/Queue";
 import * as Schema from "@effect/schema/Schema";
 /**
  * @since 1.0.0
@@ -33,4 +35,7 @@ export function isPoisonPill(value) {
 export const schema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _id: /*#__PURE__*/Schema.literal(TypeId)
 }));
+export function takeOrInterrupt(dequeue) {
+  return Effect.flatMap(msg => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed(msg))(Queue.take(dequeue));
+}
 //# sourceMappingURL=PoisonPill.mjs.map

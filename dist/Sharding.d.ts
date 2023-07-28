@@ -8,6 +8,7 @@ import * as Effect from "@effect/io/Effect";
 import type * as Queue from "@effect/io/Queue";
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage";
 import type * as ByteArray from "@effect/shardcake/ByteArray";
+import type * as PoisonPill from "@effect/shardcake/PoisonPill";
 import type { Replier } from "@effect/shardcake/Replier";
 import type * as ReplyId from "@effect/shardcake/ReplyId";
 import type { EntityTypeNotRegistered, Throwable } from "@effect/shardcake/ShardError";
@@ -40,8 +41,8 @@ export interface Sharding {
     isShuttingDown: Effect.Effect<never, never, boolean>;
     initReply(id: ReplyId.ReplyId, replyChannel: ReplyChannel.ReplyChannel<any>): Effect.Effect<never, never, void>;
     registerScoped: Effect.Effect<Scope, never, void>;
-    registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>, poisonPill: Req, entityMaxIdleTime?: Option.Option<Duration.Duration>): Effect.Effect<Scope | R, never, void>;
-    registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>, poisonPill: Req): Effect.Effect<Scope | R, never, void>;
+    registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>, entityMaxIdleTime?: Option.Option<Duration.Duration>): Effect.Effect<Scope | R, never, void>;
+    registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>): Effect.Effect<Scope | R, never, void>;
     getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>;
     registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>;
     refreshAssignments: Effect.Effect<never, never, void>;
@@ -90,7 +91,7 @@ export declare function registerSingleton(name: string, run: Effect.Effect<never
  * @since 1.0.0
  * @category utils
  */
-export declare function registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>, poisonPill: Req, entityMaxIdleTime?: Option.Option<Duration.Duration>): Effect.Effect<Sharding | Scope | R, never, void>;
+export declare function registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>, entityMaxIdleTime?: Option.Option<Duration.Duration>): Effect.Effect<Sharding | Scope | R, never, void>;
 /**
  * Register a new topic type, allowing pods to broadcast messages to subscribers.
  * It takes a `behavior` which is a function from a topic and a queue of messages to a ZIO computation that runs forever and consumes those messages.
@@ -99,7 +100,7 @@ export declare function registerEntity<Req, R>(entityType: RecipentType.EntityTy
  * @since 1.0.0
  * @category utils
  */
-export declare function registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>, poisonPill: Req): Effect.Effect<Sharding | Scope | R, never, void>;
+export declare function registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>): Effect.Effect<Sharding | Scope | R, never, void>;
 /**
  * Get an object that allows sending messages to a given entity type.
  * You can provide a custom send timeout to override the one globally defined.
