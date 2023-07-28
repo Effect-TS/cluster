@@ -1,7 +1,7 @@
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
 import * as Logger from "@effect/io/Logger"
-import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as PodsHttp from "@effect/shardcake/PodsHttp"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
@@ -18,18 +18,23 @@ import * as SubscriptionRef from "@effect/stream/SubscriptionRef"
 import * as LogLevel from "@effect/io/Logger/Level"
 import { CounterEntity } from "./sample-common"
 
+const liveSharding = pipe(
+  ShardingImpl.live,
+  Layer.use(StorageFile.storageFile),
+  Layer.use(PodsHttp.httpPods),
+  Layer.use(ShardManagerClientHttp.shardManagerClientHttp),
+  Layer.use(Serialization.json)
+)
+
 const program = pipe(
   Sharding.registerEntity(CounterEntity, (counterId, dequeue) =>
     pipe(
       SubscriptionRef.make(0),
       Effect.flatMap((count) =>
         pipe(
-          Queue.take(dequeue),
+          PoisonPill.takeOrInterrupt(dequeue),
           Effect.flatMap(
             (msg) => {
-              if (PoisonPill.isPoisonPill(msg)) {
-                return Effect.interrupt
-              }
               switch (msg._tag) {
                 case "Increment":
                   return SubscriptionRef.update(count, (a) => a + 1)
@@ -55,14 +60,10 @@ const program = pipe(
   Effect.zipRight(Effect.never),
   ShardingServiceHttp.shardingServiceHttp,
   Effect.scoped,
-  Effect.provideSomeLayer(ShardingImpl.live),
-  Effect.provideSomeLayer(StorageFile.storageFile),
-  Effect.provideSomeLayer(PodsHttp.httpPods),
-  Effect.provideSomeLayer(ShardManagerClientHttp.shardManagerClientHttp),
-  Effect.provideSomeLayer(ShardingConfig.defaults),
-  Effect.provideSomeLayer(Serialization.json),
   Effect.catchAllCause(Effect.logError),
-  Logger.withMinimumLogLevel(LogLevel.All)
+  Logger.withMinimumLogLevel(LogLevel.All),
+  Effect.provideSomeLayer(liveSharding),
+  Effect.provideSomeLayer(ShardingConfig.defaults)
 )
 
 Effect.runFork(program)

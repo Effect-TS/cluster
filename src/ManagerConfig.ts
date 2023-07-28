@@ -3,6 +3,7 @@
  */
 import { Tag } from "@effect/data/Context"
 import * as Duration from "@effect/data/Duration"
+import * as Layer from "@effect/io/Layer"
 
 /**
  * Shard Manager configuration
@@ -38,7 +39,7 @@ export const ManagerConfig = Tag<ManagerConfig>()
  * @since 1.0.0
  * @category utils
  */
-export const defaults: ManagerConfig = {
+export const defaults = Layer.succeed(ManagerConfig, {
   numberOfShards: 300,
   apiPort: 8080,
   rebalanceInterval: Duration.seconds(20),
@@ -47,4 +48,4 @@ export const defaults: ManagerConfig = {
   persistRetryInterval: Duration.seconds(3),
   persistRetryCount: 100,
   rebalanceRate: 2 / 100
-}
+})
