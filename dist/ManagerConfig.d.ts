@@ -3,6 +3,7 @@
  */
 import { Tag } from "@effect/data/Context";
 import * as Duration from "@effect/data/Duration";
+import * as Layer from "@effect/io/Layer";
 /**
  * Shard Manager configuration
  * @param numberOfShards number of shards (see documentation on how to choose this), should be same on all nodes
@@ -35,5 +36,5 @@ export declare const ManagerConfig: Tag<ManagerConfig, ManagerConfig>;
  * @since 1.0.0
  * @category utils
  */
-export declare const defaults: ManagerConfig;
+export declare const defaults: Layer.Layer<never, never, ManagerConfig>;
 //# sourceMappingURL=ManagerConfig.d.ts.map

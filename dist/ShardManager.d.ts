@@ -29,5 +29,5 @@ export declare const ShardManager: Tag<ShardManager, ShardManager>;
  * @since 1.0.0
  * @category layers
  */
-export declare const live: Layer.Layer<Pods.Pods | Storage.Storage | PodsHealth.PodsHealth | ManagerConfig.ManagerConfig, never, ShardManager>;
+export declare const live: Layer.Layer<ManagerConfig.ManagerConfig | PodsHealth.PodsHealth | Pods.Pods | Storage.Storage, never, ShardManager>;
 //# sourceMappingURL=ShardManager.d.ts.map

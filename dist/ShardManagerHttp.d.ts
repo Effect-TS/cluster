@@ -5,5 +5,5 @@ import * as ShardManager from "@effect/shardcake/ShardManager";
  * @since 1.0.0
  * @category layers
  */
-export declare const shardManagerHttp: <R, E, B>(fa: Effect.Effect<R, E, B>) => Effect.Effect<ShardManager.ShardManager | ManagerConfig.ManagerConfig | R, E, B>;
+export declare const shardManagerHttp: <R, E, B>(fa: Effect.Effect<R, E, B>) => Effect.Effect<ManagerConfig.ManagerConfig | R | ShardManager.ShardManager, E, B>;
 //# sourceMappingURL=ShardManagerHttp.d.ts.map

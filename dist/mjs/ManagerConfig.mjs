@@ -3,6 +3,7 @@
  */
 import { Tag } from "@effect/data/Context";
 import * as Duration from "@effect/data/Duration";
+import * as Layer from "@effect/io/Layer";
 /**
  * @since 1.0.0
  * @category context
@@ -12,7 +13,7 @@ export const ManagerConfig = /*#__PURE__*/Tag();
  * @since 1.0.0
  * @category utils
  */
-export const defaults = {
+export const defaults = /*#__PURE__*/Layer.succeed(ManagerConfig, {
   numberOfShards: 300,
   apiPort: 8080,
   rebalanceInterval: /*#__PURE__*/Duration.seconds(20),
@@ -21,5 +22,5 @@ export const defaults = {
   persistRetryInterval: /*#__PURE__*/Duration.seconds(3),
   persistRetryCount: 100,
   rebalanceRate: 2 / 100
-};
+});
 //# sourceMappingURL=ManagerConfig.mjs.map
