@@ -74,7 +74,7 @@ export interface Sharding {
     ) => Effect.Effect<R, never, void>
   ): Effect.Effect<Scope | R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
-  registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>
+  registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
   refreshAssignments: Effect.Effect<never, never, void>
   assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
@@ -124,10 +124,10 @@ export const registerScoped = Effect.ensuring(register, unregister)
  * @since 1.0.0
  * @category utils
  */
-export function registerSingleton(
+export function registerSingleton<R>(
   name: string,
-  run: Effect.Effect<never, never, void>
-): Effect.Effect<Sharding, never, void> {
+  run: Effect.Effect<R, never, void>
+): Effect.Effect<Sharding | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerSingleton(name, run))
 }
 

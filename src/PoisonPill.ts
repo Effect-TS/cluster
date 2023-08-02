@@ -52,6 +52,13 @@ export const schema = Schema.data(
   })
 )
 
+/**
+ * Attempts to take a message from the queue in the same way Queue.take does.
+ * If the result is a PoisonPill, it will interrupt the effect.
+ *
+ * @since 1.0.0
+ * @category schema
+ */
 export function takeOrInterrupt<Req>(dequeue: Queue.Dequeue<Req | PoisonPill>): Effect.Effect<never, never, Req> {
   return pipe(
     Queue.take(dequeue),

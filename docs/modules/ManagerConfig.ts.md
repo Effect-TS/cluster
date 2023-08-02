@@ -63,7 +63,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const defaults: ManagerConfig
+export declare const defaults: Layer.Layer<never, never, ManagerConfig>
 ```
 
 Added in v1.0.0

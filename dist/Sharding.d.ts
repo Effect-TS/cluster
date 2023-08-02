@@ -44,7 +44,7 @@ export interface Sharding {
     registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>, entityMaxIdleTime?: Option.Option<Duration.Duration>): Effect.Effect<Scope | R, never, void>;
     registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>): Effect.Effect<Scope | R, never, void>;
     getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>;
-    registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>;
+    registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>;
     refreshAssignments: Effect.Effect<never, never, void>;
     assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
     unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
@@ -82,7 +82,7 @@ export declare const registerScoped: Effect.Effect<Sharding, never, void>;
  * @since 1.0.0
  * @category utils
  */
-export declare function registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<Sharding, never, void>;
+export declare function registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<Sharding | R, never, void>;
 /**
  * Register a new entity type, allowing pods to send messages to entities of this type.
  * It takes a `behavior` which is a function from an entity ID and a queue of messages to a ZIO computation that runs forever and consumes those messages.

@@ -191,9 +191,15 @@ function make(
     Effect.asUnit
   )
 
-  function registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void> {
+  function registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void> {
     return pipe(
-      Synchronized.update(singletons, (list) => (List.prepend(list, [name, run, Option.none()] as SingletonEntry))),
+      Effect.context<R>(),
+      Effect.flatMap((context) =>
+        Synchronized.update(
+          singletons,
+          (list) => (List.prepend(list, [name, Effect.provideContext(run, context), Option.none()] as SingletonEntry))
+        )
+      ),
       Effect.zipRight(startSingletonsIfNeeded),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))
     )

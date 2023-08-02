@@ -18,6 +18,7 @@ Added in v1.0.0
   - [PoisonPill (interface)](#poisonpill-interface)
 - [schema](#schema)
   - [schema](#schema-1)
+  - [takeOrInterrupt](#takeorinterrupt)
 - [symbols](#symbols)
   - [TypeId](#typeid)
 - [utils](#utils)
@@ -64,6 +65,19 @@ export declare const schema: Schema.Schema<
   { readonly _id: '@effect/shardcake/PoisonPill' },
   Data.Data<{ readonly _id: '@effect/shardcake/PoisonPill' }>
 >
+```
+
+Added in v1.0.0
+
+## takeOrInterrupt
+
+Attempts to take a message from the queue in the same way Queue.take does.
+If the result is a PoisonPill, it will interrupt the effect.
+
+**Signature**
+
+```ts
+export declare function takeOrInterrupt<Req>(dequeue: Queue.Dequeue<Req | PoisonPill>): Effect.Effect<never, never, Req>
 ```
 
 Added in v1.0.0

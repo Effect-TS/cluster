@@ -28,8 +28,7 @@ Added in v1.0.0
 ```ts
 export declare function make<R, Req>(
   recipientType: RecipientType.RecipientType<Req>,
-  behavior_: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-  poisonPill: Req,
+  behavior_: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>

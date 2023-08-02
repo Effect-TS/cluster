@@ -74,17 +74,15 @@ export interface Sharding {
   registerScoped: Effect.Effect<Scope, never, void>
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    poisonPill: Req,
+    behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<Scope | R, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-    poisonPill: Req
+    behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
   ): Effect.Effect<Scope | R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
-  registerSingleton(name: string, run: Effect.Effect<never, never, void>): Effect.Effect<never, never, void>
+  registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
   refreshAssignments: Effect.Effect<never, never, void>
   assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
@@ -174,8 +172,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 ```ts
 export declare function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
-  behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-  poisonPill: Req,
+  behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | Scope | R, never, void>
 ```
@@ -202,10 +199,10 @@ Each pod should call `registerSingleton` but only a single pod will actually run
 **Signature**
 
 ```ts
-export declare function registerSingleton(
+export declare function registerSingleton<R>(
   name: string,
-  run: Effect.Effect<never, never, void>
-): Effect.Effect<Sharding, never, void>
+  run: Effect.Effect<R, never, void>
+): Effect.Effect<Sharding | R, never, void>
 ```
 
 Added in v1.0.0
@@ -222,8 +219,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 ```ts
 export declare function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
-  behavior: (entityId: string, dequeue: Queue.Dequeue<Req>) => Effect.Effect<R, never, void>,
-  poisonPill: Req
+  behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
 ): Effect.Effect<Sharding | Scope | R, never, void>
 ```
 

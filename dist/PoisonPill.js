@@ -49,6 +49,13 @@ function isPoisonPill(value) {
 const schema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _id: /*#__PURE__*/Schema.literal(TypeId)
 }));
+/**
+ * Attempts to take a message from the queue in the same way Queue.take does.
+ * If the result is a PoisonPill, it will interrupt the effect.
+ *
+ * @since 1.0.0
+ * @category schema
+ */
 exports.schema = schema;
 function takeOrInterrupt(dequeue) {
   return Effect.flatMap(msg => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed(msg))(Queue.take(dequeue));

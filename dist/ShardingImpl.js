@@ -69,7 +69,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
     onSome: fiber => Effect.zipRight(Effect.as(Fiber.interrupt(fiber), [name, run, Option.none()]))(Effect.logDebug("Stopping singleton " + name))
   }))))));
   function registerSingleton(name, run) {
-    return Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))(Effect.zipRight(startSingletonsIfNeeded)(Synchronized.update(singletons, list => List.prepend(list, [name, run, Option.none()]))));
+    return Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))(Effect.zipRight(startSingletonsIfNeeded)(Effect.flatMap(context => Synchronized.update(singletons, list => List.prepend(list, [name, Effect.provideContext(run, context), Option.none()])))(Effect.context())));
   }
   const isShuttingDown = Ref.get(isShuttingDownRef);
   function assign(shards) {
