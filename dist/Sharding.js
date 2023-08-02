@@ -46,7 +46,7 @@ const unregister = /*#__PURE__*/Effect.flatMap(Sharding, _ => _.unregister);
  * @category utils
  */
 exports.unregister = unregister;
-const registerScoped = /*#__PURE__*/Effect.ensuring(register, unregister);
+const registerScoped = /*#__PURE__*/Effect.zipRight(Effect.addFinalizer(() => unregister))(register);
 /**
  * Start a computation that is guaranteed to run only on a single pod.
  * Each pod should call `registerSingleton` but only a single pod will actually run it at any given time.

@@ -22,7 +22,7 @@ export const local = /*#__PURE__*/Layer.effect(ShardManagerClient, /*#__PURE__*/
   const config = yield* $(ShardingConfig.ShardingConfig);
   const pod = PodAddress.make(config.selfHost, config.shardingPort);
   let shards = HashMap.empty();
-  for (let i = 0; i < config.numberOfShards; i++) {
+  for (let i = 1; i <= config.numberOfShards; i++) {
     shards = HashMap.set(shards, ShardId.make(i), Option.some(pod));
   }
   return {

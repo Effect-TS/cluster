@@ -69,7 +69,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
     onSome: fiber => Effect.zipRight(Effect.as(Fiber.interrupt(fiber), [name, run, Option.none()]))(Effect.logDebug("Stopping singleton " + name))
   }))))));
   function registerSingleton(name, run) {
-    return Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))(Effect.zipRight(startSingletonsIfNeeded)(Effect.flatMap(context => Synchronized.update(singletons, list => List.prepend(list, [name, Effect.provideContext(run, context), Option.none()])))(Effect.context())));
+    return Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))(Effect.zipLeft(startSingletonsIfNeeded)(Effect.flatMap(context => Synchronized.update(singletons, list => List.prepend(list, [name, Effect.provideContext(run, context), Option.none()])))(Effect.context())));
   }
   const isShuttingDown = Ref.get(isShuttingDownRef);
   function assign(shards) {
@@ -104,7 +104,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
   }
   const refreshAssignments =
   // TODO: missing withFinalizer (fiber interrupt)
-  Effect.asUnit(Effect.forkDaemon(Effect.interruptible(Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval))(Stream.runDrain(Stream.mapEffect(([assignmentsOpt, fromShardManager]) => updateAssignments(assignmentsOpt, fromShardManager))(Stream.merge(Stream.map(_ => [_, false])(storage.assignmentsStream))(Stream.fromEffect(Effect.map(shardManager.getAssignments, _ => [_, true])))))))));
+  Effect.asUnit(Effect.forkDaemon(Effect.interruptible(Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval))(Stream.runDrain(Stream.tap(() => startSingletonsIfNeeded)(Stream.mapEffect(([assignmentsOpt, fromShardManager]) => updateAssignments(assignmentsOpt, fromShardManager))(Stream.merge(Stream.map(_ => [_, false])(storage.assignmentsStream))(Stream.fromEffect(Effect.map(shardManager.getAssignments, _ => [_, true]))))))))));
   function sendToLocalEntitySingleReply(msg) {
     return Effect.gen(function* (_) {
       const replyChannel = yield* _(ReplyChannel.single());

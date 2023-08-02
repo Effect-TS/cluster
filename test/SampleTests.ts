@@ -41,6 +41,7 @@ describe.concurrent("SampleTests", () => {
 
   it("Succefully delivers a message", () => {
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const received = yield* _(Ref.make(false))
 
       const SampleEntity = RecipientType.makeEntityType("Sample", Schema.number)
@@ -60,6 +61,7 @@ describe.concurrent("SampleTests", () => {
 
   it("Fails with if entity not registered", () => {
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const SampleEntity = RecipientType.makeEntityType("Sample", Schema.number)
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
@@ -79,6 +81,7 @@ describe.concurrent("SampleTests", () => {
 
   it("Succefully delivers a message to the correct entity", () => {
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const result1 = yield* _(Ref.make(0))
       const result2 = yield* _(Ref.make(0))
 
@@ -101,6 +104,7 @@ describe.concurrent("SampleTests", () => {
 
   it("Succefully delivers a message with a reply to an entity", () => {
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const [SampleMessage_, SampleMessage] = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
@@ -124,6 +128,7 @@ describe.concurrent("SampleTests", () => {
 
   it("Succefully broadcasts a message", () => {
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const [GetIncrement_, GetIncrement] = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("GetIncrement")
       }))
@@ -163,6 +168,7 @@ describe.concurrent("SampleTests", () => {
 
   it("Succefully delivers a message with a streaming reply to an entity", () => {
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const [SampleMessage_, SampleMessage] = StreamMessage.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
@@ -187,6 +193,7 @@ describe.concurrent("SampleTests", () => {
 
   it("When the messenger interrupts, the stream on the entity should too", () => {
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const exit = yield* _(Deferred.make<never, boolean>())
       const [SampleMessage_, SampleMessage] = StreamMessage.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
@@ -226,6 +233,7 @@ describe.concurrent("SampleTests", () => {
 
   it("When the stream on entity interrupts, the stream on the messenger should close", () => {
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const exit = yield* _(Deferred.make<never, boolean>())
       const [SampleMessage_, SampleMessage] = StreamMessage.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
@@ -263,6 +271,7 @@ describe.concurrent("SampleTests", () => {
     let entityInterrupted = false
 
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const entityStarted = yield* _(Deferred.make<never, boolean>())
 
       const SampleProtocol = Schema.union(
@@ -299,7 +308,6 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(entityStarted))
-      yield* _(Sharding.registerScoped)
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
       assertTrue(entityInterrupted)
     )
@@ -309,6 +317,7 @@ describe.concurrent("SampleTests", () => {
     let shutdownCompleted = false
 
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const entityStarted = yield* _(Deferred.make<never, boolean>())
 
       const SampleProtocol = Schema.struct({
@@ -344,7 +353,6 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(entityStarted))
-      yield* _(Sharding.registerScoped)
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
       assertTrue(shutdownCompleted)
     )
@@ -354,6 +362,7 @@ describe.concurrent("SampleTests", () => {
     let shutdownCompleted = false
 
     return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
       const shutdownReceived = yield* _(Deferred.make<never, boolean>())
 
       const SampleProtocol = Schema.union(
@@ -392,9 +401,28 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(shutdownReceived))
-      yield* _(Sharding.registerScoped)
     }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
       assertTrue(shutdownCompleted)
+    )
+  })
+
+  it("Singletons should start", () => {
+    return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
+      const received = yield* _(Deferred.make<never, boolean>())
+
+      yield* _(
+        Sharding.registerSingleton(
+          "sample",
+          Deferred.succeed(received, true)
+        )
+      )
+
+      assertTrue(yield* _(Deferred.await(received)))
+    }).pipe(
+      Effect.provideSomeLayer(inMemorySharding),
+      Effect.scoped,
+      Effect.runPromise
     )
   })
 })

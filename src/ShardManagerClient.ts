@@ -43,7 +43,7 @@ export const local = pipe(
       const config = yield* $(ShardingConfig.ShardingConfig)
       const pod = PodAddress.make(config.selfHost, config.shardingPort)
       let shards = HashMap.empty<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>()
-      for (let i = 0; i < config.numberOfShards; i++) {
+      for (let i = 1; i <= config.numberOfShards; i++) {
         shards = HashMap.set(shards, ShardId.make(i), Option.some(pod))
       }
       return {

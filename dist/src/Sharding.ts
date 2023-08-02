@@ -16,6 +16,7 @@ import type * as StreamReplier from "@effect/shardcake/StreamReplier"
 import type * as Stream from "@effect/stream/Stream"
 
 import type * as Duration from "@effect/data/Duration"
+import { pipe } from "@effect/data/Function"
 import type { Scope } from "@effect/io/Scope"
 import type * as Schema from "@effect/schema/Schema"
 import type { Broadcaster } from "@effect/shardcake/Broadcaster"
@@ -116,7 +117,7 @@ export const unregister = Effect.flatMap(Sharding, (_) => _.unregister)
  * @since 1.0.0
  * @category utils
  */
-export const registerScoped = Effect.ensuring(register, unregister)
+export const registerScoped = pipe(register, Effect.zipRight(Effect.addFinalizer(() => unregister)))
 
 /**
  * Start a computation that is guaranteed to run only on a single pod.

@@ -186,7 +186,7 @@ Same as `register`, but will automatically call `unregister` when the `Scope` is
 **Signature**
 
 ```ts
-export declare const registerScoped: Effect.Effect<Sharding, never, void>
+export declare const registerScoped: Effect.Effect<Sharding | Scope, never, void>
 ```
 
 Added in v1.0.0

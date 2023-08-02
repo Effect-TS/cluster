@@ -134,7 +134,10 @@ function make(
     Effect.map((_) =>
       pipe(
         HashMap.get(_, ShardId.make(1)),
-        Option.match({ onNone: () => false, onSome: equals(address) })
+        Option.match({
+          onNone: () => false,
+          onSome: equals(address)
+        })
       )
     )
   )
@@ -200,7 +203,7 @@ function make(
           (list) => (List.prepend(list, [name, Effect.provideContext(run, context), Option.none()] as SingletonEntry))
         )
       ),
-      Effect.zipRight(startSingletonsIfNeeded),
+      Effect.zipLeft(startSingletonsIfNeeded),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))
     )
   }
@@ -257,7 +260,7 @@ function make(
     const assignments = HashMap.map(assignmentsOpt, (v, _) => Option.getOrElse(v, () => address))
 
     if (fromShardManager) {
-      return Ref.update(shardAssignments, (map) => (HashMap.isEmpty(map) ? assignments : map))
+      return Ref.update(shardAssignments, (map) => (HashMap.isEmpty(map)) ? assignments : map)
     }
 
     return Ref.update(shardAssignments, (map) => {
@@ -285,6 +288,7 @@ function make(
       )
     ),
     Stream.mapEffect(([assignmentsOpt, fromShardManager]) => updateAssignments(assignmentsOpt, fromShardManager)),
+    Stream.tap(() => startSingletonsIfNeeded),
     Stream.runDrain,
     Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval)),
     Effect.interruptible,
