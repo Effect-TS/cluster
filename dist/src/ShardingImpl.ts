@@ -846,14 +846,18 @@ export const live = Layer.scoped(
     Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState.EntityState>())),
     Effect.bind("singletons", (_) =>
       pipe(
-        Synchronized.make<List.List<SingletonEntry>>(List.nil())
-        /*
-        TODO(Mattia): add finalizer
-        Effect.flatMap((_) =>
-          Effect.ensuring(Synchronized.get(_, (singletons) =>
-            Effect.forEach(singletons, ([_, __, fiber]) =>
-              Option.isSome(fiber) ? Fiber.interrupt(fiber) : Effect.unit())))
-        )*/
+        Synchronized.make<List.List<SingletonEntry>>(List.nil()),
+        Effect.tap(
+          (_) =>
+            Effect.addFinalizer(() =>
+              pipe(
+                Synchronized.get(_),
+                Effect.flatMap(
+                  Effect.forEach(([_, __, fa]) => Option.isSome(fa) ? Fiber.interrupt(fa.value) : Effect.unit)
+                )
+              )
+            )
+        )
       )),
     Effect.bind("shuttingDown", () => Ref.make(false)),
     Effect.bind("replyChannels", () =>
