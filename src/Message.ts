@@ -4,9 +4,9 @@
 import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
+import type { JsonData } from "@effect/shardcake/JsonData"
 import * as Replier from "@effect/shardcake/Replier"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
-import type { JsonData } from "@effect/shardcake/utils"
 
 /**
  * @since 1.0.0

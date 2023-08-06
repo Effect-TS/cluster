@@ -127,8 +127,8 @@ export declare const GetAssignmentsResult_: Schema.Schema<{
 } | {
     readonly _tag: "Right";
     readonly right: readonly (readonly [{
-        readonly value: number;
         readonly _id: "@effect/shardcake/ShardId";
+        readonly value: number;
     }, {
         readonly _tag: "None";
     } | {
@@ -140,8 +140,8 @@ export declare const GetAssignmentsResult_: Schema.Schema<{
         };
     }])[];
 }, import("@effect/data/Either").Either<never, readonly (readonly [import("@effect/data/Data").Data<{
-    readonly value: number;
     readonly _id: "@effect/shardcake/ShardId";
+    readonly value: number;
 }>, import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
     readonly _id: "@effect/shardcake/PodAddress";
     readonly host: string;

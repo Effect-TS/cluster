@@ -28,10 +28,10 @@ export declare function make(value: string): ByteArray;
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly value: string;
     readonly _id: "@effect/shardcake/ByteArray";
+    readonly value: string;
 }, Data.Data<{
-    readonly value: string;
     readonly _id: "@effect/shardcake/ByteArray";
+    readonly value: string;
 }>>;
 //# sourceMappingURL=ByteArray.d.ts.map

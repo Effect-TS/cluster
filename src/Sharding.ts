@@ -20,13 +20,13 @@ import { pipe } from "@effect/data/Function"
 import type { Scope } from "@effect/io/Scope"
 import type * as Schema from "@effect/schema/Schema"
 import type { Broadcaster } from "@effect/shardcake/Broadcaster"
+import type { JsonData } from "@effect/shardcake/JsonData"
 import type { Messenger } from "@effect/shardcake/Messenger"
 import type * as PodAddress from "@effect/shardcake/PodAddress"
 import type * as RecipentType from "@effect/shardcake/RecipientType"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import type * as ShardId from "@effect/shardcake/ShardId"
 import type * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
-import type { JsonData } from "@effect/shardcake/utils"
 
 /**
  * @since 1.0.0

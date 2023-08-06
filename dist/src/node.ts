@@ -8,9 +8,9 @@ import { pipe } from "@effect/data/Function"
 import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import type * as Schema from "@effect/schema/Schema"
+import type { JsonData } from "@effect/shardcake/JsonData"
 import * as Stream from "@effect/stream/Stream"
 import * as http from "http"
-import type { JsonData } from "./utils"
 import { jsonParse, jsonStringify } from "./utils"
 
 /** @internal */

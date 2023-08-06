@@ -1,6 +1,6 @@
 import type * as Schema from "@effect/schema/Schema";
+import type { JsonData } from "@effect/shardcake/JsonData";
 import * as ShardId from "@effect/shardcake/ShardId";
-import type { JsonData } from "@effect/shardcake/utils";
 /**
  * @since 1.0.0
  * @category models

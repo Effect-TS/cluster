@@ -40,16 +40,16 @@ export declare const schema: Schema.Schema<{
     readonly entityType: string;
     readonly entityId: string;
     readonly body: {
-        readonly value: string;
         readonly _id: "@effect/shardcake/ByteArray";
+        readonly value: string;
     };
     readonly replyId: {
         readonly _tag: "None";
     } | {
         readonly _tag: "Some";
         readonly value: {
-            readonly value: string;
             readonly _id: "@effect/shardcake/ReplyId";
+            readonly value: string;
         };
     };
 }, Data.Data<{
@@ -57,12 +57,12 @@ export declare const schema: Schema.Schema<{
     readonly entityType: string;
     readonly entityId: string;
     readonly body: Data.Data<{
-        readonly value: string;
         readonly _id: "@effect/shardcake/ByteArray";
+        readonly value: string;
     }>;
     readonly replyId: Option.Option<Data.Data<{
-        readonly value: string;
         readonly _id: "@effect/shardcake/ReplyId";
+        readonly value: string;
     }>>;
 }>>;
 //# sourceMappingURL=BinaryMessage.d.ts.map

@@ -10,30 +10,10 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
+import type { JsonData } from "@effect/shardcake/JsonData"
 import { DecodeError, EncodeError, FetchError } from "@effect/shardcake/ShardError"
 import * as Stream from "@effect/stream/Stream"
 import fetch from "node-fetch"
-
-/**
- * @since 1.0.0
- */
-export type JsonArray = ReadonlyArray<JsonData>
-
-/**
- * @since 1.0.0
- */
-export type JsonObject = { readonly [key: string]: JsonData }
-
-/**
- * @since 1.0.0
- */
-export type JsonData =
-  | null
-  | boolean
-  | number
-  | string
-  | JsonArray
-  | JsonObject
 
 /** @internal */
 export function minByOption<A>(f: (value: A) => number) {

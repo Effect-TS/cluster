@@ -8,7 +8,7 @@ import * as Layer from "@effect/io/Layer"
 import type * as Schema from "@effect/schema/Schema"
 import * as ByteArray from "@effect/shardcake/ByteArray"
 import * as ShardError from "@effect/shardcake/ShardError"
-import type { JsonData } from "./utils"
+import type { JsonData } from "@effect/shardcake/JsonData"
 import { jsonParse, jsonStringify } from "./utils"
 
 /**

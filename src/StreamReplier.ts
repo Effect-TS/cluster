@@ -3,9 +3,9 @@
  */
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
+import type { JsonData } from "@effect/shardcake/JsonData"
 import * as ReplyId from "@effect/shardcake/ReplyId"
 import * as Sharding from "@effect/shardcake/Sharding"
-import type { JsonData } from "@effect/shardcake/utils"
 import type * as Stream from "@effect/stream/Stream"
 
 /**
