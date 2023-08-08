@@ -75,7 +75,7 @@ export declare const unregister: Effect.Effect<Sharding, never, void>;
  * @since 1.0.0
  * @category utils
  */
-export declare const registerScoped: Effect.Effect<Scope | Sharding, never, void>;
+export declare const registerScoped: Effect.Effect<Sharding | Scope, never, void>;
 /**
  * Start a computation that is guaranteed to run only on a single pod.
  * Each pod should call `registerSingleton` but only a single pod will actually run it at any given time.

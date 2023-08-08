@@ -50,7 +50,7 @@ export function jsonParse(value, schema) {
 export function sendInternal(send) {
   return (url, data) =>
   // Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
-  Effect.flatMap(body => Effect.tryPromiseInterrupt({
+  Effect.flatMap(body => Effect.tryPromise({
     try: signal => {
       return fetch(url, {
         signal,

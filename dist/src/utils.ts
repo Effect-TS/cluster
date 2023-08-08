@@ -74,7 +74,7 @@ export function sendInternal<I extends JsonData, A>(send: Schema.Schema<I, A>) {
       jsonStringify(data, send),
       // Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
       Effect.flatMap((body) =>
-        Effect.tryPromiseInterrupt({
+        Effect.tryPromise({
           try: (signal) => {
             return fetch(url, {
               signal,

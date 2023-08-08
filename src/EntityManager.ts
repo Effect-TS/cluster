@@ -199,10 +199,10 @@ export function make<R, Req>(
         Effect.tap(() => {
           // first, verify that this entity should be handled by this pod
           if (recipientType._tag === "EntityType") {
-            return Effect.unlessEffect(
+            return Effect.asUnit(Effect.unlessEffect(
               Effect.fail(ShardError.EntityNotManagedByThisPod(entityId)),
               sharding.isEntityOnLocalShards(recipientType, entityId)
-            )
+            ))
           } else if (recipientType._tag === "TopicType") {
             return Effect.unit
           }
@@ -268,8 +268,23 @@ export function make<R, Req>(
                 onNone: () => Effect.unit,
                 onSome: (executionFiber) =>
                   pipe(
-                    Fiber.await(executionFiber),
+                    Effect.logDebug("Waiting for shutdown of " + entityId),
+                    Effect.zipRight(Fiber.await(executionFiber)),
                     Effect.timeout(config.entityTerminationTimeout),
+                    Effect.flatMap(Option.match({
+                      onNone: () =>
+                        Effect.logError(
+                          `Entity ${
+                            recipientType.name + "#" + entityId
+                          } do not interrupted before entityTerminationTimeout (${
+                            Duration.toMillis(config.entityTerminationTimeout)
+                          }ms) . Are you sure that you properly handled PoisonPill message?`
+                        ),
+                      onSome: () =>
+                        Effect.logDebug(
+                          `Entity ${recipientType.name + "#" + entityId} cleaned up.`
+                        )
+                    })),
                     Effect.asUnit
                   )
               }))

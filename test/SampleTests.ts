@@ -9,6 +9,8 @@ import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Exit from "@effect/io/Exit"
 import * as Layer from "@effect/io/Layer"
+import * as Logger from "@effect/io/Logger"
+import * as LogLevel from "@effect/io/Logger/Level"
 import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as Schema from "@effect/schema/Schema"
@@ -36,8 +38,13 @@ describe.concurrent("SampleTests", () => {
     Layer.use(Storage.memory),
     Layer.use(Serialization.json),
     Layer.use(ShardManagerClient.local),
-    Layer.use(ShardingConfig.withDefaults({ simulateRemotePods: true }))
+    Layer.use(
+      ShardingConfig.withDefaults({ simulateRemotePods: true, entityTerminationTimeout: Duration.millis(3000) })
+    )
   )
+
+  const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
+    pipe(fa, Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Error))
 
   it("Succefully delivers a message", () => {
     return Effect.gen(function*(_) {
@@ -56,7 +63,7 @@ describe.concurrent("SampleTests", () => {
       yield* _(messenger.sendDiscard("entity1")(1))
 
       assertTrue(yield* _(Ref.get(received)))
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+    }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Fails with if entity not registered", () => {
@@ -76,7 +83,7 @@ describe.concurrent("SampleTests", () => {
           assertTrue(isEntityTypeNotRegistered(error.value))
         }
       }
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+    }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Succefully delivers a message to the correct entity", () => {
@@ -99,7 +106,7 @@ describe.concurrent("SampleTests", () => {
 
       assertTrue(1 === (yield* _(Ref.get(result1))))
       assertTrue(2 === (yield* _(Ref.get(result2))))
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+    }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Succefully delivers a message with a reply to an entity", () => {
@@ -123,7 +130,7 @@ describe.concurrent("SampleTests", () => {
       const result = yield* _(messenger.send("entity1")(SampleMessage({ _tag: "SampleMessage" })))
 
       assertTrue(result === 42)
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+    }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Succefully broadcasts a message", () => {
@@ -163,7 +170,7 @@ describe.concurrent("SampleTests", () => {
       const c1 = yield* _(broadcaster.broadcast("c1")(GetIncrement({ _tag: "GetIncrement" })))
 
       assertTrue(1 === HashMap.size(c1)) // Here we have just one pod, so there will be just one incrementer
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+    }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Succefully delivers a message with a streaming reply to an entity", () => {
@@ -188,7 +195,7 @@ describe.concurrent("SampleTests", () => {
       const result = yield* _(Stream.runCollect(stream))
 
       assertTrue(equals(result, Chunk.fromIterable([1, 2, 3])))
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+    }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("When the messenger interrupts, the stream on the entity should too", () => {
@@ -228,7 +235,7 @@ describe.concurrent("SampleTests", () => {
 
       yield* _(Deferred.await(exit)) // <- hangs if not working
       assertTrue(true)
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+    }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("When the stream on entity interrupts, the stream on the messenger should close", () => {
@@ -264,7 +271,7 @@ describe.concurrent("SampleTests", () => {
 
       assertTrue(yield* _(Deferred.await(exit)))
       assertTrue(Chunk.size(result) === 0)
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise)
+    }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Behaviour is interrupted if shard is terminated", () => {
@@ -308,9 +315,7 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(entityStarted))
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
-      assertTrue(entityInterrupted)
-    )
+    }).pipe(withTestEnv, Effect.runPromise).then(() => assertTrue(entityInterrupted))
   })
 
   it("Ensure graceful shutdown is completed if shard is terminated", () => {
@@ -335,12 +340,13 @@ describe.concurrent("SampleTests", () => {
               if (PoisonPill.isPoisonPill(msg)) {
                 return pipe(
                   Effect.sleep(Duration.seconds(3)),
+                  Effect.zipRight(Effect.logDebug("Shutting down...")),
                   Effect.zipRight(
                     Effect.sync(() => {
                       shutdownCompleted = true
                     })
                   ),
-                  Effect.uninterruptible
+                  Effect.flatMap(() => Effect.interrupt)
                 )
               }
               return Deferred.succeed(entityStarted, true)
@@ -353,9 +359,7 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(entityStarted))
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
-      assertTrue(shutdownCompleted)
-    )
+    }).pipe(withTestEnv, Effect.runPromise).then(() => assertTrue(shutdownCompleted))
   })
 
   it("Ensure graceful shutdown is completed if entity terminates, and then shard is terminated too", () => {
@@ -385,7 +389,7 @@ describe.concurrent("SampleTests", () => {
                   Effect.zipRight(Effect.sync(() => {
                     shutdownCompleted = true
                   })),
-                  Effect.uninterruptible
+                  Effect.flatMap(() => Effect.interrupt)
                 )
               }
               switch (msg._tag) {
@@ -401,9 +405,7 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(shutdownReceived))
-    }).pipe(Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Effect.runPromise).then(() =>
-      assertTrue(shutdownCompleted)
-    )
+    }).pipe(withTestEnv, Effect.runPromise).then(() => assertTrue(shutdownCompleted))
   })
 
   it("Singletons should start", () => {

@@ -6,8 +6,8 @@ import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import type * as Schema from "@effect/schema/Schema";
 import * as ByteArray from "@effect/shardcake/ByteArray";
-import * as ShardError from "@effect/shardcake/ShardError";
 import type { JsonData } from "@effect/shardcake/JsonData";
+import * as ShardError from "@effect/shardcake/ShardError";
 /**
  * @since 1.0.0
  * @category symbols

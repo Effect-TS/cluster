@@ -1,18 +1,22 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
   '@effect/data':
-    specifier: ~0.17.0
-    version: 0.17.0
+    specifier: ^0.17.1
+    version: 0.17.1
   '@effect/io':
-    specifier: ~0.36.1
-    version: 0.36.1
+    specifier: ^0.38.0
+    version: 0.38.0(@effect/data@0.17.1)
   '@effect/schema':
-    specifier: ~0.31.0
-    version: 0.31.0
+    specifier: ^0.33.0
+    version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
   '@effect/stream':
-    specifier: ~0.32.1
-    version: 0.32.1
+    specifier: ^0.34.0
+    version: 0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0)
   node-fetch:
     specifier: '2'
     version: 2.6.11
@@ -780,8 +784,8 @@ packages:
       '@tsplus/stdlib': 0.2.8
     dev: true
 
-  /@effect/data@0.17.0:
-    resolution: {integrity: sha512-hBncTBQ4F3lggBjFgCgJVcPuesMSVRH2SSdGPbY4DDaGu19xyRX8dImJuoN6uniZG307MacHpwn/dDkqAVzITA==}
+  /@effect/data@0.17.1:
+    resolution: {integrity: sha512-QCYkLE5Y5Dm5Yax5R3GmW4ZIgTx7W+kSZ7yq5eqQ/mFWa8i4yxbLuu8cudqzdeZtRtTGZKlhDxfFfgVtMywXJg==}
     dev: false
 
   /@effect/docgen@0.1.1(@types/node@18.16.18)(typescript@5.1.6):
@@ -807,10 +811,12 @@ packages:
       - '@types/node'
     dev: true
 
-  /@effect/io@0.36.1:
-    resolution: {integrity: sha512-qktbbvQX+tCQ2wxBcpr8g89ZAIAzRaq+/tWGogdVxfthWIhiLSagMeKYzLHqQ/MaXzN7sQSYLHbFgxcE+D8keQ==}
+  /@effect/io@0.38.0(@effect/data@0.17.1):
+    resolution: {integrity: sha512-qlVC9ASxNC+L2NKX5qOV9672CE5wWizfwBSFaX2XLI7CC118WRvohCTIPQ52n50Bj5TmR20+na+U9C7e4VkqzA==}
+    peerDependencies:
+      '@effect/data': ^0.17.1
     dependencies:
-      '@effect/data': 0.17.0
+      '@effect/data': 0.17.1
     dev: false
 
   /@effect/language-service@0.0.19:
@@ -826,19 +832,25 @@ packages:
       '@tsplus/stdlib': 0.2.8
     dev: true
 
-  /@effect/schema@0.31.0:
-    resolution: {integrity: sha512-bVAUl6Y0Fn0VL+gGHFsuqjtj4OvPl4bdEK/AFG3jsNor/cZK5vY1H8j1xDiCVJro2Wsu/GuISNu8wJQoXVRxEQ==}
+  /@effect/schema@0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0):
+    resolution: {integrity: sha512-K/IDp8aZpqqy2IBydnRtjNF7Sg/qZjiR5t+OANDZ2yOmTHRgtvWM4fwYV5kGYzEBZaBZEqUGjzj4KOqbsQhCEw==}
+    peerDependencies:
+      '@effect/data': ^0.17.1
+      '@effect/io': ^0.38.0
     dependencies:
-      '@effect/data': 0.17.0
-      '@effect/io': 0.36.1
+      '@effect/data': 0.17.1
+      '@effect/io': 0.38.0(@effect/data@0.17.1)
       fast-check: 3.12.0
     dev: false
 
-  /@effect/stream@0.32.1:
-    resolution: {integrity: sha512-Oz5+PFSeNFpo0MUgqYK0vfS7IxQdRnwLPeArzrZocUoxuEnnDgyRB3vZodKMU/EZxVlGg3WJ88wxRpguFDKGbg==}
+  /@effect/stream@0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0):
+    resolution: {integrity: sha512-8eDDQ0JG+ctsstLH/Qo4ojBkcEIFtqpEsWZS6leAwY9gXVmEG54PMWXZiX6dTchgQXKmSnLkEh36leAq4piawQ==}
+    peerDependencies:
+      '@effect/data': ^0.17.1
+      '@effect/io': ^0.38.0
     dependencies:
-      '@effect/data': 0.17.0
-      '@effect/io': 0.36.1
+      '@effect/data': 0.17.1
+      '@effect/io': 0.38.0(@effect/data@0.17.1)
     dev: false
 
   /@esbuild/android-arm64@0.17.19:
@@ -3246,7 +3258,7 @@ packages:
       debug: 4.3.4
       enhanced-resolve: 5.15.0
       eslint: 8.43.0
-      eslint-module-utils: 2.8.0(@typescript-eslint/parser@5.60.0)(eslint-import-resolver-typescript@3.5.5)(eslint@8.43.0)
+      eslint-module-utils: 2.8.0(@typescript-eslint/parser@5.60.0)(eslint-import-resolver-node@0.3.7)(eslint-import-resolver-typescript@3.5.5)(eslint@8.43.0)
       eslint-plugin-import: 2.27.5(@typescript-eslint/parser@5.60.0)(eslint-import-resolver-typescript@3.5.5)(eslint@8.43.0)
       get-tsconfig: 4.6.0
       globby: 13.2.0
@@ -3285,35 +3297,6 @@ packages:
       debug: 3.2.7
       eslint: 8.43.0
       eslint-import-resolver-node: 0.3.7
-      eslint-import-resolver-typescript: 3.5.5(@typescript-eslint/parser@5.60.0)(eslint-plugin-import@2.27.5)(eslint@8.43.0)
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
-
-  /eslint-module-utils@2.8.0(@typescript-eslint/parser@5.60.0)(eslint-import-resolver-typescript@3.5.5)(eslint@8.43.0):
-    resolution: {integrity: sha512-aWajIYfsqCKRDgUfjEXNN/JlrzauMuSEy5sbd7WXbtW3EH6A6MpwEh42c7qD+MqQo9QMJ6fWLAeIJynx0g6OAw==}
-    engines: {node: '>=4'}
-    peerDependencies:
-      '@typescript-eslint/parser': '*'
-      eslint: '*'
-      eslint-import-resolver-node: '*'
-      eslint-import-resolver-typescript: '*'
-      eslint-import-resolver-webpack: '*'
-    peerDependenciesMeta:
-      '@typescript-eslint/parser':
-        optional: true
-      eslint:
-        optional: true
-      eslint-import-resolver-node:
-        optional: true
-      eslint-import-resolver-typescript:
-        optional: true
-      eslint-import-resolver-webpack:
-        optional: true
-    dependencies:
-      '@typescript-eslint/parser': 5.60.0(eslint@8.43.0)(typescript@5.1.6)
-      debug: 3.2.7
-      eslint: 8.43.0
       eslint-import-resolver-typescript: 3.5.5(@typescript-eslint/parser@5.60.0)(eslint-plugin-import@2.27.5)(eslint@8.43.0)
     transitivePeerDependencies:
       - supports-color
@@ -8072,7 +8055,3 @@ packages:
     dev: true
 
 publishDirectory: dist
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false

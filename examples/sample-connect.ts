@@ -2,6 +2,7 @@ import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Logger from "@effect/io/Logger"
+import * as LogLevel from "@effect/io/Logger/Level"
 import * as PodsHttp from "@effect/shardcake/PodsHttp"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
@@ -11,7 +12,6 @@ import * as ShardManagerClientHttp from "@effect/shardcake/ShardManagerClientHtt
 import * as StorageFile from "@effect/shardcake/StorageFile"
 import * as Stream from "@effect/stream/Stream"
 
-import * as LogLevel from "@effect/io/Logger/Level"
 import { CounterEntity, GetCurrent, SubscribeChanges } from "./sample-common"
 
 const liveSharding = pipe(
