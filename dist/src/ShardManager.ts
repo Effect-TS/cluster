@@ -559,81 +559,57 @@ function pickNewPods(
   return [assignmentsPerPod, unassignmentsPerPod] as const
 }
 
-const live0 = pipe(
-  Effect.Do,
-  Effect.bind("config", (_) => ManagerConfig.ManagerConfig),
-  Effect.bind("stateRepository", (_) => Storage.Storage),
-  Effect.bind("healthApi", (_) => PodsHealth.PodsHealth),
-  Effect.bind("podApi", (_) => Pods.Pods),
-  Effect.bind("pods", (_) => _.stateRepository.getPods),
-  Effect.bind("assignments", (_) => _.stateRepository.getAssignments),
-  // remove unhealthy pods on startup
-  Effect.bind("filteredPods", (_) =>
-    pipe(
-      Effect.filter(_.pods, ([podAddress]) => _.healthApi.isAlive(podAddress), { concurrency: "inherit" }),
-      Effect.map(HashMap.fromIterable)
-    )),
-  Effect.let("filteredAssignments", (_) =>
-    pipe(
-      HashMap.filter(
-        _.assignments,
-        (pod) => Option.isSome(pod) && HashMap.has(_.filteredPods, pod.value)
-      )
-    )),
-  Effect.bind("cdt", (_) => Clock.currentTimeMillis),
-  Effect.let("initialState", (_) =>
-    ShardManagerState.make(
-      HashMap.map(_.filteredPods, (pod) => PodWithMetadata.make(pod, _.cdt)),
-      HashMap.union(
-        _.filteredAssignments,
-        pipe(
-          Chunk.range(1, _.config.numberOfShards),
-          Chunk.map((n) => [ShardId.make(n), Option.none()] as const),
-          HashMap.fromIterable
-        )
-      )
-    ))
-)
-const live1 = pipe(
-  live0,
-  Effect.bind("state", (_) => RefSynchronized.make(_.initialState)),
-  Effect.bind("rebalanceSemaphore", (_) => Effect.makeSemaphore(1)),
-  Effect.bind("eventsHub", (_) => Hub.unbounded<ShardingEvent.ShardingEvent>()),
-  Effect.let("shardManager", (_) =>
-    make(
-      _.state,
-      _.rebalanceSemaphore,
-      _.eventsHub,
-      _.healthApi,
-      _.podApi,
-      _.stateRepository,
-      _.config
-    )),
-  Effect.tap((_) => Effect.forkDaemon(_.shardManager.persistPods)),
-  // rebalance immediately if there are unassigned shards
-  Effect.tap((_) => _.shardManager.rebalance(HashSet.size(_.initialState.unassignedShards) > 0)),
-  // start a regular rebalance at the given interval
-  Effect.tap((_) =>
-    pipe(
-      _.shardManager.rebalance(false),
-      Effect.repeat(Schedule.spaced(_.config.rebalanceInterval)),
-      Effect.forkDaemon
-    )
-  ),
-  Effect.tap((_) =>
-    pipe(
-      _.shardManager.getShardingEvents,
-      Stream.mapEffect((_) => Effect.logInfo(JSON.stringify(_))),
-      Stream.runDrain,
-      Effect.forkDaemon
-    )
-  ),
-  Effect.tap((_) => Effect.logInfo("Shard Manager loaded")),
-  Effect.map((_) => _.shardManager)
-)
-
 /**
  * @since 1.0.0
  * @category layers
  */
-export const live = Layer.effect(ShardManager, live1)
+export const live = Effect.gen(function*(_) {
+  const config = yield* _(ManagerConfig.ManagerConfig)
+  const stateRepository = yield* _(Storage.Storage)
+  const healthApi = yield* _(PodsHealth.PodsHealth)
+  const podsApi = yield* _(Pods.Pods)
+  const pods = yield* _(stateRepository.getPods)
+  const assignments = yield* _(stateRepository.getAssignments)
+  const filteredPods = yield* _(
+    Effect.filter(pods, ([podAddress]) => healthApi.isAlive(podAddress), { concurrency: "inherit" }),
+    Effect.map(HashMap.fromIterable)
+  )
+  const filteredAssignments = HashMap.filter(
+    assignments,
+    (pod) => Option.isSome(pod) && HashMap.has(filteredPods, pod.value)
+  )
+  const cdt = yield* _(Clock.currentTimeMillis)
+  const initialState = (ShardManagerState.make(
+    HashMap.map(filteredPods, (pod) => PodWithMetadata.make(pod, cdt)),
+    HashMap.union(
+      filteredAssignments,
+      pipe(
+        Chunk.range(1, config.numberOfShards),
+        Chunk.map((n) => [ShardId.make(n), Option.none()] as const),
+        HashMap.fromIterable
+      )
+    )
+  ))
+  const state = yield* _(RefSynchronized.make(initialState))
+  const rebalanceSemaphore = yield* _(Effect.makeSemaphore(1))
+  const eventsHub = yield* _(Hub.unbounded<ShardingEvent.ShardingEvent>())
+  const shardManager = make(state, rebalanceSemaphore, eventsHub, healthApi, podsApi, stateRepository, config)
+  yield* _(Effect.forkDaemon(shardManager.persistPods))
+  // rebalance immediately if there are unassigned shards
+  yield* _(shardManager.rebalance(HashSet.size(initialState.unassignedShards) > 0))
+  // start a regular rebalance at the given interval
+  yield* _(
+    shardManager.rebalance(false),
+    Effect.repeat(Schedule.spaced(config.rebalanceInterval)),
+    Effect.forkDaemon
+  )
+  // log info events
+  yield* _(
+    shardManager.getShardingEvents,
+    Stream.mapEffect((_) => Effect.logInfo(JSON.stringify(_))),
+    Stream.runDrain,
+    Effect.forkDaemon
+  )
+  yield* _(Effect.logInfo("Shard Manager loaded"))
+  return shardManager
+}).pipe(Layer.effect(ShardManager))
