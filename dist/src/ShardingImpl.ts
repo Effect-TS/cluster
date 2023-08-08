@@ -19,7 +19,7 @@ import * as EntityManager from "@effect/shardcake/EntityManager"
 import * as EntityState from "@effect/shardcake/EntityState"
 import * as Message from "@effect/shardcake/Message"
 import * as PodAddress from "@effect/shardcake/PodAddress"
-import { Pods } from "@effect/shardcake/Pods"
+import * as Pods from "@effect/shardcake/Pods"
 import type * as PoisonPill from "@effect/shardcake/PoisonPill"
 import type { Replier } from "@effect/shardcake/Replier"
 import * as ReplyChannel from "@effect/shardcake/ReplyChannel"
@@ -32,7 +32,7 @@ import type {
   Throwable
 } from "@effect/shardcake/ShardError"
 import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
-import { ShardManagerClient } from "@effect/shardcake/ShardManagerClient"
+import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
 import * as StreamMessage from "@effect/shardcake/StreamMessage"
 import type * as StreamReplier from "@effect/shardcake/StreamReplier"
 import * as Stream from "@effect/stream/Stream"
@@ -62,7 +62,7 @@ import * as ShardId from "@effect/shardcake/ShardId"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
 import * as Storage from "@effect/shardcake/Storage"
 import { showHashSet } from "@effect/shardcake/utils"
-import { Sharding } from "./Sharding"
+import * as Sharding from "./Sharding"
 
 type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
 
@@ -80,8 +80,8 @@ function make(
   >, // reply channel for each pending reply,
   // lastUnhealthyNodeReported: Ref.Ref<Date>,
   isShuttingDownRef: Ref.Ref<boolean>,
-  shardManager: ShardManagerClient,
-  pods: Pods,
+  shardManager: ShardManagerClient.ShardManagerClient,
+  pods: Pods.Pods,
   storage: Storage.Storage,
   serialization: Serialization.Serialization,
   eventsHub: Hub.Hub<ShardingRegistrationEvent.ShardingRegistrationEvent>
@@ -279,7 +279,7 @@ function make(
     })
   }
 
-  const refreshAssignments: Effect.Effect<never, never, void> = pipe(
+  const refreshAssignments: Effect.Effect<Scope, never, void> = pipe(
     Stream.fromEffect(Effect.map(shardManager.getAssignments, (_) => [_, true] as const)),
     Stream.merge(
       pipe(
@@ -292,8 +292,7 @@ function make(
     Stream.runDrain,
     Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval)),
     Effect.interruptible,
-    Effect.forkDaemon,
-    // TODO: missing withFinalizer (fiber interrupt)
+    Effect.forkScoped,
     Effect.asUnit
   )
 
@@ -801,7 +800,7 @@ function make(
 
   const registerScoped = Effect.acquireRelease(register, (_) => Effect.orDie(unregister))
 
-  const self: Sharding = {
+  const self: Sharding.Sharding = {
     getShardId,
     register,
     unregister,
@@ -834,53 +833,47 @@ function make(
  * @category layers
  */
 export const live = Layer.scoped(
-  Sharding,
-  pipe(
-    Effect.Do,
-    Effect.bind("config", () => ShardingConfig.ShardingConfig),
-    Effect.bind("pods", () => Pods),
-    Effect.bind("shardManager", () => ShardManagerClient),
-    Effect.bind("storage", () => Storage.Storage),
-    Effect.bind("serialization", () => Serialization.Serialization),
-    Effect.bind("shardsCache", () => Ref.make(HashMap.empty<ShardId.ShardId, PodAddress.PodAddress>())),
-    Effect.bind("entityStates", () => Ref.make(HashMap.empty<string, EntityState.EntityState>())),
-    Effect.bind("singletons", (_) =>
+  Sharding.Sharding,
+  Effect.gen(function*(_) {
+    const config = yield* _(ShardingConfig.ShardingConfig)
+    const pods = yield* _(Pods.Pods)
+    const shardManager = yield* _(ShardManagerClient.ShardManagerClient)
+    const storage = yield* _(Storage.Storage)
+    const serialization = yield* _(Serialization.Serialization)
+    const shardsCache = yield* _(Ref.make(HashMap.empty<ShardId.ShardId, PodAddress.PodAddress>()))
+    const entityStates = yield* _(Ref.make(HashMap.empty<string, EntityState.EntityState>()))
+    const shuttingDown = yield* _(Ref.make(false))
+    const eventsHub = yield* _(Hub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>())
+    const replyChannels = yield* _(Synchronized.make(
+      HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>()
+    ))
+    const singletons = yield* _(Synchronized.make<List.List<SingletonEntry>>(List.nil()))
+    yield* _(Effect.addFinalizer(() =>
       pipe(
-        Synchronized.make<List.List<SingletonEntry>>(List.nil()),
-        Effect.tap(
-          (_) =>
-            Effect.addFinalizer(() =>
-              pipe(
-                Synchronized.get(_),
-                Effect.flatMap(
-                  Effect.forEach(([_, __, fa]) => Option.isSome(fa) ? Fiber.interrupt(fa.value) : Effect.unit)
-                )
-              )
-            )
+        Synchronized.get(singletons),
+        Effect.flatMap(
+          Effect.forEach(([_, __, fa]) => Option.isSome(fa) ? Fiber.interrupt(fa.value) : Effect.unit)
         )
-      )),
-    Effect.bind("shuttingDown", () => Ref.make(false)),
-    Effect.bind("replyChannels", () =>
-      Synchronized.make(
-        HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>()
-      )),
-    Effect.bind("eventsHub", () => Hub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>()),
-    Effect.let("sharding", (_) =>
-      make(
-        PodAddress.make(_.config.selfHost, _.config.shardingPort),
-        _.config,
-        _.shardsCache,
-        _.entityStates,
-        _.singletons,
-        _.replyChannels,
-        _.shuttingDown,
-        _.shardManager,
-        _.pods,
-        _.storage,
-        _.serialization,
-        _.eventsHub
-      )),
-    Effect.tap((_) => _.sharding.refreshAssignments),
-    Effect.map((_) => _.sharding)
-  )
+      )
+    ))
+
+    const sharding = make(
+      PodAddress.make(config.selfHost, config.shardingPort),
+      config,
+      shardsCache,
+      entityStates,
+      singletons,
+      replyChannels,
+      shuttingDown,
+      shardManager,
+      pods,
+      storage,
+      serialization,
+      eventsHub
+    )
+
+    yield* _(sharding.refreshAssignments)
+
+    return sharding
+  })
 )

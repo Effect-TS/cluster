@@ -6,6 +6,7 @@ import type * as HashSet from "@effect/data/HashSet"
 import type * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import type * as Queue from "@effect/io/Queue"
+import type * as Scope from "@effect/io/Scope"
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
 import type * as ByteArray from "@effect/shardcake/ByteArray"
 import type * as PoisonPill from "@effect/shardcake/PoisonPill"
@@ -17,7 +18,6 @@ import type * as Stream from "@effect/stream/Stream"
 
 import type * as Duration from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
-import type { Scope } from "@effect/io/Scope"
 import type * as Schema from "@effect/schema/Schema"
 import type { Broadcaster } from "@effect/shardcake/Broadcaster"
 import type { JsonData } from "@effect/shardcake/JsonData"
@@ -58,7 +58,7 @@ export interface Sharding {
     id: ReplyId.ReplyId,
     replyChannel: ReplyChannel.ReplyChannel<any>
   ): Effect.Effect<never, never, void>
-  registerScoped: Effect.Effect<Scope, never, void>
+  registerScoped: Effect.Effect<Scope.Scope, never, void>
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
     behavior: (
@@ -66,17 +66,17 @@ export interface Sharding {
       dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
     ) => Effect.Effect<R, never, void>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
-  ): Effect.Effect<Scope | R, never, void>
+  ): Effect.Effect<Scope.Scope | R, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behavior: (
       entityId: string,
       dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
     ) => Effect.Effect<R, never, void>
-  ): Effect.Effect<Scope | R, never, void>
+  ): Effect.Effect<Scope.Scope | R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
-  refreshAssignments: Effect.Effect<never, never, void>
+  refreshAssignments: Effect.Effect<Scope.Scope, never, void>
   assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   sendToLocalEntity(
@@ -147,7 +147,7 @@ export function registerEntity<Req, R>(
     dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
   ) => Effect.Effect<R, never, void>,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding | Scope | R, never, void> {
+): Effect.Effect<Sharding | Scope.Scope | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, entityMaxIdleTime))
 }
 
@@ -165,7 +165,7 @@ export function registerTopic<Req, R>(
     entityId: string,
     dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
   ) => Effect.Effect<R, never, void>
-): Effect.Effect<Sharding | Scope | R, never, void> {
+): Effect.Effect<Sharding | Scope.Scope | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior))
 }
 

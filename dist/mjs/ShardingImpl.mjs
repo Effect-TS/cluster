@@ -11,11 +11,11 @@ import * as EntityManager from "@effect/shardcake/EntityManager";
 import * as EntityState from "@effect/shardcake/EntityState";
 import * as Message from "@effect/shardcake/Message";
 import * as PodAddress from "@effect/shardcake/PodAddress";
-import { Pods } from "@effect/shardcake/Pods";
+import * as Pods from "@effect/shardcake/Pods";
 import * as ReplyChannel from "@effect/shardcake/ReplyChannel";
 import * as ReplyId from "@effect/shardcake/ReplyId";
 import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent";
-import { ShardManagerClient } from "@effect/shardcake/ShardManagerClient";
+import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient";
 import * as StreamMessage from "@effect/shardcake/StreamMessage";
 import * as Stream from "@effect/stream/Stream";
 import * as Duration from "@effect/data/Duration";
@@ -32,7 +32,7 @@ import * as ShardId from "@effect/shardcake/ShardId";
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig";
 import * as Storage from "@effect/shardcake/Storage";
 import { showHashSet } from "@effect/shardcake/utils";
-import { Sharding } from "./Sharding";
+import * as Sharding from "./Sharding";
 /** @internal */
 function make(address, config, shardAssignments, entityStates, singletons, replyChannels,
 // reply channel for each pending reply,
@@ -94,9 +94,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
       return HashMap.union(HashMap.filter((pod, _) => !Equal.equals(pod, address))(assignments), HashMap.filter((pod, _) => Equal.equals(pod, address))(map));
     });
   }
-  const refreshAssignments =
-  // TODO: missing withFinalizer (fiber interrupt)
-  Effect.asUnit(Effect.forkDaemon(Effect.interruptible(Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval))(Stream.runDrain(Stream.tap(() => startSingletonsIfNeeded)(Stream.mapEffect(([assignmentsOpt, fromShardManager]) => updateAssignments(assignmentsOpt, fromShardManager))(Stream.merge(Stream.map(_ => [_, false])(storage.assignmentsStream))(Stream.fromEffect(Effect.map(shardManager.getAssignments, _ => [_, true]))))))))));
+  const refreshAssignments = Effect.asUnit(Effect.forkScoped(Effect.interruptible(Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval))(Stream.runDrain(Stream.tap(() => startSingletonsIfNeeded)(Stream.mapEffect(([assignmentsOpt, fromShardManager]) => updateAssignments(assignmentsOpt, fromShardManager))(Stream.merge(Stream.map(_ => [_, false])(storage.assignmentsStream))(Stream.fromEffect(Effect.map(shardManager.getAssignments, _ => [_, true]))))))))));
   function sendToLocalEntitySingleReply(msg) {
     return Effect.gen(function* (_) {
       const replyChannel = yield* _(ReplyChannel.single());
@@ -344,5 +342,21 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
  * @since 1.0.0
  * @category layers
  */
-export const live = /*#__PURE__*/Layer.scoped(Sharding, /*#__PURE__*/Effect.map(_ => _.sharding)( /*#__PURE__*/Effect.tap(_ => _.sharding.refreshAssignments)( /*#__PURE__*/Effect.let("sharding", _ => make(PodAddress.make(_.config.selfHost, _.config.shardingPort), _.config, _.shardsCache, _.entityStates, _.singletons, _.replyChannels, _.shuttingDown, _.shardManager, _.pods, _.storage, _.serialization, _.eventsHub))( /*#__PURE__*/Effect.bind("eventsHub", () => Hub.unbounded())( /*#__PURE__*/Effect.bind("replyChannels", () => Synchronized.make(HashMap.empty()))( /*#__PURE__*/Effect.bind("shuttingDown", () => Ref.make(false))( /*#__PURE__*/Effect.bind("singletons", _ => Effect.tap(_ => Effect.addFinalizer(() => Effect.flatMap(Effect.forEach(([_, __, fa]) => Option.isSome(fa) ? Fiber.interrupt(fa.value) : Effect.unit))(Synchronized.get(_))))(Synchronized.make(List.nil())))( /*#__PURE__*/Effect.bind("entityStates", () => Ref.make(HashMap.empty()))( /*#__PURE__*/Effect.bind("shardsCache", () => Ref.make(HashMap.empty()))( /*#__PURE__*/Effect.bind("serialization", () => Serialization.Serialization)( /*#__PURE__*/Effect.bind("storage", () => Storage.Storage)( /*#__PURE__*/Effect.bind("shardManager", () => ShardManagerClient)( /*#__PURE__*/Effect.bind("pods", () => Pods)( /*#__PURE__*/Effect.bind("config", () => ShardingConfig.ShardingConfig)(Effect.Do)))))))))))))));
+export const live = /*#__PURE__*/Layer.scoped(Sharding.Sharding, /*#__PURE__*/Effect.gen(function* (_) {
+  const config = yield* _(ShardingConfig.ShardingConfig);
+  const pods = yield* _(Pods.Pods);
+  const shardManager = yield* _(ShardManagerClient.ShardManagerClient);
+  const storage = yield* _(Storage.Storage);
+  const serialization = yield* _(Serialization.Serialization);
+  const shardsCache = yield* _(Ref.make(HashMap.empty()));
+  const entityStates = yield* _(Ref.make(HashMap.empty()));
+  const shuttingDown = yield* _(Ref.make(false));
+  const eventsHub = yield* _(Hub.unbounded());
+  const replyChannels = yield* _(Synchronized.make(HashMap.empty()));
+  const singletons = yield* _(Synchronized.make(List.nil()));
+  yield* _(Effect.addFinalizer(() => Effect.flatMap(Effect.forEach(([_, __, fa]) => Option.isSome(fa) ? Fiber.interrupt(fa.value) : Effect.unit))(Synchronized.get(singletons))));
+  const sharding = make(PodAddress.make(config.selfHost, config.shardingPort), config, shardsCache, entityStates, singletons, replyChannels, shuttingDown, shardManager, pods, storage, serialization, eventsHub);
+  yield* _(sharding.refreshAssignments);
+  return sharding;
+}));
 //# sourceMappingURL=ShardingImpl.mjs.map
