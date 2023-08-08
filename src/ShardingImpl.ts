@@ -44,7 +44,7 @@ import * as List from "@effect/data/List"
 import * as Fiber from "@effect/io/Fiber"
 import * as Layer from "@effect/io/Layer"
 import * as Schedule from "@effect/io/Schedule"
-import type { Scope } from "@effect/io/Scope"
+import type * as Scope from "@effect/io/Scope"
 import type * as Schema from "@effect/schema/Schema"
 import type { JsonData } from "@effect/shardcake/JsonData"
 import type { Messenger } from "@effect/shardcake/Messenger"
@@ -68,6 +68,7 @@ type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<
 
 /** @internal */
 function make(
+  layerScope: Scope.Scope,
   address: PodAddress.PodAddress,
   config: ShardingConfig.ShardingConfig,
   shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress.PodAddress>>,
@@ -147,18 +148,21 @@ function make(
       singletons,
       (singletons) =>
         pipe(
-          Effect.forEach(singletons, ([name, run, fa]) =>
+          Effect.forEach(singletons, ([name, run, maybeExecutionFiber]) =>
             Option.match(
-              fa,
+              maybeExecutionFiber,
               {
                 onNone: () =>
                   pipe(
                     Effect.logDebug("Starting singleton " + name),
                     Effect.zipRight(
-                      Effect.map(Effect.forkDaemon(run), (fiber) => [name, run, Option.some(fiber)] as SingletonEntry)
+                      Effect.map(
+                        Effect.forkIn(layerScope)(run),
+                        (fiber) => [name, run, Option.some(fiber)] as SingletonEntry
+                      )
                     )
                   ),
-                onSome: (_) => Effect.succeed([name, run, fa] as SingletonEntry)
+                onSome: (_) => Effect.succeed([name, run, maybeExecutionFiber] as SingletonEntry)
               }
             )),
           Effect.map(List.fromIterable)
@@ -173,11 +177,11 @@ function make(
       singletons,
       (singletons) =>
         pipe(
-          Effect.forEach(singletons, ([name, run, fa]) =>
+          Effect.forEach(singletons, ([name, run, maybeExecutionFiber]) =>
             Option.match(
-              fa,
+              maybeExecutionFiber,
               {
-                onNone: () => Effect.succeed([name, run, fa] as SingletonEntry),
+                onNone: () => Effect.succeed([name, run, maybeExecutionFiber] as SingletonEntry),
                 onSome: (fiber) =>
                   pipe(
                     Effect.logDebug("Stopping singleton " + name),
@@ -279,7 +283,7 @@ function make(
     })
   }
 
-  const refreshAssignments: Effect.Effect<Scope, never, void> = pipe(
+  const refreshAssignments: Effect.Effect<Scope.Scope, never, void> = pipe(
     Stream.fromEffect(Effect.map(shardManager.getAssignments, (_) => [_, true] as const)),
     Stream.merge(
       pipe(
@@ -367,7 +371,7 @@ function make(
         pipe(
           replyChannel.await,
           Effect.ensuring(Synchronized.update(replyChannels, HashMap.remove(id))),
-          Effect.forkDaemon
+          Effect.forkIn(layerScope)
         )
       )
     )
@@ -724,7 +728,7 @@ function make(
       dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
     ) => Effect.Effect<R, never, void>,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
-  ): Effect.Effect<Scope | R, never, void> {
+  ): Effect.Effect<R, never, void> {
     return pipe(
       registerRecipient(entityType, behavior, entityMaxIdleTime),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
@@ -738,7 +742,7 @@ function make(
       entityId: string,
       dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
     ) => Effect.Effect<R, never, void>
-  ): Effect.Effect<Scope | R, never, void> {
+  ): Effect.Effect<R, never, void> {
     return pipe(
       registerRecipient(topicType, behavior, Option.none()),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
@@ -763,6 +767,7 @@ function make(
     return Effect.gen(function*($) {
       const entityManager = yield* $(
         EntityManager.make(
+          layerScope,
           recipientType,
           behavior,
           self,
@@ -848,6 +853,7 @@ export const live = Layer.scoped(
       HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>()
     ))
     const singletons = yield* _(Synchronized.make<List.List<SingletonEntry>>(List.nil()))
+    const layerScope = yield* _(Effect.scope)
     yield* _(Effect.addFinalizer(() =>
       pipe(
         Synchronized.get(singletons),
@@ -858,6 +864,7 @@ export const live = Layer.scoped(
     ))
 
     const sharding = make(
+      layerScope,
       PodAddress.make(config.selfHost, config.shardingPort),
       config,
       shardsCache,

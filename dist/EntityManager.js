@@ -24,7 +24,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category constructors
  */
-function make(recipientType, behavior_, sharding, config, entityMaxIdle) {
+function make(layerScope, recipientType, behavior_, sharding, config, entityMaxIdle) {
   return Effect.gen(function* ($) {
     const entities = yield* $(RefSynchronized.make(HashMap.empty()));
     const env = yield* $(Effect.context());

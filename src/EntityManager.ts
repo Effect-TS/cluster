@@ -10,6 +10,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import * as Queue from "@effect/io/Queue"
 import * as RefSynchronized from "@effect/io/Ref/Synchronized"
+import type * as Scope from "@effect/io/Scope"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
 import type * as RecipientType from "@effect/shardcake/RecipientType"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
@@ -47,6 +48,7 @@ type EntityManagerEntry<Req> = readonly [
  * @category constructors
  */
 export function make<R, Req>(
+  layerScope: Scope.Scope,
   recipientType: RecipientType.RecipientType<Req>,
   behavior_: (
     entityId: string,

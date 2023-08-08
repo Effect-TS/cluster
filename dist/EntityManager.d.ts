@@ -6,6 +6,7 @@ import * as HashSet from "@effect/data/HashSet";
 import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Queue from "@effect/io/Queue";
+import type * as Scope from "@effect/io/Scope";
 import * as PoisonPill from "@effect/shardcake/PoisonPill";
 import type * as RecipientType from "@effect/shardcake/RecipientType";
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel";
@@ -27,5 +28,5 @@ export interface EntityManager<Req> {
  * @since 1.0.0
  * @category constructors
  */
-export declare function make<R, Req>(recipientType: RecipientType.RecipientType<Req>, behavior_: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>, sharding: Sharding.Sharding, config: ShardingConfig.ShardingConfig, entityMaxIdle: Option.Option<Duration.Duration>): Effect.Effect<R, never, EntityManager<Req>>;
+export declare function make<R, Req>(layerScope: Scope.Scope, recipientType: RecipientType.RecipientType<Req>, behavior_: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>, sharding: Sharding.Sharding, config: ShardingConfig.ShardingConfig, entityMaxIdle: Option.Option<Duration.Duration>): Effect.Effect<R, never, EntityManager<Req>>;
 //# sourceMappingURL=EntityManager.d.ts.map

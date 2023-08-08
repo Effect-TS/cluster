@@ -34,7 +34,7 @@ import * as Storage from "@effect/shardcake/Storage";
 import { showHashSet } from "@effect/shardcake/utils";
 import * as Sharding from "./Sharding";
 /** @internal */
-function make(address, config, shardAssignments, entityStates, singletons, replyChannels,
+function make(layerScope, address, config, shardAssignments, entityStates, singletons, replyChannels,
 // reply channel for each pending reply,
 // lastUnhealthyNodeReported: Ref.Ref<Date>,
 isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
@@ -52,12 +52,12 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
     onNone: () => false,
     onSome: equals(address)
   })(HashMap.get(_, ShardId.make(1))))(Ref.get(shardAssignments));
-  const startSingletonsIfNeeded = Effect.asUnit(Effect.whenEffect(isSingletonNode)(Synchronized.updateEffect(singletons, singletons => Effect.map(List.fromIterable)(Effect.forEach(singletons, ([name, run, fa]) => Option.match(fa, {
-    onNone: () => Effect.zipRight(Effect.map(Effect.forkDaemon(run), fiber => [name, run, Option.some(fiber)]))(Effect.logDebug("Starting singleton " + name)),
-    onSome: _ => Effect.succeed([name, run, fa])
+  const startSingletonsIfNeeded = Effect.asUnit(Effect.whenEffect(isSingletonNode)(Synchronized.updateEffect(singletons, singletons => Effect.map(List.fromIterable)(Effect.forEach(singletons, ([name, run, maybeExecutionFiber]) => Option.match(maybeExecutionFiber, {
+    onNone: () => Effect.zipRight(Effect.map(Effect.forkIn(layerScope)(run), fiber => [name, run, Option.some(fiber)]))(Effect.logDebug("Starting singleton " + name)),
+    onSome: _ => Effect.succeed([name, run, maybeExecutionFiber])
   }))))));
-  const stopSingletonsIfNeeded = Effect.asUnit(Effect.unlessEffect(isSingletonNode)(Synchronized.updateEffect(singletons, singletons => Effect.map(List.fromIterable)(Effect.forEach(singletons, ([name, run, fa]) => Option.match(fa, {
-    onNone: () => Effect.succeed([name, run, fa]),
+  const stopSingletonsIfNeeded = Effect.asUnit(Effect.unlessEffect(isSingletonNode)(Synchronized.updateEffect(singletons, singletons => Effect.map(List.fromIterable)(Effect.forEach(singletons, ([name, run, maybeExecutionFiber]) => Option.match(maybeExecutionFiber, {
+    onNone: () => Effect.succeed([name, run, maybeExecutionFiber]),
     onSome: fiber => Effect.zipRight(Effect.as(Fiber.interrupt(fiber), [name, run, Option.none()]))(Effect.logDebug("Stopping singleton " + name))
   }))))));
   function registerSingleton(name, run) {
@@ -132,7 +132,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
     })(Ref.get(entityStates));
   }
   function initReply(id, replyChannel) {
-    return Effect.zipLeft(Effect.forkDaemon(Effect.ensuring(Synchronized.update(replyChannels, HashMap.remove(id)))(replyChannel.await)))(Synchronized.update(HashMap.set(id, replyChannel))(replyChannels));
+    return Effect.zipLeft(Effect.forkIn(layerScope)(Effect.ensuring(Synchronized.update(replyChannels, HashMap.remove(id)))(replyChannel.await)))(Synchronized.update(HashMap.set(id, replyChannel))(replyChannels));
   }
   function reply(reply, replier) {
     return Synchronized.updateEffect(replyChannels, repliers => Effect.as(HashMap.remove(replier.id)(repliers))(Effect.suspend(() => {
@@ -306,7 +306,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
   const getShardingRegistrationEvents = Stream.fromHub(eventsHub);
   function registerRecipient(recipientType, behavior, entityMaxIdleTime = Option.none()) {
     return Effect.gen(function* ($) {
-      const entityManager = yield* $(EntityManager.make(recipientType, behavior, self, config, entityMaxIdleTime));
+      const entityManager = yield* $(EntityManager.make(layerScope, recipientType, behavior, self, config, entityMaxIdleTime));
       const processBinary = (msg, replyChannel) => Effect.catchAllCause(_ => Effect.as(replyChannel.fail(_), Option.none()))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
       yield* $(Ref.update(HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))(entityStates));
     });
@@ -354,8 +354,9 @@ export const live = /*#__PURE__*/Layer.scoped(Sharding.Sharding, /*#__PURE__*/Ef
   const eventsHub = yield* _(Hub.unbounded());
   const replyChannels = yield* _(Synchronized.make(HashMap.empty()));
   const singletons = yield* _(Synchronized.make(List.nil()));
+  const layerScope = yield* _(Effect.scope);
   yield* _(Effect.addFinalizer(() => Effect.flatMap(Effect.forEach(([_, __, fa]) => Option.isSome(fa) ? Fiber.interrupt(fa.value) : Effect.unit))(Synchronized.get(singletons))));
-  const sharding = make(PodAddress.make(config.selfHost, config.shardingPort), config, shardsCache, entityStates, singletons, replyChannels, shuttingDown, shardManager, pods, storage, serialization, eventsHub);
+  const sharding = make(layerScope, PodAddress.make(config.selfHost, config.shardingPort), config, shardsCache, entityStates, singletons, replyChannels, shuttingDown, shardManager, pods, storage, serialization, eventsHub);
   yield* _(sharding.refreshAssignments);
   return sharding;
 }));

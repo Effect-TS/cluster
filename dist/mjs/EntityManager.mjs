@@ -15,7 +15,7 @@ import * as ShardError from "@effect/shardcake/ShardError";
  * @since 1.0.0
  * @category constructors
  */
-export function make(recipientType, behavior_, sharding, config, entityMaxIdle) {
+export function make(layerScope, recipientType, behavior_, sharding, config, entityMaxIdle) {
   return Effect.gen(function* ($) {
     const entities = yield* $(RefSynchronized.make(HashMap.empty()));
     const env = yield* $(Effect.context());
