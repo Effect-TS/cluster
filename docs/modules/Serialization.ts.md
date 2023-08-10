@@ -67,18 +67,18 @@ export interface Serialization {
    * Transforms the given message into binary
    * @since 1.0.0
    */
-  encode<A>(
+  encode<I extends JsonData, A>(
     message: A,
-    schema: Schema.Schema<JsonData, A>
+    schema: Schema.Schema<I, A>
   ): Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>
 
   /**
    * Transform binary back into the given type
    * @since 1.0.0
    */
-  decode<A>(
+  decode<I extends JsonData, A>(
     bytes: ByteArray.ByteArray,
-    schema: Schema.Schema<JsonData, A>
+    schema: Schema.Schema<I, A>
   ): Effect.Effect<never, ShardError.DecodeError, A>
 }
 ```

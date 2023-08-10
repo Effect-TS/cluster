@@ -778,7 +778,7 @@ function make(
 
       const processBinary = (msg: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) =>
         pipe(
-          serialization.decode<Req>(msg.body, recipientType.schema),
+          serialization.decode(msg.body, recipientType.schema),
           Effect.flatMap((_) =>
             pipe(
               entityManager.send(msg.entityId, _, msg.replyId, replyChannel),

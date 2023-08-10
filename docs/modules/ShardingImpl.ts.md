@@ -24,11 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const live: Layer.Layer<
-  Pods | Serialization.Serialization | ShardingConfig.ShardingConfig | ShardManagerClient | Storage.Storage,
-  never,
-  Sharding
->
+export declare const live: Layer.Layer<unknown, unknown, Sharding.Sharding>
 ```
 
 Added in v1.0.0

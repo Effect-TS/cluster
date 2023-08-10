@@ -71,19 +71,19 @@ export interface Sharding {
   ): Effect.Effect<never, never, boolean>
   isShuttingDown: Effect.Effect<never, never, boolean>
   initReply(id: ReplyId.ReplyId, replyChannel: ReplyChannel.ReplyChannel<any>): Effect.Effect<never, never, void>
-  registerScoped: Effect.Effect<Scope, never, void>
+  registerScoped: Effect.Effect<Scope.Scope, never, void>
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
-  ): Effect.Effect<Scope | R, never, void>
+  ): Effect.Effect<R, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
-  ): Effect.Effect<Scope | R, never, void>
+  ): Effect.Effect<R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
-  refreshAssignments: Effect.Effect<never, never, void>
+  refreshAssignments: Effect.Effect<Scope.Scope, never, void>
   assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   sendToLocalEntity(
@@ -174,7 +174,7 @@ export declare function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding | Scope | R, never, void>
+): Effect.Effect<Sharding | R, never, void>
 ```
 
 Added in v1.0.0
@@ -186,7 +186,7 @@ Same as `register`, but will automatically call `unregister` when the `Scope` is
 **Signature**
 
 ```ts
-export declare const registerScoped: Effect.Effect<Sharding | Scope, never, void>
+export declare const registerScoped: Effect.Effect<Sharding | Scope.Scope, never, void>
 ```
 
 Added in v1.0.0
@@ -220,7 +220,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 export declare function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
-): Effect.Effect<Sharding | Scope | R, never, void>
+): Effect.Effect<Sharding | R, never, void>
 ```
 
 Added in v1.0.0

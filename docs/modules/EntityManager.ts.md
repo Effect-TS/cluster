@@ -27,6 +27,7 @@ Added in v1.0.0
 
 ```ts
 export declare function make<R, Req>(
+  layerScope: Scope.Scope,
   recipientType: RecipientType.RecipientType<Req>,
   behavior_: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>,
   sharding: Sharding.Sharding,
