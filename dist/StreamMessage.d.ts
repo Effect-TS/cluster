@@ -29,6 +29,11 @@ export interface StreamMessage<A> {
  */
 export type Success<A> = A extends StreamMessage<infer X> ? X : never;
 /**
+ * @since 1.0.0
+ * @category utils
+ */
+export declare function isStreamMessage<A>(value: unknown): value is StreamMessage<A>;
+/**
  * Creates both the schema and a constructor for a `Message<A>`
  *
  * @since 1.0.0

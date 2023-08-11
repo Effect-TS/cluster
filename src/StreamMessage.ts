@@ -38,7 +38,10 @@ export interface StreamMessage<A> {
  */
 export type Success<A> = A extends StreamMessage<infer X> ? X : never
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isStreamMessage<A>(value: unknown): value is StreamMessage<A> {
   return (
     typeof value === "object" &&

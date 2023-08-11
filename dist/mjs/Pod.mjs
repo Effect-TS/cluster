@@ -9,7 +9,10 @@ import * as PodAddress from "@effect/shardcake/PodAddress";
  * @category symbols
  */
 export const TypeId = "@effect/shardcake/Pod";
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isPod(value) {
   return typeof value === "object" && value !== null && "_id" in value && value["_id"] === TypeId;
 }

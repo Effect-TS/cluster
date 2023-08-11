@@ -30,6 +30,11 @@ export interface BinaryMessage extends Schema.To<typeof schema> {
  */
 export declare function make(entityId: string, entityType: string, body: ByteArray.ByteArray, replyId: Option.Option<ReplyId.ReplyId>): BinaryMessage;
 /**
+ * @since 1.0.0
+ * @category utils
+ */
+export declare function isBinaryMessage(value: unknown): value is BinaryMessage;
+/**
  * This is the schema for a value.
  *
  * @since 1.0.0
@@ -37,32 +42,32 @@ export declare function make(entityId: string, entityType: string, body: ByteArr
  */
 export declare const schema: Schema.Schema<{
     readonly _id: "@effect/shardcake/BinaryMessage";
-    readonly entityId: string;
     readonly entityType: string;
+    readonly entityId: string;
     readonly body: {
-        readonly value: string;
         readonly _id: "@effect/shardcake/ByteArray";
+        readonly value: string;
     };
     readonly replyId: {
         readonly _tag: "None";
     } | {
         readonly _tag: "Some";
         readonly value: {
-            readonly value: string;
             readonly _id: "@effect/shardcake/ReplyId";
+            readonly value: string;
         };
     };
 }, Data.Data<{
     readonly _id: "@effect/shardcake/BinaryMessage";
-    readonly entityId: string;
     readonly entityType: string;
+    readonly entityId: string;
     readonly body: Data.Data<{
-        readonly value: string;
         readonly _id: "@effect/shardcake/ByteArray";
+        readonly value: string;
     }>;
     readonly replyId: Option.Option<Data.Data<{
-        readonly value: string;
         readonly _id: "@effect/shardcake/ReplyId";
+        readonly value: string;
     }>>;
 }>>;
 //# sourceMappingURL=BinaryMessage.d.ts.map

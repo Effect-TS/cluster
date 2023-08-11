@@ -33,6 +33,11 @@ export interface Replier<A> {
 export declare const replier: <I extends JsonData, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>) => Replier<A>;
 /**
  * @since 1.0.0
+ * @category utils
+ */
+export declare function isReplier<A>(value: unknown): value is Replier<A>;
+/**
+ * @since 1.0.0
  * @category schema
  */
 export declare const schema: <I extends JsonData, A>(schema: Schema.Schema<I, A>) => Schema.Schema<I, Replier<A>>;

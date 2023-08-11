@@ -44,7 +44,10 @@ export const replier = <I extends JsonData, A>(id: ReplyId.ReplyId, schema: Sche
   return self
 }
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isReplier<A>(value: unknown): value is Replier<A> {
   return typeof value === "object" && value !== null && TypeId in value
 }

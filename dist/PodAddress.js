@@ -21,7 +21,10 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @category symbols
  */
 const TypeId = "@effect/shardcake/PodAddress";
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 exports.TypeId = TypeId;
 function isPodAddress(value) {
   return typeof value === "object" && value !== null && "_id" in value && value["_id"] === TypeId;

@@ -79,7 +79,10 @@ export interface DeferredReplyChannel<A> extends ReplyChannel<A> {
   output: Effect.Effect<never, Throwable, Option.Option<A>>
 }
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isReplyChannel(value: unknown): value is ReplyChannel<any> {
   return (
     typeof value === "object" &&

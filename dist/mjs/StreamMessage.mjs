@@ -9,7 +9,10 @@ import * as StreamReplier from "@effect/shardcake/StreamReplier";
  * @category symbols
  */
 export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/StreamMessage");
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isStreamMessage(value) {
   return typeof value === "object" && value !== null && "replier" in value && StreamReplier.isStreamReplier(value.replier);
 }

@@ -21,6 +21,7 @@ Added in v1.0.0
   - [TypeId (type alias)](#typeid-type-alias)
 - [utils](#utils)
   - [Success (type alias)](#success-type-alias)
+  - [isStreamMessage](#isstreammessage)
 
 ---
 
@@ -86,6 +87,16 @@ Extracts the success type from a `Message<A>`.
 
 ```ts
 export type Success<A> = A extends StreamMessage<infer X> ? X : never
+```
+
+Added in v1.0.0
+
+## isStreamMessage
+
+**Signature**
+
+```ts
+export declare function isStreamMessage<A>(value: unknown): value is StreamMessage<A>
 ```
 
 Added in v1.0.0

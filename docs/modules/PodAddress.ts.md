@@ -21,6 +21,8 @@ Added in v1.0.0
 - [symbols](#symbols)
   - [TypeId](#typeid)
   - [TypeId (type alias)](#typeid-type-alias)
+- [utils](#utils)
+  - [isPodAddress](#ispodaddress)
 
 ---
 
@@ -83,6 +85,18 @@ Added in v1.0.0
 
 ```ts
 export type TypeId = typeof TypeId
+```
+
+Added in v1.0.0
+
+# utils
+
+## isPodAddress
+
+**Signature**
+
+```ts
+export declare function isPodAddress(value: unknown): value is PodAddress
 ```
 
 Added in v1.0.0

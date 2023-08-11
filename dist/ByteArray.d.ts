@@ -22,16 +22,21 @@ export interface ByteArray extends Schema.To<typeof schema> {
  */
 export declare function make(value: string): ByteArray;
 /**
+ * @since 1.0.0
+ * @category utils
+ */
+export declare function isByteArray(value: unknown): value is ByteArray;
+/**
  * This is the schema for a value.
  *
  * @since 1.0.0
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly value: string;
     readonly _id: "@effect/shardcake/ByteArray";
+    readonly value: string;
 }, Data.Data<{
-    readonly value: string;
     readonly _id: "@effect/shardcake/ByteArray";
+    readonly value: string;
 }>>;
 //# sourceMappingURL=ByteArray.d.ts.map

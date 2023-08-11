@@ -21,6 +21,8 @@ Added in v1.0.0
 - [symbols](#symbols)
   - [TypeId](#typeid)
   - [TypeId (type alias)](#typeid-type-alias)
+- [utils](#utils)
+  - [isBinaryMessage](#isbinarymessage)
 
 ---
 
@@ -104,6 +106,18 @@ Added in v1.0.0
 
 ```ts
 export type TypeId = typeof TypeId
+```
+
+Added in v1.0.0
+
+# utils
+
+## isBinaryMessage
+
+**Signature**
+
+```ts
+export declare function isBinaryMessage(value: unknown): value is BinaryMessage
 ```
 
 Added in v1.0.0

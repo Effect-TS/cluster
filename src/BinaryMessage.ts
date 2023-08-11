@@ -40,7 +40,10 @@ export function make(
   return Data.struct({ _id: TypeId, entityId, entityType, body, replyId })
 }
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isBinaryMessage(value: unknown): value is BinaryMessage {
   return (
     typeof value === "object" &&

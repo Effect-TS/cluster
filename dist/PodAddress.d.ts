@@ -21,6 +21,11 @@ export interface PodAddress extends Schema.To<typeof schema> {
 }
 /**
  * @since 1.0.0
+ * @category utils
+ */
+export declare function isPodAddress(value: unknown): value is PodAddress;
+/**
+ * @since 1.0.0
  * @category constructors
  */
 export declare function make(host: string, port: number): PodAddress;

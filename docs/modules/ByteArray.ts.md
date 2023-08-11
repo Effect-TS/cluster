@@ -20,6 +20,8 @@ Added in v1.0.0
   - [schema](#schema-1)
 - [symbols](#symbols)
   - [TypeId](#typeid)
+- [utils](#utils)
+  - [isByteArray](#isbytearray)
 
 ---
 
@@ -74,6 +76,18 @@ Added in v1.0.0
 
 ```ts
 export declare const TypeId: '@effect/shardcake/ByteArray'
+```
+
+Added in v1.0.0
+
+# utils
+
+## isByteArray
+
+**Signature**
+
+```ts
+export declare function isByteArray(value: unknown): value is ByteArray
 ```
 
 Added in v1.0.0

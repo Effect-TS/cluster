@@ -35,7 +35,10 @@ const replier = (id, schema) => {
   };
   return self;
 };
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 exports.replier = replier;
 function isReplier(value) {
   return typeof value === "object" && value !== null && TypeId in value;

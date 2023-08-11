@@ -17,6 +17,8 @@ Added in v1.0.0
 - [symbols](#symbols)
   - [TypeId](#typeid)
   - [TypeId (type alias)](#typeid-type-alias)
+- [utils](#utils)
+  - [isReplyChannel](#isreplychannel)
 
 ---
 
@@ -75,6 +77,18 @@ Added in v1.0.0
 
 ```ts
 export type TypeId = typeof TypeId
+```
+
+Added in v1.0.0
+
+# utils
+
+## isReplyChannel
+
+**Signature**
+
+```ts
+export declare function isReplyChannel(value: unknown): value is ReplyChannel<any>
 ```
 
 Added in v1.0.0

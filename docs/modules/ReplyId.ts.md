@@ -22,6 +22,8 @@ Added in v1.0.0
 - [symbols](#symbols)
   - [TypeId](#typeid)
   - [TypeId (type alias)](#typeid-type-alias)
+- [utils](#utils)
+  - [isReplyId](#isreplyid)
 
 ---
 
@@ -98,6 +100,18 @@ Added in v1.0.0
 
 ```ts
 export type TypeId = typeof TypeId
+```
+
+Added in v1.0.0
+
+# utils
+
+## isReplyId
+
+**Signature**
+
+```ts
+export declare function isReplyId(value: unknown): value is ReplyId
 ```
 
 Added in v1.0.0

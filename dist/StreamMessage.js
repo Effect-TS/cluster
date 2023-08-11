@@ -20,7 +20,10 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @category symbols
  */
 const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/StreamMessage");
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 exports.TypeId = TypeId;
 function isStreamMessage(value) {
   return typeof value === "object" && value !== null && "replier" in value && StreamReplier.isStreamReplier(value.replier);

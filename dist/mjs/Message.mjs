@@ -9,7 +9,10 @@ import * as Replier from "@effect/shardcake/Replier";
  * @category symbols
  */
 export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/Message");
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isMessage(value) {
   return typeof value === "object" && value !== null && "replier" in value && Replier.isReplier(value.replier);
 }

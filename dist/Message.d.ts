@@ -29,6 +29,11 @@ export interface Message<A> {
  */
 export type Success<A> = A extends Message<infer X> ? X : never;
 /**
+ * @since 1.0.0
+ * @category utils
+ */
+export declare function isMessage<R>(value: unknown): value is Message<R>;
+/**
  * Creates both the schema and a constructor for a `Message<A>`
  *
  * @since 1.0.0

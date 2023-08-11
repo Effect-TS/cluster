@@ -25,7 +25,10 @@ export type TypeId = typeof TypeId
  */
 export interface ReplyId extends Schema.To<typeof schema> {}
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isReplyId(value: unknown): value is ReplyId {
   return (
     typeof value === "object" &&

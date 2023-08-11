@@ -24,6 +24,7 @@ Added in v1.0.0
 - [utils](#utils)
   - [compareVersion](#compareversion)
   - [extractVersion](#extractversion)
+  - [isPodWithMetadata](#ispodwithmetadata)
 
 ---
 
@@ -126,6 +127,16 @@ Added in v1.0.0
 
 ```ts
 export declare function extractVersion(pod: PodWithMetadata): List.List<number>
+```
+
+Added in v1.0.0
+
+## isPodWithMetadata
+
+**Signature**
+
+```ts
+export declare function isPodWithMetadata(value: unknown): value is PodWithMetadata
 ```
 
 Added in v1.0.0

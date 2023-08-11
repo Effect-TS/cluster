@@ -14,7 +14,10 @@ import * as Take from "@effect/stream/Take";
  * @category symbols
  */
 export const TypeId = "@effect/shardcake/ReplyChannel";
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isReplyChannel(value) {
   return typeof value === "object" && value !== null && "_id" in value && value["_id"] === TypeId;
 }

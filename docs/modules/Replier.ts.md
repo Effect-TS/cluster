@@ -21,6 +21,8 @@ Added in v1.0.0
 - [symbols](#symbols)
   - [TypeId](#typeid)
   - [TypeId (type alias)](#typeid-type-alias)
+- [utils](#utils)
+  - [isReplier](#isreplier)
 
 ---
 
@@ -83,6 +85,18 @@ Added in v1.0.0
 
 ```ts
 export type TypeId = typeof TypeId
+```
+
+Added in v1.0.0
+
+# utils
+
+## isReplier
+
+**Signature**
+
+```ts
+export declare function isReplier<A>(value: unknown): value is Replier<A>
 ```
 
 Added in v1.0.0

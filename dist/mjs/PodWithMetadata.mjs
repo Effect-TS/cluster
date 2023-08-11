@@ -11,7 +11,10 @@ import * as Pod from "@effect/shardcake/Pod";
  * @category symbols
  */
 export const TypeId = "@effect/shardcake/PodWithMetadata";
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isPodWithMetadata(value) {
   return typeof value === "object" && value !== null && "_id" in value && value["_id"] === TypeId;
 }

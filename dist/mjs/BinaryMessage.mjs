@@ -25,7 +25,10 @@ export function make(entityId, entityType, body, replyId) {
     replyId
   });
 }
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isBinaryMessage(value) {
   return typeof value === "object" && value !== null && "_id" in value && value["_id"] === TypeId;
 }

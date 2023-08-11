@@ -20,7 +20,10 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @category symbols
  */
 const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/Message");
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 exports.TypeId = TypeId;
 function isMessage(value) {
   return typeof value === "object" && value !== null && "replier" in value && Replier.isReplier(value.replier);

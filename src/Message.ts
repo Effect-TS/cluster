@@ -38,7 +38,10 @@ export interface Message<A> {
  */
 export type Success<A> = A extends Message<infer X> ? X : never
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isMessage<R>(value: unknown): value is Message<R> {
   return (
     typeof value === "object" &&

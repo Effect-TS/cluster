@@ -42,4 +42,9 @@ export interface ReplyChannel<A> {
      */
     replyStream(stream: Stream.Stream<never, Throwable, A>): Effect.Effect<never, never, void>;
 }
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export declare function isReplyChannel(value: unknown): value is ReplyChannel<any>;
 //# sourceMappingURL=ReplyChannel.d.ts.map

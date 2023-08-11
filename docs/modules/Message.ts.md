@@ -21,6 +21,7 @@ Added in v1.0.0
   - [TypeId (type alias)](#typeid-type-alias)
 - [utils](#utils)
   - [Success (type alias)](#success-type-alias)
+  - [isMessage](#ismessage)
 
 ---
 
@@ -86,6 +87,16 @@ Extracts the success type from a `Message<A>`.
 
 ```ts
 export type Success<A> = A extends Message<infer X> ? X : never
+```
+
+Added in v1.0.0
+
+## isMessage
+
+**Signature**
+
+```ts
+export declare function isMessage<R>(value: unknown): value is Message<R>
 ```
 
 Added in v1.0.0

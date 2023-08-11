@@ -20,7 +20,10 @@ export function make(value) {
     value
   });
 }
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isByteArray(value) {
   return typeof value === "object" && value !== null && "_id" in value && value["_id"] === TypeId;
 }

@@ -26,7 +26,10 @@ export function make(value: string): ByteArray {
   return Data.struct({ _id: TypeId, value })
 }
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function isByteArray(value: unknown): value is ByteArray {
   return (
     typeof value === "object" &&

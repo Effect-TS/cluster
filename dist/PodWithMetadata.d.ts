@@ -23,6 +23,11 @@ export interface PodWithMetadata extends Schema.To<typeof schema> {
 }
 /**
  * @since 1.0.0
+ * @category utils
+ */
+export declare function isPodWithMetadata(value: unknown): value is PodWithMetadata;
+/**
+ * @since 1.0.0
  * @category constructors
  */
 export declare function make(pod: Pod.Pod, registered: number): PodWithMetadata;
