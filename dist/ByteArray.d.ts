@@ -39,4 +39,11 @@ export declare const schema: Schema.Schema<{
     readonly _id: "@effect/shardcake/ByteArray";
     readonly value: string;
 }>>;
+/**
+ * This is the schema for a value starting from a string.
+ *
+ * @since 1.0.0
+ * @category schema
+ */
+export declare const schemaFromString: Schema.Schema<string, ByteArray>;
 //# sourceMappingURL=ByteArray.d.ts.map

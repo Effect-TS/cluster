@@ -51,3 +51,16 @@ export const schema = Schema.data(
     value: Schema.string
   })
 )
+
+/**
+ * This is the schema for a value starting from a string.
+ *
+ * @since 1.0.0
+ * @category schema
+ */
+export const schemaFromString: Schema.Schema<string, ByteArray> = Schema.transform(
+  Schema.string,
+  schema,
+  make,
+  (byteArray) => byteArray.value
+)

@@ -37,4 +37,11 @@ export const schema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _id: /*#__PURE__*/Schema.literal(TypeId),
   value: Schema.string
 }));
+/**
+ * This is the schema for a value starting from a string.
+ *
+ * @since 1.0.0
+ * @category schema
+ */
+export const schemaFromString = /*#__PURE__*/Schema.transform(Schema.string, schema, make, byteArray => byteArray.value);
 //# sourceMappingURL=ByteArray.mjs.map

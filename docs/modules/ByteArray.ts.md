@@ -18,6 +18,7 @@ Added in v1.0.0
   - [ByteArray (interface)](#bytearray-interface)
 - [schema](#schema)
   - [schema](#schema-1)
+  - [schemaFromString](#schemafromstring)
 - [symbols](#symbols)
   - [TypeId](#typeid)
 - [utils](#utils)
@@ -64,6 +65,18 @@ export declare const schema: Schema.Schema<
   { readonly _id: '@effect/shardcake/ByteArray'; readonly value: string },
   Data.Data<{ readonly _id: '@effect/shardcake/ByteArray'; readonly value: string }>
 >
+```
+
+Added in v1.0.0
+
+## schemaFromString
+
+This is the schema for a value starting from a string.
+
+**Signature**
+
+```ts
+export declare const schemaFromString: Schema.Schema<string, ByteArray>
 ```
 
 Added in v1.0.0

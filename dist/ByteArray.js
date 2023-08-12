@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.TypeId = void 0;
 exports.isByteArray = isByteArray;
 exports.make = make;
-exports.schema = void 0;
+exports.schemaFromString = exports.schema = void 0;
 var Data = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Data"));
 var Schema = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/Schema"));
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -50,5 +50,13 @@ const schema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _id: /*#__PURE__*/Schema.literal(TypeId),
   value: Schema.string
 }));
+/**
+ * This is the schema for a value starting from a string.
+ *
+ * @since 1.0.0
+ * @category schema
+ */
 exports.schema = schema;
+const schemaFromString = /*#__PURE__*/Schema.transform(Schema.string, schema, make, byteArray => byteArray.value);
+exports.schemaFromString = schemaFromString;
 //# sourceMappingURL=ByteArray.js.map
