@@ -9,7 +9,6 @@ import * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Hub from "@effect/io/Hub"
-import type * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as Synchronized from "@effect/io/Ref/Synchronized"
 import * as BinaryMessage from "@effect/shardcake/BinaryMessage"
@@ -20,7 +19,6 @@ import * as EntityState from "@effect/shardcake/EntityState"
 import * as Message from "@effect/shardcake/Message"
 import * as PodAddress from "@effect/shardcake/PodAddress"
 import * as Pods from "@effect/shardcake/Pods"
-import type * as PoisonPill from "@effect/shardcake/PoisonPill"
 import type { Replier } from "@effect/shardcake/Replier"
 import * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import * as ReplyId from "@effect/shardcake/ReplyId"
@@ -48,6 +46,7 @@ import type * as Scope from "@effect/io/Scope"
 import type * as Schema from "@effect/schema/Schema"
 import type { JsonData } from "@effect/shardcake/JsonData"
 import type { Messenger } from "@effect/shardcake/Messenger"
+import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
 import * as RecipientType from "@effect/shardcake/RecipientType"
 import * as Serialization from "@effect/shardcake/Serialization"
 import {
@@ -723,10 +722,7 @@ function make(
 
   function registerEntity<R, Req>(
     entityType: RecipientType.EntityType<Req>,
-    behavior: (
-      entityId: string,
-      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-    ) => Effect.Effect<R, never, void>,
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ): Effect.Effect<R, never, void> {
     return pipe(
@@ -738,10 +734,7 @@ function make(
 
   function registerTopic<R, Req>(
     topicType: RecipientType.TopicType<Req>,
-    behavior: (
-      entityId: string,
-      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-    ) => Effect.Effect<R, never, void>
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
   ): Effect.Effect<R, never, void> {
     return pipe(
       registerRecipient(topicType, behavior, Option.none()),
@@ -758,10 +751,7 @@ function make(
 
   function registerRecipient<R, Req>(
     recipientType: RecipientType.RecipientType<Req>,
-    behavior: (
-      entityId: string,
-      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-    ) => Effect.Effect<R, never, void>,
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ) {
     return Effect.gen(function*($) {

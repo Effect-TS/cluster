@@ -12,6 +12,7 @@ import * as Queue from "@effect/io/Queue"
 import * as RefSynchronized from "@effect/io/Ref/Synchronized"
 import type * as Scope from "@effect/io/Scope"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
+import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
 import type * as RecipientType from "@effect/shardcake/RecipientType"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
@@ -50,10 +51,7 @@ type EntityManagerEntry<Req> = readonly [
 export function make<R, Req>(
   layerScope: Scope.Scope,
   recipientType: RecipientType.RecipientType<Req>,
-  behavior_: (
-    entityId: string,
-    dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-  ) => Effect.Effect<R, never, void>,
+  recipientBehaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>
@@ -71,7 +69,8 @@ export function make<R, Req>(
     const behavior = (
       entityId: string,
       dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-    ) => Effect.provideContext(behavior_(entityId, dequeue), env)
+    ) => Effect.provideContext(recipientBehaviour.dequeue(entityId, dequeue), env)
+    const accept = (msg: Req) => Effect.provideContext(recipientBehaviour.accept(msg), env)
 
     function startExpirationFiber(entityId: string) {
       return pipe(
@@ -225,14 +224,16 @@ export function make<R, Req>(
                   replyId,
                   Option.match({
                     onNone: () =>
-                      Effect.zipLeft(
-                        Queue.offer(queue, req),
-                        replyChannel.end
+                      pipe(
+                        accept(req),
+                        Effect.zipRight(Queue.offer(queue, req)),
+                        Effect.zipLeft(replyChannel.end)
                       ),
                     onSome: (replyId_) =>
-                      Effect.zipRight(
-                        sharding.initReply(replyId_, replyChannel),
-                        Queue.offer(queue, req)
+                      pipe(
+                        accept(req),
+                        Effect.zipRight(sharding.initReply(replyId_, replyChannel)),
+                        Effect.zipRight(Queue.offer(queue, req))
                       )
                   }),
                   Effect.catchAllCause((e) =>

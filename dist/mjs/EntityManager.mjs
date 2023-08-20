@@ -15,11 +15,12 @@ import * as ShardError from "@effect/shardcake/ShardError";
  * @since 1.0.0
  * @category constructors
  */
-export function make(layerScope, recipientType, behavior_, sharding, config, entityMaxIdle) {
+export function make(layerScope, recipientType, recipientBehaviour, sharding, config, entityMaxIdle) {
   return Effect.gen(function* ($) {
     const entities = yield* $(RefSynchronized.make(HashMap.empty()));
     const env = yield* $(Effect.context());
-    const behavior = (entityId, dequeue) => Effect.provideContext(behavior_(entityId, dequeue), env);
+    const behavior = (entityId, dequeue) => Effect.provideContext(recipientBehaviour.dequeue(entityId, dequeue), env);
+    const accept = msg => Effect.provideContext(recipientBehaviour.accept(msg), env);
     function startExpirationFiber(entityId) {
       return Effect.forkDaemon(Effect.interruptible(Effect.asUnit(Effect.zipRight(forkEntityTermination(entityId))(Effect.sleep(Option.getOrElse(() => config.entityMaxIdleTime)(entityMaxIdle))))));
     }
@@ -66,8 +67,8 @@ export function make(layerScope, recipientType, behavior_, sharding, config, ent
         onNone: () => Effect.zipRight(send(entityId, req, replyId, replyChannel))(Effect.sleep(Duration.millis(100))),
         onSome: queue => {
           return Effect.catchAllCause(e => Effect.zipRight(send(entityId, req, replyId, replyChannel))(Effect.logDebug("Send failed with the following cause:", e)))(Option.match({
-            onNone: () => Effect.zipLeft(Queue.offer(queue, req), replyChannel.end),
-            onSome: replyId_ => Effect.zipRight(sharding.initReply(replyId_, replyChannel), Queue.offer(queue, req))
+            onNone: () => Effect.zipLeft(replyChannel.end)(Effect.zipRight(Queue.offer(queue, req))(accept(req))),
+            onSome: replyId_ => Effect.zipRight(Queue.offer(queue, req))(Effect.zipRight(sharding.initReply(replyId_, replyChannel))(accept(req)))
           })(replyId));
         }
       })(_.test))(Effect.bind("test", () => RefSynchronized.modifyEffect(entities, map => decide(map, entityId)))(Effect.tap(() => {

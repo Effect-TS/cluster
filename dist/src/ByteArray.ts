@@ -12,6 +12,12 @@ export const TypeId = "@effect/shardcake/ByteArray"
 
 /**
  * @since 1.0.0
+ * @category symbols
+ */
+export type TypeId = typeof TypeId
+
+/**
+ * @since 1.0.0
  * @category models
  */
 export interface ByteArray extends Schema.To<typeof schema> {}

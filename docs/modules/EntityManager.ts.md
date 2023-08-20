@@ -29,7 +29,7 @@ Added in v1.0.0
 export declare function make<R, Req>(
   layerScope: Scope.Scope,
   recipientType: RecipientType.RecipientType<Req>,
-  behavior_: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>,
+  recipientBehaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>

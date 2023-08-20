@@ -1,6 +1,6 @@
 ---
 title: Sharding.ts
-nav_order: 25
+nav_order: 26
 parent: Modules
 ---
 
@@ -74,12 +74,12 @@ export interface Sharding {
   registerScoped: Effect.Effect<Scope.Scope, never, void>
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>,
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<R, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
-    behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
   ): Effect.Effect<R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
@@ -172,7 +172,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 ```ts
 export declare function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
-  behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>,
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | R, never, void>
 ```
@@ -219,7 +219,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 ```ts
 export declare function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
-  behavior: (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
 ): Effect.Effect<Sharding | R, never, void>
 ```
 

@@ -21,6 +21,7 @@ Added in v1.0.0
   - [schemaFromString](#schemafromstring)
 - [symbols](#symbols)
   - [TypeId](#typeid)
+  - [TypeId (type alias)](#typeid-type-alias)
 - [utils](#utils)
   - [isByteArray](#isbytearray)
 
@@ -89,6 +90,16 @@ Added in v1.0.0
 
 ```ts
 export declare const TypeId: '@effect/shardcake/ByteArray'
+```
+
+Added in v1.0.0
+
+## TypeId (type alias)
+
+**Signature**
+
+```ts
+export type TypeId = typeof TypeId
 ```
 
 Added in v1.0.0
