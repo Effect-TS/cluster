@@ -55,17 +55,12 @@ export function process<I extends JsonData, Msg, R>(
   schema: Schema.Schema<I, Msg>,
   process: (entityId: string, msg: Msg) => Effect.Effect<R, never, void>
 ): RecipientBehaviour<R, Msg> {
-  return {
-    _id: TypeId,
-    schema: schema as any,
-    dequeue: (entityId, dequeue) =>
-      pipe(
-        PoisonPill.takeOrInterrupt(dequeue),
-        Effect.flatMap((msg) => process(entityId, msg)),
-        Effect.forever
-      ),
-    accept: () => Effect.unit
-  }
+  return dequeue(schema, (entityId, dequeue) =>
+    pipe(
+      PoisonPill.takeOrInterrupt(dequeue),
+      Effect.flatMap((msg) => process(entityId, msg)),
+      Effect.forever
+    ))
 }
 
 /**
