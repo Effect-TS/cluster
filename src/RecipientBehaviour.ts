@@ -33,7 +33,7 @@ export interface RecipientBehaviour<R, Msg> {
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>
   ) => Effect.Effect<R, never, void>
-  readonly accept: (msg: Msg) => Effect.Effect<R, Throwable, void>
+  readonly accept: (entityId: string, msg: Msg) => Effect.Effect<R, Throwable, void>
 }
 
 /**
@@ -68,10 +68,14 @@ export function process<I extends JsonData, Msg, R>(
  * @category utils
  */
 export function onReceive<Msg, R>(
-  accept: (msg: Msg, next: RecipientBehaviour<never, Msg>["accept"]) => Effect.Effect<R, Throwable, void>
+  accept: (
+    entityId: string,
+    msg: Msg,
+    next: Effect.Effect<never, Throwable, void>
+  ) => Effect.Effect<R, Throwable, void>
 ) {
   return <R1>(recipientBehaviour: RecipientBehaviour<R1, Msg>): RecipientBehaviour<R | R1, Msg> => ({
     ...recipientBehaviour,
-    accept: (msg) => accept(msg, recipientBehaviour.accept as any)
+    accept: (entityId, msg) => accept(entityId, msg, recipientBehaviour.accept(entityId, msg) as any)
   })
 }

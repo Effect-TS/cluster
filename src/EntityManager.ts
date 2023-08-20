@@ -70,7 +70,7 @@ export function make<R, Req>(
       entityId: string,
       dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
     ) => Effect.provideContext(recipientBehaviour.dequeue(entityId, dequeue), env)
-    const accept = (msg: Req) => Effect.provideContext(recipientBehaviour.accept(msg), env)
+    const accept = (entityId: string, msg: Req) => Effect.provideContext(recipientBehaviour.accept(entityId, msg), env)
 
     function startExpirationFiber(entityId: string) {
       return pipe(
@@ -225,13 +225,13 @@ export function make<R, Req>(
                   Option.match({
                     onNone: () =>
                       pipe(
-                        accept(req),
+                        accept(entityId, req),
                         Effect.zipRight(Queue.offer(queue, req)),
                         Effect.zipLeft(replyChannel.end)
                       ),
                     onSome: (replyId_) =>
                       pipe(
-                        accept(req),
+                        accept(entityId, req),
                         Effect.zipRight(sharding.initReply(replyId_, replyChannel)),
                         Effect.zipRight(Queue.offer(queue, req))
                       )

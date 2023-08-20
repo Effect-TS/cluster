@@ -480,10 +480,10 @@ describe.concurrent("SampleTests", () => {
             Effect.zipRight(Ref.set(calledNext, true))
           )
         ),
-        RecipientBehaviour.onReceive((msg, next) =>
+        RecipientBehaviour.onReceive((entityId, msg, next) =>
           pipe(
             Ref.set(called, true),
-            Effect.zipRight(next(msg))
+            Effect.zipRight(next)
           )
         )
       )

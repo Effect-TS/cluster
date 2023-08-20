@@ -69,7 +69,7 @@ export interface RecipientBehaviour<R, Msg> {
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>
   ) => Effect.Effect<R, never, void>
-  readonly accept: (msg: Msg) => Effect.Effect<R, Throwable, void>
+  readonly accept: (entityId: string, msg: Msg) => Effect.Effect<R, Throwable, void>
 }
 ```
 
@@ -105,7 +105,7 @@ Added in v1.0.0
 
 ```ts
 export declare function onReceive<Msg, R>(
-  accept: (msg: Msg, next: RecipientBehaviour<never, Msg>['accept']) => Effect.Effect<R, Throwable, void>
+  accept: (entityId: string, msg: Msg, next: Effect.Effect<never, Throwable, void>) => Effect.Effect<R, Throwable, void>
 )
 ```
 

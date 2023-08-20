@@ -38,12 +38,7 @@ function dequeue(schema, dequeue) {
  * @category constructors
  */
 function process(schema, process) {
-  return {
-    _id: TypeId,
-    schema: schema,
-    dequeue: (entityId, dequeue) => Effect.forever(Effect.flatMap(msg => process(entityId, msg))(PoisonPill.takeOrInterrupt(dequeue))),
-    accept: () => Effect.unit
-  };
+  return dequeue(schema, (entityId, dequeue) => Effect.forever(Effect.flatMap(msg => process(entityId, msg))(PoisonPill.takeOrInterrupt(dequeue))));
 }
 /**
  * @since 1.0.0
@@ -52,7 +47,7 @@ function process(schema, process) {
 function onReceive(accept) {
   return recipientBehaviour => ({
     ...recipientBehaviour,
-    accept: msg => accept(msg, recipientBehaviour.accept)
+    accept: (entityId, msg) => accept(entityId, msg, recipientBehaviour.accept(entityId, msg))
   });
 }
 //# sourceMappingURL=RecipientBehaviour.js.map

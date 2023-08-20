@@ -23,7 +23,7 @@ export interface RecipientBehaviour<R, Msg> {
     readonly _id: TypeId;
     readonly schema: Schema.Schema<JsonData, Msg>;
     readonly dequeue: (entityId: string, dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>;
-    readonly accept: (msg: Msg) => Effect.Effect<R, Throwable, void>;
+    readonly accept: (entityId: string, msg: Msg) => Effect.Effect<R, Throwable, void>;
 }
 /**
  * @since 1.0.0
@@ -39,5 +39,5 @@ export declare function process<I extends JsonData, Msg, R>(schema: Schema.Schem
  * @since 1.0.0
  * @category utils
  */
-export declare function onReceive<Msg, R>(accept: (msg: Msg, next: RecipientBehaviour<never, Msg>["accept"]) => Effect.Effect<R, Throwable, void>): <R1>(recipientBehaviour: RecipientBehaviour<R1, Msg>) => RecipientBehaviour<R | R1, Msg>;
+export declare function onReceive<Msg, R>(accept: (entityId: string, msg: Msg, next: Effect.Effect<never, Throwable, void>) => Effect.Effect<R, Throwable, void>): <R1>(recipientBehaviour: RecipientBehaviour<R1, Msg>) => RecipientBehaviour<R | R1, Msg>;
 //# sourceMappingURL=RecipientBehaviour.d.ts.map
