@@ -38,15 +38,14 @@ import * as Stream from "@effect/stream/Stream"
 import * as Duration from "@effect/data/Duration"
 import { equals } from "@effect/data/Equal"
 import * as List from "@effect/data/List"
-// import { Cause } from "@effect/io/Cause"
 import * as Fiber from "@effect/io/Fiber"
 import * as Layer from "@effect/io/Layer"
 import * as Schedule from "@effect/io/Schedule"
 import type * as Scope from "@effect/io/Scope"
 import type * as Schema from "@effect/schema/Schema"
 import type { JsonData } from "@effect/shardcake/JsonData"
+import * as MessageQueue from "@effect/shardcake/MessageQueue"
 import type { Messenger } from "@effect/shardcake/Messenger"
-import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
 import * as RecipientType from "@effect/shardcake/RecipientType"
 import * as Serialization from "@effect/shardcake/Serialization"
 import {
@@ -84,7 +83,8 @@ function make(
   pods: Pods.Pods,
   storage: Storage.Storage,
   serialization: Serialization.Serialization,
-  eventsHub: Hub.Hub<ShardingRegistrationEvent.ShardingRegistrationEvent>
+  eventsHub: Hub.Hub<ShardingRegistrationEvent.ShardingRegistrationEvent>,
+  messageQueue: MessageQueue.MessageQueue
 ) {
   function getShardId(recipientType: RecipientType.RecipientType<any>, entityId: string): ShardId.ShardId {
     return RecipientType.getShardId(entityId, config.numberOfShards)
@@ -722,7 +722,7 @@ function make(
 
   function registerEntity<R, Req>(
     entityType: RecipientType.EntityType<Req>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+    behavior: RecipientType.RecipientBehaviour<R, Req>,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ): Effect.Effect<R, never, void> {
     return pipe(
@@ -734,7 +734,7 @@ function make(
 
   function registerTopic<R, Req>(
     topicType: RecipientType.TopicType<Req>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
+    behavior: RecipientType.RecipientBehaviour<R, Req>
   ): Effect.Effect<R, never, void> {
     return pipe(
       registerRecipient(topicType, behavior, Option.none()),
@@ -751,7 +751,7 @@ function make(
 
   function registerRecipient<R, Req>(
     recipientType: RecipientType.RecipientType<Req>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+    behavior: RecipientType.RecipientBehaviour<R, Req>,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ) {
     return Effect.gen(function*($) {
@@ -762,6 +762,7 @@ function make(
           behavior,
           self,
           config,
+          messageQueue,
           entityMaxIdleTime
         )
       )
@@ -843,6 +844,7 @@ export const live = Layer.scoped(
       HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>()
     ))
     const singletons = yield* _(Synchronized.make<List.List<SingletonEntry>>(List.nil()))
+    const messageQueue = yield* _(MessageQueue.MessageQueue)
     const layerScope = yield* _(Effect.scope)
     yield* _(Effect.addFinalizer(() =>
       pipe(
@@ -866,7 +868,8 @@ export const live = Layer.scoped(
       pods,
       storage,
       serialization,
-      eventsHub
+      eventsHub,
+      messageQueue
     )
 
     yield* _(sharding.refreshAssignments)

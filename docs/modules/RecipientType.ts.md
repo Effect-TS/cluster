@@ -17,6 +17,7 @@ Added in v1.0.0
   - [makeTopicType](#maketopictype)
 - [models](#models)
   - [EntityType (interface)](#entitytype-interface)
+  - [RecipientBehaviour (interface)](#recipientbehaviour-interface)
   - [RecipientType (type alias)](#recipienttype-type-alias)
   - [TopicType (interface)](#topictype-interface)
 - [utils](#utils)
@@ -63,6 +64,20 @@ export interface EntityType<Msg> {
   _tag: 'EntityType'
   name: string
   schema: Schema.Schema<JsonData, Msg>
+}
+```
+
+Added in v1.0.0
+
+## RecipientBehaviour (interface)
+
+An alias to a RecipientBehaviour
+
+**Signature**
+
+```ts
+export interface RecipientBehaviour<R, Req> {
+  (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>): Effect.Effect<R, never, void>
 }
 ```
 

@@ -29,6 +29,7 @@ var List = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/d
 var Fiber = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Fiber"));
 var Layer = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Layer"));
 var Schedule = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Schedule"));
+var MessageQueue = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/MessageQueue"));
 var RecipientType = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/RecipientType"));
 var Serialization = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Serialization"));
 var _ShardError = /*#__PURE__*/require("@effect/shardcake/ShardError");
@@ -39,13 +40,11 @@ var _utils = /*#__PURE__*/require("@effect/shardcake/utils");
 var Sharding = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("./Sharding"));
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-// import { Cause } from "@effect/io/Cause"
-
 /** @internal */
 function make(layerScope, address, config, shardAssignments, entityStates, singletons, replyChannels,
 // reply channel for each pending reply,
 // lastUnhealthyNodeReported: Ref.Ref<Date>,
-isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
+isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub, messageQueue) {
   function getShardId(recipientType, entityId) {
     return RecipientType.getShardId(entityId, config.numberOfShards);
   }
@@ -314,7 +313,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
   const getShardingRegistrationEvents = Stream.fromHub(eventsHub);
   function registerRecipient(recipientType, behavior, entityMaxIdleTime = Option.none()) {
     return Effect.gen(function* ($) {
-      const entityManager = yield* $(EntityManager.make(layerScope, recipientType, behavior, self, config, entityMaxIdleTime));
+      const entityManager = yield* $(EntityManager.make(layerScope, recipientType, behavior, self, config, messageQueue, entityMaxIdleTime));
       const processBinary = (msg, replyChannel) => Effect.catchAllCause(_ => Effect.as(replyChannel.fail(_), Option.none()))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
       yield* $(Ref.update(HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))(entityStates));
     });
@@ -362,9 +361,10 @@ const live = /*#__PURE__*/Layer.scoped(Sharding.Sharding, /*#__PURE__*/Effect.ge
   const eventsHub = yield* _(Hub.unbounded());
   const replyChannels = yield* _(Synchronized.make(HashMap.empty()));
   const singletons = yield* _(Synchronized.make(List.nil()));
+  const messageQueue = yield* _(MessageQueue.MessageQueue);
   const layerScope = yield* _(Effect.scope);
   yield* _(Effect.addFinalizer(() => Effect.flatMap(Effect.forEach(([_, __, fa]) => Option.isSome(fa) ? Fiber.interrupt(fa.value) : Effect.unit))(Synchronized.get(singletons))));
-  const sharding = make(layerScope, PodAddress.make(config.selfHost, config.shardingPort), config, shardsCache, entityStates, singletons, replyChannels, shuttingDown, shardManager, pods, storage, serialization, eventsHub);
+  const sharding = make(layerScope, PodAddress.make(config.selfHost, config.shardingPort), config, shardsCache, entityStates, singletons, replyChannels, shuttingDown, shardManager, pods, storage, serialization, eventsHub, messageQueue);
   yield* _(sharding.refreshAssignments);
   return sharding;
 }));

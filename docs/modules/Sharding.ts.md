@@ -74,12 +74,12 @@ export interface Sharding {
   registerScoped: Effect.Effect<Scope.Scope, never, void>
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+    behavior: RecipentType.RecipientBehaviour<R, Req>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<R, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
+    behavior: RecipentType.RecipientBehaviour<R, Req>
   ): Effect.Effect<R, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
@@ -172,7 +172,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 ```ts
 export declare function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  behavior: RecipentType.RecipientBehaviour<R, Req>,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | R, never, void>
 ```
@@ -186,7 +186,7 @@ Same as `register`, but will automatically call `unregister` when the `Scope` is
 **Signature**
 
 ```ts
-export declare const registerScoped: Effect.Effect<Sharding | Scope.Scope, never, void>
+export declare const registerScoped: Effect.Effect<Scope.Scope | Sharding, never, void>
 ```
 
 Added in v1.0.0
@@ -219,7 +219,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 ```ts
 export declare function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
+  behavior: RecipentType.RecipientBehaviour<R, Req>
 ): Effect.Effect<Sharding | R, never, void>
 ```
 

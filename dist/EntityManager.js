@@ -10,8 +10,8 @@ var HashSet = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effec
 var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Option"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Fiber = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Fiber"));
-var Queue = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Queue"));
 var RefSynchronized = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Ref/Synchronized"));
+var Scope = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Scope"));
 var PoisonPill = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/PoisonPill"));
 var ShardError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardError"));
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -24,12 +24,11 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category constructors
  */
-function make(layerScope, recipientType, recipientBehaviour, sharding, config, entityMaxIdle) {
-  return Effect.gen(function* ($) {
-    const entities = yield* $(RefSynchronized.make(HashMap.empty()));
-    const env = yield* $(Effect.context());
-    const behavior = (entityId, dequeue) => Effect.provideContext(recipientBehaviour.dequeue(entityId, dequeue), env);
-    const accept = (entityId, msg) => Effect.provideContext(recipientBehaviour.accept(entityId, msg), env);
+function make(layerScope, recipientType, behaviour_, sharding, config, messageQueue, entityMaxIdle) {
+  return Effect.gen(function* (_) {
+    const entities = yield* _(RefSynchronized.make(HashMap.empty()));
+    const env = yield* _(Effect.context());
+    const behaviour = (entityId, dequeue) => Effect.provideContext(behaviour_(entityId, dequeue), env);
     function startExpirationFiber(entityId) {
       return Effect.forkDaemon(Effect.interruptible(Effect.asUnit(Effect.zipRight(forkEntityTermination(entityId))(Effect.sleep(Option.getOrElse(() => config.entityMaxIdleTime)(entityMaxIdle))))));
     }
@@ -42,7 +41,7 @@ function make(layerScope, recipientType, recipientBehaviour, sharding, config, e
           // termination has already begun, keep everything as-is
           onNone: () => Effect.succeed([Option.some(runningFiber), map]),
           // begin to terminate the queue
-          onSome: queue => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(Queue.offer(queue, PoisonPill.make))
+          onSome: queue => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(queue.offer(PoisonPill.make))
         })(maybeQueue)
       })(HashMap.get(map, entityId)));
     }
@@ -56,9 +55,10 @@ function make(layerScope, recipientType, recipientBehaviour, sharding, config, e
             } else {
               // queue doesn't exist, create a new one
               return Effect.gen(function* (_) {
-                const queue = yield* _(Queue.unbounded());
+                const entityScope = yield* _(Scope.make());
+                const queue = yield* _(Scope.extend(entityScope)(messageQueue.make(recipientType, entityId)));
                 const expirationFiber = yield* _(startExpirationFiber(entityId));
-                const executionFiber = yield* _(Effect.forkDaemon(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(Effect.zipRight(Queue.shutdown(queue))(RefSynchronized.update(entities, HashMap.remove(entityId)))))(behavior(entityId, queue))));
+                const executionFiber = yield* _(Effect.forkDaemon(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(RefSynchronized.update(entities, HashMap.remove(entityId))))(Scope.use(entityScope)(behaviour(entityId, queue.dequeue)))));
                 const someQueue = Option.some(queue);
                 return [someQueue, HashMap.set(map, entityId, [someQueue, expirationFiber, executionFiber])];
               });
@@ -74,10 +74,10 @@ function make(layerScope, recipientType, recipientBehaviour, sharding, config, e
       }
       return Effect.tap(_ => Option.match({
         onNone: () => Effect.zipRight(send(entityId, req, replyId, replyChannel))(Effect.sleep(Duration.millis(100))),
-        onSome: queue => {
+        onSome: messageQueue => {
           return Effect.catchAllCause(e => Effect.zipRight(send(entityId, req, replyId, replyChannel))(Effect.logDebug("Send failed with the following cause:", e)))(Option.match({
-            onNone: () => Effect.zipLeft(replyChannel.end)(Effect.zipRight(Queue.offer(queue, req))(accept(entityId, req))),
-            onSome: replyId_ => Effect.zipRight(Queue.offer(queue, req))(Effect.zipRight(sharding.initReply(replyId_, replyChannel))(accept(entityId, req)))
+            onNone: () => Effect.zipLeft(replyChannel.end)(messageQueue.offer(req)),
+            onSome: replyId_ => Effect.zipRight(messageQueue.offer(req))(sharding.initReply(replyId_, replyChannel))
           })(replyId));
         }
       })(_.test))(Effect.bind("test", () => RefSynchronized.modifyEffect(entities, map => decide(map, entityId)))(Effect.tap(() => {

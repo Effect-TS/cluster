@@ -5,7 +5,6 @@ import * as Logger from "@effect/io/Logger"
 import * as Ref from "@effect/io/Ref"
 import * as PodsHttp from "@effect/shardcake/PodsHttp"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
-import * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
@@ -17,6 +16,7 @@ import * as Stream from "@effect/stream/Stream"
 import * as SubscriptionRef from "@effect/stream/SubscriptionRef"
 
 import * as LogLevel from "@effect/io/Logger/Level"
+import * as MessageQueue from "@effect/shardcake/MessageQueue"
 import { CounterEntity } from "./sample-common"
 
 const liveSharding = pipe(
@@ -24,12 +24,12 @@ const liveSharding = pipe(
   Layer.use(StorageFile.storageFile),
   Layer.use(PodsHttp.httpPods),
   Layer.use(ShardManagerClientHttp.shardManagerClientHttp),
-  Layer.use(Serialization.json)
+  Layer.use(Serialization.json),
+  Layer.use(MessageQueue.inMemory)
 )
 
-const behavior = RecipientBehaviour.dequeue(
-  CounterEntity.schema,
-  (counterId, dequeue) =>
+const program = pipe(
+  Sharding.registerEntity(CounterEntity, (counterId, dequeue) =>
     pipe(
       SubscriptionRef.make(0),
       Effect.flatMap((count) =>
@@ -57,11 +57,7 @@ const behavior = RecipientBehaviour.dequeue(
           Effect.forever
         )
       )
-    )
-)
-
-const program = pipe(
-  Sharding.registerEntity(CounterEntity, behavior),
+    )),
   Effect.zipRight(Sharding.register),
   Effect.zipRight(Effect.never),
   ShardingServiceHttp.shardingServiceHttp,

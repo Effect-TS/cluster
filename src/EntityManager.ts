@@ -8,11 +8,11 @@ import * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
-import * as Queue from "@effect/io/Queue"
+import type * as Queue from "@effect/io/Queue"
 import * as RefSynchronized from "@effect/io/Ref/Synchronized"
-import type * as Scope from "@effect/io/Scope"
+import * as Scope from "@effect/io/Scope"
+import type * as MessageQueue from "@effect/shardcake/MessageQueue"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
-import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
 import type * as RecipientType from "@effect/shardcake/RecipientType"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
@@ -39,7 +39,7 @@ export interface EntityManager<Req> {
 }
 
 type EntityManagerEntry<Req> = readonly [
-  messageQueue: Option.Option<Queue.Queue<Req | PoisonPill.PoisonPill>>,
+  messageQueue: Option.Option<MessageQueue.MessageQueueInstance<Req>>,
   expirationFiber: Fiber.RuntimeFiber<never, void>,
   executionFiber: Fiber.RuntimeFiber<never, void>
 ]
@@ -51,13 +51,14 @@ type EntityManagerEntry<Req> = readonly [
 export function make<R, Req>(
   layerScope: Scope.Scope,
   recipientType: RecipientType.RecipientType<Req>,
-  recipientBehaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  behaviour_: RecipientType.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
+  messageQueue: MessageQueue.MessageQueue,
   entityMaxIdle: Option.Option<Duration.Duration>
 ) {
-  return Effect.gen(function*($) {
-    const entities = yield* $(
+  return Effect.gen(function*(_) {
+    const entities = yield* _(
       RefSynchronized.make<
         HashMap.HashMap<
           string,
@@ -65,12 +66,11 @@ export function make<R, Req>(
         >
       >(HashMap.empty())
     )
-    const env = yield* $(Effect.context<R>())
-    const behavior = (
+    const env = yield* _(Effect.context<R>())
+    const behaviour = (
       entityId: string,
       dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-    ) => Effect.provideContext(recipientBehaviour.dequeue(entityId, dequeue), env)
-    const accept = (entityId: string, msg: Req) => Effect.provideContext(recipientBehaviour.accept(entityId, msg), env)
+    ) => Effect.provideContext(behaviour_(entityId, dequeue), env)
 
     function startExpirationFiber(entityId: string) {
       return pipe(
@@ -104,7 +104,7 @@ export function make<R, Req>(
                   // begin to terminate the queue
                   onSome: (queue) =>
                     pipe(
-                      Queue.offer(queue, PoisonPill.make),
+                      queue.offer(PoisonPill.make),
                       Effect.as(
                         [
                           Option.some(runningFiber),
@@ -146,15 +146,19 @@ export function make<R, Req>(
                 } else {
                   // queue doesn't exist, create a new one
                   return Effect.gen(function*(_) {
-                    const queue = yield* _(Queue.unbounded<Req | PoisonPill.PoisonPill>())
+                    const entityScope = yield* _(Scope.make())
+                    const queue = yield* _(pipe(
+                      messageQueue.make(recipientType, entityId),
+                      Scope.extend(entityScope)
+                    ))
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const executionFiber = yield* _(
                       pipe(
-                        behavior(entityId, queue),
+                        behaviour(entityId, queue.dequeue),
+                        Scope.use(entityScope),
                         Effect.ensuring(
                           pipe(
                             RefSynchronized.update(entities, HashMap.remove(entityId)),
-                            Effect.zipRight(Queue.shutdown(queue)),
                             Effect.zipRight(Fiber.interrupt(expirationFiber))
                           )
                         ),
@@ -219,21 +223,19 @@ export function make<R, Req>(
                   Effect.sleep(Duration.millis(100)),
                   Effect.zipRight(send(entityId, req, replyId, replyChannel))
                 ),
-              onSome: (queue) => {
+              onSome: (messageQueue) => {
                 return pipe(
                   replyId,
                   Option.match({
                     onNone: () =>
                       pipe(
-                        accept(entityId, req),
-                        Effect.zipRight(Queue.offer(queue, req)),
+                        messageQueue.offer(req),
                         Effect.zipLeft(replyChannel.end)
                       ),
                     onSome: (replyId_) =>
                       pipe(
-                        accept(entityId, req),
-                        Effect.zipRight(sharding.initReply(replyId_, replyChannel)),
-                        Effect.zipRight(Queue.offer(queue, req))
+                        sharding.initReply(replyId_, replyChannel),
+                        Effect.zipRight(messageQueue.offer(req))
                       )
                   }),
                   Effect.catchAllCause((e) =>
