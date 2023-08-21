@@ -18,7 +18,7 @@ function asHttpUrl(pod) {
  * @category layers
  */
 export const httpPods = /*#__PURE__*/Layer.succeed(Pods.Pods, {
-  [Pods.TypeId]: {},
+  _id: Pods.TypeId,
   assignShards: (pod, shards) => Effect.orDie(send(ShardingProtocolHttp.AssignShard_, ShardingProtocolHttp.AssignShardResult_)(asHttpUrl(pod), {
     _tag: "AssignShards",
     shards: Array.from(shards)

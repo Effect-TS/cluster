@@ -20,10 +20,10 @@ export type TypeId = typeof TypeId;
  * @category models
  */
 export interface Replier<A> {
-    [TypeId]: {};
-    id: ReplyId.ReplyId;
-    schema: Schema.Schema<unknown, A>;
-    reply: (reply: A) => Effect.Effect<Sharding.Sharding, never, void>;
+    readonly _id: TypeId;
+    readonly id: ReplyId.ReplyId;
+    readonly schema: Schema.Schema<unknown, A>;
+    readonly reply: (reply: A) => Effect.Effect<Sharding.Sharding, never, void>;
 }
 /**
  * @since 1.0.0

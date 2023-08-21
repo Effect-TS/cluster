@@ -26,9 +26,9 @@ export type TypeId = typeof TypeId
  * @category models
  */
 export interface EntityState {
-  [TypeId]: {}
-  entityManager: EntityManager.EntityManager<never>
-  processBinary: (
+  readonly _id: TypeId
+  readonly entityManager: EntityManager.EntityManager<never>
+  readonly processBinary: (
     binaryMessage: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
   ) => Effect.Effect<never, never, Option.Option<Schema.Schema<unknown, any>>>
@@ -42,5 +42,5 @@ export function make(
   entityManager: EntityState["entityManager"],
   processBinary: EntityState["processBinary"]
 ): EntityState {
-  return Data.struct({ [TypeId]: {}, entityManager, processBinary })
+  return Data.struct({ _id: TypeId, entityManager, processBinary })
 }

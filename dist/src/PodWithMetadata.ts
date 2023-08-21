@@ -98,10 +98,11 @@ export function show(value: PodWithMetadata) {
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.data(
+export const schema = pipe(
   Schema.struct({
     _id: Schema.literal(TypeId),
     pod: Pod.schema,
     registered: Schema.number
-  })
+  }),
+  Schema.data
 )

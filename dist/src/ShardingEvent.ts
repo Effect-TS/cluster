@@ -6,9 +6,9 @@ import type * as PodAddress from "@effect/shardcake/PodAddress"
 import type * as ShardId from "@effect/shardcake/ShardId"
 
 interface ShardsAssigned {
-  _tag: "ShardsAssigned"
-  pod: PodAddress.PodAddress
-  shards: HashSet.HashSet<ShardId.ShardId>
+  readonly _tag: "ShardsAssigned"
+  readonly pod: PodAddress.PodAddress
+  readonly shards: HashSet.HashSet<ShardId.ShardId>
 }
 
 /**
@@ -23,9 +23,9 @@ export function ShardsAssigned(
 }
 
 interface ShardsUnassigned {
-  _tag: "ShardsUnassigned"
-  pod: PodAddress.PodAddress
-  shards: HashSet.HashSet<ShardId.ShardId>
+  readonly _tag: "ShardsUnassigned"
+  readonly pod: PodAddress.PodAddress
+  readonly shards: HashSet.HashSet<ShardId.ShardId>
 }
 
 /**
@@ -40,8 +40,8 @@ export function ShardsUnassigned(
 }
 
 interface PodHealthChecked {
-  _tag: "PodHealthChecked"
-  pod: PodAddress.PodAddress
+  readonly _tag: "PodHealthChecked"
+  readonly pod: PodAddress.PodAddress
 }
 
 /**
@@ -53,8 +53,8 @@ export function PodHealthChecked(pod: PodAddress.PodAddress): PodHealthChecked {
 }
 
 interface PodRegistered {
-  _tag: "PodRegistered"
-  pod: PodAddress.PodAddress
+  readonly _tag: "PodRegistered"
+  readonly pod: PodAddress.PodAddress
 }
 
 /**
@@ -66,8 +66,8 @@ export function PodRegistered(pod: PodAddress.PodAddress): PodRegistered {
 }
 
 interface PodUnregistered {
-  _tag: "PodUnregistered"
-  pod: PodAddress.PodAddress
+  readonly _tag: "PodUnregistered"
+  readonly pod: PodAddress.PodAddress
 }
 
 /**

@@ -35,7 +35,7 @@ const Pods = /*#__PURE__*/(0, _Context.Tag)();
  */
 exports.Pods = Pods;
 const noop = /*#__PURE__*/Layer.succeed(Pods, {
-  [TypeId]: {},
+  _id: TypeId,
   assignShards: () => Effect.unit,
   unassignShards: () => Effect.unit,
   ping: () => Effect.unit,

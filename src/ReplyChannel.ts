@@ -32,27 +32,27 @@ export interface ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  _id: TypeId
+  readonly _id: TypeId
   /**
    * @since 1.0.0
    */
-  await: Effect.Effect<never, never, void>
+  readonly await: Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
-  end: Effect.Effect<never, never, void>
+  readonly end: Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
-  fail(cause: Cause.Cause<Throwable>): Effect.Effect<never, never, void>
+  readonly fail: (cause: Cause.Cause<Throwable>) => Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
-  replySingle(a: A): Effect.Effect<never, never, void>
+  readonly replySingle: (a: A) => Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
-  replyStream(stream: Stream.Stream<never, Throwable, A>): Effect.Effect<never, never, void>
+  readonly replyStream: (stream: Stream.Stream<never, Throwable, A>) => Effect.Effect<never, never, void>
 }
 
 /** @internal */
@@ -60,11 +60,11 @@ export interface QueueReplyChannel<A> extends ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  _tag: "FromQueue"
+  readonly _tag: "FromQueue"
   /**
    * @since 1.0.0
    */
-  output: Stream.Stream<never, Throwable, A>
+  readonly output: Stream.Stream<never, Throwable, A>
 }
 
 /** @internal */
@@ -72,11 +72,11 @@ export interface DeferredReplyChannel<A> extends ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  _tag: "FromDeferred"
+  readonly _tag: "FromDeferred"
   /**
    * @since 1.0.0
    */
-  output: Effect.Effect<never, Throwable, Option.Option<A>>
+  readonly output: Effect.Effect<never, Throwable, Option.Option<A>>
 }
 
 /**

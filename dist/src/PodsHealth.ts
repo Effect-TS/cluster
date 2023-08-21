@@ -31,13 +31,16 @@ export type TypeId = typeof TypeId
  * @category models
  */
 export interface PodsHealth {
-  [TypeId]: {}
+  /**
+   * @since 1.0.0
+   */
+  readonly _id: TypeId
 
   /**
    * Check if a pod is still alive.
    * @since 1.0.0
    */
-  isAlive(podAddress: PodAddress): Effect.Effect<never, never, boolean>
+  readonly isAlive: (podAddress: PodAddress) => Effect.Effect<never, never, boolean>
 }
 
 /**
@@ -53,7 +56,7 @@ export const PodsHealth = Tag<PodsHealth>()
  * @category layers
  */
 export const noop = Layer.succeed(PodsHealth, {
-  [TypeId]: {},
+  _id: TypeId,
   isAlive: () => Effect.succeed(true)
 })
 
@@ -65,8 +68,9 @@ export const noop = Layer.succeed(PodsHealth, {
  */
 export const local = Layer.effect(
   PodsHealth,
-  Effect.map(Pods.Pods, (podApi) => ({
-    [TypeId]: {},
-    isAlive: (address: PodAddress) => pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome))
-  }))
+  Effect.map(Pods.Pods, (podApi) =>
+    ({
+      _id: TypeId,
+      isAlive: (address: PodAddress) => pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome))
+    }) as PodsHealth)
 )

@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import * as Data from "@effect/data/Data"
+import { pipe } from "@effect/data/Function"
 import type * as Option from "@effect/data/Option"
 import * as Schema from "@effect/schema/Schema"
 import * as ByteArray from "@effect/shardcake/ByteArray"
@@ -59,12 +60,13 @@ export function isBinaryMessage(value: unknown): value is BinaryMessage {
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.data(
+export const schema = pipe(
   Schema.struct({
     _id: Schema.literal(TypeId),
     entityId: Schema.string,
     entityType: Schema.string,
     body: ByteArray.schema,
     replyId: Schema.option(ReplyId.schema)
-  })
+  }),
+  Schema.data
 )

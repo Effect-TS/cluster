@@ -34,17 +34,17 @@ export type TypeId = typeof TypeId
  * @category models
  */
 export interface ShardingConfig {
-  numberOfShards: number
-  selfHost: string
-  shardingPort: number
-  shardManagerUri: string
-  serverVersion: string
-  entityMaxIdleTime: Duration.Duration
-  entityTerminationTimeout: Duration.Duration
-  sendTimeout: Duration.Duration
-  refreshAssignmentsRetryInterval: Duration.Duration
-  unhealthyPodReportInterval: Duration.Duration
-  simulateRemotePods: boolean
+  readonly numberOfShards: number
+  readonly selfHost: string
+  readonly shardingPort: number
+  readonly shardManagerUri: string
+  readonly serverVersion: string
+  readonly entityMaxIdleTime: Duration.Duration
+  readonly entityTerminationTimeout: Duration.Duration
+  readonly sendTimeout: Duration.Duration
+  readonly refreshAssignmentsRetryInterval: Duration.Duration
+  readonly unhealthyPodReportInterval: Duration.Duration
+  readonly simulateRemotePods: boolean
 }
 
 /**

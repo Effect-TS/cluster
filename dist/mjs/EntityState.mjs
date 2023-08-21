@@ -13,7 +13,7 @@ export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/EntityState");
  */
 export function make(entityManager, processBinary) {
   return Data.struct({
-    [TypeId]: {},
+    _id: TypeId,
     entityManager,
     processBinary
   });

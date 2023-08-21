@@ -6,11 +6,6 @@ import * as Schema from "@effect/schema/Schema";
 import * as StreamReplier from "@effect/shardcake/StreamReplier";
 /**
  * @since 1.0.0
- * @category symbols
- */
-export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/StreamMessage");
-/**
- * @since 1.0.0
  * @category utils
  */
 export function isStreamMessage(value) {

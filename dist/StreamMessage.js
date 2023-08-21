@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TypeId = void 0;
 exports.isStreamMessage = isStreamMessage;
 exports.schema = schema;
 var Data = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Data"));
@@ -17,14 +16,8 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
 
 /**
  * @since 1.0.0
- * @category symbols
- */
-const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/StreamMessage");
-/**
- * @since 1.0.0
  * @category utils
  */
-exports.TypeId = TypeId;
 function isStreamMessage(value) {
   return typeof value === "object" && value !== null && "replier" in value && StreamReplier.isStreamReplier(value.replier);
 }

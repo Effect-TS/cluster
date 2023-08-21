@@ -30,25 +30,28 @@ export type TypeId = typeof TypeId
  * @category models
  */
 export interface Serialization {
-  [TypeId]: {}
+  /**
+   * @since 1.0.0
+   */
+  readonly _id: TypeId
 
   /**
    * Transforms the given message into binary
    * @since 1.0.0
    */
-  encode<I, A>(
+  readonly encode: <I, A>(
     message: A,
     schema: Schema.Schema<I, A>
-  ): Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>
+  ) => Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>
 
   /**
    * Transform binary back into the given type
    * @since 1.0.0
    */
-  decode<I, A>(
+  readonly decode: <I, A>(
     bytes: ByteArray.ByteArray,
     schema: Schema.Schema<I, A>
-  ): Effect.Effect<never, ShardError.DecodeError, A>
+  ) => Effect.Effect<never, ShardError.DecodeError, A>
 }
 
 /**
@@ -64,7 +67,7 @@ export const Serialization = Tag<Serialization>()
  * @category layers
  */
 export const json = Layer.succeed(Serialization, {
-  [TypeId]: {},
+  _id: TypeId,
   encode: (message, schema) =>
     pipe(
       jsonStringify(message, schema),

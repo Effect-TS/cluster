@@ -8,18 +8,6 @@ import * as Replier from "@effect/shardcake/Replier"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
 
 /**
- * @since 1.0.0
- * @category symbols
- */
-export const TypeId: unique symbol = Symbol.for("@effect/shardcake/Message")
-
-/**
- * @since 1.0.0
- * @category symbols
- */
-export type TypeId = typeof TypeId
-
-/**
  * A `Message<A>` is a request from a data source for a value of type `A`
  *
  * @since 1.0.0

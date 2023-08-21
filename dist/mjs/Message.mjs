@@ -6,11 +6,6 @@ import * as Schema from "@effect/schema/Schema";
 import * as Replier from "@effect/shardcake/Replier";
 /**
  * @since 1.0.0
- * @category symbols
- */
-export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/Message");
-/**
- * @since 1.0.0
  * @category utils
  */
 export function isMessage(value) {

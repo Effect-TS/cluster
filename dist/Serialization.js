@@ -35,7 +35,7 @@ const Serialization = /*#__PURE__*/(0, _Context.Tag)();
  */
 exports.Serialization = Serialization;
 const json = /*#__PURE__*/Layer.succeed(Serialization, {
-  [TypeId]: {},
+  _id: TypeId,
   encode: (message, schema) => Effect.map(ByteArray.make)(Effect.mapError(ShardError.EncodeError)((0, _utils.jsonStringify)(message, schema))),
   decode: (body, schema) => Effect.mapError(ShardError.DecodeError)((0, _utils.jsonParse)(body.value, schema))
 });

@@ -28,7 +28,7 @@ const TypeId = "@effect/shardcake/StreamReplier";
 exports.TypeId = TypeId;
 const streamReplier = (id, schema) => {
   const self = {
-    [TypeId]: {},
+    _id: TypeId,
     id,
     schema: schema,
     reply: reply => Effect.flatMap(Sharding.Sharding, _ => _.replyStream(reply, self))

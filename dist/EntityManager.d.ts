@@ -20,9 +20,9 @@ import type * as ShardingConfig from "@effect/shardcake/ShardingConfig";
  * @category models
  */
 export interface EntityManager<Req> {
-    send(entityId: string, req: Req, replyId: Option.Option<ReplyId.ReplyId>, replyChannel: ReplyChannel.ReplyChannel<any>): Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void>;
-    terminateEntitiesOnShards(shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<never, never, void>;
-    terminateAllEntities: Effect.Effect<never, never, void>;
+    readonly send: (entityId: string, req: Req, replyId: Option.Option<ReplyId.ReplyId>, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void>;
+    readonly terminateEntitiesOnShards: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
+    readonly terminateAllEntities: Effect.Effect<never, never, void>;
 }
 /**
  * @since 1.0.0

@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import * as Data from "@effect/data/Data"
+import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
 import * as PodAddress from "@effect/shardcake/PodAddress"
 
@@ -53,10 +54,11 @@ export function show(value: Pod) {
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.data(
+export const schema = pipe(
   Schema.struct({
     _id: Schema.literal(TypeId),
     address: PodAddress.schema,
     version: Schema.string
-  })
+  }),
+  Schema.data
 )

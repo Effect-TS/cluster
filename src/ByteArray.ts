@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import * as Data from "@effect/data/Data"
+import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -51,11 +52,12 @@ export function isByteArray(value: unknown): value is ByteArray {
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.data(
+export const schema = pipe(
   Schema.struct({
     _id: Schema.literal(TypeId),
     value: Schema.string
-  })
+  }),
+  Schema.data
 )
 
 /**

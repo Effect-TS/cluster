@@ -24,7 +24,7 @@ export const Serialization = /*#__PURE__*/Tag();
  * @category layers
  */
 export const json = /*#__PURE__*/Layer.succeed(Serialization, {
-  [TypeId]: {},
+  _id: TypeId,
   encode: (message, schema) => Effect.map(ByteArray.make)(Effect.mapError(ShardError.EncodeError)(jsonStringify(message, schema))),
   decode: (body, schema) => Effect.mapError(ShardError.DecodeError)(jsonParse(body.value, schema))
 });

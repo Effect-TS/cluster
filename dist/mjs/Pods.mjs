@@ -24,7 +24,7 @@ export const Pods = /*#__PURE__*/Tag();
  * @category layers
  */
 export const noop = /*#__PURE__*/Layer.succeed(Pods, {
-  [TypeId]: {},
+  _id: TypeId,
   assignShards: () => Effect.unit,
   unassignShards: () => Effect.unit,
   ping: () => Effect.unit,

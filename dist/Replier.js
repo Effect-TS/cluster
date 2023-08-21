@@ -28,7 +28,7 @@ const TypeId = "@effect/shardcake/Replier";
 exports.TypeId = TypeId;
 const replier = (id, schema) => {
   const self = {
-    [TypeId]: {},
+    _id: TypeId,
     id,
     schema: schema,
     reply: reply => Effect.flatMap(Sharding.Sharding, _ => _.reply(reply, self))

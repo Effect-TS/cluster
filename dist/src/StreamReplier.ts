@@ -24,7 +24,7 @@ export type TypeId = typeof TypeId
  * @category models
  */
 export interface StreamReplier<A> {
-  [TypeId]: {}
+  _id: TypeId
   id: ReplyId.ReplyId
   schema: Schema.Schema<unknown, A>
   reply: (reply: Stream.Stream<never, never, A>) => Effect.Effect<Sharding.Sharding, never, void>
@@ -39,7 +39,7 @@ export const streamReplier = <I, A>(
   schema: Schema.Schema<I, A>
 ): StreamReplier<A> => {
   const self: StreamReplier<A> = {
-    [TypeId]: {},
+    _id: TypeId,
     id,
     schema: schema as any,
     reply: (reply) => Effect.flatMap(Sharding.Sharding, (_) => _.replyStream(reply, self))

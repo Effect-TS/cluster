@@ -14,11 +14,11 @@ import * as Stream from "@effect/stream/Stream";
  * @category models
  */
 export interface ShardManager {
-    getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>;
-    register(pod: Pod.Pod): Effect.Effect<never, never, void>;
-    unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>;
-    notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>;
-    checkAllPodsHealth: Effect.Effect<never, never, void>;
+    readonly getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>;
+    readonly register: (pod: Pod.Pod) => Effect.Effect<never, never, void>;
+    readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>;
+    readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>;
+    readonly checkAllPodsHealth: Effect.Effect<never, never, void>;
 }
 /**
  * @since 1.0.0

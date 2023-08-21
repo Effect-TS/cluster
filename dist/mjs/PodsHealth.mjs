@@ -23,7 +23,7 @@ export const PodsHealth = /*#__PURE__*/Tag();
  * @category layers
  */
 export const noop = /*#__PURE__*/Layer.succeed(PodsHealth, {
-  [TypeId]: {},
+  _id: TypeId,
   isAlive: () => Effect.succeed(true)
 });
 /**
@@ -33,7 +33,7 @@ export const noop = /*#__PURE__*/Layer.succeed(PodsHealth, {
  * @category layers
  */
 export const local = /*#__PURE__*/Layer.effect(PodsHealth, /*#__PURE__*/Effect.map(Pods.Pods, podApi => ({
-  [TypeId]: {},
+  _id: TypeId,
   isAlive: address => Effect.map(Option.isSome)(Effect.option(podApi.ping(address)))
 })));
 //# sourceMappingURL=PodsHealth.mjs.map

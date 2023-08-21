@@ -23,17 +23,20 @@ export type TypeId = typeof TypeId;
  * @category models
  */
 export interface Serialization {
-    [TypeId]: {};
+    /**
+     * @since 1.0.0
+     */
+    readonly _id: TypeId;
     /**
      * Transforms the given message into binary
      * @since 1.0.0
      */
-    encode<I, A>(message: A, schema: Schema.Schema<I, A>): Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>;
+    readonly encode: <I, A>(message: A, schema: Schema.Schema<I, A>) => Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>;
     /**
      * Transform binary back into the given type
      * @since 1.0.0
      */
-    decode<I, A>(bytes: ByteArray.ByteArray, schema: Schema.Schema<I, A>): Effect.Effect<never, ShardError.DecodeError, A>;
+    readonly decode: <I, A>(bytes: ByteArray.ByteArray, schema: Schema.Schema<I, A>) => Effect.Effect<never, ShardError.DecodeError, A>;
 }
 /**
  * @since 1.0.0

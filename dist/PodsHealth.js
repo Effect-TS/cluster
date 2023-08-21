@@ -34,7 +34,7 @@ const PodsHealth = /*#__PURE__*/(0, _Context.Tag)();
  */
 exports.PodsHealth = PodsHealth;
 const noop = /*#__PURE__*/Layer.succeed(PodsHealth, {
-  [TypeId]: {},
+  _id: TypeId,
   isAlive: () => Effect.succeed(true)
 });
 /**
@@ -45,7 +45,7 @@ const noop = /*#__PURE__*/Layer.succeed(PodsHealth, {
  */
 exports.noop = noop;
 const local = /*#__PURE__*/Layer.effect(PodsHealth, /*#__PURE__*/Effect.map(Pods.Pods, podApi => ({
-  [TypeId]: {},
+  _id: TypeId,
   isAlive: address => Effect.map(Option.isSome)(Effect.option(podApi.ping(address)))
 })));
 exports.local = local;

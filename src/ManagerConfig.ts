@@ -19,14 +19,14 @@ import * as Layer from "@effect/io/Layer"
  * @category models
  */
 export interface ManagerConfig {
-  numberOfShards: number
-  apiPort: number
-  rebalanceInterval: Duration.Duration
-  rebalanceRetryInterval: Duration.Duration
-  pingTimeout: Duration.Duration
-  persistRetryInterval: Duration.Duration
-  persistRetryCount: number
-  rebalanceRate: number
+  readonly numberOfShards: number
+  readonly apiPort: number
+  readonly rebalanceInterval: Duration.Duration
+  readonly rebalanceRetryInterval: Duration.Duration
+  readonly pingTimeout: Duration.Duration
+  readonly persistRetryInterval: Duration.Duration
+  readonly persistRetryCount: number
+  readonly rebalanceRate: number
 }
 
 /**

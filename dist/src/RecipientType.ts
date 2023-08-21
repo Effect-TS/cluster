@@ -10,9 +10,9 @@ import * as ShardId from "@effect/shardcake/ShardId"
  * @category models
  */
 export interface EntityType<Msg> {
-  _tag: "EntityType"
-  name: string
-  schema: Schema.Schema<unknown, Msg>
+  readonly _tag: "EntityType"
+  readonly name: string
+  readonly schema: Schema.Schema<unknown, Msg>
 }
 
 /**
@@ -20,9 +20,9 @@ export interface EntityType<Msg> {
  * @category models
  */
 export interface TopicType<Msg> {
-  _tag: "TopicType"
-  name: string
-  schema: Schema.Schema<unknown, Msg>
+  readonly _tag: "TopicType"
+  readonly name: string
+  readonly schema: Schema.Schema<unknown, Msg>
 }
 
 /**

@@ -23,10 +23,10 @@ export type TypeId = typeof TypeId
  * @category models
  */
 export interface Replier<A> {
-  [TypeId]: {}
-  id: ReplyId.ReplyId
-  schema: Schema.Schema<unknown, A>
-  reply: (reply: A) => Effect.Effect<Sharding.Sharding, never, void>
+  readonly _id: TypeId
+  readonly id: ReplyId.ReplyId
+  readonly schema: Schema.Schema<unknown, A>
+  readonly reply: (reply: A) => Effect.Effect<Sharding.Sharding, never, void>
 }
 
 /**
@@ -35,7 +35,7 @@ export interface Replier<A> {
  */
 export const replier = <I, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>): Replier<A> => {
   const self: Replier<A> = {
-    [TypeId]: {},
+    _id: TypeId,
     id,
     schema: schema as any,
     reply: (reply) => Effect.flatMap(Sharding.Sharding, (_) => _.reply(reply, self))

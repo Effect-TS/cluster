@@ -19,9 +19,9 @@ export type TypeId = typeof TypeId;
  * @category models
  */
 export interface EntityState {
-    [TypeId]: {};
-    entityManager: EntityManager.EntityManager<never>;
-    processBinary: (binaryMessage: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, never, Option.Option<Schema.Schema<unknown, any>>>;
+    readonly _id: TypeId;
+    readonly entityManager: EntityManager.EntityManager<never>;
+    readonly processBinary: (binaryMessage: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, never, Option.Option<Schema.Schema<unknown, any>>>;
 }
 /**
  * @since 1.0.0
