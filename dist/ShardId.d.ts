@@ -31,10 +31,10 @@ export declare function make(value: number): ShardId;
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly value: number;
     readonly _id: "@effect/shardcake/ShardId";
+    readonly value: number;
 }, Data.Data<{
-    readonly value: number;
     readonly _id: "@effect/shardcake/ShardId";
+    readonly value: number;
 }>>;
 //# sourceMappingURL=ShardId.d.ts.map

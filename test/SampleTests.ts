@@ -46,10 +46,10 @@ describe.concurrent("SampleTests", () => {
     Layer.use(Storage.memory),
     Layer.use(Serialization.json),
     Layer.use(ShardManagerClient.local),
-    Layer.use(MessageQueue.inMemory),
     Layer.use(
       ShardingConfig.withDefaults({ simulateRemotePods: true, entityTerminationTimeout: Duration.millis(3000) })
-    )
+    ),
+    Layer.merge(MessageQueue.inMemory)
   )
 
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>

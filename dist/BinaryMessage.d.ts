@@ -42,8 +42,8 @@ export declare function isBinaryMessage(value: unknown): value is BinaryMessage;
  */
 export declare const schema: Schema.Schema<{
     readonly _id: "@effect/shardcake/BinaryMessage";
-    readonly entityType: string;
     readonly entityId: string;
+    readonly entityType: string;
     readonly body: {
         readonly _id: "@effect/shardcake/ByteArray";
         readonly value: string;
@@ -59,8 +59,8 @@ export declare const schema: Schema.Schema<{
     };
 }, Data.Data<{
     readonly _id: "@effect/shardcake/BinaryMessage";
-    readonly entityType: string;
     readonly entityId: string;
+    readonly entityType: string;
     readonly body: Data.Data<{
         readonly _id: "@effect/shardcake/ByteArray";
         readonly value: string;

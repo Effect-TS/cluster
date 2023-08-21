@@ -3,7 +3,6 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Logger from "@effect/io/Logger"
 import * as LogLevel from "@effect/io/Logger/Level"
-import * as MessageQueue from "@effect/shardcake/MessageQueue"
 import * as PodsHttp from "@effect/shardcake/PodsHttp"
 import * as Serialization from "@effect/shardcake/Serialization"
 import * as Sharding from "@effect/shardcake/Sharding"
@@ -21,8 +20,7 @@ const liveSharding = pipe(
   Layer.use(PodsHttp.httpPods),
   Layer.use(ShardManagerClientHttp.shardManagerClientHttp),
   Layer.use(ShardingConfig.withDefaults({ shardingPort: 54322 })),
-  Layer.use(Serialization.json),
-  Layer.use(MessageQueue.inMemory)
+  Layer.use(Serialization.json)
 )
 
 const program = pipe(

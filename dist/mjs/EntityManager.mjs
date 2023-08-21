@@ -9,16 +9,18 @@ import * as Effect from "@effect/io/Effect";
 import * as Fiber from "@effect/io/Fiber";
 import * as RefSynchronized from "@effect/io/Ref/Synchronized";
 import * as Scope from "@effect/io/Scope";
+import * as MessageQueue from "@effect/shardcake/MessageQueue";
 import * as PoisonPill from "@effect/shardcake/PoisonPill";
 import * as ShardError from "@effect/shardcake/ShardError";
 /**
  * @since 1.0.0
  * @category constructors
  */
-export function make(layerScope, recipientType, behaviour_, sharding, config, messageQueue, entityMaxIdle) {
+export function make(layerScope, recipientType, behaviour_, sharding, config, entityMaxIdle) {
   return Effect.gen(function* (_) {
     const entities = yield* _(RefSynchronized.make(HashMap.empty()));
     const env = yield* _(Effect.context());
+    const messageQueue = yield* _(MessageQueue.MessageQueue);
     const behaviour = (entityId, dequeue) => Effect.provideContext(behaviour_(entityId, dequeue), env);
     function startExpirationFiber(entityId) {
       return Effect.forkDaemon(Effect.interruptible(Effect.asUnit(Effect.zipRight(forkEntityTermination(entityId))(Effect.sleep(Option.getOrElse(() => config.entityMaxIdleTime)(entityMaxIdle))))));

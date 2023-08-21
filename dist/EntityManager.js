@@ -12,6 +12,7 @@ var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect
 var Fiber = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Fiber"));
 var RefSynchronized = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Ref/Synchronized"));
 var Scope = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Scope"));
+var MessageQueue = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/MessageQueue"));
 var PoisonPill = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/PoisonPill"));
 var ShardError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardError"));
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -24,10 +25,11 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category constructors
  */
-function make(layerScope, recipientType, behaviour_, sharding, config, messageQueue, entityMaxIdle) {
+function make(layerScope, recipientType, behaviour_, sharding, config, entityMaxIdle) {
   return Effect.gen(function* (_) {
     const entities = yield* _(RefSynchronized.make(HashMap.empty()));
     const env = yield* _(Effect.context());
+    const messageQueue = yield* _(MessageQueue.MessageQueue);
     const behaviour = (entityId, dequeue) => Effect.provideContext(behaviour_(entityId, dequeue), env);
     function startExpirationFiber(entityId) {
       return Effect.forkDaemon(Effect.interruptible(Effect.asUnit(Effect.zipRight(forkEntityTermination(entityId))(Effect.sleep(Option.getOrElse(() => config.entityMaxIdleTime)(entityMaxIdle))))));

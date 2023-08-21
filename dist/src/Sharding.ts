@@ -19,6 +19,7 @@ import { pipe } from "@effect/data/Function"
 import type * as Schema from "@effect/schema/Schema"
 import type { Broadcaster } from "@effect/shardcake/Broadcaster"
 import type { JsonData } from "@effect/shardcake/JsonData"
+import type * as MessageQueue from "@effect/shardcake/MessageQueue"
 import type { Messenger } from "@effect/shardcake/Messenger"
 import type * as PodAddress from "@effect/shardcake/PodAddress"
 import type * as RecipentType from "@effect/shardcake/RecipientType"
@@ -59,13 +60,13 @@ export interface Sharding {
   registerScoped: Effect.Effect<Scope.Scope, never, void>
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
-    behavior: RecipentType.RecipientBehaviour<R, Req>,
+    behaviour: RecipentType.RecipientBehaviour<R, Req>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
-  ): Effect.Effect<R, never, void>
+  ): Effect.Effect<R | MessageQueue.MessageQueue, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
-    behavior: RecipentType.RecipientBehaviour<R, Req>
-  ): Effect.Effect<R, never, void>
+    behaviour: RecipentType.RecipientBehaviour<R, Req>
+  ): Effect.Effect<R | MessageQueue.MessageQueue, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
   refreshAssignments: Effect.Effect<Scope.Scope, never, void>
@@ -136,7 +137,7 @@ export function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: RecipentType.RecipientBehaviour<R, Req>,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding | R, never, void> {
+): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, entityMaxIdleTime))
 }
 
@@ -151,7 +152,7 @@ export function registerEntity<Req, R>(
 export function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: RecipentType.RecipientBehaviour<R, Req>
-): Effect.Effect<Sharding | R, never, void> {
+): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior))
 }
 

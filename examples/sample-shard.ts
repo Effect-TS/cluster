@@ -25,7 +25,7 @@ const liveSharding = pipe(
   Layer.use(PodsHttp.httpPods),
   Layer.use(ShardManagerClientHttp.shardManagerClientHttp),
   Layer.use(Serialization.json),
-  Layer.use(MessageQueue.inMemory)
+  Layer.merge(MessageQueue.inMemory)
 )
 
 const program = pipe(

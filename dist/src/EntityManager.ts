@@ -11,7 +11,7 @@ import * as Fiber from "@effect/io/Fiber"
 import type * as Queue from "@effect/io/Queue"
 import * as RefSynchronized from "@effect/io/Ref/Synchronized"
 import * as Scope from "@effect/io/Scope"
-import type * as MessageQueue from "@effect/shardcake/MessageQueue"
+import * as MessageQueue from "@effect/shardcake/MessageQueue"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
 import type * as RecipientType from "@effect/shardcake/RecipientType"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
@@ -54,7 +54,6 @@ export function make<R, Req>(
   behaviour_: RecipientType.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
-  messageQueue: MessageQueue.MessageQueue,
   entityMaxIdle: Option.Option<Duration.Duration>
 ) {
   return Effect.gen(function*(_) {
@@ -67,6 +66,7 @@ export function make<R, Req>(
       >(HashMap.empty())
     )
     const env = yield* _(Effect.context<R>())
+    const messageQueue = yield* _(MessageQueue.MessageQueue)
     const behaviour = (
       entityId: string,
       dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>

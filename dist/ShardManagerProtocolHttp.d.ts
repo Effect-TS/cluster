@@ -7,6 +7,7 @@ import * as Schema from "@effect/schema/Schema";
  * @category schema
  */
 export declare const Register_: Schema.Schema<{
+    readonly _tag: "Register";
     readonly pod: {
         readonly _id: "@effect/shardcake/Pod";
         readonly address: {
@@ -16,8 +17,8 @@ export declare const Register_: Schema.Schema<{
         };
         readonly version: string;
     };
-    readonly _tag: "Register";
 }, {
+    readonly _tag: "Register";
     readonly pod: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/Pod";
         readonly address: import("@effect/data/Data").Data<{
@@ -27,7 +28,6 @@ export declare const Register_: Schema.Schema<{
         }>;
         readonly version: string;
     }>;
-    readonly _tag: "Register";
 }>;
 /**
  * @since 1.0.0
@@ -45,6 +45,7 @@ export declare const RegisterResult_: Schema.Schema<{
  * @category schema
  */
 export declare const Unregister_: Schema.Schema<{
+    readonly _tag: "Unregister";
     readonly pod: {
         readonly _id: "@effect/shardcake/Pod";
         readonly address: {
@@ -54,8 +55,8 @@ export declare const Unregister_: Schema.Schema<{
         };
         readonly version: string;
     };
-    readonly _tag: "Unregister";
 }, {
+    readonly _tag: "Unregister";
     readonly pod: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/Pod";
         readonly address: import("@effect/data/Data").Data<{
@@ -65,7 +66,6 @@ export declare const Unregister_: Schema.Schema<{
         }>;
         readonly version: string;
     }>;
-    readonly _tag: "Unregister";
 }>;
 /**
  * @since 1.0.0
@@ -154,17 +154,7 @@ export declare const GetAssignmentsResult_: Schema.Schema<{
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly pod: {
-        readonly _id: "@effect/shardcake/Pod";
-        readonly address: {
-            readonly _id: "@effect/shardcake/PodAddress";
-            readonly host: string;
-            readonly port: number;
-        };
-        readonly version: string;
-    };
     readonly _tag: "Register";
-} | {
     readonly pod: {
         readonly _id: "@effect/shardcake/Pod";
         readonly address: {
@@ -174,7 +164,17 @@ export declare const schema: Schema.Schema<{
         };
         readonly version: string;
     };
+} | {
     readonly _tag: "Unregister";
+    readonly pod: {
+        readonly _id: "@effect/shardcake/Pod";
+        readonly address: {
+            readonly _id: "@effect/shardcake/PodAddress";
+            readonly host: string;
+            readonly port: number;
+        };
+        readonly version: string;
+    };
 } | {
     readonly _tag: "NotifyUnhealthyPod";
     readonly podAddress: {
@@ -185,17 +185,7 @@ export declare const schema: Schema.Schema<{
 } | {
     readonly _tag: "GetAssignments";
 }, {
-    readonly pod: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/Pod";
-        readonly address: import("@effect/data/Data").Data<{
-            readonly _id: "@effect/shardcake/PodAddress";
-            readonly host: string;
-            readonly port: number;
-        }>;
-        readonly version: string;
-    }>;
     readonly _tag: "Register";
-} | {
     readonly pod: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/Pod";
         readonly address: import("@effect/data/Data").Data<{
@@ -205,7 +195,17 @@ export declare const schema: Schema.Schema<{
         }>;
         readonly version: string;
     }>;
+} | {
     readonly _tag: "Unregister";
+    readonly pod: import("@effect/data/Data").Data<{
+        readonly _id: "@effect/shardcake/Pod";
+        readonly address: import("@effect/data/Data").Data<{
+            readonly _id: "@effect/shardcake/PodAddress";
+            readonly host: string;
+            readonly port: number;
+        }>;
+        readonly version: string;
+    }>;
 } | {
     readonly _tag: "NotifyUnhealthyPod";
     readonly podAddress: import("@effect/data/Data").Data<{
