@@ -1,6 +1,6 @@
 ---
 title: Message.ts
-nav_order: 8
+nav_order: 7
 parent: Modules
 ---
 
@@ -50,7 +50,7 @@ Creates both the schema and a constructor for a `Message<A>`
 **Signature**
 
 ```ts
-export declare function schema<RI extends JsonData, RA>(replySchema: Schema.Schema<RI, RA>)
+export declare function schema<RI, RA>(replySchema: Schema.Schema<RI, RA>)
 ```
 
 Added in v1.0.0

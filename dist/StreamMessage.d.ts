@@ -1,5 +1,4 @@
 import * as Schema from "@effect/schema/Schema";
-import type { JsonData } from "@effect/shardcake/JsonData";
 import type * as ReplyId from "@effect/shardcake/ReplyId";
 import * as StreamReplier from "@effect/shardcake/StreamReplier";
 /**
@@ -39,5 +38,5 @@ export declare function isStreamMessage<A>(value: unknown): value is StreamMessa
  * @since 1.0.0
  * @category schema
  */
-export declare function schema<RI extends JsonData, RA>(success: Schema.Schema<RI, RA>): <I extends JsonData, A extends object>(item: Schema.Schema<I, A>) => readonly [Schema.Schema<I, Schema.Spread<A & StreamMessage<RA>>>, (arg: A) => (replyId: ReplyId.ReplyId) => Schema.Spread<A & StreamMessage<RA>>];
+export declare function schema<RI, RA>(success: Schema.Schema<RI, RA>): <I, A extends object>(item: Schema.Schema<I, A>) => readonly [Schema.Schema<I, Schema.Spread<A & StreamMessage<RA>>>, (arg: A) => (replyId: ReplyId.ReplyId) => Schema.Spread<A & StreamMessage<RA>>];
 //# sourceMappingURL=StreamMessage.d.ts.map

@@ -29,10 +29,9 @@ Added in v1.0.0
 export declare function make<R, Req>(
   layerScope: Scope.Scope,
   recipientType: RecipientType.RecipientType<Req>,
-  behaviour_: RecipientType.RecipientBehaviour<R, Req>,
+  behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
-  messageQueue: MessageQueue.MessageQueue,
   entityMaxIdle: Option.Option<Duration.Duration>
 )
 ```

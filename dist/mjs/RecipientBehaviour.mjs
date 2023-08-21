@@ -1,3 +1,8 @@
+/**
+ * A module that provides utilities to build basic behaviours
+ * @since 1.0.0
+ */
+
 import * as Effect from "@effect/io/Effect";
 import * as PoisonPill from "@effect/shardcake/PoisonPill";
 /**

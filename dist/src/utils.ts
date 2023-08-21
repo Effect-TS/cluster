@@ -10,7 +10,6 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
-import type { JsonData } from "@effect/shardcake/JsonData"
 import { DecodeError, EncodeError, FetchError } from "@effect/shardcake/ShardError"
 import * as Stream from "@effect/stream/Stream"
 import fetch from "node-fetch"
@@ -49,7 +48,7 @@ export function groupBy<A, K>(f: (value: A) => K) {
 }
 
 /** @internal */
-export function jsonStringify<I extends JsonData, A>(value: A, schema: Schema.Schema<I, A>) {
+export function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
   return pipe(
     value,
     Schema.encode(schema),
@@ -59,7 +58,7 @@ export function jsonStringify<I extends JsonData, A>(value: A, schema: Schema.Sc
 }
 
 /** @internal */
-export function jsonParse<I extends JsonData, A>(value: string, schema: Schema.Schema<I, A>) {
+export function jsonParse<I, A>(value: string, schema: Schema.Schema<I, A>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
     Effect.flatMap(Schema.decode(schema)),
@@ -68,7 +67,7 @@ export function jsonParse<I extends JsonData, A>(value: string, schema: Schema.S
 }
 
 /** @internal */
-export function sendInternal<I extends JsonData, A>(send: Schema.Schema<I, A>) {
+export function sendInternal<I, A>(send: Schema.Schema<I, A>) {
   return (url: string, data: A) =>
     pipe(
       jsonStringify(data, send),
@@ -90,7 +89,7 @@ export function sendInternal<I extends JsonData, A>(send: Schema.Schema<I, A>) {
 }
 
 /** @internal */
-export function send<I extends JsonData, A, I2 extends JsonData, E, R>(
+export function send<I, A, I2, E, R>(
   send: Schema.Schema<I, A>,
   reply: Schema.Schema<I2, Either.Either<E, R>>
 ) {
@@ -105,7 +104,7 @@ export function send<I extends JsonData, A, I2 extends JsonData, E, R>(
 }
 
 /** @internal */
-export function sendStream<I extends JsonData, A, I2 extends JsonData, E, R>(
+export function sendStream<I, A, I2, E, R>(
   send: Schema.Schema<I, A>,
   reply: Schema.Schema<I2, Either.Either<E, R>>
 ) {

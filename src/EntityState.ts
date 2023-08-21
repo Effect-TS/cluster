@@ -7,7 +7,6 @@ import type * as Effect from "@effect/io/Effect"
 import type * as Schema from "@effect/schema/Schema"
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
 import type * as EntityManager from "@effect/shardcake/EntityManager"
-import type { JsonData } from "@effect/shardcake/JsonData"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 
 /**
@@ -32,7 +31,7 @@ export interface EntityState {
   processBinary: (
     binaryMessage: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ) => Effect.Effect<never, never, Option.Option<Schema.Schema<JsonData, any>>>
+  ) => Effect.Effect<never, never, Option.Option<Schema.Schema<unknown, any>>>
 }
 
 /**

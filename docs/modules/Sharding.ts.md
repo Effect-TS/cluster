@@ -74,22 +74,18 @@ export interface Sharding {
   registerScoped: Effect.Effect<Scope.Scope, never, void>
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
-    behavior: RecipentType.RecipientBehaviour<R, Req>,
+    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
-  ): Effect.Effect<R, never, void>
+  ): Effect.Effect<R | MessageQueue.MessageQueue, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
-    behavior: RecipentType.RecipientBehaviour<R, Req>
-  ): Effect.Effect<R, never, void>
+    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>
+  ): Effect.Effect<R | MessageQueue.MessageQueue, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
   refreshAssignments: Effect.Effect<Scope.Scope, never, void>
   assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
-  sendToLocalEntity(
-    msg: BinaryMessage.BinaryMessage,
-    replyChannel: ReplyChannel.ReplyChannel<any>
-  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<JsonData, any>>>
   sendToLocalEntityStreamingReply(
     msg: BinaryMessage.BinaryMessage
   ): Stream.Stream<never, Throwable, ByteArray.ByteArray>
@@ -172,9 +168,9 @@ If entity goes to idle timeout, it will be interrupted from outside.
 ```ts
 export declare function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
-  behavior: RecipentType.RecipientBehaviour<R, Req>,
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding | R, never, void>
+): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void>
 ```
 
 Added in v1.0.0
@@ -219,8 +215,8 @@ If entity goes to idle timeout, it will be interrupted from outside.
 ```ts
 export declare function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
-  behavior: RecipentType.RecipientBehaviour<R, Req>
-): Effect.Effect<Sharding | R, never, void>
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
+): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void>
 ```
 
 Added in v1.0.0

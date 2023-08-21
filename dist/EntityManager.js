@@ -27,13 +27,16 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  */
 function make(layerScope, recipientType, behaviour_, sharding, config, entityMaxIdle) {
   return Effect.gen(function* (_) {
-    const entities = yield* _(RefSynchronized.make(HashMap.empty()));
-    const env = yield* _(Effect.context());
     const messageQueue = yield* _(MessageQueue.MessageQueue);
+    const env = yield* _(Effect.context());
+    const entities = yield* _(RefSynchronized.make(HashMap.empty()));
     const behaviour = (entityId, dequeue) => Effect.provideContext(behaviour_(entityId, dequeue), env);
     function startExpirationFiber(entityId) {
       return Effect.forkDaemon(Effect.interruptible(Effect.asUnit(Effect.zipRight(forkEntityTermination(entityId))(Effect.sleep(Option.getOrElse(() => config.entityMaxIdleTime)(entityMaxIdle))))));
     }
+    /**
+     * Begins entity termination (if needed) by sending the PoisonPill, return the fiber to wait for completed termination (if any)
+     */
     function forkEntityTermination(entityId) {
       return RefSynchronized.modifyEffect(entities, map => Option.match({
         // if no entry is found, the entity has succefully shut down
@@ -61,8 +64,7 @@ function make(layerScope, recipientType, behaviour_, sharding, config, entityMax
                 const queue = yield* _(Scope.extend(entityScope)(messageQueue.make(recipientType, entityId)));
                 const expirationFiber = yield* _(startExpirationFiber(entityId));
                 const executionFiber = yield* _(Effect.forkDaemon(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(RefSynchronized.update(entities, HashMap.remove(entityId))))(Scope.use(entityScope)(behaviour(entityId, queue.dequeue)))));
-                const someQueue = Option.some(queue);
-                return [someQueue, HashMap.set(map, entityId, [someQueue, expirationFiber, executionFiber])];
+                return [Option.some(queue), HashMap.set(map, entityId, [Option.some(queue), expirationFiber, executionFiber])];
               });
             }
           }),

@@ -58,6 +58,8 @@ export function make<R, Req>(
   entityMaxIdle: Option.Option<Duration.Duration>
 ) {
   return Effect.gen(function*(_) {
+    const messageQueue = yield* _(MessageQueue.MessageQueue)
+    const env = yield* _(Effect.context<R>())
     const entities = yield* _(
       RefSynchronized.make<
         HashMap.HashMap<
@@ -66,8 +68,6 @@ export function make<R, Req>(
         >
       >(HashMap.empty())
     )
-    const env = yield* _(Effect.context<R>())
-    const messageQueue = yield* _(MessageQueue.MessageQueue)
     const behaviour = (
       entityId: string,
       dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
@@ -88,6 +88,9 @@ export function make<R, Req>(
       )
     }
 
+    /**
+     * Begins entity termination (if needed) by sending the PoisonPill, return the fiber to wait for completed termination (if any)
+     */
     function forkEntityTermination(entityId: string) {
       return RefSynchronized.modifyEffect(entities, (map) =>
         pipe(
@@ -167,10 +170,9 @@ export function make<R, Req>(
                       )
                     )
 
-                    const someQueue = Option.some(queue)
                     return [
-                      someQueue,
-                      HashMap.set(map, entityId, [someQueue, expirationFiber, executionFiber] as const)
+                      Option.some(queue),
+                      HashMap.set(map, entityId, [Option.some(queue), expirationFiber, executionFiber] as const)
                     ] as const
                   })
                 }

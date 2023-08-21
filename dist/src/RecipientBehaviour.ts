@@ -1,3 +1,7 @@
+/**
+ * A module that provides utilities to build basic behaviours
+ * @since 1.0.0
+ */
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import type * as Queue from "@effect/io/Queue"

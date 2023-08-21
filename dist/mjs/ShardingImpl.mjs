@@ -112,7 +112,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
     });
   }
   function sendToLocalEntityStreamingReply(msg) {
-    return Stream.flatten()((_ => Stream.fromEffect(_))(Effect.gen(function* (_) {
+    return Stream.flatten()(Stream.fromEffect(Effect.gen(function* (_) {
       const replyChannel = yield* _(ReplyChannel.stream());
       const schema = yield* _(sendToLocalEntity(msg, replyChannel));
       return Stream.mapEffect(value => {
@@ -124,14 +124,10 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
     })));
   }
   function sendToLocalEntity(msg, replyChannel) {
-    return Effect.flatMap(states => {
-      const a = HashMap.get(states, msg.entityType);
-      if (Option.isSome(a)) {
-        return a.value.processBinary(msg, replyChannel);
-      } else {
-        return Effect.fail(EntityTypeNotRegistered(msg.entityType, address));
-      }
-    })(Ref.get(entityStates));
+    return Effect.flatMap(Option.match({
+      onNone: () => Effect.fail(EntityTypeNotRegistered(msg.entityType, address)),
+      onSome: entityState => entityState.processBinary(msg, replyChannel)
+    }))(Effect.map(HashMap.get(msg.entityType))(Ref.get(entityStates)));
   }
   function initReply(id, replyChannel) {
     return Effect.zipLeft(Effect.forkIn(layerScope)(Effect.ensuring(Synchronized.update(replyChannels, HashMap.remove(id)))(replyChannel.await)))(Synchronized.update(HashMap.set(id, replyChannel))(replyChannels));
@@ -318,25 +314,24 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
     getShardId,
     register,
     unregister,
+    registerScoped,
+    initReply,
     reply,
+    replyStream,
     messenger,
     broadcaster,
     isEntityOnLocalShards,
     isShuttingDown,
-    initReply,
     registerSingleton,
-    registerScoped,
     registerEntity,
     registerTopic,
-    getShardingRegistrationEvents,
-    refreshAssignments,
     assign,
     unassign,
-    sendToLocalEntity,
-    sendToLocalEntitySingleReply,
-    sendToLocalEntityStreamingReply,
+    getShardingRegistrationEvents,
     getPods,
-    replyStream
+    refreshAssignments,
+    sendToLocalEntitySingleReply,
+    sendToLocalEntityStreamingReply
   };
   return self;
 }

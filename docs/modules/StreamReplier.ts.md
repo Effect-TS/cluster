@@ -31,10 +31,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const streamReplier: <I extends JsonData, A>(
-  id: ReplyId.ReplyId,
-  schema: Schema.Schema<I, A>
-) => StreamReplier<A>
+export declare const streamReplier: <I, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>) => StreamReplier<A>
 ```
 
 Added in v1.0.0
@@ -49,7 +46,7 @@ Added in v1.0.0
 export interface StreamReplier<A> {
   [TypeId]: {}
   id: ReplyId.ReplyId
-  schema: Schema.Schema<JsonData, A>
+  schema: Schema.Schema<unknown, A>
   reply: (reply: Stream.Stream<never, never, A>) => Effect.Effect<Sharding.Sharding, never, void>
 }
 ```
@@ -63,7 +60,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const schema: <I extends JsonData, A>(schema: Schema.Schema<I, A>) => Schema.Schema<I, StreamReplier<A>>
+export declare const schema: <I, A>(schema: Schema.Schema<I, A>) => Schema.Schema<I, StreamReplier<A>>
 ```
 
 Added in v1.0.0

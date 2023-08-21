@@ -7,7 +7,6 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type * as Schema from "@effect/schema/Schema"
 import * as ByteArray from "@effect/shardcake/ByteArray"
-import type { JsonData } from "@effect/shardcake/JsonData"
 import * as ShardError from "@effect/shardcake/ShardError"
 import { jsonParse, jsonStringify } from "./utils"
 
@@ -37,7 +36,7 @@ export interface Serialization {
    * Transforms the given message into binary
    * @since 1.0.0
    */
-  encode<I extends JsonData, A>(
+  encode<I, A>(
     message: A,
     schema: Schema.Schema<I, A>
   ): Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>
@@ -46,7 +45,7 @@ export interface Serialization {
    * Transform binary back into the given type
    * @since 1.0.0
    */
-  decode<I extends JsonData, A>(
+  decode<I, A>(
     bytes: ByteArray.ByteArray,
     schema: Schema.Schema<I, A>
   ): Effect.Effect<never, ShardError.DecodeError, A>

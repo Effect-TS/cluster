@@ -17,7 +17,6 @@ Added in v1.0.0
   - [makeTopicType](#maketopictype)
 - [models](#models)
   - [EntityType (interface)](#entitytype-interface)
-  - [RecipientBehaviour (interface)](#recipientbehaviour-interface)
   - [RecipientType (type alias)](#recipienttype-type-alias)
   - [TopicType (interface)](#topictype-interface)
 - [utils](#utils)
@@ -32,10 +31,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function makeEntityType<I extends JsonData, Msg>(
-  name: string,
-  schema: Schema.Schema<I, Msg>
-): EntityType<Msg>
+export declare function makeEntityType<I, Msg>(name: string, schema: Schema.Schema<I, Msg>): EntityType<Msg>
 ```
 
 Added in v1.0.0
@@ -45,10 +41,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function makeTopicType<I extends JsonData, Msg>(
-  name: string,
-  schema: Schema.Schema<I, Msg>
-): TopicType<Msg>
+export declare function makeTopicType<I, Msg>(name: string, schema: Schema.Schema<I, Msg>): TopicType<Msg>
 ```
 
 Added in v1.0.0
@@ -63,21 +56,7 @@ Added in v1.0.0
 export interface EntityType<Msg> {
   _tag: 'EntityType'
   name: string
-  schema: Schema.Schema<JsonData, Msg>
-}
-```
-
-Added in v1.0.0
-
-## RecipientBehaviour (interface)
-
-An alias to a RecipientBehaviour
-
-**Signature**
-
-```ts
-export interface RecipientBehaviour<R, Req> {
-  (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>): Effect.Effect<R, never, void>
+  schema: Schema.Schema<unknown, Msg>
 }
 ```
 
@@ -103,7 +82,7 @@ Added in v1.0.0
 export interface TopicType<Msg> {
   _tag: 'TopicType'
   name: string
-  schema: Schema.Schema<JsonData, Msg>
+  schema: Schema.Schema<unknown, Msg>
 }
 ```
 

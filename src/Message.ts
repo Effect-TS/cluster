@@ -4,7 +4,6 @@
 import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
-import type { JsonData } from "@effect/shardcake/JsonData"
 import * as Replier from "@effect/shardcake/Replier"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
 
@@ -57,8 +56,8 @@ export function isMessage<R>(value: unknown): value is Message<R> {
  * @since 1.0.0
  * @category schema
  */
-export function schema<RI extends JsonData, RA>(replySchema: Schema.Schema<RI, RA>) {
-  return function<I extends JsonData, A extends object>(
+export function schema<RI, RA>(replySchema: Schema.Schema<RI, RA>) {
+  return function<I, A extends object>(
     item: Schema.Schema<I, A>
   ): readonly [
     Schema.Schema<I, Schema.Spread<A & Message<RA>>>,

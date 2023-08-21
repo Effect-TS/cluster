@@ -8,21 +8,20 @@ import { pipe } from "@effect/data/Function"
 import * as Cause from "@effect/io/Cause"
 import * as Effect from "@effect/io/Effect"
 import type * as Schema from "@effect/schema/Schema"
-import type { JsonData } from "@effect/shardcake/JsonData"
 import * as Stream from "@effect/stream/Stream"
 import * as http from "http"
 import { jsonParse, jsonStringify } from "./utils"
 
 /** @internal */
-export function asHttpServer<I extends JsonData, A>(
+export function asHttpServer<I, A>(
   port: number,
   RequestSchema: Schema.Schema<I, A>,
   handler: (
     req: A,
-    reply: <I2 extends JsonData, RE, RA>(
+    reply: <I2, RE, RA>(
       schema: Schema.Schema<I2, Either.Either<RE, RA>>
     ) => (run: Effect.Effect<never, RE, RA>) => Effect.Effect<never, never, void>,
-    replyStream: <I2 extends JsonData, RE, RA>(
+    replyStream: <I2, RE, RA>(
       schema: Schema.Schema<I2, Either.Either<RE, RA>>
     ) => (run: Stream.Stream<never, RE, RA>) => Effect.Effect<never, never, void>
   ) => Effect.Effect<never, never, void>
@@ -40,7 +39,7 @@ export function asHttpServer<I extends JsonData, A>(
               pipe(
                 jsonParse(body, RequestSchema),
                 Effect.flatMap((req) => {
-                  const reply = <RE, RA>(schema: Schema.Schema<JsonData, Either.Either<RE, RA>>) =>
+                  const reply = <RI, RE, RA>(schema: Schema.Schema<RI, Either.Either<RE, RA>>) =>
                     (fa: Effect.Effect<never, RE, RA>) =>
                       pipe(
                         fa,
@@ -55,7 +54,7 @@ export function asHttpServer<I extends JsonData, A>(
                           })
                         )
                       )
-                  const replyStream = <RE, RA>(schema: Schema.Schema<JsonData, Either.Either<RE, RA>>) =>
+                  const replyStream = <RI, RE, RA>(schema: Schema.Schema<RI, Either.Either<RE, RA>>) =>
                     (fa: Stream.Stream<never, RE, RA>) =>
                       pipe(
                         Effect.sync(() =>

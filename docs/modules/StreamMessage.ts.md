@@ -50,7 +50,7 @@ Creates both the schema and a constructor for a `Message<A>`
 **Signature**
 
 ```ts
-export declare function schema<RI extends JsonData, RA>(success: Schema.Schema<RI, RA>)
+export declare function schema<RI, RA>(success: Schema.Schema<RI, RA>)
 ```
 
 Added in v1.0.0

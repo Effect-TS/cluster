@@ -24,7 +24,6 @@ import type * as Broadcaster from "@effect/shardcake/Broadcaster"
 import type * as ByteArray from "@effect/shardcake/ByteArray"
 import * as EntityManager from "@effect/shardcake/EntityManager"
 import * as EntityState from "@effect/shardcake/EntityState"
-import type { JsonData } from "@effect/shardcake/JsonData"
 import * as Message from "@effect/shardcake/Message"
 import type * as MessageQueue from "@effect/shardcake/MessageQueue"
 import type { Messenger } from "@effect/shardcake/Messenger"
@@ -336,7 +335,7 @@ function make(
           })
         )
       }),
-      (_) => Stream.fromEffect(_),
+      Stream.fromEffect,
       Stream.flatten()
     )
   }
@@ -344,17 +343,14 @@ function make(
   function sendToLocalEntity(
     msg: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<JsonData, any>>> {
+  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<unknown, any>>> {
     return pipe(
       Ref.get(entityStates),
-      Effect.flatMap((states) => {
-        const a = HashMap.get(states, msg.entityType)
-        if (Option.isSome(a)) {
-          return a.value.processBinary(msg, replyChannel)
-        } else {
-          return Effect.fail(EntityTypeNotRegistered(msg.entityType, address))
-        }
-      })
+      Effect.map(HashMap.get(msg.entityType)),
+      Effect.flatMap(Option.match({
+        onNone: () => Effect.fail(EntityTypeNotRegistered(msg.entityType, address)),
+        onSome: (entityState) => entityState.processBinary(msg, replyChannel)
+      }))
     )
   }
 
@@ -412,7 +408,7 @@ function make(
     recipientTypeName: string,
     entityId: string,
     msg: Msg,
-    msgSchema: Schema.Schema<JsonData, Msg>,
+    msgSchema: Schema.Schema<unknown, Msg>,
     pod: PodAddress.PodAddress,
     replyId: Option.Option<ReplyId.ReplyId>,
     replyChannel: ReplyChannel.ReplyChannel<Res>
@@ -798,25 +794,24 @@ function make(
     getShardId,
     register,
     unregister,
+    registerScoped,
+    initReply,
     reply,
+    replyStream,
     messenger,
     broadcaster,
     isEntityOnLocalShards,
     isShuttingDown,
-    initReply,
     registerSingleton,
-    registerScoped,
     registerEntity,
     registerTopic,
-    getShardingRegistrationEvents,
-    refreshAssignments,
     assign,
     unassign,
-    sendToLocalEntity,
-    sendToLocalEntitySingleReply,
-    sendToLocalEntityStreamingReply,
+    getShardingRegistrationEvents,
     getPods,
-    replyStream
+    refreshAssignments,
+    sendToLocalEntitySingleReply,
+    sendToLocalEntityStreamingReply
   }
 
   return self

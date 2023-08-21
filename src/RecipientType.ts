@@ -3,7 +3,6 @@
  */
 import * as Hash from "@effect/data/Hash"
 import type * as Schema from "@effect/schema/Schema"
-import type { JsonData } from "@effect/shardcake/JsonData"
 import * as ShardId from "@effect/shardcake/ShardId"
 
 /**
@@ -13,7 +12,7 @@ import * as ShardId from "@effect/shardcake/ShardId"
 export interface EntityType<Msg> {
   _tag: "EntityType"
   name: string
-  schema: Schema.Schema<JsonData, Msg>
+  schema: Schema.Schema<unknown, Msg>
 }
 
 /**
@@ -23,7 +22,7 @@ export interface EntityType<Msg> {
 export interface TopicType<Msg> {
   _tag: "TopicType"
   name: string
-  schema: Schema.Schema<JsonData, Msg>
+  schema: Schema.Schema<unknown, Msg>
 }
 
 /**
@@ -37,7 +36,7 @@ export type RecipientType<Msg> = EntityType<Msg> | TopicType<Msg>
  * @since 1.0.0
  * @category constructors
  */
-export function makeEntityType<I extends JsonData, Msg>(
+export function makeEntityType<I, Msg>(
   name: string,
   schema: Schema.Schema<I, Msg>
 ): EntityType<Msg> {
@@ -48,7 +47,7 @@ export function makeEntityType<I extends JsonData, Msg>(
  * @since 1.0.0
  * @category constructors
  */
-export function makeTopicType<I extends JsonData, Msg>(
+export function makeTopicType<I, Msg>(
   name: string,
   schema: Schema.Schema<I, Msg>
 ): TopicType<Msg> {

@@ -50,7 +50,7 @@ export interface EntityState {
   processBinary: (
     binaryMessage: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ) => Effect.Effect<never, never, Option.Option<Schema.Schema<JsonData, any>>>
+  ) => Effect.Effect<never, never, Option.Option<Schema.Schema<unknown, any>>>
 }
 ```
 
