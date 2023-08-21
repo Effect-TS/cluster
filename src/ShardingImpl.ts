@@ -1,27 +1,41 @@
 /**
  * @since 1.0.0
  */
+import * as Duration from "@effect/data/Duration"
 import type * as Either from "@effect/data/Either"
 import * as Equal from "@effect/data/Equal"
+import { equals } from "@effect/data/Equal"
 import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import * as HashSet from "@effect/data/HashSet"
+import * as List from "@effect/data/List"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
+import * as Fiber from "@effect/io/Fiber"
 import * as Hub from "@effect/io/Hub"
+import * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
 import * as Synchronized from "@effect/io/Ref/Synchronized"
+import * as Schedule from "@effect/io/Schedule"
+import type * as Scope from "@effect/io/Scope"
+import type * as Schema from "@effect/schema/Schema"
 import * as BinaryMessage from "@effect/shardcake/BinaryMessage"
 import type * as Broadcaster from "@effect/shardcake/Broadcaster"
 import type * as ByteArray from "@effect/shardcake/ByteArray"
 import * as EntityManager from "@effect/shardcake/EntityManager"
 import * as EntityState from "@effect/shardcake/EntityState"
+import type { JsonData } from "@effect/shardcake/JsonData"
 import * as Message from "@effect/shardcake/Message"
+import type * as MessageQueue from "@effect/shardcake/MessageQueue"
+import type { Messenger } from "@effect/shardcake/Messenger"
 import * as PodAddress from "@effect/shardcake/PodAddress"
 import * as Pods from "@effect/shardcake/Pods"
+import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
+import * as RecipientType from "@effect/shardcake/RecipientType"
 import type { Replier } from "@effect/shardcake/Replier"
 import * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import * as ReplyId from "@effect/shardcake/ReplyId"
+import * as Serialization from "@effect/shardcake/Serialization"
 import type {
   DecodeError,
   EncodeError,
@@ -29,25 +43,6 @@ import type {
   PodUnavailable,
   Throwable
 } from "@effect/shardcake/ShardError"
-import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
-import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
-import * as StreamMessage from "@effect/shardcake/StreamMessage"
-import type * as StreamReplier from "@effect/shardcake/StreamReplier"
-import * as Stream from "@effect/stream/Stream"
-
-import * as Duration from "@effect/data/Duration"
-import { equals } from "@effect/data/Equal"
-import * as List from "@effect/data/List"
-import * as Fiber from "@effect/io/Fiber"
-import * as Layer from "@effect/io/Layer"
-import * as Schedule from "@effect/io/Schedule"
-import type * as Scope from "@effect/io/Scope"
-import type * as Schema from "@effect/schema/Schema"
-import type { JsonData } from "@effect/shardcake/JsonData"
-import type * as MessageQueue from "@effect/shardcake/MessageQueue"
-import type { Messenger } from "@effect/shardcake/Messenger"
-import * as RecipientType from "@effect/shardcake/RecipientType"
-import * as Serialization from "@effect/shardcake/Serialization"
 import {
   EntityTypeNotRegistered,
   isEntityNotManagedByThisPodError,
@@ -58,8 +53,13 @@ import {
 } from "@effect/shardcake/ShardError"
 import * as ShardId from "@effect/shardcake/ShardId"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
+import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
+import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
 import * as Storage from "@effect/shardcake/Storage"
+import * as StreamMessage from "@effect/shardcake/StreamMessage"
+import type * as StreamReplier from "@effect/shardcake/StreamReplier"
 import { showHashSet } from "@effect/shardcake/utils"
+import * as Stream from "@effect/stream/Stream"
 import * as Sharding from "./Sharding"
 
 type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
@@ -721,7 +721,7 @@ function make(
 
   function registerEntity<R, Req>(
     entityType: RecipientType.EntityType<Req>,
-    behavior: RecipientType.RecipientBehaviour<R, Req>,
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ): Effect.Effect<R | MessageQueue.MessageQueue, never, void> {
     return pipe(
@@ -733,7 +733,7 @@ function make(
 
   function registerTopic<R, Req>(
     topicType: RecipientType.TopicType<Req>,
-    behavior: RecipientType.RecipientBehaviour<R, Req>
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
   ): Effect.Effect<R | MessageQueue.MessageQueue, never, void> {
     return pipe(
       registerRecipient(topicType, behavior, Option.none()),
@@ -750,7 +750,7 @@ function make(
 
   function registerRecipient<R, Req>(
     recipientType: RecipientType.RecipientType<Req>,
-    behavior: RecipientType.RecipientBehaviour<R, Req>,
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
     entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
   ) {
     return Effect.gen(function*($) {

@@ -13,6 +13,7 @@ import * as RefSynchronized from "@effect/io/Ref/Synchronized"
 import * as Scope from "@effect/io/Scope"
 import * as MessageQueue from "@effect/shardcake/MessageQueue"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
+import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
 import type * as RecipientType from "@effect/shardcake/RecipientType"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
@@ -51,7 +52,7 @@ type EntityManagerEntry<Req> = readonly [
 export function make<R, Req>(
   layerScope: Scope.Scope,
   recipientType: RecipientType.RecipientType<Req>,
-  behaviour_: RecipientType.RecipientBehaviour<R, Req>,
+  behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   entityMaxIdle: Option.Option<Duration.Duration>

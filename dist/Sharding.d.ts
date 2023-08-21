@@ -2,28 +2,29 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context";
+import type * as Duration from "@effect/data/Duration";
 import type * as HashSet from "@effect/data/HashSet";
 import type * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import type * as Scope from "@effect/io/Scope";
-import type * as BinaryMessage from "@effect/shardcake/BinaryMessage";
-import type * as ByteArray from "@effect/shardcake/ByteArray";
-import type { Replier } from "@effect/shardcake/Replier";
-import type * as ReplyId from "@effect/shardcake/ReplyId";
-import type { EntityTypeNotRegistered, Throwable } from "@effect/shardcake/ShardError";
-import type * as StreamReplier from "@effect/shardcake/StreamReplier";
-import type * as Stream from "@effect/stream/Stream";
-import type * as Duration from "@effect/data/Duration";
 import type * as Schema from "@effect/schema/Schema";
+import type * as BinaryMessage from "@effect/shardcake/BinaryMessage";
 import type { Broadcaster } from "@effect/shardcake/Broadcaster";
+import type * as ByteArray from "@effect/shardcake/ByteArray";
 import type { JsonData } from "@effect/shardcake/JsonData";
 import type * as MessageQueue from "@effect/shardcake/MessageQueue";
 import type { Messenger } from "@effect/shardcake/Messenger";
 import type * as PodAddress from "@effect/shardcake/PodAddress";
+import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour";
 import type * as RecipentType from "@effect/shardcake/RecipientType";
+import type { Replier } from "@effect/shardcake/Replier";
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel";
+import type * as ReplyId from "@effect/shardcake/ReplyId";
+import type { EntityTypeNotRegistered, Throwable } from "@effect/shardcake/ShardError";
 import type * as ShardId from "@effect/shardcake/ShardId";
 import type * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent";
+import type * as StreamReplier from "@effect/shardcake/StreamReplier";
+import type * as Stream from "@effect/stream/Stream";
 /**
  * @since 1.0.0
  * @category models
@@ -40,8 +41,8 @@ export interface Sharding {
     isShuttingDown: Effect.Effect<never, never, boolean>;
     initReply(id: ReplyId.ReplyId, replyChannel: ReplyChannel.ReplyChannel<any>): Effect.Effect<never, never, void>;
     registerScoped: Effect.Effect<Scope.Scope, never, void>;
-    registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behaviour: RecipentType.RecipientBehaviour<R, Req>, entityMaxIdleTime?: Option.Option<Duration.Duration>): Effect.Effect<R | MessageQueue.MessageQueue, never, void>;
-    registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behaviour: RecipentType.RecipientBehaviour<R, Req>): Effect.Effect<R | MessageQueue.MessageQueue, never, void>;
+    registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>, entityMaxIdleTime?: Option.Option<Duration.Duration>): Effect.Effect<R | MessageQueue.MessageQueue, never, void>;
+    registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>): Effect.Effect<R | MessageQueue.MessageQueue, never, void>;
     getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>;
     registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>;
     refreshAssignments: Effect.Effect<Scope.Scope, never, void>;
@@ -90,7 +91,7 @@ export declare function registerSingleton<R>(name: string, run: Effect.Effect<R,
  * @since 1.0.0
  * @category utils
  */
-export declare function registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behavior: RecipentType.RecipientBehaviour<R, Req>, entityMaxIdleTime?: Option.Option<Duration.Duration>): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void>;
+export declare function registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behavior: RecipientBehaviour.RecipientBehaviour<R, Req>, entityMaxIdleTime?: Option.Option<Duration.Duration>): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void>;
 /**
  * Register a new topic type, allowing pods to broadcast messages to subscribers.
  * It takes a `behavior` which is a function from a topic and a queue of messages to a ZIO computation that runs forever and consumes those messages.
@@ -99,7 +100,7 @@ export declare function registerEntity<Req, R>(entityType: RecipentType.EntityTy
  * @since 1.0.0
  * @category utils
  */
-export declare function registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behavior: RecipentType.RecipientBehaviour<R, Req>): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void>;
+export declare function registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behavior: RecipientBehaviour.RecipientBehaviour<R, Req>): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void>;
 /**
  * Get an object that allows sending messages to a given entity type.
  * You can provide a custom send timeout to override the one globally defined.

@@ -2,30 +2,30 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context"
+import type * as Duration from "@effect/data/Duration"
+import { pipe } from "@effect/data/Function"
 import type * as HashSet from "@effect/data/HashSet"
 import type * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import type * as Scope from "@effect/io/Scope"
-import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
-import type * as ByteArray from "@effect/shardcake/ByteArray"
-import type { Replier } from "@effect/shardcake/Replier"
-import type * as ReplyId from "@effect/shardcake/ReplyId"
-import type { EntityTypeNotRegistered, Throwable } from "@effect/shardcake/ShardError"
-import type * as StreamReplier from "@effect/shardcake/StreamReplier"
-import type * as Stream from "@effect/stream/Stream"
-
-import type * as Duration from "@effect/data/Duration"
-import { pipe } from "@effect/data/Function"
 import type * as Schema from "@effect/schema/Schema"
+import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
 import type { Broadcaster } from "@effect/shardcake/Broadcaster"
+import type * as ByteArray from "@effect/shardcake/ByteArray"
 import type { JsonData } from "@effect/shardcake/JsonData"
 import type * as MessageQueue from "@effect/shardcake/MessageQueue"
 import type { Messenger } from "@effect/shardcake/Messenger"
 import type * as PodAddress from "@effect/shardcake/PodAddress"
+import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
 import type * as RecipentType from "@effect/shardcake/RecipientType"
+import type { Replier } from "@effect/shardcake/Replier"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
+import type * as ReplyId from "@effect/shardcake/ReplyId"
+import type { EntityTypeNotRegistered, Throwable } from "@effect/shardcake/ShardError"
 import type * as ShardId from "@effect/shardcake/ShardId"
 import type * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
+import type * as StreamReplier from "@effect/shardcake/StreamReplier"
+import type * as Stream from "@effect/stream/Stream"
 
 /**
  * @since 1.0.0
@@ -60,12 +60,12 @@ export interface Sharding {
   registerScoped: Effect.Effect<Scope.Scope, never, void>
   registerEntity<Req, R>(
     entityType: RecipentType.EntityType<Req>,
-    behaviour: RecipentType.RecipientBehaviour<R, Req>,
+    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
     entityMaxIdleTime?: Option.Option<Duration.Duration>
   ): Effect.Effect<R | MessageQueue.MessageQueue, never, void>
   registerTopic<Req, R>(
     topicType: RecipentType.TopicType<Req>,
-    behaviour: RecipentType.RecipientBehaviour<R, Req>
+    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>
   ): Effect.Effect<R | MessageQueue.MessageQueue, never, void>
   getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
   registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
@@ -135,7 +135,7 @@ export function registerSingleton<R>(
  */
 export function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
-  behavior: RecipentType.RecipientBehaviour<R, Req>,
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, entityMaxIdleTime))
@@ -151,7 +151,7 @@ export function registerEntity<Req, R>(
  */
 export function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
-  behavior: RecipentType.RecipientBehaviour<R, Req>
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
 ): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior))
 }

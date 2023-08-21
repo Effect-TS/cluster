@@ -1,36 +1,39 @@
+/**
+ * @since 1.0.0
+ */
+import * as Duration from "@effect/data/Duration";
 import * as Equal from "@effect/data/Equal";
+import { equals } from "@effect/data/Equal";
 import * as HashMap from "@effect/data/HashMap";
 import * as HashSet from "@effect/data/HashSet";
+import * as List from "@effect/data/List";
 import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
+import * as Fiber from "@effect/io/Fiber";
 import * as Hub from "@effect/io/Hub";
+import * as Layer from "@effect/io/Layer";
 import * as Ref from "@effect/io/Ref";
 import * as Synchronized from "@effect/io/Ref/Synchronized";
+import * as Schedule from "@effect/io/Schedule";
 import * as BinaryMessage from "@effect/shardcake/BinaryMessage";
 import * as EntityManager from "@effect/shardcake/EntityManager";
 import * as EntityState from "@effect/shardcake/EntityState";
 import * as Message from "@effect/shardcake/Message";
 import * as PodAddress from "@effect/shardcake/PodAddress";
 import * as Pods from "@effect/shardcake/Pods";
+import * as RecipientType from "@effect/shardcake/RecipientType";
 import * as ReplyChannel from "@effect/shardcake/ReplyChannel";
 import * as ReplyId from "@effect/shardcake/ReplyId";
-import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent";
-import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient";
-import * as StreamMessage from "@effect/shardcake/StreamMessage";
-import * as Stream from "@effect/stream/Stream";
-import * as Duration from "@effect/data/Duration";
-import { equals } from "@effect/data/Equal";
-import * as List from "@effect/data/List";
-import * as Fiber from "@effect/io/Fiber";
-import * as Layer from "@effect/io/Layer";
-import * as Schedule from "@effect/io/Schedule";
-import * as RecipientType from "@effect/shardcake/RecipientType";
 import * as Serialization from "@effect/shardcake/Serialization";
 import { EntityTypeNotRegistered, isEntityNotManagedByThisPodError, isPodUnavailableError, MessageReturnedNoting, NotAMessageWithReplier, SendTimeoutException } from "@effect/shardcake/ShardError";
 import * as ShardId from "@effect/shardcake/ShardId";
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig";
+import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent";
+import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient";
 import * as Storage from "@effect/shardcake/Storage";
+import * as StreamMessage from "@effect/shardcake/StreamMessage";
 import { showHashSet } from "@effect/shardcake/utils";
+import * as Stream from "@effect/stream/Stream";
 import * as Sharding from "./Sharding";
 /** @internal */
 function make(layerScope, address, config, shardAssignments, entityStates, singletons, replyChannels,
