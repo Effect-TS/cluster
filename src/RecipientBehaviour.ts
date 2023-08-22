@@ -2,9 +2,12 @@
  * A module that provides utilities to build basic behaviours
  * @since 1.0.0
  */
+import type * as Duration from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
+import type * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import type * as Queue from "@effect/io/Queue"
+import type { MessageQueueConstructor } from "@effect/shardcake/MessageQueue"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
 
 /**
@@ -33,3 +36,13 @@ export const process = <Msg, R, E>(
     Effect.flatMap(process),
     Effect.forever
   )
+
+/**
+ * An utility that process a message at a time, or interrupts on PoisonPill
+ * @since 1.0.0
+ * @category utils
+ */
+export type EntityBehaviourOptions<Req> = {
+  messageQueueConstructor?: MessageQueueConstructor<Req>
+  entityMaxIdleTime?: Option.Option<Duration.Duration>
+}

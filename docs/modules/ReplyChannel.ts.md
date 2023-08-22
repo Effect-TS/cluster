@@ -33,27 +33,27 @@ export interface ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  _id: TypeId
+  readonly _id: TypeId
   /**
    * @since 1.0.0
    */
-  await: Effect.Effect<never, never, void>
+  readonly await: Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
-  end: Effect.Effect<never, never, void>
+  readonly end: Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
-  fail(cause: Cause.Cause<Throwable>): Effect.Effect<never, never, void>
+  readonly fail: (cause: Cause.Cause<Throwable>) => Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
-  replySingle(a: A): Effect.Effect<never, never, void>
+  readonly replySingle: (a: A) => Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
-  replyStream(stream: Stream.Stream<never, Throwable, A>): Effect.Effect<never, never, void>
+  readonly replyStream: (stream: Stream.Stream<never, Throwable, A>) => Effect.Effect<never, never, void>
 }
 ```
 

@@ -16,9 +16,6 @@ Added in v1.0.0
   - [StreamMessage (interface)](#streammessage-interface)
 - [schema](#schema)
   - [schema](#schema-1)
-- [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
 - [utils](#utils)
   - [Success (type alias)](#success-type-alias)
   - [isStreamMessage](#isstreammessage)
@@ -51,28 +48,6 @@ Creates both the schema and a constructor for a `Message<A>`
 
 ```ts
 export declare function schema<RI, RA>(success: Schema.Schema<RI, RA>)
-```
-
-Added in v1.0.0
-
-# symbols
-
-## TypeId
-
-**Signature**
-
-```ts
-export declare const TypeId: typeof TypeId
-```
-
-Added in v1.0.0
-
-## TypeId (type alias)
-
-**Signature**
-
-```ts
-export type TypeId = typeof TypeId
 ```
 
 Added in v1.0.0

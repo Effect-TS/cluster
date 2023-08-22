@@ -11,7 +11,6 @@ import type * as Scope from "@effect/io/Scope"
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
 import type { Broadcaster } from "@effect/shardcake/Broadcaster"
 import type * as ByteArray from "@effect/shardcake/ByteArray"
-import type * as MessageQueue from "@effect/shardcake/MessageQueue"
 import type { Messenger } from "@effect/shardcake/Messenger"
 import type * as PodAddress from "@effect/shardcake/PodAddress"
 import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
@@ -59,12 +58,13 @@ export interface Sharding {
   readonly registerEntity: <Req, R>(
     entityType: RecipentType.EntityType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    entityMaxIdleTime?: Option.Option<Duration.Duration>
-  ) => Effect.Effect<R | MessageQueue.MessageQueue, never, void>
+    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  ) => Effect.Effect<R, never, void>
   readonly registerTopic: <Req, R>(
     topicType: RecipentType.TopicType<Req>,
-    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>
-  ) => Effect.Effect<R | MessageQueue.MessageQueue, never, void>
+    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
+    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  ) => Effect.Effect<R, never, void>
   readonly getShardingRegistrationEvents: Stream.Stream<
     never,
     never,
@@ -134,9 +134,9 @@ export function registerSingleton<R>(
 export function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  entityMaxIdleTime?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, entityMaxIdleTime))
+  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+): Effect.Effect<Sharding | R, never, void> {
+  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, options))
 }
 
 /**
@@ -149,9 +149,10 @@ export function registerEntity<Req, R>(
  */
 export function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
-): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior))
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+): Effect.Effect<Sharding | R, never, void> {
+  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior, options))
 }
 
 /**

@@ -16,9 +16,10 @@ import * as ShardError from "@effect/shardcake/ShardError";
  * @since 1.0.0
  * @category constructors
  */
-export function make(layerScope, recipientType, behaviour_, sharding, config, entityMaxIdle) {
+export function make(recipientType, behaviour_, sharding, config, options = {}) {
   return Effect.gen(function* (_) {
-    const messageQueue = yield* _(MessageQueue.MessageQueue);
+    const entityMaxIdle = options.entityMaxIdleTime || Option.none();
+    const messageQueueConstructor = options.messageQueueConstructor || MessageQueue.inMemory;
     const env = yield* _(Effect.context());
     const entities = yield* _(RefSynchronized.make(HashMap.empty()));
     const behaviour = (entityId, dequeue) => Effect.provideContext(behaviour_(entityId, dequeue), env);
@@ -52,7 +53,7 @@ export function make(layerScope, recipientType, behaviour_, sharding, config, en
               // queue doesn't exist, create a new one
               return Effect.gen(function* (_) {
                 const entityScope = yield* _(Scope.make());
-                const queue = yield* _(Scope.extend(entityScope)(messageQueue.make(recipientType, entityId)));
+                const queue = yield* _(Scope.extend(entityScope)(messageQueueConstructor(entityId)));
                 const expirationFiber = yield* _(startExpirationFiber(entityId));
                 const executionFiber = yield* _(Effect.forkDaemon(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(RefSynchronized.update(entities, HashMap.remove(entityId))))(Scope.use(entityScope)(behaviour(entityId, queue.dequeue)))));
                 return [Option.some(queue), HashMap.set(map, entityId, [Option.some(queue), expirationFiber, executionFiber])];

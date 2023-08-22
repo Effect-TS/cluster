@@ -53,17 +53,21 @@ Added in v1.0.0
 
 ```ts
 export interface ShardManager {
-  getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>
-  register(pod: Pod.Pod): Effect.Effect<never, never, void>
-  unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>
-  notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
-  checkAllPodsHealth: Effect.Effect<never, never, void>
+  readonly getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>
+  readonly register: (pod: Pod.Pod) => Effect.Effect<never, never, void>
+  readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
+  readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
+  readonly checkAllPodsHealth: Effect.Effect<never, never, void>
   /* @internal */
-  rebalance(rebalanceImmediately: boolean): Effect.Effect<never, never, void>
+  readonly rebalance: (rebalanceImmediately: boolean) => Effect.Effect<never, never, void>
   /* @internal */
-  getAssignments: Effect.Effect<never, never, HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
+  readonly getAssignments: Effect.Effect<
+    never,
+    never,
+    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
+  >
   /* @internal */
-  persistPods: Effect.Effect<never, never, void>
+  readonly persistPods: Effect.Effect<never, never, void>
 }
 ```
 

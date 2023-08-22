@@ -53,10 +53,14 @@ Added in v1.0.0
 
 ```ts
 export interface ShardManagerClient {
-  register(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>
-  unregister(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>
-  notifyUnhealthyPod(podAddress: PodAddress.PodAddress): Effect.Effect<never, never, void>
-  getAssignments: Effect.Effect<never, never, HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
+  readonly register: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
+  readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
+  readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
+  readonly getAssignments: Effect.Effect<
+    never,
+    never,
+    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
+  >
 }
 ```
 

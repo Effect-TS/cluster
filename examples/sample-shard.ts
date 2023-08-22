@@ -16,7 +16,6 @@ import * as Stream from "@effect/stream/Stream"
 import * as SubscriptionRef from "@effect/stream/SubscriptionRef"
 
 import * as LogLevel from "@effect/io/Logger/Level"
-import * as MessageQueue from "@effect/shardcake/MessageQueue"
 import { CounterEntity } from "./sample-common"
 
 const liveSharding = pipe(
@@ -24,8 +23,7 @@ const liveSharding = pipe(
   Layer.use(StorageFile.storageFile),
   Layer.use(PodsHttp.httpPods),
   Layer.use(ShardManagerClientHttp.shardManagerClientHttp),
-  Layer.use(Serialization.json),
-  Layer.merge(MessageQueue.inMemory)
+  Layer.use(Serialization.json)
 )
 
 const program = pipe(

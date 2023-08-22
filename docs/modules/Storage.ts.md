@@ -75,29 +75,37 @@ export interface Storage {
   /**
    * Get the current state of shard assignments to pods
    */
-  getAssignments: Effect.Effect<never, never, HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
+  readonly getAssignments: Effect.Effect<
+    never,
+    never,
+    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
+  >
 
   /**
    * Save the current state of shard assignments to pods
    */
-  saveAssignments(
+  readonly saveAssignments: (
     assignments: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  ): Effect.Effect<never, never, void>
+  ) => Effect.Effect<never, never, void>
 
   /**
    * A stream that will emit the state of shard assignments whenever it changes
    */
-  assignmentsStream: Stream.Stream<never, never, HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
+  readonly assignmentsStream: Stream.Stream<
+    never,
+    never,
+    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
+  >
 
   /**
    * Get the list of existing pods
    */
-  getPods: Effect.Effect<never, never, HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>>
+  readonly getPods: Effect.Effect<never, never, HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>>
 
   /**
    * Save the list of existing pods
    */
-  savePods(pods: HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>): Effect.Effect<never, never, void>
+  readonly savePods: (pods: HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>) => Effect.Effect<never, never, void>
 }
 ```
 

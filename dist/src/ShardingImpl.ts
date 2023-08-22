@@ -25,7 +25,6 @@ import type * as ByteArray from "@effect/shardcake/ByteArray"
 import * as EntityManager from "@effect/shardcake/EntityManager"
 import * as EntityState from "@effect/shardcake/EntityState"
 import * as Message from "@effect/shardcake/Message"
-import type * as MessageQueue from "@effect/shardcake/MessageQueue"
 import type { Messenger } from "@effect/shardcake/Messenger"
 import * as PodAddress from "@effect/shardcake/PodAddress"
 import * as Pods from "@effect/shardcake/Pods"
@@ -718,10 +717,10 @@ function make(
   function registerEntity<R, Req>(
     entityType: RecipientType.EntityType<Req>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
-  ): Effect.Effect<R | MessageQueue.MessageQueue, never, void> {
+    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  ): Effect.Effect<R, never, void> {
     return pipe(
-      registerRecipient(entityType, behavior, entityMaxIdleTime),
+      registerRecipient(entityType, behavior, options),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
       Effect.asUnit
     )
@@ -729,10 +728,11 @@ function make(
 
   function registerTopic<R, Req>(
     topicType: RecipientType.TopicType<Req>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
-  ): Effect.Effect<R | MessageQueue.MessageQueue, never, void> {
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  ): Effect.Effect<R, never, void> {
     return pipe(
-      registerRecipient(topicType, behavior, Option.none()),
+      registerRecipient(topicType, behavior, options),
       Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
       Effect.asUnit
     )
@@ -747,17 +747,16 @@ function make(
   function registerRecipient<R, Req>(
     recipientType: RecipientType.RecipientType<Req>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    entityMaxIdleTime: Option.Option<Duration.Duration> = Option.none()
+    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
   ) {
     return Effect.gen(function*($) {
       const entityManager = yield* $(
         EntityManager.make(
-          layerScope,
           recipientType,
           behavior,
           self,
           config,
-          entityMaxIdleTime
+          options
         )
       )
 

@@ -40,7 +40,7 @@ export interface EntityManager<Req> {
 }
 
 type EntityManagerEntry<Req> = readonly [
-  messageQueue: Option.Option<MessageQueue.MessageQueueInstance<Req>>,
+  messageQueue: Option.Option<MessageQueue.MessageQueue<Req>>,
   expirationFiber: Fiber.RuntimeFiber<never, void>,
   executionFiber: Fiber.RuntimeFiber<never, void>
 ]
@@ -50,15 +50,15 @@ type EntityManagerEntry<Req> = readonly [
  * @category constructors
  */
 export function make<R, Req>(
-  layerScope: Scope.Scope,
   recipientType: RecipientType.RecipientType<Req>,
   behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
-  entityMaxIdle: Option.Option<Duration.Duration>
+  options: RecipientBehaviour.EntityBehaviourOptions<Req> = {}
 ) {
   return Effect.gen(function*(_) {
-    const messageQueue = yield* _(MessageQueue.MessageQueue)
+    const entityMaxIdle = options.entityMaxIdleTime || Option.none()
+    const messageQueueConstructor = options.messageQueueConstructor || MessageQueue.inMemory
     const env = yield* _(Effect.context<R>())
     const entities = yield* _(
       RefSynchronized.make<
@@ -152,7 +152,7 @@ export function make<R, Req>(
                   return Effect.gen(function*(_) {
                     const entityScope = yield* _(Scope.make())
                     const queue = yield* _(pipe(
-                      messageQueue.make(recipientType, entityId),
+                      messageQueueConstructor(entityId),
                       Scope.extend(entityScope)
                     ))
                     const expirationFiber = yield* _(startExpirationFiber(entityId))

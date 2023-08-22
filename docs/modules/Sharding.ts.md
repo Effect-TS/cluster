@@ -49,50 +49,58 @@ Added in v1.0.0
 
 ```ts
 export interface Sharding {
-  getShardId: (recipientType: RecipentType.RecipientType<any>, entityId: string) => ShardId.ShardId
-  register: Effect.Effect<never, never, void>
-  unregister: Effect.Effect<never, never, void>
-  reply<Reply>(reply: Reply, replier: Replier<Reply>): Effect.Effect<never, never, void>
-  replyStream<Reply>(
+  readonly getShardId: (recipientType: RecipentType.RecipientType<any>, entityId: string) => ShardId.ShardId
+  readonly register: Effect.Effect<never, never, void>
+  readonly unregister: Effect.Effect<never, never, void>
+  readonly reply: <Reply>(reply: Reply, replier: Replier<Reply>) => Effect.Effect<never, never, void>
+  readonly replyStream: <Reply>(
     replies: Stream.Stream<never, never, Reply>,
     replier: StreamReplier.StreamReplier<Reply>
-  ): Effect.Effect<never, never, void>
-  messenger<Msg>(
+  ) => Effect.Effect<never, never, void>
+  readonly messenger: <Msg>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
-  ): Messenger<Msg>
-  broadcaster<Msg>(
+  ) => Messenger<Msg>
+  readonly broadcaster: <Msg>(
     topicType: RecipentType.TopicType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
-  ): Broadcaster<Msg>
-  isEntityOnLocalShards(
+  ) => Broadcaster<Msg>
+  readonly isEntityOnLocalShards: (
     recipientType: RecipentType.RecipientType<any>,
     entityId: string
-  ): Effect.Effect<never, never, boolean>
-  isShuttingDown: Effect.Effect<never, never, boolean>
-  initReply(id: ReplyId.ReplyId, replyChannel: ReplyChannel.ReplyChannel<any>): Effect.Effect<never, never, void>
-  registerScoped: Effect.Effect<Scope.Scope, never, void>
-  registerEntity<Req, R>(
+  ) => Effect.Effect<never, never, boolean>
+  readonly isShuttingDown: Effect.Effect<never, never, boolean>
+  readonly initReply: (
+    id: ReplyId.ReplyId,
+    replyChannel: ReplyChannel.ReplyChannel<any>
+  ) => Effect.Effect<never, never, void>
+  readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
+  readonly registerEntity: <Req, R>(
     entityType: RecipentType.EntityType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    entityMaxIdleTime?: Option.Option<Duration.Duration>
-  ): Effect.Effect<R | MessageQueue.MessageQueue, never, void>
-  registerTopic<Req, R>(
+    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  ) => Effect.Effect<R, never, void>
+  readonly registerTopic: <Req, R>(
     topicType: RecipentType.TopicType<Req>,
-    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>
-  ): Effect.Effect<R | MessageQueue.MessageQueue, never, void>
-  getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>
-  registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void>
-  refreshAssignments: Effect.Effect<Scope.Scope, never, void>
-  assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
-  unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
-  sendToLocalEntityStreamingReply(
+    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
+    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  ) => Effect.Effect<R, never, void>
+  readonly getShardingRegistrationEvents: Stream.Stream<
+    never,
+    never,
+    ShardingRegistrationEvent.ShardingRegistrationEvent
+  >
+  readonly registerSingleton: <R>(name: string, run: Effect.Effect<R, never, void>) => Effect.Effect<R, never, void>
+  readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>
+  readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
+  readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
+  readonly sendToLocalEntityStreamingReply: (
     msg: BinaryMessage.BinaryMessage
-  ): Stream.Stream<never, Throwable, ByteArray.ByteArray>
-  sendToLocalEntitySingleReply(
+  ) => Stream.Stream<never, Throwable, ByteArray.ByteArray>
+  readonly sendToLocalEntitySingleReply: (
     msg: BinaryMessage.BinaryMessage
-  ): Effect.Effect<never, Throwable, Option.Option<ByteArray.ByteArray>>
-  getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
+  ) => Effect.Effect<never, Throwable, Option.Option<ByteArray.ByteArray>>
+  readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
 }
 ```
 
@@ -169,8 +177,8 @@ If entity goes to idle timeout, it will be interrupted from outside.
 export declare function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  entityMaxIdleTime?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void>
+  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+): Effect.Effect<Sharding | R, never, void>
 ```
 
 Added in v1.0.0
@@ -182,7 +190,7 @@ Same as `register`, but will automatically call `unregister` when the `Scope` is
 **Signature**
 
 ```ts
-export declare const registerScoped: Effect.Effect<Scope.Scope | Sharding, never, void>
+export declare const registerScoped: Effect.Effect<Sharding | Scope.Scope, never, void>
 ```
 
 Added in v1.0.0
@@ -215,8 +223,9 @@ If entity goes to idle timeout, it will be interrupted from outside.
 ```ts
 export declare function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>
-): Effect.Effect<Sharding | MessageQueue.MessageQueue | R, never, void>
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+): Effect.Effect<Sharding | R, never, void>
 ```
 
 Added in v1.0.0

@@ -45,9 +45,9 @@ Added in v1.0.0
 
 ```ts
 export interface EntityState {
-  [TypeId]: {}
-  entityManager: EntityManager.EntityManager<never>
-  processBinary: (
+  readonly _id: TypeId
+  readonly entityManager: EntityManager.EntityManager<never>
+  readonly processBinary: (
     binaryMessage: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
   ) => Effect.Effect<never, never, Option.Option<Schema.Schema<unknown, any>>>

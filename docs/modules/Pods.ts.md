@@ -63,45 +63,50 @@ This is also used by pods for internal communication (forward messages to each o
 
 ```ts
 export interface Pods {
-  [TypeId]: {}
+  /** @internal */
+  readonly _id: TypeId
+
   /**
    * Notify a pod that it was assigned a list of shards
    * @since 1.0.0
    */
-  assignShards(pod: PodAddress.PodAddress, shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<never, never, void>
+  readonly assignShards: (
+    pod: PodAddress.PodAddress,
+    shards: HashSet.HashSet<ShardId.ShardId>
+  ) => Effect.Effect<never, never, void>
 
   /**
    * Notify a pod that it was unassigned a list of shards
    * @since 1.0.0
    */
-  unassignShards(
+  readonly unassignShards: (
     pod: PodAddress.PodAddress,
     shards: HashSet.HashSet<ShardId.ShardId>
-  ): Effect.Effect<never, never, void>
+  ) => Effect.Effect<never, never, void>
 
   /**
    * Check that a pod is responsive
    * @since 1.0.0
    */
-  ping(pod: PodAddress.PodAddress): Effect.Effect<never, PodUnavailable, void>
+  readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, PodUnavailable, void>
 
   /**
    * Send a message to a pod
    * @since 1.0.0
    */
-  sendMessage(
+  readonly sendMessage: (
     pod: PodAddress.PodAddress,
     message: BinaryMessage.BinaryMessage
-  ): Effect.Effect<never, never, Option.Option<ByteArray.ByteArray>>
+  ) => Effect.Effect<never, never, Option.Option<ByteArray.ByteArray>>
 
   /**
    * Send a message to a pod and receive a stream of replies
    * @since 1.0.0
    */
-  sendMessageStreaming(
+  readonly sendMessageStreaming: (
     pod: PodAddress.PodAddress,
     message: BinaryMessage.BinaryMessage
-  ): Stream.Stream<never, never, ByteArray.ByteArray>
+  ) => Stream.Stream<never, never, ByteArray.ByteArray>
 }
 ```
 

@@ -44,7 +44,7 @@ Added in v1.0.0
 
 ```ts
 export interface StreamReplier<A> {
-  [TypeId]: {}
+  _id: TypeId
   id: ReplyId.ReplyId
   schema: Schema.Schema<unknown, A>
   reply: (reply: Stream.Stream<never, never, A>) => Effect.Effect<Sharding.Sharding, never, void>

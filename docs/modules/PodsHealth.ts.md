@@ -79,13 +79,16 @@ A typical implementation for this is using k8s to check if the pod still exists.
 
 ```ts
 export interface PodsHealth {
-  [TypeId]: {}
+  /**
+   * @since 1.0.0
+   */
+  readonly _id: TypeId
 
   /**
    * Check if a pod is still alive.
    * @since 1.0.0
    */
-  isAlive(podAddress: PodAddress): Effect.Effect<never, never, boolean>
+  readonly isAlive: (podAddress: PodAddress) => Effect.Effect<never, never, boolean>
 }
 ```
 

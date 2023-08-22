@@ -27,12 +27,11 @@ Added in v1.0.0
 
 ```ts
 export declare function make<R, Req>(
-  layerScope: Scope.Scope,
   recipientType: RecipientType.RecipientType<Req>,
   behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
-  entityMaxIdle: Option.Option<Duration.Duration>
+  options: RecipientBehaviour.EntityBehaviourOptions<Req> = {}
 )
 ```
 
@@ -46,14 +45,14 @@ Added in v1.0.0
 
 ```ts
 export interface EntityManager<Req> {
-  send(
+  readonly send: (
     entityId: string,
     req: Req,
     replyId: Option.Option<ReplyId.ReplyId>,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ): Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void>
-  terminateEntitiesOnShards(shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<never, never, void>
-  terminateAllEntities: Effect.Effect<never, never, void>
+  ) => Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void>
+  readonly terminateEntitiesOnShards: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
+  readonly terminateAllEntities: Effect.Effect<never, never, void>
 }
 ```
 

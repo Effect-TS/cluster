@@ -295,16 +295,16 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
       broadcastDiscard
     };
   }
-  function registerEntity(entityType, behavior, entityMaxIdleTime = Option.none()) {
-    return Effect.asUnit(Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType)))(registerRecipient(entityType, behavior, entityMaxIdleTime)));
+  function registerEntity(entityType, behavior, options) {
+    return Effect.asUnit(Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType)))(registerRecipient(entityType, behavior, options)));
   }
-  function registerTopic(topicType, behavior) {
-    return Effect.asUnit(Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType)))(registerRecipient(topicType, behavior, Option.none())));
+  function registerTopic(topicType, behavior, options) {
+    return Effect.asUnit(Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType)))(registerRecipient(topicType, behavior, options)));
   }
   const getShardingRegistrationEvents = Stream.fromHub(eventsHub);
-  function registerRecipient(recipientType, behavior, entityMaxIdleTime = Option.none()) {
+  function registerRecipient(recipientType, behavior, options) {
     return Effect.gen(function* ($) {
-      const entityManager = yield* $(EntityManager.make(layerScope, recipientType, behavior, self, config, entityMaxIdleTime));
+      const entityManager = yield* $(EntityManager.make(recipientType, behavior, self, config, options));
       const processBinary = (msg, replyChannel) => Effect.catchAllCause(_ => Effect.as(replyChannel.fail(_), Option.none()))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
       yield* $(Ref.update(HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))(entityStates));
     });

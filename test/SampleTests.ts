@@ -16,7 +16,6 @@ import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as Schema from "@effect/schema/Schema"
 import * as Message from "@effect/shardcake/Message"
-import * as MessageQueue from "@effect/shardcake/MessageQueue"
 import * as Pods from "@effect/shardcake/Pods"
 import * as PodsHealth from "@effect/shardcake/PodsHealth"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
@@ -48,8 +47,7 @@ describe.concurrent("SampleTests", () => {
     Layer.use(ShardManagerClient.local),
     Layer.use(
       ShardingConfig.withDefaults({ simulateRemotePods: true, entityTerminationTimeout: Duration.millis(3000) })
-    ),
-    Layer.merge(MessageQueue.inMemory)
+    )
   )
 
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
@@ -321,7 +319,7 @@ describe.concurrent("SampleTests", () => {
             }),
             Effect.forever
           ),
-        Option.some(Duration.minutes(10))
+        { entityMaxIdleTime: Option.some(Duration.minutes(10)) }
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
@@ -365,7 +363,7 @@ describe.concurrent("SampleTests", () => {
             }),
             Effect.forever
           ),
-        Option.some(Duration.minutes(10))
+        { entityMaxIdleTime: Option.some(Duration.minutes(10)) }
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
@@ -411,7 +409,7 @@ describe.concurrent("SampleTests", () => {
             }),
             Effect.forever
           ),
-        Option.some(Duration.millis(100))
+        { entityMaxIdleTime: Option.some(Duration.millis(100)) }
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))

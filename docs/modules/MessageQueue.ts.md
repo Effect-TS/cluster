@@ -12,30 +12,16 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [context](#context)
-  - [MessageQueue](#messagequeue)
 - [layers](#layers)
   - [inMemory](#inmemory)
 - [models](#models)
   - [MessageQueue (interface)](#messagequeue-interface)
-  - [MessageQueueInstance (interface)](#messagequeueinstance-interface)
+  - [MessageQueueConstructor (type alias)](#messagequeueconstructor-type-alias)
 - [symbols](#symbols)
   - [TypeId](#typeid)
   - [TypeId (type alias)](#typeid-type-alias)
 
 ---
-
-# context
-
-## MessageQueue
-
-**Signature**
-
-```ts
-export declare const MessageQueue: Tag<MessageQueue, MessageQueue>
-```
-
-Added in v1.0.0
 
 # layers
 
@@ -46,7 +32,7 @@ A layer that creates an in-memory message queue.
 **Signature**
 
 ```ts
-export declare const inMemory: Layer.Layer<never, never, MessageQueue>
+export declare const inMemory: MessageQueueConstructor<any>
 ```
 
 Added in v1.0.0
@@ -58,26 +44,20 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface MessageQueue {
-  readonly _id: TypeId
-  readonly make: <Msg>(
-    recipientType: RecipientType.RecipientType<Msg>,
-    entityId: string
-  ) => Effect.Effect<Scope.Scope, never, MessageQueueInstance<Msg>>
+export interface MessageQueue<Msg> {
+  readonly dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>
+  readonly offer: (msg: Msg | PoisonPill.PoisonPill) => Effect.Effect<never, never, void>
 }
 ```
 
 Added in v1.0.0
 
-## MessageQueueInstance (interface)
+## MessageQueueConstructor (type alias)
 
 **Signature**
 
 ```ts
-export interface MessageQueueInstance<Msg> {
-  readonly dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>
-  readonly offer: (msg: Msg | PoisonPill.PoisonPill) => Effect.Effect<never, never, void>
-}
+export type MessageQueueConstructor<Msg> = (entityId: string) => Effect.Effect<Scope.Scope, never, MessageQueue<Msg>>
 ```
 
 Added in v1.0.0
