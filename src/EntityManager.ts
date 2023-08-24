@@ -10,7 +10,6 @@ import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
 import type * as Queue from "@effect/io/Queue"
 import * as RefSynchronized from "@effect/io/Ref/Synchronized"
-import * as Scope from "@effect/io/Scope"
 import * as MessageQueue from "@effect/shardcake/MessageQueue"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
 import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
@@ -54,7 +53,7 @@ export function make<R, Req>(
   behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
-  options: RecipientBehaviour.EntityBehaviourOptions<Req> = {}
+  options: RecipientBehaviour.EntityBehaviourOptions<R, Req> = {}
 ) {
   return Effect.gen(function*(_) {
     const entityMaxIdle = options.entityMaxIdleTime || Option.none()
@@ -150,19 +149,18 @@ export function make<R, Req>(
                 } else {
                   // queue doesn't exist, create a new one
                   return Effect.gen(function*(_) {
-                    const entityScope = yield* _(Scope.make())
                     const queue = yield* _(pipe(
                       messageQueueConstructor(entityId),
-                      Scope.extend(entityScope)
+                      Effect.provideSomeContext(env)
                     ))
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const executionFiber = yield* _(
                       pipe(
                         behaviour(entityId, queue.dequeue),
-                        Scope.use(entityScope),
                         Effect.ensuring(
                           pipe(
                             RefSynchronized.update(entities, HashMap.remove(entityId)),
+                            Effect.zipRight(queue.shutdown),
                             Effect.zipRight(Fiber.interrupt(expirationFiber))
                           )
                         ),

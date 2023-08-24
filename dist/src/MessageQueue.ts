@@ -3,7 +3,6 @@
  */
 import * as Effect from "@effect/io/Effect"
 import * as Queue from "@effect/io/Queue"
-import type * as Scope from "@effect/io/Scope"
 import type * as PoisonPill from "@effect/shardcake/PoisonPill"
 
 /**
@@ -25,13 +24,16 @@ export type TypeId = typeof TypeId
 export interface MessageQueue<Msg> {
   readonly dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>
   readonly offer: (msg: Msg | PoisonPill.PoisonPill) => Effect.Effect<never, never, void>
+  readonly shutdown: Effect.Effect<never, never, void>
 }
 
 /**
  * @since 1.0.0
  * @category models
  */
-export type MessageQueueConstructor<Msg> = (entityId: string) => Effect.Effect<Scope.Scope, never, MessageQueue<Msg>>
+export type MessageQueueConstructor<R, Msg> = (
+  entityId: string
+) => Effect.Effect<R, never, MessageQueue<Msg>>
 
 /**
  * A layer that creates an in-memory message queue.
@@ -39,12 +41,12 @@ export type MessageQueueConstructor<Msg> = (entityId: string) => Effect.Effect<S
  * @since 1.0.0
  * @category layers
  */
-export const inMemory: MessageQueueConstructor<any> = () =>
+export const inMemory: MessageQueueConstructor<never, any> = () =>
   Effect.gen(function*(_) {
     const queue = yield* _(Queue.unbounded<any>())
-    yield* _(Effect.addFinalizer(() => Queue.shutdown(queue)))
     return ({
       offer: (msg: unknown) => Queue.offer(queue, msg),
-      dequeue: queue
+      dequeue: queue,
+      shutdown: Queue.shutdown(queue)
     })
   })

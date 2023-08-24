@@ -58,12 +58,12 @@ export interface Sharding {
   readonly registerEntity: <Req, R>(
     entityType: RecipentType.EntityType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+    options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
   ) => Effect.Effect<R, never, void>
   readonly registerTopic: <Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+    options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
   ) => Effect.Effect<R, never, void>
   readonly getShardingRegistrationEvents: Stream.Stream<
     never,
@@ -134,7 +134,7 @@ export function registerSingleton<R>(
 export function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
 ): Effect.Effect<Sharding | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, options))
 }
@@ -150,7 +150,7 @@ export function registerEntity<Req, R>(
 export function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
 ): Effect.Effect<Sharding | R, never, void> {
   return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior, options))
 }

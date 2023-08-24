@@ -22,5 +22,5 @@ export interface EntityManager<Req> {
  * @since 1.0.0
  * @category constructors
  */
-export declare function make<R, Req>(recipientType: RecipientType.RecipientType<Req>, behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>, sharding: Sharding.Sharding, config: ShardingConfig.ShardingConfig, options?: RecipientBehaviour.EntityBehaviourOptions<Req>): Effect.Effect<R, never, EntityManager<Req>>;
+export declare function make<R, Req>(recipientType: RecipientType.RecipientType<Req>, behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>, sharding: Sharding.Sharding, config: ShardingConfig.ShardingConfig, options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>): Effect.Effect<R, never, EntityManager<Req>>;
 //# sourceMappingURL=EntityManager.d.ts.map

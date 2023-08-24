@@ -37,8 +37,12 @@ export const process = <Msg, R, E>(
     Effect.forever
   )
 
-/** @internal */
-export type EntityBehaviourOptions<Req> = {
-  messageQueueConstructor?: MessageQueueConstructor<Req>
+/**
+ * An utility that process a message at a time, or interrupts on PoisonPill
+ * @since 1.0.0
+ * @category utils
+ */
+export type EntityBehaviourOptions<R, Req> = {
+  messageQueueConstructor?: MessageQueueConstructor<R, Req>
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 }

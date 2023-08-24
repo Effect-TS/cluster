@@ -17,6 +17,7 @@ Added in v1.0.0
 - [models](#models)
   - [RecipientBehaviour (interface)](#recipientbehaviour-interface)
 - [utils](#utils)
+  - [EntityBehaviourOptions (type alias)](#entitybehaviouroptions-type-alias)
   - [process](#process)
 
 ---
@@ -38,6 +39,21 @@ export interface RecipientBehaviour<R, Req> {
 Added in v1.0.0
 
 # utils
+
+## EntityBehaviourOptions (type alias)
+
+An utility that process a message at a time, or interrupts on PoisonPill
+
+**Signature**
+
+```ts
+export type EntityBehaviourOptions<R, Req> = {
+  messageQueueConstructor?: MessageQueueConstructor<R, Req>
+  entityMaxIdleTime?: Option.Option<Duration.Duration>
+}
+```
+
+Added in v1.0.0
 
 ## process
 

@@ -38,8 +38,8 @@ export interface Sharding {
     readonly isShuttingDown: Effect.Effect<never, never, boolean>;
     readonly initReply: (id: ReplyId.ReplyId, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, never, void>;
     readonly registerScoped: Effect.Effect<Scope.Scope, never, void>;
-    readonly registerEntity: <Req, R>(entityType: RecipentType.EntityType<Req>, behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<Req>) => Effect.Effect<R, never, void>;
-    readonly registerTopic: <Req, R>(topicType: RecipentType.TopicType<Req>, behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<Req>) => Effect.Effect<R, never, void>;
+    readonly registerEntity: <Req, R>(entityType: RecipentType.EntityType<Req>, behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>) => Effect.Effect<R, never, void>;
+    readonly registerTopic: <Req, R>(topicType: RecipentType.TopicType<Req>, behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>) => Effect.Effect<R, never, void>;
     readonly getShardingRegistrationEvents: Stream.Stream<never, never, ShardingRegistrationEvent.ShardingRegistrationEvent>;
     readonly registerSingleton: <R>(name: string, run: Effect.Effect<R, never, void>) => Effect.Effect<R, never, void>;
     readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>;
@@ -71,7 +71,7 @@ export declare const unregister: Effect.Effect<Sharding, never, void>;
  * @since 1.0.0
  * @category utils
  */
-export declare const registerScoped: Effect.Effect<Scope.Scope | Sharding, never, void>;
+export declare const registerScoped: Effect.Effect<Sharding | Scope.Scope, never, void>;
 /**
  * Start a computation that is guaranteed to run only on a single pod.
  * Each pod should call `registerSingleton` but only a single pod will actually run it at any given time.
@@ -87,7 +87,7 @@ export declare function registerSingleton<R>(name: string, run: Effect.Effect<R,
  * @since 1.0.0
  * @category utils
  */
-export declare function registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behavior: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<Req>): Effect.Effect<Sharding | R, never, void>;
+export declare function registerEntity<Req, R>(entityType: RecipentType.EntityType<Req>, behavior: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>): Effect.Effect<Sharding | R, never, void>;
 /**
  * Register a new topic type, allowing pods to broadcast messages to subscribers.
  * It takes a `behavior` which is a function from a topic and a queue of messages to a ZIO computation that runs forever and consumes those messages.
@@ -96,7 +96,7 @@ export declare function registerEntity<Req, R>(entityType: RecipentType.EntityTy
  * @since 1.0.0
  * @category utils
  */
-export declare function registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behavior: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<Req>): Effect.Effect<Sharding | R, never, void>;
+export declare function registerTopic<Req, R>(topicType: RecipentType.TopicType<Req>, behavior: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>): Effect.Effect<Sharding | R, never, void>;
 /**
  * Get an object that allows sending messages to a given entity type.
  * You can provide a custom send timeout to override the one globally defined.

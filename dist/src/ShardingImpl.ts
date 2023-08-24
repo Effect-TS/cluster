@@ -717,7 +717,7 @@ function make(
   function registerEntity<R, Req>(
     entityType: RecipientType.EntityType<Req>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+    options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
   ): Effect.Effect<R, never, void> {
     return pipe(
       registerRecipient(entityType, behavior, options),
@@ -729,7 +729,7 @@ function make(
   function registerTopic<R, Req>(
     topicType: RecipientType.TopicType<Req>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+    options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
   ): Effect.Effect<R, never, void> {
     return pipe(
       registerRecipient(topicType, behavior, options),
@@ -747,7 +747,7 @@ function make(
   function registerRecipient<R, Req>(
     recipientType: RecipientType.RecipientType<Req>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+    options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
   ) {
     return Effect.gen(function*($) {
       const entityManager = yield* $(

@@ -31,7 +31,7 @@ export declare function make<R, Req>(
   behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
-  options: RecipientBehaviour.EntityBehaviourOptions<Req> = {}
+  options: RecipientBehaviour.EntityBehaviourOptions<R, Req> = {}
 )
 ```
 

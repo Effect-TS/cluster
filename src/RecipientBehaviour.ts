@@ -42,7 +42,7 @@ export const process = <Msg, R, E>(
  * @since 1.0.0
  * @category utils
  */
-export type EntityBehaviourOptions<Req> = {
-  messageQueueConstructor?: MessageQueueConstructor<Req>
+export type EntityBehaviourOptions<R, Req> = {
+  messageQueueConstructor?: MessageQueueConstructor<R, Req>
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 }

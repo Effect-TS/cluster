@@ -32,7 +32,7 @@ A layer that creates an in-memory message queue.
 **Signature**
 
 ```ts
-export declare const inMemory: MessageQueueConstructor<any>
+export declare const inMemory: MessageQueueConstructor<never, any>
 ```
 
 Added in v1.0.0
@@ -47,6 +47,7 @@ Added in v1.0.0
 export interface MessageQueue<Msg> {
   readonly dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>
   readonly offer: (msg: Msg | PoisonPill.PoisonPill) => Effect.Effect<never, never, void>
+  readonly shutdown: Effect.Effect<never, never, void>
 }
 ```
 
@@ -57,7 +58,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type MessageQueueConstructor<Msg> = (entityId: string) => Effect.Effect<Scope.Scope, never, MessageQueue<Msg>>
+export type MessageQueueConstructor<R, Msg> = (entityId: string) => Effect.Effect<R, never, MessageQueue<Msg>>
 ```
 
 Added in v1.0.0

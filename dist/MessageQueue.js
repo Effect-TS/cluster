@@ -26,10 +26,10 @@ const TypeId = "@effect/shardcake/MessageQueueInstance";
 exports.TypeId = TypeId;
 const inMemory = () => Effect.gen(function* (_) {
   const queue = yield* _(Queue.unbounded());
-  yield* _(Effect.addFinalizer(() => Queue.shutdown(queue)));
   return {
     offer: msg => Queue.offer(queue, msg),
-    dequeue: queue
+    dequeue: queue,
+    shutdown: Queue.shutdown(queue)
   };
 });
 exports.inMemory = inMemory;

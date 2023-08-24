@@ -8,7 +8,6 @@ import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Fiber from "@effect/io/Fiber";
 import * as RefSynchronized from "@effect/io/Ref/Synchronized";
-import * as Scope from "@effect/io/Scope";
 import * as MessageQueue from "@effect/shardcake/MessageQueue";
 import * as PoisonPill from "@effect/shardcake/PoisonPill";
 import * as ShardError from "@effect/shardcake/ShardError";
@@ -52,10 +51,9 @@ export function make(recipientType, behaviour_, sharding, config, options = {}) 
             } else {
               // queue doesn't exist, create a new one
               return Effect.gen(function* (_) {
-                const entityScope = yield* _(Scope.make());
-                const queue = yield* _(Scope.extend(entityScope)(messageQueueConstructor(entityId)));
+                const queue = yield* _(Effect.provideSomeContext(env)(messageQueueConstructor(entityId)));
                 const expirationFiber = yield* _(startExpirationFiber(entityId));
-                const executionFiber = yield* _(Effect.forkDaemon(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(RefSynchronized.update(entities, HashMap.remove(entityId))))(Scope.use(entityScope)(behaviour(entityId, queue.dequeue)))));
+                const executionFiber = yield* _(Effect.forkDaemon(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(Effect.zipRight(queue.shutdown)(RefSynchronized.update(entities, HashMap.remove(entityId)))))(behaviour(entityId, queue.dequeue))));
                 return [Option.some(queue), HashMap.set(map, entityId, [Option.some(queue), expirationFiber, executionFiber])];
               });
             }

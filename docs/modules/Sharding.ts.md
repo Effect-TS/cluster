@@ -78,12 +78,12 @@ export interface Sharding {
   readonly registerEntity: <Req, R>(
     entityType: RecipentType.EntityType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+    options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
   ) => Effect.Effect<R, never, void>
   readonly registerTopic: <Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+    options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
   ) => Effect.Effect<R, never, void>
   readonly getShardingRegistrationEvents: Stream.Stream<
     never,
@@ -177,7 +177,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 export declare function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
 ): Effect.Effect<Sharding | R, never, void>
 ```
 
@@ -224,7 +224,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 export declare function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
+  options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>
 ): Effect.Effect<Sharding | R, never, void>
 ```
 

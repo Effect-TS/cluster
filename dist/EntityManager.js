@@ -11,7 +11,6 @@ var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Fiber = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Fiber"));
 var RefSynchronized = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Ref/Synchronized"));
-var Scope = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Scope"));
 var MessageQueue = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/MessageQueue"));
 var PoisonPill = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/PoisonPill"));
 var ShardError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardError"));
@@ -61,10 +60,9 @@ function make(recipientType, behaviour_, sharding, config, options = {}) {
             } else {
               // queue doesn't exist, create a new one
               return Effect.gen(function* (_) {
-                const entityScope = yield* _(Scope.make());
-                const queue = yield* _(Scope.extend(entityScope)(messageQueueConstructor(entityId)));
+                const queue = yield* _(Effect.provideSomeContext(env)(messageQueueConstructor(entityId)));
                 const expirationFiber = yield* _(startExpirationFiber(entityId));
-                const executionFiber = yield* _(Effect.forkDaemon(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(RefSynchronized.update(entities, HashMap.remove(entityId))))(Scope.use(entityScope)(behaviour(entityId, queue.dequeue)))));
+                const executionFiber = yield* _(Effect.forkDaemon(Effect.ensuring(Effect.zipRight(Fiber.interrupt(expirationFiber))(Effect.zipRight(queue.shutdown)(RefSynchronized.update(entities, HashMap.remove(entityId)))))(behaviour(entityId, queue.dequeue))));
                 return [Option.some(queue), HashMap.set(map, entityId, [Option.some(queue), expirationFiber, executionFiber])];
               });
             }
