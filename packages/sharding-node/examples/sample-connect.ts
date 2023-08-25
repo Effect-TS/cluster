@@ -3,15 +3,14 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Logger from "@effect/io/Logger"
 import * as LogLevel from "@effect/io/Logger/Level"
-import * as PodsHttp from "@effect/sharding/PodsHttp"
+import * as PodsHttp from "@effect/sharding-node/PodsHttp"
+import * as ShardManagerClientHttp from "@effect/sharding-node/ShardManagerClientHttp"
+import * as StorageFile from "@effect/sharding-node/StorageFile"
 import * as Serialization from "@effect/sharding/Serialization"
 import * as Sharding from "@effect/sharding/Sharding"
 import * as ShardingConfig from "@effect/sharding/ShardingConfig"
 import * as ShardingImpl from "@effect/sharding/ShardingImpl"
-import * as ShardManagerClientHttp from "@effect/sharding/ShardManagerClientHttp"
-import * as StorageFile from "@effect/sharding/StorageFile"
 import * as Stream from "@effect/stream/Stream"
-
 import { CounterEntity, GetCurrent, SubscribeChanges } from "./sample-common"
 
 const liveSharding = pipe(
