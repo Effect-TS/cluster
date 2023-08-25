@@ -69,10 +69,10 @@ export function make(recipientType, behaviour_, sharding, config, options = {}) 
       return Effect.tap(_ => Option.match({
         onNone: () => Effect.zipRight(send(entityId, req, replyId, replyChannel))(Effect.sleep(Duration.millis(100))),
         onSome: messageQueue => {
-          return Effect.catchAllCause(e => Effect.zipRight(send(entityId, req, replyId, replyChannel))(Effect.logDebug("Send failed with the following cause:", e)))(Option.match({
+          return Option.match({
             onNone: () => Effect.zipLeft(replyChannel.end)(messageQueue.offer(req)),
             onSome: replyId_ => Effect.zipRight(messageQueue.offer(req))(sharding.initReply(replyId_, replyChannel))
-          })(replyId));
+          })(replyId);
         }
       })(_.test))(Effect.bind("test", () => RefSynchronized.modifyEffect(entities, map => decide(map, entityId)))(Effect.tap(() => {
         // first, verify that this entity should be handled by this pod

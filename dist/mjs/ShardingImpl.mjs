@@ -305,9 +305,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
   function registerRecipient(recipientType, behavior, options) {
     return Effect.gen(function* ($) {
       const entityManager = yield* $(EntityManager.make(recipientType, behavior, self, config, options));
-      const processBinary = (msg, replyChannel) =>
-      // TODO: do not catch on send!
-      Effect.catchAllCause(_ => Effect.as(replyChannel.fail(_), Option.none()))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
+      const processBinary = (msg, replyChannel) => Effect.tapErrorCause(_ => Effect.as(replyChannel.fail(_), Option.none()))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
       yield* $(Ref.update(HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))(entityStates));
     });
   }

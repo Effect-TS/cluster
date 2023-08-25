@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Schema from "@effect/schema/Schema"
 import { ShardingEntityNotManagedByThisPodErrorSchema } from "@effect/shardcake/ShardingError/ShardingEntityNotManagedByThisPodError"
 import { ShardingEntityTypeNotRegisteredErrorSchema } from "@effect/shardcake/ShardingError/ShardingEntityTypeNotRegisteredError"

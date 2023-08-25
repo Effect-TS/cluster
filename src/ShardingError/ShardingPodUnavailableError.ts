@@ -11,7 +11,7 @@ import * as PodAddress from "@effect/shardcake/PodAddress"
  */
 export const ShardingPodUnavailableErrorTag = "@effect/shardcake/ShardingPodUnavailableError" as const
 
-export const ShardingPodUnavailableErrorSchema_ = Schema.data(Schema.struct({
+const ShardingPodUnavailableErrorSchema_ = Schema.data(Schema.struct({
   _tag: Schema.literal(ShardingPodUnavailableErrorTag),
   pod: PodAddress.schema
 }))

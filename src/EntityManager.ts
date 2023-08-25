@@ -247,13 +247,7 @@ export function make<R, Req>(
                         sharding.initReply(replyId_, replyChannel),
                         Effect.zipRight(messageQueue.offer(req))
                       )
-                  }),
-                  Effect.catchAllCause((e) =>
-                    pipe(
-                      Effect.logDebug("Send failed with the following cause:", e),
-                      Effect.zipRight(send(entityId, req, replyId, replyChannel))
-                    )
-                  )
+                  })
                 )
               }
             })

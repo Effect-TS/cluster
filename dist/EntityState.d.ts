@@ -22,7 +22,7 @@ export type TypeId = typeof TypeId;
 export interface EntityState {
     readonly _id: TypeId;
     readonly entityManager: EntityManager.EntityManager<never>;
-    readonly processBinary: (binaryMessage: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, ShardingError.ShardingSerializationError | ShardingError.ShardingMessageQueueError, Option.Option<Schema.Schema<unknown, any>>>;
+    readonly processBinary: (binaryMessage: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, ShardingError.ShardingError, Option.Option<Schema.Schema<unknown, any>>>;
 }
 /**
  * @since 1.0.0

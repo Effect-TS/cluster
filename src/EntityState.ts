@@ -34,7 +34,7 @@ export interface EntityState {
     replyChannel: ReplyChannel.ReplyChannel<any>
   ) => Effect.Effect<
     never,
-    ShardingError.ShardingSerializationError | ShardingError.ShardingMessageQueueError,
+    ShardingError.ShardingError,
     Option.Option<Schema.Schema<unknown, any>>
   >
 }

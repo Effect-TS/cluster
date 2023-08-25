@@ -16,6 +16,7 @@ import * as Queue from "@effect/io/Queue"
 import * as Ref from "@effect/io/Ref"
 import * as Schema from "@effect/schema/Schema"
 import * as Message from "@effect/shardcake/Message"
+import type * as MessageQueue from "@effect/shardcake/MessageQueue"
 import * as Pods from "@effect/shardcake/Pods"
 import * as PodsHealth from "@effect/shardcake/PodsHealth"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
@@ -28,7 +29,7 @@ import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
 import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
 import * as Storage from "@effect/shardcake/Storage"
 import * as StreamMessage from "@effect/shardcake/StreamMessage"
-import { assertTrue } from "@effect/shardcake/test/util"
+import { assertFalse, assertTrue } from "@effect/shardcake/test/util"
 import * as Stream from "@effect/stream/Stream"
 
 interface SampleService {
@@ -46,7 +47,11 @@ describe.concurrent("SampleTests", () => {
     Layer.use(Serialization.json),
     Layer.use(ShardManagerClient.local),
     Layer.use(
-      ShardingConfig.withDefaults({ simulateRemotePods: true, entityTerminationTimeout: Duration.millis(3000) })
+      ShardingConfig.withDefaults({
+        simulateRemotePods: true,
+        entityTerminationTimeout: Duration.millis(3000),
+        sendTimeout: Duration.millis(1000)
+      })
     )
   )
 
@@ -459,5 +464,44 @@ describe.concurrent("SampleTests", () => {
       Effect.scoped,
       Effect.runPromise
     )
+  })
+
+  it.only("If MessageQueue.offer fails, send should fail.", () => {
+    const messageQueueConstructor: MessageQueue.MessageQueueConstructor<never, number> = () => {
+      const queue = Effect.runSync(Queue.unbounded<any>())
+      return Effect.succeed({
+        offer: (msg: any) =>
+          PoisonPill.isPoisonPill(msg) ?
+            Queue.offer(queue, msg) :
+            Effect.fail(ShardingError.ShardingMessageQueueError("QUEUE!")),
+        dequeue: queue,
+        shutdown: Queue.shutdown(queue)
+      })
+    }
+
+    return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
+      const received = yield* _(Ref.make(false))
+      const failed = yield* _(Ref.make(false))
+
+      const SampleEntity = RecipientType.makeEntityType("Sample", Schema.number)
+
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity,
+          (_, queue) => pipe(PoisonPill.takeOrInterrupt(queue), Effect.zipRight(Ref.set(received, true))),
+          { messageQueueConstructor }
+        )
+      )
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      yield* _(
+        messenger.sendDiscard("entity1")(1),
+        Effect.catchTag(ShardingError.ShardingMessageQueueErrorTag, () => Ref.set(failed, true))
+      )
+
+      assertTrue(yield* _(Ref.get(failed)))
+      assertFalse(yield* _(Ref.get(received)))
+    }).pipe(withTestEnv, Effect.runPromise)
   })
 })

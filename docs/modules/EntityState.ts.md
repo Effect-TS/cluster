@@ -50,7 +50,7 @@ export interface EntityState {
   readonly processBinary: (
     binaryMessage: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ) => Effect.Effect<never, never, Option.Option<Schema.Schema<unknown, any>>>
+  ) => Effect.Effect<never, ShardingError.ShardingError, Option.Option<Schema.Schema<unknown, any>>>
 }
 ```
 

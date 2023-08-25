@@ -88,7 +88,7 @@ export interface Pods {
    * Check that a pod is responsive
    * @since 1.0.0
    */
-  readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, PodUnavailable, void>
+  readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, ShardingError.ShardingPodUnavailableError, void>
 
   /**
    * Send a message to a pod

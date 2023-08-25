@@ -1,6 +1,6 @@
 ---
 title: ShardingProtocolHttp.ts
-nav_order: 30
+nav_order: 37
 parent: Modules
 ---
 
@@ -94,7 +94,7 @@ export declare const SendResult_: Schema.Schema<
       readonly _tag: 'Left'
       readonly left: {
         readonly entityType: string
-        readonly _tag: 'EntityTypeNotRegistered'
+        readonly _tag: '@effect/shardcake/ShardingEntityTypeNotRegisteredError'
         readonly podAddress: {
           readonly _id: '@effect/shardcake/PodAddress'
           readonly host: string
@@ -112,15 +112,7 @@ export declare const SendResult_: Schema.Schema<
           }
     },
   Either<
-    {
-      readonly entityType: string
-      readonly _tag: 'EntityTypeNotRegistered'
-      readonly podAddress: Data<{
-        readonly _id: '@effect/shardcake/PodAddress'
-        readonly host: string
-        readonly port: number
-      }>
-    },
+    ShardingEntityTypeNotRegisteredError,
     Option<Data<{ readonly _id: '@effect/shardcake/ByteArray'; readonly value: string }>>
   >
 >
@@ -138,7 +130,7 @@ export declare const SendStreamResultItem_: Schema.Schema<
       readonly _tag: 'Left'
       readonly left: {
         readonly entityType: string
-        readonly _tag: 'EntityTypeNotRegistered'
+        readonly _tag: '@effect/shardcake/ShardingEntityTypeNotRegisteredError'
         readonly podAddress: {
           readonly _id: '@effect/shardcake/PodAddress'
           readonly host: string
@@ -148,15 +140,7 @@ export declare const SendStreamResultItem_: Schema.Schema<
     }
   | { readonly _tag: 'Right'; readonly right: { readonly _id: '@effect/shardcake/ByteArray'; readonly value: string } },
   Either<
-    {
-      readonly entityType: string
-      readonly _tag: 'EntityTypeNotRegistered'
-      readonly podAddress: Data<{
-        readonly _id: '@effect/shardcake/PodAddress'
-        readonly host: string
-        readonly port: number
-      }>
-    },
+    ShardingEntityTypeNotRegisteredError,
     Data<{ readonly _id: '@effect/shardcake/ByteArray'; readonly value: string }>
   >
 >

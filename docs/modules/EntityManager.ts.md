@@ -50,7 +50,11 @@ export interface EntityManager<Req> {
     req: Req,
     replyId: Option.Option<ReplyId.ReplyId>,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ) => Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void>
+  ) => Effect.Effect<
+    never,
+    ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingMessageQueueError,
+    void
+  >
   readonly terminateEntitiesOnShards: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly terminateAllEntities: Effect.Effect<never, never, void>
 }

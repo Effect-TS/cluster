@@ -779,8 +779,7 @@ function make(
               )
             )
           ),
-          // TODO: do not catch on send!
-          Effect.catchAllCause((_) => Effect.as(replyChannel.fail(_), Option.none()))
+          Effect.tapErrorCause((_) => Effect.as(replyChannel.fail(_), Option.none()))
         )
 
       yield* $(
