@@ -7,7 +7,7 @@ import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import type * as Message from "@effect/shardcake/Message"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
-import { isPodUnavailableError, type Throwable } from "@effect/shardcake/ShardError"
+import * as ShardingError from "@effect/shardcake/ShardingError"
 import type * as StreamMessage from "@effect/shardcake/StreamMessage"
 import * as Stream from "@effect/stream/Stream"
 
@@ -22,7 +22,7 @@ export interface Messenger<Msg> {
    * Send a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  sendDiscard(entityId: string): (msg: Msg) => Effect.Effect<never, Throwable, void>
+  sendDiscard(entityId: string): (msg: Msg) => Effect.Effect<never, ShardingError.ShardingError, void>
 
   /**
    * Send a message and wait for a response of type `Res`
@@ -32,7 +32,7 @@ export interface Messenger<Msg> {
     entityId: string
   ): <A extends Msg & Message.Message<any>>(
     msg: (replyId: ReplyId.ReplyId) => A
-  ) => Effect.Effect<never, Throwable, Message.Success<A>>
+  ) => Effect.Effect<never, ShardingError.ShardingError, Message.Success<A>>
 
   /**
    * Send a message and receive a stream of responses of type `Res`.
@@ -46,7 +46,11 @@ export interface Messenger<Msg> {
     entityId: string
   ): <A extends Msg & StreamMessage.StreamMessage<any>>(
     fn: (replyId: ReplyId.ReplyId) => A
-  ) => Effect.Effect<never, Throwable, Stream.Stream<never, Throwable, StreamMessage.Success<A>>>
+  ) => Effect.Effect<
+    never,
+    ShardingError.ShardingError,
+    Stream.Stream<never, ShardingError.ShardingError, StreamMessage.Success<A>>
+  >
 }
 
 /**
@@ -67,7 +71,7 @@ export function sendStreamAutoRestart<Msg, Cursor>(
   return <A extends Msg & StreamMessage.StreamMessage<any>>(fn: (cursor: Cursor) => (replyId: ReplyId.ReplyId) => A) =>
     (
       updateCursor: (cursor: Cursor, res: StreamMessage.Success<A>) => Cursor
-    ): Stream.Stream<never, Throwable, StreamMessage.Success<A>> => {
+    ): Stream.Stream<never, ShardingError.ShardingError, StreamMessage.Success<A>> => {
       return pipe(
         Stream.unwrap(
           messenger.sendStream(entityId)(fn(cursor))
@@ -77,17 +81,20 @@ export function sendStreamAutoRestart<Msg, Cursor>(
           Either.match(either, {
             onLeft: (
               err
-            ) => [c, Either.left([c, err]) as Either.Either<[Cursor, Throwable], StreamMessage.Success<A>>],
+            ) => [
+              c,
+              Either.left([c, err]) as Either.Either<[Cursor, ShardingError.ShardingError], StreamMessage.Success<A>>
+            ],
             onRight: (res) =>
               [
                 updateCursor(c, res),
-                Either.right(res) as Either.Either<[Cursor, Throwable], StreamMessage.Success<A>>
+                Either.right(res) as Either.Either<[Cursor, ShardingError.ShardingError], StreamMessage.Success<A>>
               ] as const
           })),
         Stream.flatMap(Either.match({
           onRight: (res) => Stream.succeed(res),
           onLeft: ([cursor, err]) =>
-            isPodUnavailableError(err) ?
+            ShardingError.isShardingPodUnavailableError(err) ?
               pipe(
                 Effect.sleep(Duration.millis(200)),
                 Stream.fromEffect,

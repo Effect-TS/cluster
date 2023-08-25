@@ -10,9 +10,37 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
-import { DecodeError, EncodeError, FetchError } from "@effect/shardcake/ShardError"
+import * as ShardingError from "@effect/shardcake/ShardingError"
 import * as Stream from "@effect/stream/Stream"
 import fetch from "node-fetch"
+
+/** @internal */
+export interface FetchError {
+  _tag: "FetchError"
+  url: string
+  body: string
+  error: string
+}
+
+/** @internal */
+export function FetchError(url: string, body: string, error: string): FetchError {
+  return ({ _tag: "FetchError", url, body, error })
+}
+
+/** @internal */
+export function isFetchError(value: unknown): value is FetchError {
+  return typeof value === "object" && value !== null && "_tag" in value && value._tag === "FetchError"
+}
+
+/** @internal */
+export function NotAMessageWithReplierDefect(message: unknown): unknown {
+  return { _tag: "@effect/shardcake/NotAMessageWithReplierDefect", message }
+}
+
+/** @internal */
+export function MessageReturnedNotingDefect(message: unknown): unknown {
+  return { _tag: "@effect/shardcake/MessageReturnedNotingDefect", message }
+}
 
 /** @internal */
 export function minByOption<A>(f: (value: A) => number) {
@@ -52,7 +80,7 @@ export function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
   return pipe(
     value,
     Schema.encode(schema),
-    Effect.mapError((e) => EncodeError(TreeFormatter.formatErrors(e.errors))),
+    Effect.mapError((e) => ShardingError.ShardingEncodeError(TreeFormatter.formatErrors(e.errors))),
     Effect.map((_) => JSON.stringify(_))
   )
 }
@@ -62,7 +90,7 @@ export function jsonParse<I, A>(value: string, schema: Schema.Schema<I, A>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
     Effect.flatMap(Schema.decode(schema)),
-    Effect.mapError((e) => DecodeError(TreeFormatter.formatErrors(e.errors)))
+    Effect.mapError((e) => ShardingError.ShardingDecodeError(TreeFormatter.formatErrors(e.errors)))
   )
 }
 
@@ -108,12 +136,12 @@ export function sendStream<I, A, I2, E, R>(
   send: Schema.Schema<I, A>,
   reply: Schema.Schema<I2, Either.Either<E, R>>
 ) {
-  return (url: string, data: A): Stream.Stream<never, E | DecodeError | EncodeError | FetchError, R> =>
+  return (url: string, data: A) =>
     pipe(
       sendInternal(send)(url, data),
       Effect.map((response) =>
         pipe(
-          Stream.fromAsyncIterable(response.body, (e) => FetchError(url, "", e)),
+          Stream.fromAsyncIterable(response.body, (e) => FetchError(url, "", String(e))),
           Stream.map((value) => typeof value === "string" ? value : value.toString()),
           Stream.splitLines,
           Stream.filter((line) => line.length > 0),

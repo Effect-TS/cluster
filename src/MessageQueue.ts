@@ -4,6 +4,7 @@
 import * as Effect from "@effect/io/Effect"
 import * as Queue from "@effect/io/Queue"
 import type * as PoisonPill from "@effect/shardcake/PoisonPill"
+import type * as ShardingError from "@effect/shardcake/ShardingError"
 
 /**
  * @since 1.0.0
@@ -23,7 +24,9 @@ export type TypeId = typeof TypeId
  */
 export interface MessageQueue<Msg> {
   readonly dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>
-  readonly offer: (msg: Msg | PoisonPill.PoisonPill) => Effect.Effect<never, never, void>
+  readonly offer: (
+    msg: Msg | PoisonPill.PoisonPill
+  ) => Effect.Effect<never, ShardingError.ShardingMessageQueueOfferError, void>
   readonly shutdown: Effect.Effect<never, never, void>
 }
 

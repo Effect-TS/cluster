@@ -6,7 +6,7 @@ import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import type * as Schema from "@effect/schema/Schema";
 import * as ByteArray from "@effect/shardcake/ByteArray";
-import * as ShardError from "@effect/shardcake/ShardError";
+import type * as ShardingError from "@effect/shardcake/ShardingError";
 /**
  * @since 1.0.0
  * @category symbols
@@ -31,12 +31,12 @@ export interface Serialization {
      * Transforms the given message into binary
      * @since 1.0.0
      */
-    readonly encode: <I, A>(message: A, schema: Schema.Schema<I, A>) => Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>;
+    readonly encode: <I, A>(message: A, schema: Schema.Schema<I, A>) => Effect.Effect<never, ShardingError.ShardingEncodeError, ByteArray.ByteArray>;
     /**
      * Transform binary back into the given type
      * @since 1.0.0
      */
-    readonly decode: <I, A>(bytes: ByteArray.ByteArray, schema: Schema.Schema<I, A>) => Effect.Effect<never, ShardError.DecodeError, A>;
+    readonly decode: <I, A>(bytes: ByteArray.ByteArray, schema: Schema.Schema<I, A>) => Effect.Effect<never, ShardingError.ShardingDecodeError, A>;
 }
 /**
  * @since 1.0.0

@@ -8,7 +8,7 @@ import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Exit from "@effect/io/Exit"
 import * as Queue from "@effect/io/Queue"
-import type { Throwable } from "@effect/shardcake/ShardError"
+import type * as ShardingError from "@effect/shardcake/ShardingError"
 import * as Stream from "@effect/stream/Stream"
 import * as Take from "@effect/stream/Take"
 
@@ -44,7 +44,7 @@ export interface ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  readonly fail: (cause: Cause.Cause<Throwable>) => Effect.Effect<never, never, void>
+  readonly fail: (cause: Cause.Cause<ShardingError.ShardingError>) => Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
@@ -52,7 +52,9 @@ export interface ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  readonly replyStream: (stream: Stream.Stream<never, Throwable, A>) => Effect.Effect<never, never, void>
+  readonly replyStream: (
+    stream: Stream.Stream<never, ShardingError.ShardingError, A>
+  ) => Effect.Effect<never, never, void>
 }
 
 /** @internal */
@@ -64,7 +66,7 @@ export interface QueueReplyChannel<A> extends ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  readonly output: Stream.Stream<never, Throwable, A>
+  readonly output: Stream.Stream<never, ShardingError.ShardingError, A>
 }
 
 /** @internal */
@@ -76,7 +78,7 @@ export interface DeferredReplyChannel<A> extends ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  readonly output: Effect.Effect<never, Throwable, Option.Option<A>>
+  readonly output: Effect.Effect<never, ShardingError.ShardingError, Option.Option<A>>
 }
 
 /**
@@ -115,9 +117,9 @@ export function isReplyChannelFromDeferred(value: unknown): value is DeferredRep
  *
  * @internal
  */
-export function fromQueue<A>(queue: Queue.Queue<Take.Take<Throwable, A>>): QueueReplyChannel<A> {
+export function fromQueue<A>(queue: Queue.Queue<Take.Take<ShardingError.ShardingError, A>>): QueueReplyChannel<A> {
   const end = pipe(Queue.offer(queue, Take.end), Effect.exit, Effect.asUnit)
-  const fail = (cause: Cause.Cause<Throwable>) =>
+  const fail = (cause: Cause.Cause<ShardingError.ShardingError>) =>
     pipe(Queue.offer(queue, Take.failCause(cause)), Effect.exit, Effect.asUnit)
   const await_ = Queue.awaitShutdown(queue)
   return ({
@@ -150,9 +152,12 @@ export function fromQueue<A>(queue: Queue.Queue<Take.Take<Throwable, A>>): Queue
  *
  * @internal
  */
-export function fromDeferred<A>(deferred: Deferred.Deferred<Throwable, Option.Option<A>>): DeferredReplyChannel<A> {
+export function fromDeferred<A>(
+  deferred: Deferred.Deferred<ShardingError.ShardingError, Option.Option<A>>
+): DeferredReplyChannel<A> {
   const end = pipe(Deferred.succeed(deferred, Option.none()), Effect.asUnit)
-  const fail = (cause: Cause.Cause<Throwable>) => pipe(Deferred.failCause(deferred, cause), Effect.asUnit)
+  const fail = (cause: Cause.Cause<ShardingError.ShardingError>) =>
+    pipe(Deferred.failCause(deferred, cause), Effect.asUnit)
   return ({
     _id: TypeId,
     _tag: "FromDeferred",
@@ -178,13 +183,13 @@ export function fromDeferred<A>(deferred: Deferred.Deferred<Throwable, Option.Op
 /** @internal */
 export const single = <A>() =>
   pipe(
-    Deferred.make<Throwable, Option.Option<A>>(),
+    Deferred.make<ShardingError.ShardingError, Option.Option<A>>(),
     Effect.map(fromDeferred)
   )
 
 /** @internal */
 export const stream = <A>() =>
   pipe(
-    Queue.unbounded<Take.Take<Throwable, A>>(),
+    Queue.unbounded<Take.Take<ShardingError.ShardingError, A>>(),
     Effect.map(fromQueue)
   )

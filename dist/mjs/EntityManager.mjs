@@ -10,7 +10,7 @@ import * as Fiber from "@effect/io/Fiber";
 import * as RefSynchronized from "@effect/io/Ref/Synchronized";
 import * as MessageQueue from "@effect/shardcake/MessageQueue";
 import * as PoisonPill from "@effect/shardcake/PoisonPill";
-import * as ShardError from "@effect/shardcake/ShardError";
+import * as ShardingError from "@effect/shardcake/ShardingError";
 /**
  * @since 1.0.0
  * @category constructors
@@ -37,7 +37,7 @@ export function make(recipientType, behaviour_, sharding, config, options = {}) 
           // termination has already begun, keep everything as-is
           onNone: () => Effect.succeed([Option.some(runningFiber), map]),
           // begin to terminate the queue
-          onSome: queue => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(queue.offer(PoisonPill.make))
+          onSome: queue => Effect.as([Option.some(runningFiber), HashMap.set(map, entityId, [Option.none(), expirationFiber, runningFiber])])(Effect.catchAllCause(Effect.logError)(queue.offer(PoisonPill.make)))
         })(maybeQueue)
       })(HashMap.get(map, entityId)));
     }
@@ -47,7 +47,7 @@ export function make(recipientType, behaviour_, sharding, config, options = {}) 
           onNone: () => Effect.flatMap(sharding.isShuttingDown, isGoingDown => {
             if (isGoingDown) {
               // don't start any fiber while sharding is shutting down
-              return Effect.fail(ShardError.EntityNotManagedByThisPod(entityId));
+              return Effect.fail(ShardingError.ShardingEntityNotManagedByThisPodError(entityId));
             } else {
               // queue doesn't exist, create a new one
               return Effect.gen(function* (_) {
@@ -77,7 +77,7 @@ export function make(recipientType, behaviour_, sharding, config, options = {}) 
       })(_.test))(Effect.bind("test", () => RefSynchronized.modifyEffect(entities, map => decide(map, entityId)))(Effect.tap(() => {
         // first, verify that this entity should be handled by this pod
         if (recipientType._tag === "EntityType") {
-          return Effect.asUnit(Effect.unlessEffect(Effect.fail(ShardError.EntityNotManagedByThisPod(entityId)), sharding.isEntityOnLocalShards(recipientType, entityId)));
+          return Effect.asUnit(Effect.unlessEffect(Effect.fail(ShardingError.ShardingEntityNotManagedByThisPodError(entityId)), sharding.isEntityOnLocalShards(recipientType, entityId)));
         } else if (recipientType._tag === "TopicType") {
           return Effect.unit;
         }

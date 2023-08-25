@@ -34,29 +34,15 @@ import type { Replier } from "@effect/shardcake/Replier"
 import * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import * as ReplyId from "@effect/shardcake/ReplyId"
 import * as Serialization from "@effect/shardcake/Serialization"
-import type {
-  DecodeError,
-  EncodeError,
-  EntityNotManagedByThisPod,
-  PodUnavailable,
-  Throwable
-} from "@effect/shardcake/ShardError"
-import {
-  EntityTypeNotRegistered,
-  isEntityNotManagedByThisPodError,
-  isPodUnavailableError,
-  MessageReturnedNoting,
-  NotAMessageWithReplier,
-  SendTimeoutException
-} from "@effect/shardcake/ShardError"
 import * as ShardId from "@effect/shardcake/ShardId"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
+import * as ShardingError from "@effect/shardcake/ShardingError"
 import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
 import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
 import * as Storage from "@effect/shardcake/Storage"
 import * as StreamMessage from "@effect/shardcake/StreamMessage"
 import type * as StreamReplier from "@effect/shardcake/StreamReplier"
-import { showHashSet } from "@effect/shardcake/utils"
+import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "@effect/shardcake/utils"
 import * as Stream from "@effect/stream/Stream"
 import * as Sharding from "./Sharding"
 
@@ -300,7 +286,7 @@ function make(
     msg: BinaryMessage.BinaryMessage
   ): Effect.Effect<
     never,
-    Throwable,
+    ShardingError.ShardingError,
     Option.Option<ByteArray.ByteArray>
   > {
     return Effect.gen(function*(_) {
@@ -309,7 +295,7 @@ function make(
       const res = yield* _(replyChannel.output)
       if (Option.isSome(res)) {
         if (Option.isNone(schema)) {
-          return yield* _(Effect.die(NotAMessageWithReplier(msg)))
+          return yield* _(Effect.die(NotAMessageWithReplierDefect(msg)))
         }
         return Option.some(yield* _(serialization.encode(res.value, schema.value)))
       }
@@ -319,7 +305,11 @@ function make(
 
   function sendToLocalEntityStreamingReply(
     msg: BinaryMessage.BinaryMessage
-  ): Stream.Stream<never, Throwable, ByteArray.ByteArray> {
+  ): Stream.Stream<
+    never,
+    ShardingError.ShardingError,
+    ByteArray.ByteArray
+  > {
     return pipe(
       Effect.gen(function*(_) {
         const replyChannel = yield* _(ReplyChannel.stream<any>())
@@ -328,7 +318,7 @@ function make(
           replyChannel.output,
           Stream.mapEffect((value) => {
             if (Option.isNone(schema)) {
-              return Effect.die(NotAMessageWithReplier(msg))
+              return Effect.die(NotAMessageWithReplierDefect(msg))
             }
             return serialization.encode(value, schema.value)
           })
@@ -342,14 +332,20 @@ function make(
   function sendToLocalEntity(
     msg: BinaryMessage.BinaryMessage,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ): Effect.Effect<never, EntityTypeNotRegistered, Option.Option<Schema.Schema<unknown, any>>> {
+  ): Effect.Effect<
+    never,
+    ShardingError.ShardingError,
+    Option.Option<Schema.Schema<unknown, any>>
+  > {
     return pipe(
       Ref.get(entityStates),
       Effect.map(HashMap.get(msg.entityType)),
-      Effect.flatMap(Option.match({
-        onNone: () => Effect.fail(EntityTypeNotRegistered(msg.entityType, address)),
-        onSome: (entityState) => entityState.processBinary(msg, replyChannel)
-      }))
+      Effect.flatMap((_) =>
+        Effect.unified(Option.match(_, {
+          onNone: () => Effect.fail(ShardingError.ShardingEntityTypeNotRegisteredError(msg.entityType, address)),
+          onSome: (entityState) => entityState.processBinary(msg, replyChannel)
+        }))
+      )
     )
   }
 
@@ -413,7 +409,7 @@ function make(
     replyChannel: ReplyChannel.ReplyChannel<Res>
   ): Effect.Effect<
     never,
-    EntityTypeNotRegistered | EncodeError | DecodeError | EntityNotManagedByThisPod | PodUnavailable,
+    ShardingError.ShardingError,
     void
   > {
     if (config.simulateRemotePods && equals(pod, address)) {
@@ -435,10 +431,8 @@ function make(
               Option.match(
                 {
                   onNone: () =>
-                    Effect.fail<
-                      EntityTypeNotRegistered | EncodeError | DecodeError | EntityNotManagedByThisPod | PodUnavailable
-                    >(
-                      EntityTypeNotRegistered(recipientTypeName, pod)
+                    Effect.fail(
+                      ShardingError.ShardingEntityTypeNotRegisteredError(recipientTypeName, pod)
                     ),
                   onSome: (state) =>
                     pipe(
@@ -450,7 +444,8 @@ function make(
                       )
                     )
                 }
-              )
+              ),
+              Effect.unified
             )
         )
       )
@@ -477,7 +472,7 @@ function make(
                           Effect.flatMap(replyChannel.replySingle)
                         )
                       }
-                      return Effect.die(NotAMessageWithReplier(msg))
+                      return Effect.die(NotAMessageWithReplierDefect(msg))
                     }
                   }
                 )
@@ -494,7 +489,7 @@ function make(
                   if (StreamMessage.isStreamMessage(msg)) {
                     return serialization.decode(bytes, msg.replier.schema)
                   }
-                  return Effect.die(NotAMessageWithReplier(msg))
+                  return Effect.die(NotAMessageWithReplierDefect(msg))
                 })
               ))
             )
@@ -529,10 +524,10 @@ function make(
               sendMessage<Message.Success<A>>(entityId, body, Option.some(replyId)),
               Effect.flatMap((_) => {
                 if (Option.isSome(_)) return Effect.succeed(_.value)
-                return Effect.fail(MessageReturnedNoting(entityId, body))
+                return Effect.die(MessageReturnedNotingDefect(entityId))
               }),
               Effect.timeoutFail({
-                onTimeout: () => SendTimeoutException(entityType, entityId, body),
+                onTimeout: ShardingError.ShardingSendTimeoutError,
                 duration: timeout
               }),
               Effect.interruptible
@@ -558,7 +553,7 @@ function make(
       entityId: string,
       msg: Msg,
       replyId: Option.Option<ReplyId.ReplyId>
-    ): Effect.Effect<never, Throwable, Option.Option<Res>> {
+    ): Effect.Effect<never, ShardingError.ShardingError, Option.Option<Res>> {
       return Effect.gen(function*(_) {
         const replyChannel = yield* _(ReplyChannel.single<Res>())
         yield* _(sendMessageGeneric(entityId, msg, replyId, replyChannel))
@@ -570,7 +565,7 @@ function make(
       entityId: string,
       msg: Msg,
       replyId: Option.Option<ReplyId.ReplyId>
-    ): Effect.Effect<never, Throwable, Stream.Stream<never, Throwable, Res>> {
+    ): Effect.Effect<never, ShardingError.ShardingError, Stream.Stream<never, ShardingError.ShardingError, Res>> {
       return Effect.gen(function*(_) {
         const replyChannel = yield* _(ReplyChannel.stream<Res>())
         yield* _(sendMessageGeneric(entityId, msg, replyId, replyChannel))
@@ -586,7 +581,7 @@ function make(
     ) {
       const shardId = getShardId(entityType, entityId)
 
-      const trySend: Effect.Effect<never, Throwable, void> = pipe(
+      const trySend: Effect.Effect<never, ShardingError.ShardingError, void> = pipe(
         Effect.Do,
         Effect.bind("shards", () => Ref.get(shardAssignments)),
         Effect.let("pod", ({ shards }) => HashMap.get(shards, shardId)),
@@ -603,7 +598,10 @@ function make(
                 replyChannel
               ),
               Effect.catchSome((_) => {
-                if (isEntityNotManagedByThisPodError(_) || isPodUnavailableError(_)) {
+                if (
+                  ShardingError.isShardingEntityNotManagedByThisPodError(_) ||
+                  ShardingError.isShardingPodUnavailableError(_)
+                ) {
                   return pipe(
                     Effect.sleep(Duration.millis(200)),
                     Effect.zipRight(trySend),
@@ -640,47 +638,53 @@ function make(
       topic: string,
       body: Msg,
       replyId: Option.Option<ReplyId.ReplyId>
-    ): Effect.Effect<never, Throwable, HashMap.HashMap<PodAddress.PodAddress, Either.Either<Throwable, Res>>> {
+    ): Effect.Effect<
+      never,
+      ShardingError.ShardingError,
+      HashMap.HashMap<PodAddress.PodAddress, Either.Either<ShardingError.ShardingError, Res>>
+    > {
       return pipe(
         Effect.Do,
         Effect.bind("pods", () => getPods),
         Effect.bind("response", ({ pods }) =>
           Effect.forEach(pods, (pod) => {
-            const trySend: Effect.Effect<never, Throwable, Option.Option<Res>> = Effect.gen(function*(_) {
-              const replyChannel = yield* _(ReplyChannel.single<Res>())
-              yield* _(pipe(
-                sendToPod<Msg, Res>(
-                  topicType.name,
-                  topic,
-                  body,
-                  topicType.schema,
-                  pod,
-                  replyId,
-                  replyChannel
-                ),
-                Effect.catchSome((_) => {
-                  if (isPodUnavailableError(_)) {
-                    return pipe(
-                      Effect.sleep(Duration.millis(200)),
-                      Effect.zipRight(trySend),
-                      Option.some
-                    )
-                  }
-                  return Option.none()
-                }),
-                Effect.onError(replyChannel.fail)
-              ))
-              return yield* _(replyChannel.output)
-            })
+            const trySend: Effect.Effect<never, ShardingError.ShardingError, Option.Option<Res>> = Effect.gen(
+              function*(_) {
+                const replyChannel = yield* _(ReplyChannel.single<Res>())
+                yield* _(pipe(
+                  sendToPod<Msg, Res>(
+                    topicType.name,
+                    topic,
+                    body,
+                    topicType.schema,
+                    pod,
+                    replyId,
+                    replyChannel
+                  ),
+                  Effect.catchSome((_) => {
+                    if (ShardingError.isShardingPodUnavailableError(_)) {
+                      return pipe(
+                        Effect.sleep(Duration.millis(200)),
+                        Effect.zipRight(trySend),
+                        Option.some
+                      )
+                    }
+                    return Option.none()
+                  }),
+                  Effect.onError(replyChannel.fail)
+                ))
+                return yield* _(replyChannel.output)
+              }
+            )
 
             return pipe(
               trySend,
               Effect.flatMap((_) => {
                 if (Option.isSome(_)) return Effect.succeed(_.value)
-                return Effect.fail(MessageReturnedNoting(topic, body))
+                return Effect.die(MessageReturnedNotingDefect(topic))
               }),
               Effect.timeoutFail({
-                onTimeout: () => SendTimeoutException(topicType, topic, body),
+                onTimeout: ShardingError.ShardingSendTimeoutError,
                 duration: timeout
               }),
               Effect.either,
@@ -775,6 +779,7 @@ function make(
               )
             )
           ),
+          // TODO: do not catch on send!
           Effect.catchAllCause((_) => Effect.as(replyChannel.fail(_), Option.none()))
         )
 

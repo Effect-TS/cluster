@@ -25,8 +25,8 @@ var PodAddress = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@ef
 var Pods = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Pods"));
 var PodsHealth = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/PodsHealth"));
 var PodWithMetadata = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/PodWithMetadata"));
-var ShardError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardError"));
 var ShardId = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardId"));
+var _ShardingError = /*#__PURE__*/require("@effect/shardcake/ShardingError");
 var ShardingEvent = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingEvent"));
 var ShardManagerState = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardManagerState"));
 var Storage = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Storage"));
@@ -76,7 +76,7 @@ function make(layerScope, stateRef, rebalanceSemaphore, eventsHub, healthApi, po
   function updateShardsState(shards, pod) {
     return RefSynchronized.updateEffect(stateRef, state => {
       if (Option.isSome(pod) && !HashMap.has(state.pods, pod.value)) {
-        return Effect.fail(ShardError.PodNoLongerRegistered(pod.value));
+        return Effect.fail((0, _ShardingError.ShardingPodNoLongerRegisteredError)(pod.value));
       }
       return Effect.succeed({
         ...state,

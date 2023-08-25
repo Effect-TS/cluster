@@ -1,6 +1,6 @@
 import type * as Cause from "@effect/io/Cause";
 import * as Effect from "@effect/io/Effect";
-import type { Throwable } from "@effect/shardcake/ShardError";
+import type * as ShardingError from "@effect/shardcake/ShardingError";
 import * as Stream from "@effect/stream/Stream";
 /**
  * @since 1.0.0
@@ -32,7 +32,7 @@ export interface ReplyChannel<A> {
     /**
      * @since 1.0.0
      */
-    readonly fail: (cause: Cause.Cause<Throwable>) => Effect.Effect<never, never, void>;
+    readonly fail: (cause: Cause.Cause<ShardingError.ShardingError>) => Effect.Effect<never, never, void>;
     /**
      * @since 1.0.0
      */
@@ -40,7 +40,7 @@ export interface ReplyChannel<A> {
     /**
      * @since 1.0.0
      */
-    readonly replyStream: (stream: Stream.Stream<never, Throwable, A>) => Effect.Effect<never, never, void>;
+    readonly replyStream: (stream: Stream.Stream<never, ShardingError.ShardingError, A>) => Effect.Effect<never, never, void>;
 }
 /**
  * @since 1.0.0

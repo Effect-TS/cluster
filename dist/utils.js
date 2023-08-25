@@ -3,7 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.FetchError = FetchError;
+exports.MessageReturnedNotingDefect = MessageReturnedNotingDefect;
+exports.NotAMessageWithReplierDefect = NotAMessageWithReplierDefect;
 exports.groupBy = groupBy;
+exports.isFetchError = isFetchError;
 exports.jsonParse = jsonParse;
 exports.jsonStringify = jsonStringify;
 exports.minByOption = minByOption;
@@ -19,12 +23,39 @@ var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Schema = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/Schema"));
 var TreeFormatter = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/TreeFormatter"));
-var _ShardError = /*#__PURE__*/require("@effect/shardcake/ShardError");
+var ShardingError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingError"));
 var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/stream/Stream"));
 var _nodeFetch = /*#__PURE__*/_interopRequireDefault( /*#__PURE__*/require("node-fetch"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+/** @internal */
+function FetchError(url, body, error) {
+  return {
+    _tag: "FetchError",
+    url,
+    body,
+    error
+  };
+}
+/** @internal */
+function isFetchError(value) {
+  return typeof value === "object" && value !== null && "_tag" in value && value._tag === "FetchError";
+}
+/** @internal */
+function NotAMessageWithReplierDefect(message) {
+  return {
+    _tag: "@effect/shardcake/NotAMessageWithReplierDefect",
+    message
+  };
+}
+/** @internal */
+function MessageReturnedNotingDefect(message) {
+  return {
+    _tag: "@effect/shardcake/MessageReturnedNotingDefect",
+    message
+  };
+}
 /** @internal */
 function minByOption(f) {
   return fa => {
@@ -58,11 +89,11 @@ function groupBy(f) {
 }
 /** @internal */
 function jsonStringify(value, schema) {
-  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => (0, _ShardError.EncodeError)(TreeFormatter.formatErrors(e.errors)))(Schema.encode(schema)(value)));
+  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => ShardingError.ShardingEncodeError(TreeFormatter.formatErrors(e.errors)))(Schema.encode(schema)(value)));
 }
 /** @internal */
 function jsonParse(value, schema) {
-  return Effect.mapError(e => (0, _ShardError.DecodeError)(TreeFormatter.formatErrors(e.errors)))(Effect.flatMap(Schema.decode(schema))(Effect.sync(() => JSON.parse(value))));
+  return Effect.mapError(e => ShardingError.ShardingDecodeError(TreeFormatter.formatErrors(e.errors)))(Effect.flatMap(Schema.decode(schema))(Effect.sync(() => JSON.parse(value))));
 }
 /** @internal */
 function sendInternal(send) {
@@ -76,7 +107,7 @@ function sendInternal(send) {
         body
       });
     },
-    catch: error => (0, _ShardError.FetchError)(url, body, String(error))
+    catch: error => FetchError(url, body, String(error))
   }))
   // Effect.tap((response) => Effect.logDebug(url + " status: " + response.status))
   (jsonStringify(data, send));
@@ -87,7 +118,7 @@ function send(send, reply) {
 }
 /** @internal */
 function sendStream(send, reply) {
-  return (url, data) => Stream.flatten()(Stream.fromEffect(Effect.map(response => Stream.mapEffect(_ => _)(Stream.mapEffect(data => jsonParse(data, reply))(Stream.map(line => line.startsWith("data:") ? line.substring("data:".length).trim() : line)(Stream.filter(line => line.length > 0)(Stream.splitLines(Stream.map(value => typeof value === "string" ? value : value.toString())(Stream.fromAsyncIterable(response.body, e => (0, _ShardError.FetchError)(url, "", e)))))))))(sendInternal(send)(url, data))));
+  return (url, data) => Stream.flatten()(Stream.fromEffect(Effect.map(response => Stream.mapEffect(_ => _)(Stream.mapEffect(data => jsonParse(data, reply))(Stream.map(line => line.startsWith("data:") ? line.substring("data:".length).trim() : line)(Stream.filter(line => line.length > 0)(Stream.splitLines(Stream.map(value => typeof value === "string" ? value : value.toString())(Stream.fromAsyncIterable(response.body, e => FetchError(url, "", String(e))))))))))(sendInternal(send)(url, data))));
 }
 /** @internal */
 function showHashSet(fn) {

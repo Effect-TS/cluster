@@ -4,8 +4,8 @@
 import * as Schema from "@effect/schema/Schema"
 import * as BinaryMessage from "@effect/shardcake/BinaryMessage"
 import * as ByteArray from "@effect/shardcake/ByteArray"
-import * as ShardError from "@effect/shardcake/ShardError"
 import * as ShardId from "@effect/shardcake/ShardId"
+import { ShardingEntityTypeNotRegisteredErrorSchema } from "@effect/shardcake/ShardingError"
 
 /**
  * @since 1.0.0
@@ -57,7 +57,7 @@ export const Send_ = Schema.struct({
  * @category schema
  */
 export const SendResult_ = Schema.either(
-  ShardError.EntityTypeNotRegistered_,
+  ShardingEntityTypeNotRegisteredErrorSchema,
   Schema.option(ByteArray.schema)
 )
 
@@ -75,7 +75,7 @@ export const SendStream_ = Schema.struct({
  * @category schema
  */
 export const SendStreamResultItem_ = Schema.either(
-  ShardError.EntityTypeNotRegistered_,
+  ShardingEntityTypeNotRegisteredErrorSchema,
   ByteArray.schema
 )
 

@@ -7,7 +7,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type * as Schema from "@effect/schema/Schema"
 import * as ByteArray from "@effect/shardcake/ByteArray"
-import * as ShardError from "@effect/shardcake/ShardError"
+import type * as ShardingError from "@effect/shardcake/ShardingError"
 import { jsonParse, jsonStringify } from "./utils"
 
 /**
@@ -42,7 +42,7 @@ export interface Serialization {
   readonly encode: <I, A>(
     message: A,
     schema: Schema.Schema<I, A>
-  ) => Effect.Effect<never, ShardError.EncodeError, ByteArray.ByteArray>
+  ) => Effect.Effect<never, ShardingError.ShardingEncodeError, ByteArray.ByteArray>
 
   /**
    * Transform binary back into the given type
@@ -51,7 +51,7 @@ export interface Serialization {
   readonly decode: <I, A>(
     bytes: ByteArray.ByteArray,
     schema: Schema.Schema<I, A>
-  ) => Effect.Effect<never, ShardError.DecodeError, A>
+  ) => Effect.Effect<never, ShardingError.ShardingDecodeError, A>
 }
 
 /**
@@ -71,8 +71,7 @@ export const json = Layer.succeed(Serialization, {
   encode: (message, schema) =>
     pipe(
       jsonStringify(message, schema),
-      Effect.mapError(ShardError.EncodeError),
       Effect.map(ByteArray.make)
     ),
-  decode: (body, schema) => pipe(jsonParse(body.value, schema), Effect.mapError(ShardError.DecodeError))
+  decode: (body, schema) => jsonParse(body.value, schema)
 })

@@ -6,10 +6,10 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type * as PodAddress from "@effect/shardcake/PodAddress"
 import * as Pods from "@effect/shardcake/Pods"
-import { isFetchError, PodUnavailable } from "@effect/shardcake/ShardError"
+import { ShardingPodUnavailableError } from "@effect/shardcake/ShardingError"
 import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp"
 import * as Stream from "@effect/stream/Stream"
-import { send, sendStream } from "./utils"
+import { isFetchError, send, sendStream } from "./utils"
 
 /** @internal */
 function asHttpUrl(pod: PodAddress.PodAddress): string {
@@ -45,7 +45,7 @@ export const httpPods = Layer.succeed(Pods.Pods, {
       }),
       Effect.catchAllDefect((e) => {
         if (isFetchError(e)) {
-          return Effect.fail(PodUnavailable(pod))
+          return Effect.fail(ShardingPodUnavailableError(pod))
         }
         return Effect.die(e)
       })

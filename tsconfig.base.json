@@ -53,10 +53,7 @@
     },
     "plugins": [
       {
-        "name": "@effect/language-service",
-        "diagnostics": {
-          "1002": "none"
-        }
+        "name": "@effect/language-service"
       }
     ]
   },

@@ -4,6 +4,7 @@ import type * as Schema from "@effect/schema/Schema";
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage";
 import type * as EntityManager from "@effect/shardcake/EntityManager";
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel";
+import type * as ShardingError from "@effect/shardcake/ShardingError";
 /**
  * @since 1.0.0
  * @category symbols
@@ -21,7 +22,7 @@ export type TypeId = typeof TypeId;
 export interface EntityState {
     readonly _id: TypeId;
     readonly entityManager: EntityManager.EntityManager<never>;
-    readonly processBinary: (binaryMessage: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, never, Option.Option<Schema.Schema<unknown, any>>>;
+    readonly processBinary: (binaryMessage: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, ShardingError.ShardingDecodeError | ShardingError.ShardingMessageQueueOfferError, Option.Option<Schema.Schema<unknown, any>>>;
 }
 /**
  * @since 1.0.0

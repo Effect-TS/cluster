@@ -17,8 +17,8 @@ import type * as RecipentType from "@effect/shardcake/RecipientType";
 import type { Replier } from "@effect/shardcake/Replier";
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel";
 import type * as ReplyId from "@effect/shardcake/ReplyId";
-import type { Throwable } from "@effect/shardcake/ShardError";
 import type * as ShardId from "@effect/shardcake/ShardId";
+import type * as ShardingError from "@effect/shardcake/ShardingError";
 import type * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent";
 import type * as StreamReplier from "@effect/shardcake/StreamReplier";
 import type * as Stream from "@effect/stream/Stream";
@@ -45,8 +45,8 @@ export interface Sharding {
     readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>;
     readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
     readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
-    readonly sendToLocalEntityStreamingReply: (msg: BinaryMessage.BinaryMessage) => Stream.Stream<never, Throwable, ByteArray.ByteArray>;
-    readonly sendToLocalEntitySingleReply: (msg: BinaryMessage.BinaryMessage) => Effect.Effect<never, Throwable, Option.Option<ByteArray.ByteArray>>;
+    readonly sendToLocalEntityStreamingReply: (msg: BinaryMessage.BinaryMessage) => Stream.Stream<never, ShardingError.ShardingError, ByteArray.ByteArray>;
+    readonly sendToLocalEntitySingleReply: (msg: BinaryMessage.BinaryMessage) => Effect.Effect<never, ShardingError.ShardingError, Option.Option<ByteArray.ByteArray>>;
     readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>;
 }
 /**
@@ -71,7 +71,7 @@ export declare const unregister: Effect.Effect<Sharding, never, void>;
  * @since 1.0.0
  * @category utils
  */
-export declare const registerScoped: Effect.Effect<Sharding | Scope.Scope, never, void>;
+export declare const registerScoped: Effect.Effect<Scope.Scope | Sharding, never, void>;
 /**
  * Start a computation that is guaranteed to run only on a single pod.
  * Each pod should call `registerSingleton` but only a single pod will actually run it at any given time.

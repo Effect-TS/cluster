@@ -4,9 +4,36 @@ import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Schema from "@effect/schema/Schema";
 import * as TreeFormatter from "@effect/schema/TreeFormatter";
-import { DecodeError, EncodeError, FetchError } from "@effect/shardcake/ShardError";
+import * as ShardingError from "@effect/shardcake/ShardingError";
 import * as Stream from "@effect/stream/Stream";
 import fetch from "node-fetch";
+/** @internal */
+export function FetchError(url, body, error) {
+  return {
+    _tag: "FetchError",
+    url,
+    body,
+    error
+  };
+}
+/** @internal */
+export function isFetchError(value) {
+  return typeof value === "object" && value !== null && "_tag" in value && value._tag === "FetchError";
+}
+/** @internal */
+export function NotAMessageWithReplierDefect(message) {
+  return {
+    _tag: "@effect/shardcake/NotAMessageWithReplierDefect",
+    message
+  };
+}
+/** @internal */
+export function MessageReturnedNotingDefect(message) {
+  return {
+    _tag: "@effect/shardcake/MessageReturnedNotingDefect",
+    message
+  };
+}
 /** @internal */
 export function minByOption(f) {
   return fa => {
@@ -40,11 +67,11 @@ export function groupBy(f) {
 }
 /** @internal */
 export function jsonStringify(value, schema) {
-  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => EncodeError(TreeFormatter.formatErrors(e.errors)))(Schema.encode(schema)(value)));
+  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => ShardingError.ShardingEncodeError(TreeFormatter.formatErrors(e.errors)))(Schema.encode(schema)(value)));
 }
 /** @internal */
 export function jsonParse(value, schema) {
-  return Effect.mapError(e => DecodeError(TreeFormatter.formatErrors(e.errors)))(Effect.flatMap(Schema.decode(schema))(Effect.sync(() => JSON.parse(value))));
+  return Effect.mapError(e => ShardingError.ShardingDecodeError(TreeFormatter.formatErrors(e.errors)))(Effect.flatMap(Schema.decode(schema))(Effect.sync(() => JSON.parse(value))));
 }
 /** @internal */
 export function sendInternal(send) {
@@ -69,7 +96,7 @@ export function send(send, reply) {
 }
 /** @internal */
 export function sendStream(send, reply) {
-  return (url, data) => Stream.flatten()(Stream.fromEffect(Effect.map(response => Stream.mapEffect(_ => _)(Stream.mapEffect(data => jsonParse(data, reply))(Stream.map(line => line.startsWith("data:") ? line.substring("data:".length).trim() : line)(Stream.filter(line => line.length > 0)(Stream.splitLines(Stream.map(value => typeof value === "string" ? value : value.toString())(Stream.fromAsyncIterable(response.body, e => FetchError(url, "", e)))))))))(sendInternal(send)(url, data))));
+  return (url, data) => Stream.flatten()(Stream.fromEffect(Effect.map(response => Stream.mapEffect(_ => _)(Stream.mapEffect(data => jsonParse(data, reply))(Stream.map(line => line.startsWith("data:") ? line.substring("data:".length).trim() : line)(Stream.filter(line => line.length > 0)(Stream.splitLines(Stream.map(value => typeof value === "string" ? value : value.toString())(Stream.fromAsyncIterable(response.body, e => FetchError(url, "", String(e))))))))))(sendInternal(send)(url, data))));
 }
 /** @internal */
 export function showHashSet(fn) {

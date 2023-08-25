@@ -19,8 +19,8 @@ import * as PodAddress from "@effect/shardcake/PodAddress";
 import * as Pods from "@effect/shardcake/Pods";
 import * as PodsHealth from "@effect/shardcake/PodsHealth";
 import * as PodWithMetadata from "@effect/shardcake/PodWithMetadata";
-import * as ShardError from "@effect/shardcake/ShardError";
 import * as ShardId from "@effect/shardcake/ShardId";
+import { ShardingPodNoLongerRegisteredError } from "@effect/shardcake/ShardingError";
 import * as ShardingEvent from "@effect/shardcake/ShardingEvent";
 import * as ShardManagerState from "@effect/shardcake/ShardManagerState";
 import * as Storage from "@effect/shardcake/Storage";
@@ -63,7 +63,7 @@ function make(layerScope, stateRef, rebalanceSemaphore, eventsHub, healthApi, po
   function updateShardsState(shards, pod) {
     return RefSynchronized.updateEffect(stateRef, state => {
       if (Option.isSome(pod) && !HashMap.has(state.pods, pod.value)) {
-        return Effect.fail(ShardError.PodNoLongerRegistered(pod.value));
+        return Effect.fail(ShardingPodNoLongerRegisteredError(pod.value));
       }
       return Effect.succeed({
         ...state,

@@ -27,9 +27,9 @@ var RecipientType = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("
 var ReplyChannel = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ReplyChannel"));
 var ReplyId = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ReplyId"));
 var Serialization = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Serialization"));
-var _ShardError = /*#__PURE__*/require("@effect/shardcake/ShardError");
 var ShardId = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardId"));
 var ShardingConfig = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingConfig"));
+var ShardingError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingError"));
 var ShardingRegistrationEvent = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingRegistrationEvent"));
 var ShardManagerClient = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardManagerClient"));
 var Storage = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Storage"));
@@ -112,7 +112,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
       const res = yield* _(replyChannel.output);
       if (Option.isSome(res)) {
         if (Option.isNone(schema)) {
-          return yield* _(Effect.die((0, _ShardError.NotAMessageWithReplier)(msg)));
+          return yield* _(Effect.die((0, _utils.NotAMessageWithReplierDefect)(msg)));
         }
         return Option.some(yield* _(serialization.encode(res.value, schema.value)));
       }
@@ -125,17 +125,17 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
       const schema = yield* _(sendToLocalEntity(msg, replyChannel));
       return Stream.mapEffect(value => {
         if (Option.isNone(schema)) {
-          return Effect.die((0, _ShardError.NotAMessageWithReplier)(msg));
+          return Effect.die((0, _utils.NotAMessageWithReplierDefect)(msg));
         }
         return serialization.encode(value, schema.value);
       })(replyChannel.output);
     })));
   }
   function sendToLocalEntity(msg, replyChannel) {
-    return Effect.flatMap(Option.match({
-      onNone: () => Effect.fail((0, _ShardError.EntityTypeNotRegistered)(msg.entityType, address)),
+    return Effect.flatMap(_ => Effect.unified(Option.match(_, {
+      onNone: () => Effect.fail(ShardingError.ShardingEntityTypeNotRegisteredError(msg.entityType, address)),
       onSome: entityState => entityState.processBinary(msg, replyChannel)
-    }))(Effect.map(HashMap.get(msg.entityType))(Ref.get(entityStates)));
+    })))(Effect.map(HashMap.get(msg.entityType))(Ref.get(entityStates)));
   }
   function initReply(id, replyChannel) {
     return Effect.zipLeft(Effect.forkIn(layerScope)(Effect.ensuring(Synchronized.update(replyChannels, HashMap.remove(id)))(replyChannel.await)))(Synchronized.update(HashMap.set(id, replyChannel))(replyChannels));
@@ -163,10 +163,10 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
       return Effect.asUnit(Effect.flatMap(bytes => sendToLocalEntity(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId), replyChannel))(serialization.encode(msg, msgSchema)));
     } else if ((0, Equal.equals)(pod, address)) {
       // if pod = self, shortcut and send directly without serialization
-      return Effect.flatMap(_ => Option.match({
-        onNone: () => Effect.fail((0, _ShardError.EntityTypeNotRegistered)(recipientTypeName, pod)),
+      return Effect.flatMap(_ => Effect.unified(Option.match({
+        onNone: () => Effect.fail(ShardingError.ShardingEntityTypeNotRegisteredError(recipientTypeName, pod)),
         onSome: state => state.entityManager.send(entityId, msg, replyId, replyChannel)
-      })(HashMap.get(_, recipientTypeName)))(Ref.get(entityStates));
+      })(HashMap.get(_, recipientTypeName))))(Ref.get(entityStates));
     } else {
       return Effect.flatMap(bytes => {
         const errorHandling = _ => Effect.die("Not handled yet");
@@ -178,7 +178,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
               if (Message.isMessage(msg)) {
                 return Effect.flatMap(replyChannel.replySingle)(serialization.decode(bytes, msg.replier.schema));
               }
-              return Effect.die((0, _ShardError.NotAMessageWithReplier)(msg));
+              return Effect.die((0, _utils.NotAMessageWithReplierDefect)(msg));
             }
           }))(Effect.tapError(errorHandling)(pods.sendMessage(pod, binaryMessage)));
         }
@@ -187,7 +187,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
             if (StreamMessage.isStreamMessage(msg)) {
               return serialization.decode(bytes, msg.replier.schema);
             }
-            return Effect.die((0, _ShardError.NotAMessageWithReplier)(msg));
+            return Effect.die((0, _utils.NotAMessageWithReplierDefect)(msg));
           })(Stream.tapError(errorHandling)(pods.sendMessageStreaming(pod, binaryMessage))));
         }
         return Effect.dieMessage("got unknown replyChannel type");
@@ -204,11 +204,11 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
         return Effect.flatMap(replyId => {
           const body = fn(replyId);
           return Effect.interruptible(Effect.timeoutFail({
-            onTimeout: () => (0, _ShardError.SendTimeoutException)(entityType, entityId, body),
+            onTimeout: ShardingError.ShardingSendTimeoutError,
             duration: timeout
           })(Effect.flatMap(_ => {
             if (Option.isSome(_)) return Effect.succeed(_.value);
-            return Effect.fail((0, _ShardError.MessageReturnedNoting)(entityId, body));
+            return Effect.die((0, _utils.MessageReturnedNotingDefect)(entityId));
           })(sendMessage(entityId, body, Option.some(replyId)))));
         })(ReplyId.makeEffect);
       };
@@ -242,7 +242,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
       }) => {
         if (Option.isSome(pod)) {
           return Effect.onError(replyChannel.fail)(Effect.catchSome(_ => {
-            if ((0, _ShardError.isEntityNotManagedByThisPodError)(_) || (0, _ShardError.isPodUnavailableError)(_)) {
+            if (ShardingError.isShardingEntityNotManagedByThisPodError(_) || ShardingError.isShardingPodUnavailableError(_)) {
               return Option.some(Effect.zipRight(trySend)(Effect.sleep(Duration.millis(200))));
             }
             return Option.none();
@@ -269,7 +269,7 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
         const trySend = Effect.gen(function* (_) {
           const replyChannel = yield* _(ReplyChannel.single());
           yield* _(Effect.onError(replyChannel.fail)(Effect.catchSome(_ => {
-            if ((0, _ShardError.isPodUnavailableError)(_)) {
+            if (ShardingError.isShardingPodUnavailableError(_)) {
               return Option.some(Effect.zipRight(trySend)(Effect.sleep(Duration.millis(200))));
             }
             return Option.none();
@@ -277,11 +277,11 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
           return yield* _(replyChannel.output);
         });
         return Effect.map(res => [pod, res])(Effect.either(Effect.timeoutFail({
-          onTimeout: () => (0, _ShardError.SendTimeoutException)(topicType, topic, body),
+          onTimeout: ShardingError.ShardingSendTimeoutError,
           duration: timeout
         })(Effect.flatMap(_ => {
           if (Option.isSome(_)) return Effect.succeed(_.value);
-          return Effect.fail((0, _ShardError.MessageReturnedNoting)(topic, body));
+          return Effect.die((0, _utils.MessageReturnedNotingDefect)(topic));
         })(trySend))));
       }, {
         concurrency: "inherit"
@@ -313,7 +313,9 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
   function registerRecipient(recipientType, behavior, options) {
     return Effect.gen(function* ($) {
       const entityManager = yield* $(EntityManager.make(recipientType, behavior, self, config, options));
-      const processBinary = (msg, replyChannel) => Effect.catchAllCause(_ => Effect.as(replyChannel.fail(_), Option.none()))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
+      const processBinary = (msg, replyChannel) =>
+      // TODO: do not catch on send!
+      Effect.catchAllCause(_ => Effect.as(replyChannel.fail(_), Option.none()))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
       yield* $(Ref.update(HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))(entityStates));
     });
   }

@@ -7,7 +7,7 @@ exports.httpPods = void 0;
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Layer = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Layer"));
 var Pods = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Pods"));
-var _ShardError = /*#__PURE__*/require("@effect/shardcake/ShardError");
+var _ShardingError = /*#__PURE__*/require("@effect/shardcake/ShardingError");
 var ShardingProtocolHttp = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingProtocolHttp"));
 var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/stream/Stream"));
 var _utils = /*#__PURE__*/require("./utils");
@@ -36,8 +36,8 @@ const httpPods = /*#__PURE__*/Layer.succeed(Pods.Pods, {
     shards: Array.from(shards)
   })),
   ping: pod => Effect.catchAllDefect(e => {
-    if ((0, _ShardError.isFetchError)(e)) {
-      return Effect.fail((0, _ShardError.PodUnavailable)(pod));
+    if ((0, _utils.isFetchError)(e)) {
+      return Effect.fail((0, _ShardingError.ShardingPodUnavailableError)(pod));
     }
     return Effect.die(e);
   })((0, _utils.send)(ShardingProtocolHttp.PingShards_, ShardingProtocolHttp.PingShardsResult_)(asHttpUrl(pod), {

@@ -21,9 +21,9 @@ import * as PodsHealth from "@effect/shardcake/PodsHealth"
 import * as PoisonPill from "@effect/shardcake/PoisonPill"
 import * as RecipientType from "@effect/shardcake/RecipientType"
 import * as Serialization from "@effect/shardcake/Serialization"
-import { isEntityTypeNotRegistered } from "@effect/shardcake/ShardError"
 import * as Sharding from "@effect/shardcake/Sharding"
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
+import * as ShardingError from "@effect/shardcake/ShardingError"
 import * as ShardingImpl from "@effect/shardcake/ShardingImpl"
 import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
 import * as Storage from "@effect/shardcake/Storage"
@@ -88,7 +88,7 @@ describe.concurrent("SampleTests", () => {
         const error = Cause.failureOption(exit.cause)
         assertTrue(Option.isSome(error))
         if (Option.isSome(error)) {
-          assertTrue(isEntityTypeNotRegistered(error.value))
+          assertTrue(ShardingError.isShardingEntityTypeNotRegisteredError(error.value))
         }
       }
     }).pipe(withTestEnv, Effect.runPromise)

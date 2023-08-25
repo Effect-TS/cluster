@@ -4,9 +4,9 @@
 
 import * as HashSet from "@effect/data/HashSet";
 import * as Effect from "@effect/io/Effect";
-import { isEntityTypeNotRegistered } from "@effect/shardcake/ShardError";
 import * as Sharding from "@effect/shardcake/Sharding";
 import * as ShardingConfig from "@effect/shardcake/ShardingConfig";
+import { isShardingEntityTypeNotRegisteredError } from "@effect/shardcake/ShardingError";
 import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp";
 import * as Stream from "@effect/stream/Stream";
 import { asHttpServer } from "./node";
@@ -21,9 +21,9 @@ export const shardingServiceHttp = fa => Effect.flatMap(sharding => Effect.flatM
     case "UnassignShards":
       return reply(ShardingProtocolHttp.UnassignShardsResult_)(Effect.as(sharding.unassign(HashSet.fromIterable(req.shards)), true));
     case "Send":
-      return reply(ShardingProtocolHttp.SendResult_)(Effect.catchAll(e => isEntityTypeNotRegistered(e) ? Effect.fail(e) : Effect.die(e))(sharding.sendToLocalEntitySingleReply(req.message)));
+      return reply(ShardingProtocolHttp.SendResult_)(Effect.catchAll(e => isShardingEntityTypeNotRegisteredError(e) ? Effect.fail(e) : Effect.die(e))(sharding.sendToLocalEntitySingleReply(req.message)));
     case "SendStream":
-      return replyStream(ShardingProtocolHttp.SendStreamResultItem_)(Stream.catchAll(e => isEntityTypeNotRegistered(e) ? Stream.fail(e) : Stream.die(e))(sharding.sendToLocalEntityStreamingReply(req.message)));
+      return replyStream(ShardingProtocolHttp.SendStreamResultItem_)(Stream.catchAll(e => isShardingEntityTypeNotRegisteredError(e) ? Stream.fail(e) : Stream.die(e))(sharding.sendToLocalEntityStreamingReply(req.message)));
     case "PingShards":
       return reply(ShardingProtocolHttp.PingShardsResult_)(Effect.succeed(true));
   }

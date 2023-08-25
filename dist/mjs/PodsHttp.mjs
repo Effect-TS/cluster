@@ -5,10 +5,10 @@
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import * as Pods from "@effect/shardcake/Pods";
-import { isFetchError, PodUnavailable } from "@effect/shardcake/ShardError";
+import { ShardingPodUnavailableError } from "@effect/shardcake/ShardingError";
 import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp";
 import * as Stream from "@effect/stream/Stream";
-import { send, sendStream } from "./utils";
+import { isFetchError, send, sendStream } from "./utils";
 /** @internal */
 function asHttpUrl(pod) {
   return `http://${pod.host}:${pod.port}/`;
@@ -29,7 +29,7 @@ export const httpPods = /*#__PURE__*/Layer.succeed(Pods.Pods, {
   })),
   ping: pod => Effect.catchAllDefect(e => {
     if (isFetchError(e)) {
-      return Effect.fail(PodUnavailable(pod));
+      return Effect.fail(ShardingPodUnavailableError(pod));
     }
     return Effect.die(e);
   })(send(ShardingProtocolHttp.PingShards_, ShardingProtocolHttp.PingShardsResult_)(asHttpUrl(pod), {

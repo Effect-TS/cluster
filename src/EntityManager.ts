@@ -16,10 +16,10 @@ import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
 import type * as RecipientType from "@effect/shardcake/RecipientType"
 import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
 import type * as ReplyId from "@effect/shardcake/ReplyId"
-import * as ShardError from "@effect/shardcake/ShardError"
 import type * as ShardId from "@effect/shardcake/ShardId"
 import type * as Sharding from "@effect/shardcake/Sharding"
 import type * as ShardingConfig from "@effect/shardcake/ShardingConfig"
+import * as ShardingError from "@effect/shardcake/ShardingError"
 
 /**
  * @since 1.0.0
@@ -31,7 +31,11 @@ export interface EntityManager<Req> {
     req: Req,
     replyId: Option.Option<ReplyId.ReplyId>,
     replyChannel: ReplyChannel.ReplyChannel<any>
-  ) => Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void>
+  ) => Effect.Effect<
+    never,
+    ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingMessageQueueOfferError,
+    void
+  >
   readonly terminateEntitiesOnShards: (
     shards: HashSet.HashSet<ShardId.ShardId>
   ) => Effect.Effect<never, never, void>
@@ -108,6 +112,7 @@ export function make<R, Req>(
                   onSome: (queue) =>
                     pipe(
                       queue.offer(PoisonPill.make),
+                      Effect.catchAllCause(Effect.logError),
                       Effect.as(
                         [
                           Option.some(runningFiber),
@@ -130,7 +135,11 @@ export function make<R, Req>(
       req: Req,
       replyId: Option.Option<ReplyId.ReplyId>,
       replyChannel: ReplyChannel.ReplyChannel<any>
-    ): Effect.Effect<never, ShardError.EntityNotManagedByThisPod, void> {
+    ): Effect.Effect<
+      never,
+      ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingMessageQueueOfferError,
+      void
+    > {
       function decide(
         map: HashMap.HashMap<
           string,
@@ -145,7 +154,7 @@ export function make<R, Req>(
               Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
                 if (isGoingDown) {
                   // don't start any fiber while sharding is shutting down
-                  return Effect.fail(ShardError.EntityNotManagedByThisPod(entityId))
+                  return Effect.fail(ShardingError.ShardingEntityNotManagedByThisPodError(entityId))
                 } else {
                   // queue doesn't exist, create a new one
                   return Effect.gen(function*(_) {
@@ -206,7 +215,7 @@ export function make<R, Req>(
           // first, verify that this entity should be handled by this pod
           if (recipientType._tag === "EntityType") {
             return Effect.asUnit(Effect.unlessEffect(
-              Effect.fail(ShardError.EntityNotManagedByThisPod(entityId)),
+              Effect.fail(ShardingError.ShardingEntityNotManagedByThisPodError(entityId)),
               sharding.isEntityOnLocalShards(recipientType, entityId)
             ))
           } else if (recipientType._tag === "TopicType") {

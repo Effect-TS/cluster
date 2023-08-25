@@ -9,8 +9,8 @@ import * as Layer from "@effect/io/Layer";
 import type * as BinaryMessage from "@effect/shardcake/BinaryMessage";
 import type * as ByteArray from "@effect/shardcake/ByteArray";
 import type * as PodAddress from "@effect/shardcake/PodAddress";
-import type { PodUnavailable } from "@effect/shardcake/ShardError";
 import type * as ShardId from "@effect/shardcake/ShardId";
+import type * as ShardingError from "@effect/shardcake/ShardingError";
 import * as Stream from "@effect/stream/Stream";
 /**
  * @since 1.0.0
@@ -45,7 +45,7 @@ export interface Pods {
      * Check that a pod is responsive
      * @since 1.0.0
      */
-    readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, PodUnavailable, void>;
+    readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, ShardingError.ShardingPodUnavailableError, void>;
     /**
      * Send a message to a pod
      * @since 1.0.0

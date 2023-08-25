@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.shardingServiceHttp = void 0;
 var HashSet = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/HashSet"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
-var _ShardError = /*#__PURE__*/require("@effect/shardcake/ShardError");
 var Sharding = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Sharding"));
 var ShardingConfig = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingConfig"));
+var _ShardingError = /*#__PURE__*/require("@effect/shardcake/ShardingError");
 var ShardingProtocolHttp = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingProtocolHttp"));
 var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/stream/Stream"));
 var _node = /*#__PURE__*/require("./node");
@@ -29,9 +29,9 @@ const shardingServiceHttp = fa => Effect.flatMap(sharding => Effect.flatMap(conf
     case "UnassignShards":
       return reply(ShardingProtocolHttp.UnassignShardsResult_)(Effect.as(sharding.unassign(HashSet.fromIterable(req.shards)), true));
     case "Send":
-      return reply(ShardingProtocolHttp.SendResult_)(Effect.catchAll(e => (0, _ShardError.isEntityTypeNotRegistered)(e) ? Effect.fail(e) : Effect.die(e))(sharding.sendToLocalEntitySingleReply(req.message)));
+      return reply(ShardingProtocolHttp.SendResult_)(Effect.catchAll(e => (0, _ShardingError.isShardingEntityTypeNotRegisteredError)(e) ? Effect.fail(e) : Effect.die(e))(sharding.sendToLocalEntitySingleReply(req.message)));
     case "SendStream":
-      return replyStream(ShardingProtocolHttp.SendStreamResultItem_)(Stream.catchAll(e => (0, _ShardError.isEntityTypeNotRegistered)(e) ? Stream.fail(e) : Stream.die(e))(sharding.sendToLocalEntityStreamingReply(req.message)));
+      return replyStream(ShardingProtocolHttp.SendStreamResultItem_)(Stream.catchAll(e => (0, _ShardingError.isShardingEntityTypeNotRegisteredError)(e) ? Stream.fail(e) : Stream.die(e))(sharding.sendToLocalEntityStreamingReply(req.message)));
     case "PingShards":
       return reply(ShardingProtocolHttp.PingShardsResult_)(Effect.succeed(true));
   }
