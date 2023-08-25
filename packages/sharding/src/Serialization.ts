@@ -5,10 +5,29 @@ import { Tag } from "@effect/data/Context"
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
-import type * as Schema from "@effect/schema/Schema"
+import * as Schema from "@effect/schema/Schema"
+import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as ByteArray from "@effect/sharding/ByteArray"
-import type * as ShardingError from "@effect/sharding/ShardingError"
-import { jsonParse, jsonStringify } from "./utils"
+import * as ShardingError from "@effect/sharding/ShardingError"
+
+/** @internal */
+function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
+  return pipe(
+    value,
+    Schema.encode(schema),
+    Effect.mapError((e) => ShardingError.ShardingSerializationError(TreeFormatter.formatErrors(e.errors))),
+    Effect.map((_) => JSON.stringify(_))
+  )
+}
+
+/** @internal */
+function jsonParse<I, A>(value: string, schema: Schema.Schema<I, A>) {
+  return pipe(
+    Effect.sync(() => JSON.parse(value)),
+    Effect.flatMap(Schema.decode(schema)),
+    Effect.mapError((e) => ShardingError.ShardingSerializationError(TreeFormatter.formatErrors(e.errors)))
+  )
+}
 
 /**
  * @since 1.0.0

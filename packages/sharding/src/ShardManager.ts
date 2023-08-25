@@ -40,14 +40,13 @@ export interface ShardManager {
   readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
   readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
   readonly checkAllPodsHealth: Effect.Effect<never, never, void>
-  /* @internal */
-  readonly rebalance: (rebalanceImmediately: boolean) => Effect.Effect<never, never, void>
-  /* @internal */
   readonly getAssignments: Effect.Effect<
     never,
     never,
     HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
   >
+  /* @internal */
+  readonly rebalance: (rebalanceImmediately: boolean) => Effect.Effect<never, never, void>
   /* @internal */
   readonly persistPods: Effect.Effect<never, never, void>
 }
@@ -384,7 +383,9 @@ export function decideAssignmentsForUnassignedShards(state: ShardManagerState.Sh
   return pickNewPods(List.fromIterable(state.unassignedShards), state, true, 1)
 }
 
-/** @internal */
+/**
+ * @since 1.0.0
+ */
 export function decideAssignmentsForUnbalancedShards(
   state: ShardManagerState.ShardManagerState,
   rebalanceRate: number

@@ -34,7 +34,9 @@ export type TypeId = typeof TypeId
  * @category models
  */
 export interface Pods {
-  /** @internal */
+  /**
+   * @since 1.0.0
+   */
   readonly _id: TypeId
 
   /**
