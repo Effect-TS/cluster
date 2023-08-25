@@ -19,12 +19,8 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @category symbols
  */
 const ShardingEntityNotManagedByThisPodErrorTag = "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
-/**
- * @since 1.0.0
- * @category schema
- */
 exports.ShardingEntityNotManagedByThisPodErrorTag = ShardingEntityNotManagedByThisPodErrorTag;
-const ShardingEntityNotManagedByThisPodErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingEntityNotManagedByThisPodErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingEntityNotManagedByThisPodErrorTag),
   entityId: Schema.string
 }));
@@ -32,7 +28,6 @@ const ShardingEntityNotManagedByThisPodErrorSchema = /*#__PURE__*/Schema.data( /
  * @since 1.0.0
  * @category constructors
  */
-exports.ShardingEntityNotManagedByThisPodErrorSchema = ShardingEntityNotManagedByThisPodErrorSchema;
 function ShardingEntityNotManagedByThisPodError(entityId) {
   return Data.struct({
     _tag: ShardingEntityNotManagedByThisPodErrorTag,
@@ -46,4 +41,10 @@ function ShardingEntityNotManagedByThisPodError(entityId) {
 function isShardingEntityNotManagedByThisPodError(value) {
   return value && "_tag" in value && value._tag === ShardingEntityNotManagedByThisPodErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+const ShardingEntityNotManagedByThisPodErrorSchema = ShardingEntityNotManagedByThisPodErrorSchema_;
+exports.ShardingEntityNotManagedByThisPodErrorSchema = ShardingEntityNotManagedByThisPodErrorSchema;
 //# sourceMappingURL=ShardingEntityNotManagedByThisPodError.js.map

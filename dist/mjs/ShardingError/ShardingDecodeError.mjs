@@ -8,11 +8,7 @@ import * as Schema from "@effect/schema/Schema";
  * @category symbols
  */
 export const ShardingDecodeErrorTag = "@effect/shardcake/ShardingDecodeError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingDecodeErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingDecodeErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingDecodeErrorTag),
   error: Schema.string
 }));
@@ -33,4 +29,9 @@ export function ShardingDecodeError(error) {
 export function isShardingDecodeError(value) {
   return value && "_tag" in value && value._tag === ShardingDecodeErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingDecodeErrorSchema = ShardingDecodeErrorSchema_;
 //# sourceMappingURL=ShardingDecodeError.mjs.map

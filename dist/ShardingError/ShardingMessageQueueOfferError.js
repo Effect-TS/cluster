@@ -19,12 +19,8 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @category symbols
  */
 const ShardingMessageQueueOfferErrorTag = "@effect/shardcake/ShardingMessageQueueOfferError";
-/**
- * @since 1.0.0
- * @category schema
- */
 exports.ShardingMessageQueueOfferErrorTag = ShardingMessageQueueOfferErrorTag;
-const ShardingMessageQueueOfferErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingMessageQueueOfferErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingMessageQueueOfferErrorTag),
   error: Schema.string
 }));
@@ -32,7 +28,6 @@ const ShardingMessageQueueOfferErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE
  * @since 1.0.0
  * @category constructors
  */
-exports.ShardingMessageQueueOfferErrorSchema = ShardingMessageQueueOfferErrorSchema;
 function ShardingMessageQueueOfferError(error) {
   return Data.struct({
     _tag: ShardingMessageQueueOfferErrorTag,
@@ -46,4 +41,10 @@ function ShardingMessageQueueOfferError(error) {
 function isShardingMessageQueueOfferError(value) {
   return typeof value === "object" && value !== null && "_tag" in value && value._tag === ShardingMessageQueueOfferErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+const ShardingMessageQueueOfferErrorSchema = ShardingMessageQueueOfferErrorSchema_;
+exports.ShardingMessageQueueOfferErrorSchema = ShardingMessageQueueOfferErrorSchema;
 //# sourceMappingURL=ShardingMessageQueueOfferError.js.map

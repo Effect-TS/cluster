@@ -10,11 +10,7 @@ import * as Schema from "@effect/schema/Schema"
  */
 export const ShardingSendTimeoutErrorTag = "@effect/shardcake/ShardingSendTimeoutError" as const
 
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingSendTimeoutErrorSchema = Schema.data(
+const ShardingSendTimeoutErrorSchema_ = Schema.data(
   Schema.struct({
     _tag: Schema.literal(ShardingSendTimeoutErrorTag)
   })
@@ -24,7 +20,7 @@ export const ShardingSendTimeoutErrorSchema = Schema.data(
  * @since 1.0.0
  * @category models
  */
-export interface ShardingSendTimeoutError extends Schema.To<typeof ShardingSendTimeoutErrorSchema> {}
+export interface ShardingSendTimeoutError extends Schema.To<typeof ShardingSendTimeoutErrorSchema_> {}
 
 /**
  * @since 1.0.0
@@ -41,3 +37,12 @@ export function ShardingSendTimeoutError(): ShardingSendTimeoutError {
 export function isShardingSendTimeoutError(value: any): value is ShardingSendTimeoutError {
   return value && "_tag" in value && value._tag === ShardingSendTimeoutErrorTag
 }
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingSendTimeoutErrorSchema: Schema.Schema<
+  Schema.From<typeof ShardingSendTimeoutErrorSchema_>,
+  ShardingSendTimeoutError
+> = ShardingSendTimeoutErrorSchema_

@@ -9,11 +9,7 @@ import * as PodAddress from "@effect/shardcake/PodAddress";
  * @category symbols
  */
 export const ShardingPodNoLongerRegisteredErrorTag = "@effect/shardcake/ShardingPodNoLongerRegisteredError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingPodNoLongerRegisteredErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingPodNoLongerRegisteredErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingPodNoLongerRegisteredErrorTag),
   podAddress: PodAddress.schema
 }));
@@ -34,4 +30,9 @@ export function ShardingPodNoLongerRegisteredError(podAddress) {
 export function isShardingPodNoLongerRegisteredError(value) {
   return typeof value === "object" && value !== null && "_tag" in value && value["_tag"] === ShardingPodNoLongerRegisteredErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingPodNoLongerRegisteredErrorSchema = ShardingPodNoLongerRegisteredErrorSchema_;
 //# sourceMappingURL=ShardingPodNoLongerRegisteredError.mjs.map

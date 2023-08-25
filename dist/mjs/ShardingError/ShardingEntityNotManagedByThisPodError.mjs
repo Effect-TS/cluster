@@ -8,11 +8,7 @@ import * as Schema from "@effect/schema/Schema";
  * @category symbols
  */
 export const ShardingEntityNotManagedByThisPodErrorTag = "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingEntityNotManagedByThisPodErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingEntityNotManagedByThisPodErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingEntityNotManagedByThisPodErrorTag),
   entityId: Schema.string
 }));
@@ -33,4 +29,9 @@ export function ShardingEntityNotManagedByThisPodError(entityId) {
 export function isShardingEntityNotManagedByThisPodError(value) {
   return value && "_tag" in value && value._tag === ShardingEntityNotManagedByThisPodErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingEntityNotManagedByThisPodErrorSchema = ShardingEntityNotManagedByThisPodErrorSchema_;
 //# sourceMappingURL=ShardingEntityNotManagedByThisPodError.mjs.map

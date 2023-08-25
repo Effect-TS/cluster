@@ -11,11 +11,7 @@ import * as PodAddress from "@effect/shardcake/PodAddress"
  */
 export const ShardingPodNoLongerRegisteredErrorTag = "@effect/shardcake/ShardingPodNoLongerRegisteredError" as const
 
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingPodNoLongerRegisteredErrorSchema = Schema.data(
+const ShardingPodNoLongerRegisteredErrorSchema_ = Schema.data(
   Schema.struct({
     _tag: Schema.literal(ShardingPodNoLongerRegisteredErrorTag),
     podAddress: PodAddress.schema
@@ -27,7 +23,7 @@ export const ShardingPodNoLongerRegisteredErrorSchema = Schema.data(
  * @category models
  */
 export interface ShardingPodNoLongerRegisteredError
-  extends Schema.To<typeof ShardingPodNoLongerRegisteredErrorSchema>
+  extends Schema.To<typeof ShardingPodNoLongerRegisteredErrorSchema_>
 {}
 
 /**
@@ -48,3 +44,12 @@ export function isShardingPodNoLongerRegisteredError(value: unknown): value is S
   return typeof value === "object" && value !== null && "_tag" in value &&
     value["_tag"] === ShardingPodNoLongerRegisteredErrorTag
 }
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingPodNoLongerRegisteredErrorSchema: Schema.Schema<
+  Schema.From<typeof ShardingPodNoLongerRegisteredErrorSchema_>,
+  ShardingPodNoLongerRegisteredError
+> = ShardingPodNoLongerRegisteredErrorSchema_

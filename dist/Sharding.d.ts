@@ -30,13 +30,13 @@ export interface Sharding {
     readonly getShardId: (recipientType: RecipentType.RecipientType<any>, entityId: string) => ShardId.ShardId;
     readonly register: Effect.Effect<never, never, void>;
     readonly unregister: Effect.Effect<never, never, void>;
+    readonly initReply: (id: ReplyId.ReplyId, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, never, void>;
     readonly reply: <Reply>(reply: Reply, replier: Replier<Reply>) => Effect.Effect<never, never, void>;
     readonly replyStream: <Reply>(replies: Stream.Stream<never, never, Reply>, replier: StreamReplier.StreamReplier<Reply>) => Effect.Effect<never, never, void>;
     readonly messenger: <Msg>(entityType: RecipentType.EntityType<Msg>, sendTimeout?: Option.Option<Duration.Duration>) => Messenger<Msg>;
     readonly broadcaster: <Msg>(topicType: RecipentType.TopicType<Msg>, sendTimeout?: Option.Option<Duration.Duration>) => Broadcaster<Msg>;
     readonly isEntityOnLocalShards: (recipientType: RecipentType.RecipientType<any>, entityId: string) => Effect.Effect<never, never, boolean>;
     readonly isShuttingDown: Effect.Effect<never, never, boolean>;
-    readonly initReply: (id: ReplyId.ReplyId, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, never, void>;
     readonly registerScoped: Effect.Effect<Scope.Scope, never, void>;
     readonly registerEntity: <Req, R>(entityType: RecipentType.EntityType<Req>, behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>) => Effect.Effect<R, never, void>;
     readonly registerTopic: <Req, R>(topicType: RecipentType.TopicType<Req>, behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>, options?: RecipientBehaviour.EntityBehaviourOptions<R, Req>) => Effect.Effect<R, never, void>;
@@ -71,7 +71,7 @@ export declare const unregister: Effect.Effect<Sharding, never, void>;
  * @since 1.0.0
  * @category utils
  */
-export declare const registerScoped: Effect.Effect<Scope.Scope | Sharding, never, void>;
+export declare const registerScoped: Effect.Effect<Sharding | Scope.Scope, never, void>;
 /**
  * Start a computation that is guaranteed to run only on a single pod.
  * Each pod should call `registerSingleton` but only a single pod will actually run it at any given time.

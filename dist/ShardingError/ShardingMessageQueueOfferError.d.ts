@@ -8,11 +8,7 @@ import * as Schema from "@effect/schema/Schema";
  * @category symbols
  */
 export declare const ShardingMessageQueueOfferErrorTag: "@effect/shardcake/ShardingMessageQueueOfferError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export declare const ShardingMessageQueueOfferErrorSchema: Schema.Schema<{
+declare const ShardingMessageQueueOfferErrorSchema_: Schema.Schema<{
     readonly _tag: "@effect/shardcake/ShardingMessageQueueOfferError";
     readonly error: string;
 }, Data.Data<{
@@ -23,7 +19,7 @@ export declare const ShardingMessageQueueOfferErrorSchema: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingMessageQueueOfferError extends Schema.To<typeof ShardingMessageQueueOfferErrorSchema> {
+export interface ShardingMessageQueueOfferError extends Schema.To<typeof ShardingMessageQueueOfferErrorSchema_> {
 }
 /**
  * @since 1.0.0
@@ -35,4 +31,10 @@ export declare function ShardingMessageQueueOfferError(error: string): ShardingM
  * @category utils
  */
 export declare function isShardingMessageQueueOfferError(value: unknown): value is ShardingMessageQueueOfferError;
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export declare const ShardingMessageQueueOfferErrorSchema: Schema.Schema<Schema.From<typeof ShardingMessageQueueOfferErrorSchema_>, ShardingMessageQueueOfferError>;
+export {};
 //# sourceMappingURL=ShardingMessageQueueOfferError.d.ts.map

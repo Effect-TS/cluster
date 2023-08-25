@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.ShardingPodUnavailableError = ShardingPodUnavailableError;
-exports.ShardingPodUnavailableErrorTag = exports.ShardingPodUnavailableErrorSchema = void 0;
+exports.ShardingPodUnavailableErrorTag = exports.ShardingPodUnavailableErrorSchema_ = exports.ShardingPodUnavailableErrorSchema = void 0;
 exports.isShardingPodUnavailableError = isShardingPodUnavailableError;
 var Data = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Data"));
 var Schema = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/Schema"));
@@ -20,12 +20,8 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @category symbols
  */
 const ShardingPodUnavailableErrorTag = "@effect/shardcake/ShardingPodUnavailableError";
-/**
- * @since 1.0.0
- * @category schema
- */
 exports.ShardingPodUnavailableErrorTag = ShardingPodUnavailableErrorTag;
-const ShardingPodUnavailableErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingPodUnavailableErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingPodUnavailableErrorTag),
   pod: PodAddress.schema
 }));
@@ -33,7 +29,7 @@ const ShardingPodUnavailableErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*
  * @since 1.0.0
  * @category constructors
  */
-exports.ShardingPodUnavailableErrorSchema = ShardingPodUnavailableErrorSchema;
+exports.ShardingPodUnavailableErrorSchema_ = ShardingPodUnavailableErrorSchema_;
 function ShardingPodUnavailableError(pod) {
   return Data.struct({
     _tag: ShardingPodUnavailableErrorTag,
@@ -47,4 +43,10 @@ function ShardingPodUnavailableError(pod) {
 function isShardingPodUnavailableError(value) {
   return value && value !== null && "_tag" in value && value._tag === ShardingPodUnavailableErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+const ShardingPodUnavailableErrorSchema = ShardingPodUnavailableErrorSchema_;
+exports.ShardingPodUnavailableErrorSchema = ShardingPodUnavailableErrorSchema;
 //# sourceMappingURL=ShardingPodUnavailableError.js.map

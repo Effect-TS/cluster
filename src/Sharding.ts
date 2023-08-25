@@ -32,6 +32,10 @@ export interface Sharding {
   readonly getShardId: (recipientType: RecipentType.RecipientType<any>, entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<never, never, void>
   readonly unregister: Effect.Effect<never, never, void>
+  readonly initReply: (
+    id: ReplyId.ReplyId,
+    replyChannel: ReplyChannel.ReplyChannel<any>
+  ) => Effect.Effect<never, never, void>
   readonly reply: <Reply>(reply: Reply, replier: Replier<Reply>) => Effect.Effect<never, never, void>
   readonly replyStream: <Reply>(
     replies: Stream.Stream<never, never, Reply>,
@@ -50,10 +54,7 @@ export interface Sharding {
     entityId: string
   ) => Effect.Effect<never, never, boolean>
   readonly isShuttingDown: Effect.Effect<never, never, boolean>
-  readonly initReply: (
-    id: ReplyId.ReplyId,
-    replyChannel: ReplyChannel.ReplyChannel<any>
-  ) => Effect.Effect<never, never, void>
+
   readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
   readonly registerEntity: <Req, R>(
     entityType: RecipentType.EntityType<Req>,

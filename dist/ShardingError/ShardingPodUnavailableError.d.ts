@@ -9,11 +9,7 @@ import * as PodAddress from "@effect/shardcake/PodAddress";
  * @category symbols
  */
 export declare const ShardingPodUnavailableErrorTag: "@effect/shardcake/ShardingPodUnavailableError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export declare const ShardingPodUnavailableErrorSchema: Schema.Schema<{
+export declare const ShardingPodUnavailableErrorSchema_: Schema.Schema<{
     readonly _tag: "@effect/shardcake/ShardingPodUnavailableError";
     readonly pod: {
         readonly _id: "@effect/shardcake/PodAddress";
@@ -32,7 +28,7 @@ export declare const ShardingPodUnavailableErrorSchema: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingPodUnavailableError extends Schema.To<typeof ShardingPodUnavailableErrorSchema> {
+export interface ShardingPodUnavailableError extends Schema.To<typeof ShardingPodUnavailableErrorSchema_> {
 }
 /**
  * @since 1.0.0
@@ -44,4 +40,9 @@ export declare function ShardingPodUnavailableError(pod: PodAddress.PodAddress):
  * @category utils
  */
 export declare function isShardingPodUnavailableError(value: any): value is ShardingPodUnavailableError;
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export declare const ShardingPodUnavailableErrorSchema: Schema.Schema<Schema.From<typeof ShardingPodUnavailableErrorSchema_>, ShardingPodUnavailableError>;
 //# sourceMappingURL=ShardingPodUnavailableError.d.ts.map

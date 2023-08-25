@@ -41,47 +41,5 @@ export interface Messenger<Msg> {
  * cursor according to what we've seen in the previous stream of responses.
  * @since 1.0.0
  */
-export declare function sendStreamAutoRestart<Msg, Cursor>(messenger: Messenger<Msg>, entityId: string, cursor: Cursor): <A extends Msg & StreamMessage.StreamMessage<any>>(fn: (cursor: Cursor) => (replyId: ReplyId.ReplyId) => A) => (updateCursor: (cursor: Cursor, res: StreamMessage.Success<A>) => Cursor) => Stream.Stream<never, import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingEncodeError";
-    readonly error: string;
-}> | import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingDecodeError";
-    readonly error: string;
-}> | import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
-    readonly entityId: string;
-}> | import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
-    readonly entityType: string;
-    readonly podAddress: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/PodAddress";
-        readonly host: string;
-        readonly port: number;
-    }>;
-}> | import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingMessageQueueOfferError";
-    readonly error: string;
-}> | import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingPodNoLongerRegisteredError";
-    readonly podAddress: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/PodAddress";
-        readonly host: string;
-        readonly port: number;
-    }>;
-}> | import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingPodUnavailableError";
-    readonly pod: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/PodAddress";
-        readonly host: string;
-        readonly port: number;
-    }>;
-}> | import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingReplyError";
-    readonly error: string;
-}> | import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingSendError";
-    readonly error: string;
-}> | import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingSendTimeoutError";
-}>, StreamMessage.Success<A>>;
+export declare function sendStreamAutoRestart<Msg, Cursor>(messenger: Messenger<Msg>, entityId: string, cursor: Cursor): <A extends Msg & StreamMessage.StreamMessage<any>>(fn: (cursor: Cursor) => (replyId: ReplyId.ReplyId) => A) => (updateCursor: (cursor: Cursor, res: StreamMessage.Success<A>) => Cursor) => Stream.Stream<never, ShardingError.ShardingMessageQueueError | ShardingError.ShardingSerializationError | ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingEntityTypeNotRegisteredError | ShardingError.ShardingPodNoLongerRegisteredError | ShardingError.ShardingPodUnavailableError | ShardingError.ShardingSendTimeoutError, StreamMessage.Success<A>>;
 //# sourceMappingURL=Messenger.d.ts.map

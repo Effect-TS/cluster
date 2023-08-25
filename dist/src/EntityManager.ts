@@ -33,7 +33,7 @@ export interface EntityManager<Req> {
     replyChannel: ReplyChannel.ReplyChannel<any>
   ) => Effect.Effect<
     never,
-    ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingMessageQueueOfferError,
+    ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingMessageQueueError,
     void
   >
   readonly terminateEntitiesOnShards: (
@@ -137,7 +137,7 @@ export function make<R, Req>(
       replyChannel: ReplyChannel.ReplyChannel<any>
     ): Effect.Effect<
       never,
-      ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingMessageQueueOfferError,
+      ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingMessageQueueError,
       void
     > {
       function decide(

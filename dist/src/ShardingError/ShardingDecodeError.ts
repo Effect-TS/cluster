@@ -10,11 +10,7 @@ import * as Schema from "@effect/schema/Schema"
  */
 export const ShardingDecodeErrorTag = "@effect/shardcake/ShardingDecodeError" as const
 
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingDecodeErrorSchema = Schema.data(Schema.struct({
+const ShardingDecodeErrorSchema_ = Schema.data(Schema.struct({
   _tag: Schema.literal(ShardingDecodeErrorTag),
   error: Schema.string
 }))
@@ -23,7 +19,7 @@ export const ShardingDecodeErrorSchema = Schema.data(Schema.struct({
  * @since 1.0.0
  * @category models
  */
-export interface ShardingDecodeError extends Schema.To<typeof ShardingDecodeErrorSchema> {}
+export interface ShardingDecodeError extends Schema.To<typeof ShardingDecodeErrorSchema_> {}
 
 /**
  * @since 1.0.0
@@ -43,3 +39,12 @@ export function ShardingDecodeError(error: string): ShardingDecodeError {
 export function isShardingDecodeError(value: any): value is ShardingDecodeError {
   return value && "_tag" in value && value._tag === ShardingDecodeErrorTag
 }
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingDecodeErrorSchema: Schema.Schema<
+  Schema.From<typeof ShardingDecodeErrorSchema_>,
+  ShardingDecodeError
+> = ShardingDecodeErrorSchema_

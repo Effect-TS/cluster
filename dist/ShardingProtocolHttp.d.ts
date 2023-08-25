@@ -124,15 +124,7 @@ export declare const SendResult_: Schema.Schema<{
             readonly value: string;
         };
     };
-}, import("@effect/data/Either").Either<import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
-    readonly entityType: string;
-    readonly podAddress: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/PodAddress";
-        readonly host: string;
-        readonly port: number;
-    }>;
-}>, import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
+}, import("@effect/data/Either").Either<import("@effect/shardcake/ShardingError").ShardingEntityTypeNotRegisteredError, import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
     readonly _id: "@effect/shardcake/ByteArray";
     readonly value: string;
 }>>>>;
@@ -197,15 +189,7 @@ export declare const SendStreamResultItem_: Schema.Schema<{
         readonly _id: "@effect/shardcake/ByteArray";
         readonly value: string;
     };
-}, import("@effect/data/Either").Either<import("@effect/data/Data").Data<{
-    readonly _tag: "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
-    readonly entityType: string;
-    readonly podAddress: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/PodAddress";
-        readonly host: string;
-        readonly port: number;
-    }>;
-}>, import("@effect/data/Data").Data<{
+}, import("@effect/data/Either").Either<import("@effect/shardcake/ShardingError").ShardingEntityTypeNotRegisteredError, import("@effect/data/Data").Data<{
     readonly _id: "@effect/shardcake/ByteArray";
     readonly value: string;
 }>>>;
@@ -248,8 +232,6 @@ export declare const schema: Schema.Schema<{
         readonly value: number;
     }[];
 } | {
-    readonly _tag: "PingShards";
-} | {
     readonly _tag: "Send";
     readonly message: {
         readonly _id: "@effect/shardcake/BinaryMessage";
@@ -289,6 +271,8 @@ export declare const schema: Schema.Schema<{
             };
         };
     };
+} | {
+    readonly _tag: "PingShards";
 }, {
     readonly _tag: "AssignShards";
     readonly shards: readonly import("@effect/data/Data").Data<{
@@ -302,8 +286,6 @@ export declare const schema: Schema.Schema<{
         readonly value: number;
     }>[];
 } | {
-    readonly _tag: "PingShards";
-} | {
     readonly _tag: "Send";
     readonly message: import("@effect/data/Data").Data<{
         readonly _id: "@effect/shardcake/BinaryMessage";
@@ -333,5 +315,7 @@ export declare const schema: Schema.Schema<{
             readonly value: string;
         }>>;
     }>;
+} | {
+    readonly _tag: "PingShards";
 }>;
 //# sourceMappingURL=ShardingProtocolHttp.d.ts.map

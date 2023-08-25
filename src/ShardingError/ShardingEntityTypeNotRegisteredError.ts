@@ -11,11 +11,7 @@ import * as PodAddress from "@effect/shardcake/PodAddress"
  */
 export const ShardingEntityTypeNotRegisteredErrorTag = "@effect/shardcake/ShardingEntityTypeNotRegisteredError" as const
 
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingEntityTypeNotRegisteredErrorSchema = Schema.data(
+const ShardingEntityTypeNotRegisteredErrorSchema_ = Schema.data(
   Schema.struct({
     _tag: Schema.literal(ShardingEntityTypeNotRegisteredErrorTag),
     entityType: Schema.string,
@@ -28,7 +24,7 @@ export const ShardingEntityTypeNotRegisteredErrorSchema = Schema.data(
  * @category models
  */
 export interface ShardingEntityTypeNotRegisteredError
-  extends Schema.To<typeof ShardingEntityTypeNotRegisteredErrorSchema>
+  extends Schema.To<typeof ShardingEntityTypeNotRegisteredErrorSchema_>
 {}
 
 /**
@@ -50,3 +46,12 @@ export function isShardingEntityTypeNotRegisteredError(value: unknown): value is
   return typeof value === "object" && value !== null && "_tag" in value &&
     value["_tag"] === ShardingEntityTypeNotRegisteredErrorTag
 }
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingEntityTypeNotRegisteredErrorSchema: Schema.Schema<
+  Schema.From<typeof ShardingEntityTypeNotRegisteredErrorSchema_>,
+  ShardingEntityTypeNotRegisteredError
+> = ShardingEntityTypeNotRegisteredErrorSchema_

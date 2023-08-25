@@ -9,11 +9,7 @@ import * as PodAddress from "@effect/shardcake/PodAddress";
  * @category symbols
  */
 export declare const ShardingEntityTypeNotRegisteredErrorTag: "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export declare const ShardingEntityTypeNotRegisteredErrorSchema: Schema.Schema<{
+declare const ShardingEntityTypeNotRegisteredErrorSchema_: Schema.Schema<{
     readonly _tag: "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
     readonly entityType: string;
     readonly podAddress: {
@@ -34,7 +30,7 @@ export declare const ShardingEntityTypeNotRegisteredErrorSchema: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingEntityTypeNotRegisteredError extends Schema.To<typeof ShardingEntityTypeNotRegisteredErrorSchema> {
+export interface ShardingEntityTypeNotRegisteredError extends Schema.To<typeof ShardingEntityTypeNotRegisteredErrorSchema_> {
 }
 /**
  * @since 1.0.0
@@ -46,4 +42,10 @@ export declare function ShardingEntityTypeNotRegisteredError(entityType: string,
  * @category constructors
  */
 export declare function isShardingEntityTypeNotRegisteredError(value: unknown): value is ShardingEntityTypeNotRegisteredError;
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export declare const ShardingEntityTypeNotRegisteredErrorSchema: Schema.Schema<Schema.From<typeof ShardingEntityTypeNotRegisteredErrorSchema_>, ShardingEntityTypeNotRegisteredError>;
+export {};
 //# sourceMappingURL=ShardingEntityTypeNotRegisteredError.d.ts.map

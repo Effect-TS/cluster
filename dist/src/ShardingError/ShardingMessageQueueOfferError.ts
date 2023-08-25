@@ -10,11 +10,7 @@ import * as Schema from "@effect/schema/Schema"
  */
 export const ShardingMessageQueueOfferErrorTag = "@effect/shardcake/ShardingMessageQueueOfferError" as const
 
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingMessageQueueOfferErrorSchema = Schema.data(Schema.struct({
+const ShardingMessageQueueOfferErrorSchema_ = Schema.data(Schema.struct({
   _tag: Schema.literal(ShardingMessageQueueOfferErrorTag),
   error: Schema.string
 }))
@@ -23,7 +19,7 @@ export const ShardingMessageQueueOfferErrorSchema = Schema.data(Schema.struct({
  * @since 1.0.0
  * @category models
  */
-export interface ShardingMessageQueueOfferError extends Schema.To<typeof ShardingMessageQueueOfferErrorSchema> {}
+export interface ShardingMessageQueueOfferError extends Schema.To<typeof ShardingMessageQueueOfferErrorSchema_> {}
 
 /**
  * @since 1.0.0
@@ -44,3 +40,12 @@ export function isShardingMessageQueueOfferError(value: unknown): value is Shard
   return typeof value === "object" && value !== null && "_tag" in value &&
     value._tag === ShardingMessageQueueOfferErrorTag
 }
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingMessageQueueOfferErrorSchema: Schema.Schema<
+  Schema.From<typeof ShardingMessageQueueOfferErrorSchema_>,
+  ShardingMessageQueueOfferError
+> = ShardingMessageQueueOfferErrorSchema_

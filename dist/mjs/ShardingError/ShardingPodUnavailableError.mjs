@@ -9,11 +9,7 @@ import * as PodAddress from "@effect/shardcake/PodAddress";
  * @category symbols
  */
 export const ShardingPodUnavailableErrorTag = "@effect/shardcake/ShardingPodUnavailableError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingPodUnavailableErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+export const ShardingPodUnavailableErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingPodUnavailableErrorTag),
   pod: PodAddress.schema
 }));
@@ -34,4 +30,9 @@ export function ShardingPodUnavailableError(pod) {
 export function isShardingPodUnavailableError(value) {
   return value && value !== null && "_tag" in value && value._tag === ShardingPodUnavailableErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingPodUnavailableErrorSchema = ShardingPodUnavailableErrorSchema_;
 //# sourceMappingURL=ShardingPodUnavailableError.mjs.map

@@ -20,12 +20,8 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @category symbols
  */
 const ShardingPodNoLongerRegisteredErrorTag = "@effect/shardcake/ShardingPodNoLongerRegisteredError";
-/**
- * @since 1.0.0
- * @category schema
- */
 exports.ShardingPodNoLongerRegisteredErrorTag = ShardingPodNoLongerRegisteredErrorTag;
-const ShardingPodNoLongerRegisteredErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingPodNoLongerRegisteredErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingPodNoLongerRegisteredErrorTag),
   podAddress: PodAddress.schema
 }));
@@ -33,7 +29,6 @@ const ShardingPodNoLongerRegisteredErrorSchema = /*#__PURE__*/Schema.data( /*#__
  * @since 1.0.0
  * @category constructors
  */
-exports.ShardingPodNoLongerRegisteredErrorSchema = ShardingPodNoLongerRegisteredErrorSchema;
 function ShardingPodNoLongerRegisteredError(podAddress) {
   return Data.struct({
     _tag: ShardingPodNoLongerRegisteredErrorTag,
@@ -47,4 +42,10 @@ function ShardingPodNoLongerRegisteredError(podAddress) {
 function isShardingPodNoLongerRegisteredError(value) {
   return typeof value === "object" && value !== null && "_tag" in value && value["_tag"] === ShardingPodNoLongerRegisteredErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+const ShardingPodNoLongerRegisteredErrorSchema = ShardingPodNoLongerRegisteredErrorSchema_;
+exports.ShardingPodNoLongerRegisteredErrorSchema = ShardingPodNoLongerRegisteredErrorSchema;
 //# sourceMappingURL=ShardingPodNoLongerRegisteredError.js.map

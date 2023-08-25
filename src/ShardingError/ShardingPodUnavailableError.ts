@@ -11,11 +11,7 @@ import * as PodAddress from "@effect/shardcake/PodAddress"
  */
 export const ShardingPodUnavailableErrorTag = "@effect/shardcake/ShardingPodUnavailableError" as const
 
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingPodUnavailableErrorSchema = Schema.data(Schema.struct({
+export const ShardingPodUnavailableErrorSchema_ = Schema.data(Schema.struct({
   _tag: Schema.literal(ShardingPodUnavailableErrorTag),
   pod: PodAddress.schema
 }))
@@ -24,7 +20,7 @@ export const ShardingPodUnavailableErrorSchema = Schema.data(Schema.struct({
  * @since 1.0.0
  * @category models
  */
-export interface ShardingPodUnavailableError extends Schema.To<typeof ShardingPodUnavailableErrorSchema> {}
+export interface ShardingPodUnavailableError extends Schema.To<typeof ShardingPodUnavailableErrorSchema_> {}
 
 /**
  * @since 1.0.0
@@ -41,3 +37,12 @@ export function ShardingPodUnavailableError(pod: PodAddress.PodAddress): Shardin
 export function isShardingPodUnavailableError(value: any): value is ShardingPodUnavailableError {
   return value && value !== null && "_tag" in value && value._tag === ShardingPodUnavailableErrorTag
 }
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingPodUnavailableErrorSchema: Schema.Schema<
+  Schema.From<typeof ShardingPodUnavailableErrorSchema_>,
+  ShardingPodUnavailableError
+> = ShardingPodUnavailableErrorSchema_

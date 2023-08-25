@@ -20,12 +20,8 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @category symbols
  */
 const ShardingEntityTypeNotRegisteredErrorTag = "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
-/**
- * @since 1.0.0
- * @category schema
- */
 exports.ShardingEntityTypeNotRegisteredErrorTag = ShardingEntityTypeNotRegisteredErrorTag;
-const ShardingEntityTypeNotRegisteredErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingEntityTypeNotRegisteredErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingEntityTypeNotRegisteredErrorTag),
   entityType: Schema.string,
   podAddress: PodAddress.schema
@@ -34,7 +30,6 @@ const ShardingEntityTypeNotRegisteredErrorSchema = /*#__PURE__*/Schema.data( /*#
  * @since 1.0.0
  * @category constructors
  */
-exports.ShardingEntityTypeNotRegisteredErrorSchema = ShardingEntityTypeNotRegisteredErrorSchema;
 function ShardingEntityTypeNotRegisteredError(entityType, podAddress) {
   return Data.struct({
     _tag: ShardingEntityTypeNotRegisteredErrorTag,
@@ -49,4 +44,10 @@ function ShardingEntityTypeNotRegisteredError(entityType, podAddress) {
 function isShardingEntityTypeNotRegisteredError(value) {
   return typeof value === "object" && value !== null && "_tag" in value && value["_tag"] === ShardingEntityTypeNotRegisteredErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+const ShardingEntityTypeNotRegisteredErrorSchema = ShardingEntityTypeNotRegisteredErrorSchema_;
+exports.ShardingEntityTypeNotRegisteredErrorSchema = ShardingEntityTypeNotRegisteredErrorSchema;
 //# sourceMappingURL=ShardingEntityTypeNotRegisteredError.js.map

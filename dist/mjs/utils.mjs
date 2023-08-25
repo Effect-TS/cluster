@@ -67,11 +67,11 @@ export function groupBy(f) {
 }
 /** @internal */
 export function jsonStringify(value, schema) {
-  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => ShardingError.ShardingEncodeError(TreeFormatter.formatErrors(e.errors)))(Schema.encode(schema)(value)));
+  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => ShardingError.ShardingSerializationError(TreeFormatter.formatErrors(e.errors)))(Schema.encode(schema)(value)));
 }
 /** @internal */
 export function jsonParse(value, schema) {
-  return Effect.mapError(e => ShardingError.ShardingDecodeError(TreeFormatter.formatErrors(e.errors)))(Effect.flatMap(Schema.decode(schema))(Effect.sync(() => JSON.parse(value))));
+  return Effect.mapError(e => ShardingError.ShardingSerializationError(TreeFormatter.formatErrors(e.errors)))(Effect.flatMap(Schema.decode(schema))(Effect.sync(() => JSON.parse(value))));
 }
 /** @internal */
 export function sendInternal(send) {

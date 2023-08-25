@@ -14,7 +14,7 @@ import * as ShardingError from "@effect/shardcake/ShardingError";
  * @category models
  */
 export interface EntityManager<Req> {
-    readonly send: (entityId: string, req: Req, replyId: Option.Option<ReplyId.ReplyId>, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingMessageQueueOfferError, void>;
+    readonly send: (entityId: string, req: Req, replyId: Option.Option<ReplyId.ReplyId>, replyChannel: ReplyChannel.ReplyChannel<any>) => Effect.Effect<never, ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingMessageQueueError, void>;
     readonly terminateEntitiesOnShards: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>;
     readonly terminateAllEntities: Effect.Effect<never, never, void>;
 }

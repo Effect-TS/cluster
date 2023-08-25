@@ -8,11 +8,7 @@ import * as Schema from "@effect/schema/Schema";
  * @category schema
  */
 export const ShardingSendTimeoutErrorTag = "@effect/shardcake/ShardingSendTimeoutError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingSendTimeoutErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingSendTimeoutErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingSendTimeoutErrorTag)
 }));
 /**
@@ -31,4 +27,9 @@ export function ShardingSendTimeoutError() {
 export function isShardingSendTimeoutError(value) {
   return value && "_tag" in value && value._tag === ShardingSendTimeoutErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingSendTimeoutErrorSchema = ShardingSendTimeoutErrorSchema_;
 //# sourceMappingURL=ShardingSendTimeoutError.mjs.map

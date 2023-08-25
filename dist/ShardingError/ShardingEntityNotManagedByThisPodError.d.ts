@@ -8,11 +8,7 @@ import * as Schema from "@effect/schema/Schema";
  * @category symbols
  */
 export declare const ShardingEntityNotManagedByThisPodErrorTag: "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export declare const ShardingEntityNotManagedByThisPodErrorSchema: Schema.Schema<{
+declare const ShardingEntityNotManagedByThisPodErrorSchema_: Schema.Schema<{
     readonly _tag: "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
     readonly entityId: string;
 }, Data.Data<{
@@ -23,7 +19,7 @@ export declare const ShardingEntityNotManagedByThisPodErrorSchema: Schema.Schema
  * @since 1.0.0
  * @category models
  */
-export interface ShardingEntityNotManagedByThisPodError extends Schema.To<typeof ShardingEntityNotManagedByThisPodErrorSchema> {
+export interface ShardingEntityNotManagedByThisPodError extends Schema.To<typeof ShardingEntityNotManagedByThisPodErrorSchema_> {
 }
 /**
  * @since 1.0.0
@@ -35,4 +31,10 @@ export declare function ShardingEntityNotManagedByThisPodError(entityId: string)
  * @category utils
  */
 export declare function isShardingEntityNotManagedByThisPodError(value: any): value is ShardingEntityNotManagedByThisPodError;
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export declare const ShardingEntityNotManagedByThisPodErrorSchema: Schema.Schema<Schema.From<typeof ShardingEntityNotManagedByThisPodErrorSchema_>, ShardingEntityNotManagedByThisPodError>;
+export {};
 //# sourceMappingURL=ShardingEntityNotManagedByThisPodError.d.ts.map

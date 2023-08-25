@@ -11,11 +11,7 @@ import * as Schema from "@effect/schema/Schema"
 export const ShardingEntityNotManagedByThisPodErrorTag =
   "@effect/shardcake/ShardingEntityNotManagedByThisPodError" as const
 
-/**
- * @since 1.0.0
- * @category schema
- */
-export const ShardingEntityNotManagedByThisPodErrorSchema = Schema.data(
+const ShardingEntityNotManagedByThisPodErrorSchema_ = Schema.data(
   Schema.struct({
     _tag: Schema.literal(ShardingEntityNotManagedByThisPodErrorTag),
     entityId: Schema.string
@@ -27,7 +23,7 @@ export const ShardingEntityNotManagedByThisPodErrorSchema = Schema.data(
  * @category models
  */
 export interface ShardingEntityNotManagedByThisPodError
-  extends Schema.To<typeof ShardingEntityNotManagedByThisPodErrorSchema>
+  extends Schema.To<typeof ShardingEntityNotManagedByThisPodErrorSchema_>
 {}
 
 /**
@@ -45,3 +41,12 @@ export function ShardingEntityNotManagedByThisPodError(entityId: string): Shardi
 export function isShardingEntityNotManagedByThisPodError(value: any): value is ShardingEntityNotManagedByThisPodError {
   return value && "_tag" in value && value._tag === ShardingEntityNotManagedByThisPodErrorTag
 }
+
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export const ShardingEntityNotManagedByThisPodErrorSchema: Schema.Schema<
+  Schema.From<typeof ShardingEntityNotManagedByThisPodErrorSchema_>,
+  ShardingEntityNotManagedByThisPodError
+> = ShardingEntityNotManagedByThisPodErrorSchema_

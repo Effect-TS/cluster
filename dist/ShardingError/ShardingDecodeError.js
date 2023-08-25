@@ -19,12 +19,8 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @category symbols
  */
 const ShardingDecodeErrorTag = "@effect/shardcake/ShardingDecodeError";
-/**
- * @since 1.0.0
- * @category schema
- */
 exports.ShardingDecodeErrorTag = ShardingDecodeErrorTag;
-const ShardingDecodeErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+const ShardingDecodeErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingDecodeErrorTag),
   error: Schema.string
 }));
@@ -32,7 +28,6 @@ const ShardingDecodeErrorSchema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.
  * @since 1.0.0
  * @category constructors
  */
-exports.ShardingDecodeErrorSchema = ShardingDecodeErrorSchema;
 function ShardingDecodeError(error) {
   return Data.struct({
     _tag: ShardingDecodeErrorTag,
@@ -46,4 +41,10 @@ function ShardingDecodeError(error) {
 function isShardingDecodeError(value) {
   return value && "_tag" in value && value._tag === ShardingDecodeErrorTag;
 }
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+const ShardingDecodeErrorSchema = ShardingDecodeErrorSchema_;
+exports.ShardingDecodeErrorSchema = ShardingDecodeErrorSchema;
 //# sourceMappingURL=ShardingDecodeError.js.map

@@ -8,11 +8,7 @@ import * as Schema from "@effect/schema/Schema";
  * @category schema
  */
 export declare const ShardingSendTimeoutErrorTag: "@effect/shardcake/ShardingSendTimeoutError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export declare const ShardingSendTimeoutErrorSchema: Schema.Schema<{
+declare const ShardingSendTimeoutErrorSchema_: Schema.Schema<{
     readonly _tag: "@effect/shardcake/ShardingSendTimeoutError";
 }, Data.Data<{
     readonly _tag: "@effect/shardcake/ShardingSendTimeoutError";
@@ -21,7 +17,7 @@ export declare const ShardingSendTimeoutErrorSchema: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingSendTimeoutError extends Schema.To<typeof ShardingSendTimeoutErrorSchema> {
+export interface ShardingSendTimeoutError extends Schema.To<typeof ShardingSendTimeoutErrorSchema_> {
 }
 /**
  * @since 1.0.0
@@ -33,4 +29,10 @@ export declare function ShardingSendTimeoutError(): ShardingSendTimeoutError;
  * @category utils
  */
 export declare function isShardingSendTimeoutError(value: any): value is ShardingSendTimeoutError;
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export declare const ShardingSendTimeoutErrorSchema: Schema.Schema<Schema.From<typeof ShardingSendTimeoutErrorSchema_>, ShardingSendTimeoutError>;
+export {};
 //# sourceMappingURL=ShardingSendTimeoutError.d.ts.map

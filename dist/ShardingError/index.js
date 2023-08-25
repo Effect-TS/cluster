@@ -8,30 +8,6 @@ var _exportNames = {
 };
 exports.ShardingErrorSchema = void 0;
 var Schema = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/Schema"));
-var _ShardingDecodeError = /*#__PURE__*/require("@effect/shardcake/ShardingError/ShardingDecodeError");
-Object.keys(_ShardingDecodeError).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-  if (key in exports && exports[key] === _ShardingDecodeError[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _ShardingDecodeError[key];
-    }
-  });
-});
-var _ShardingEncodeError = /*#__PURE__*/require("@effect/shardcake/ShardingError/ShardingEncodeError");
-Object.keys(_ShardingEncodeError).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-  if (key in exports && exports[key] === _ShardingEncodeError[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _ShardingEncodeError[key];
-    }
-  });
-});
 var _ShardingEntityNotManagedByThisPodError = /*#__PURE__*/require("@effect/shardcake/ShardingError/ShardingEntityNotManagedByThisPodError");
 Object.keys(_ShardingEntityNotManagedByThisPodError).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -56,15 +32,15 @@ Object.keys(_ShardingEntityTypeNotRegisteredError).forEach(function (key) {
     }
   });
 });
-var _ShardingMessageQueueOfferError = /*#__PURE__*/require("@effect/shardcake/ShardingError/ShardingMessageQueueOfferError");
-Object.keys(_ShardingMessageQueueOfferError).forEach(function (key) {
+var _ShardingMessageQueueError = /*#__PURE__*/require("@effect/shardcake/ShardingError/ShardingMessageQueueError");
+Object.keys(_ShardingMessageQueueError).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-  if (key in exports && exports[key] === _ShardingMessageQueueOfferError[key]) return;
+  if (key in exports && exports[key] === _ShardingMessageQueueError[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function () {
-      return _ShardingMessageQueueOfferError[key];
+      return _ShardingMessageQueueError[key];
     }
   });
 });
@@ -92,30 +68,6 @@ Object.keys(_ShardingPodUnavailableError).forEach(function (key) {
     }
   });
 });
-var _ShardingReplyError = /*#__PURE__*/require("@effect/shardcake/ShardingError/ShardingReplyError");
-Object.keys(_ShardingReplyError).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-  if (key in exports && exports[key] === _ShardingReplyError[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _ShardingReplyError[key];
-    }
-  });
-});
-var _ShardingSendError = /*#__PURE__*/require("@effect/shardcake/ShardingError/ShardingSendError");
-Object.keys(_ShardingSendError).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-  if (key in exports && exports[key] === _ShardingSendError[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _ShardingSendError[key];
-    }
-  });
-});
 var _ShardingSendTimeoutError = /*#__PURE__*/require("@effect/shardcake/ShardingError/ShardingSendTimeoutError");
 Object.keys(_ShardingSendTimeoutError).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -128,12 +80,24 @@ Object.keys(_ShardingSendTimeoutError).forEach(function (key) {
     }
   });
 });
+var _ShardingSerializationError = /*#__PURE__*/require("@effect/shardcake/ShardingError/ShardingSerializationError");
+Object.keys(_ShardingSerializationError).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _ShardingSerializationError[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _ShardingSerializationError[key];
+    }
+  });
+});
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 /**
  * @since 1.0.0
  * @category schema
  */
-const ShardingErrorSchema = /*#__PURE__*/Schema.union(_ShardingDecodeError.ShardingDecodeErrorSchema, _ShardingEncodeError.ShardingEncodeErrorSchema, _ShardingEntityNotManagedByThisPodError.ShardingEntityNotManagedByThisPodErrorSchema, _ShardingEntityTypeNotRegisteredError.ShardingEntityTypeNotRegisteredErrorSchema, _ShardingMessageQueueOfferError.ShardingMessageQueueOfferErrorSchema, _ShardingPodNoLongerRegisteredError.ShardingPodNoLongerRegisteredErrorSchema, _ShardingPodUnavailableError.ShardingPodUnavailableErrorSchema, _ShardingReplyError.ShardingReplyErrorSchema, _ShardingSendError.ShardingSendErrorSchema, _ShardingSendTimeoutError.ShardingSendTimeoutErrorSchema);
+const ShardingErrorSchema = /*#__PURE__*/Schema.union(_ShardingSerializationError.ShardingSerializationErrorSchema, _ShardingEntityNotManagedByThisPodError.ShardingEntityNotManagedByThisPodErrorSchema, _ShardingEntityTypeNotRegisteredError.ShardingEntityTypeNotRegisteredErrorSchema, _ShardingMessageQueueError.ShardingMessageQueueErrorSchema, _ShardingPodNoLongerRegisteredError.ShardingPodNoLongerRegisteredErrorSchema, _ShardingPodUnavailableError.ShardingPodUnavailableErrorSchema, _ShardingSendTimeoutError.ShardingSendTimeoutErrorSchema);
 exports.ShardingErrorSchema = ShardingErrorSchema;
 //# sourceMappingURL=index.js.map

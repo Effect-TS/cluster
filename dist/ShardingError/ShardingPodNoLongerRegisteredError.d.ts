@@ -9,11 +9,7 @@ import * as PodAddress from "@effect/shardcake/PodAddress";
  * @category symbols
  */
 export declare const ShardingPodNoLongerRegisteredErrorTag: "@effect/shardcake/ShardingPodNoLongerRegisteredError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export declare const ShardingPodNoLongerRegisteredErrorSchema: Schema.Schema<{
+declare const ShardingPodNoLongerRegisteredErrorSchema_: Schema.Schema<{
     readonly _tag: "@effect/shardcake/ShardingPodNoLongerRegisteredError";
     readonly podAddress: {
         readonly _id: "@effect/shardcake/PodAddress";
@@ -32,7 +28,7 @@ export declare const ShardingPodNoLongerRegisteredErrorSchema: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingPodNoLongerRegisteredError extends Schema.To<typeof ShardingPodNoLongerRegisteredErrorSchema> {
+export interface ShardingPodNoLongerRegisteredError extends Schema.To<typeof ShardingPodNoLongerRegisteredErrorSchema_> {
 }
 /**
  * @since 1.0.0
@@ -44,4 +40,10 @@ export declare function ShardingPodNoLongerRegisteredError(podAddress: PodAddres
  * @category constructors
  */
 export declare function isShardingPodNoLongerRegisteredError(value: unknown): value is ShardingPodNoLongerRegisteredError;
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export declare const ShardingPodNoLongerRegisteredErrorSchema: Schema.Schema<Schema.From<typeof ShardingPodNoLongerRegisteredErrorSchema_>, ShardingPodNoLongerRegisteredError>;
+export {};
 //# sourceMappingURL=ShardingPodNoLongerRegisteredError.d.ts.map

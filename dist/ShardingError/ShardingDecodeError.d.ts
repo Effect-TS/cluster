@@ -8,11 +8,7 @@ import * as Schema from "@effect/schema/Schema";
  * @category symbols
  */
 export declare const ShardingDecodeErrorTag: "@effect/shardcake/ShardingDecodeError";
-/**
- * @since 1.0.0
- * @category schema
- */
-export declare const ShardingDecodeErrorSchema: Schema.Schema<{
+declare const ShardingDecodeErrorSchema_: Schema.Schema<{
     readonly _tag: "@effect/shardcake/ShardingDecodeError";
     readonly error: string;
 }, Data.Data<{
@@ -23,7 +19,7 @@ export declare const ShardingDecodeErrorSchema: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingDecodeError extends Schema.To<typeof ShardingDecodeErrorSchema> {
+export interface ShardingDecodeError extends Schema.To<typeof ShardingDecodeErrorSchema_> {
 }
 /**
  * @since 1.0.0
@@ -35,4 +31,10 @@ export declare function ShardingDecodeError(error: string): ShardingDecodeError;
  * @category utils
  */
 export declare function isShardingDecodeError(value: any): value is ShardingDecodeError;
+/**
+ * @since 1.0.0
+ * @category schema
+ */
+export declare const ShardingDecodeErrorSchema: Schema.Schema<Schema.From<typeof ShardingDecodeErrorSchema_>, ShardingDecodeError>;
+export {};
 //# sourceMappingURL=ShardingDecodeError.d.ts.map
