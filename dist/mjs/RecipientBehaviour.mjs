@@ -1,5 +1,5 @@
 import * as Effect from "@effect/io/Effect";
-import * as PoisonPill from "@effect/shardcake/PoisonPill";
+import * as PoisonPill from "@effect/sharding/PoisonPill";
 /**
  * An utility that process a message at a time, or interrupts on PoisonPill
  * @since 1.0.0

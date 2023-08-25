@@ -7,13 +7,13 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export declare const ShardingSerializationErrorTag: "@effect/shardcake/ShardingSerializationError";
+export declare const ShardingSerializationErrorTag: "@effect/sharding/ShardingSerializationError";
 declare const ShardingSerializationErrorSchema_: Schema.Schema<{
-    readonly _tag: "@effect/shardcake/ShardingSerializationError";
     readonly error: string;
+    readonly _tag: "@effect/sharding/ShardingSerializationError";
 }, Data.Data<{
-    readonly _tag: "@effect/shardcake/ShardingSerializationError";
     readonly error: string;
+    readonly _tag: "@effect/sharding/ShardingSerializationError";
 }>>;
 /**
  * @since 1.0.0

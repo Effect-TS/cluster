@@ -8,7 +8,7 @@ import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Exit from "@effect/io/Exit"
 import * as Queue from "@effect/io/Queue"
-import type * as ShardingError from "@effect/shardcake/ShardingError"
+import type * as ShardingError from "@effect/sharding/ShardingError"
 import * as Stream from "@effect/stream/Stream"
 import * as Take from "@effect/stream/Take"
 
@@ -16,7 +16,7 @@ import * as Take from "@effect/stream/Take"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/ReplyChannel"
+export const TypeId = "@effect/sharding/ReplyChannel"
 
 /**
  * @since 1.0.0

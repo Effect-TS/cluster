@@ -7,7 +7,7 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export declare const TypeId = "@effect/shardcake/ByteArray";
+export declare const TypeId = "@effect/sharding/ByteArray";
 /**
  * @since 1.0.0
  * @category symbols
@@ -38,10 +38,10 @@ export declare function isByteArray(value: unknown): value is ByteArray;
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly _id: "@effect/shardcake/ByteArray";
+    readonly _id: "@effect/sharding/ByteArray";
     readonly value: string;
 }, Data.Data<{
-    readonly _id: "@effect/shardcake/ByteArray";
+    readonly _id: "@effect/sharding/ByteArray";
     readonly value: string;
 }>>;
 /**

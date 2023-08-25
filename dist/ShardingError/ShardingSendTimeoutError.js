@@ -18,7 +18,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category schema
  */
-const ShardingSendTimeoutErrorTag = "@effect/shardcake/ShardingSendTimeoutError";
+const ShardingSendTimeoutErrorTag = "@effect/sharding/ShardingSendTimeoutError";
 exports.ShardingSendTimeoutErrorTag = ShardingSendTimeoutErrorTag;
 const ShardingSendTimeoutErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingSendTimeoutErrorTag)

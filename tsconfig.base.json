@@ -38,16 +38,16 @@
     "incremental": true,
     "removeComments": false,
     "paths": {
-      "@effect/shardcake": [
+      "@effect/sharding": [
         "./src/index.ts"
       ],
-      "@effect/shardcake/test/*": [
+      "@effect/sharding/test/*": [
         "./test/*"
       ],
-      "@effect/shardcake/examples/*": [
+      "@effect/sharding/examples/*": [
         "./examples/*"
       ],
-      "@effect/shardcake/*": [
+      "@effect/sharding/*": [
         "./src/*"
       ]
     },

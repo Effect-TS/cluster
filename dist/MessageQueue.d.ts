@@ -3,13 +3,13 @@
  */
 import * as Effect from "@effect/io/Effect";
 import * as Queue from "@effect/io/Queue";
-import type * as PoisonPill from "@effect/shardcake/PoisonPill";
-import type * as ShardingError from "@effect/shardcake/ShardingError";
+import type * as PoisonPill from "@effect/sharding/PoisonPill";
+import type * as ShardingError from "@effect/sharding/ShardingError";
 /**
  * @since 1.0.0
  * @category symbols
  */
-export declare const TypeId = "@effect/shardcake/MessageQueueInstance";
+export declare const TypeId = "@effect/sharding/MessageQueueInstance";
 /**
  * @since 1.0.0
  * @category symbols

@@ -5,16 +5,16 @@ import * as Data from "@effect/data/Data"
 import type * as Option from "@effect/data/Option"
 import type * as Effect from "@effect/io/Effect"
 import type * as Schema from "@effect/schema/Schema"
-import type * as BinaryMessage from "@effect/shardcake/BinaryMessage"
-import type * as EntityManager from "@effect/shardcake/EntityManager"
-import type * as ReplyChannel from "@effect/shardcake/ReplyChannel"
-import type * as ShardingError from "@effect/shardcake/ShardingError"
+import type * as BinaryMessage from "@effect/sharding/BinaryMessage"
+import type * as EntityManager from "@effect/sharding/EntityManager"
+import type * as ReplyChannel from "@effect/sharding/ReplyChannel"
+import type * as ShardingError from "@effect/sharding/ShardingError"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = Symbol.for("@effect/shardcake/EntityState")
+export const TypeId = Symbol.for("@effect/sharding/EntityState")
 
 /**
  * @since 1.0.0

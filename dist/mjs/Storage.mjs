@@ -12,7 +12,7 @@ import * as SubscriptionRef from "@effect/stream/SubscriptionRef";
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/StorageTypeId");
+export const TypeId = /*#__PURE__*/Symbol.for("@effect/sharding/StorageTypeId");
 /**
  * @since 1.0.0
  * @category context

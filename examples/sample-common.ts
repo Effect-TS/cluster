@@ -1,7 +1,7 @@
 import * as Schema from "@effect/schema/Schema"
-import * as Message from "@effect/shardcake/Message"
-import * as RecipientType from "@effect/shardcake/RecipientType"
-import * as StreamMessage from "@effect/shardcake/StreamMessage"
+import * as Message from "@effect/sharding/Message"
+import * as RecipientType from "@effect/sharding/RecipientType"
+import * as StreamMessage from "@effect/sharding/StreamMessage"
 
 export const [GetCurrent_, GetCurrent] = Message.schema(Schema.number)(
   Schema.struct({

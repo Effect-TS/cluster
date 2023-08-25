@@ -40,30 +40,30 @@ Added in v1.0.0
 ```ts
 export declare const ShardingErrorSchema: Schema.Schema<
   | {
-      readonly _tag: '@effect/shardcake/ShardingPodUnavailableError'
-      readonly pod: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+      readonly _tag: '@effect/sharding/ShardingPodUnavailableError'
+      readonly pod: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
     }
   | {
       readonly entityType: string
-      readonly _tag: '@effect/shardcake/ShardingEntityTypeNotRegisteredError'
+      readonly _tag: '@effect/sharding/ShardingEntityTypeNotRegisteredError'
       readonly podAddress: {
-        readonly _id: '@effect/shardcake/PodAddress'
+        readonly _id: '@effect/sharding/PodAddress'
         readonly host: string
         readonly port: number
       }
     }
-  | { readonly _tag: '@effect/shardcake/ShardingSerializationError'; readonly error: string }
-  | { readonly entityId: string; readonly _tag: '@effect/shardcake/ShardingEntityNotManagedByThisPodError' }
-  | { readonly _tag: '@effect/shardcake/ShardingMessageQueueError'; readonly error: string }
+  | { readonly _tag: '@effect/sharding/ShardingSerializationError'; readonly error: string }
+  | { readonly entityId: string; readonly _tag: '@effect/sharding/ShardingEntityNotManagedByThisPodError' }
+  | { readonly _tag: '@effect/sharding/ShardingMessageQueueError'; readonly error: string }
   | {
-      readonly _tag: '@effect/shardcake/ShardingPodNoLongerRegisteredError'
+      readonly _tag: '@effect/sharding/ShardingPodNoLongerRegisteredError'
       readonly podAddress: {
-        readonly _id: '@effect/shardcake/PodAddress'
+        readonly _id: '@effect/sharding/PodAddress'
         readonly host: string
         readonly port: number
       }
     }
-  | { readonly _tag: '@effect/shardcake/ShardingSendTimeoutError' },
+  | { readonly _tag: '@effect/sharding/ShardingSendTimeoutError' },
   | ShardingPodUnavailableError
   | ShardingEntityTypeNotRegisteredError
   | ShardingSerializationError

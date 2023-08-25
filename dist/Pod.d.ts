@@ -3,12 +3,12 @@
  */
 import * as Data from "@effect/data/Data";
 import * as Schema from "@effect/schema/Schema";
-import * as PodAddress from "@effect/shardcake/PodAddress";
+import * as PodAddress from "@effect/sharding/PodAddress";
 /**
  * @since 1.0.0
  * @category symbols
  */
-export declare const TypeId = "@effect/shardcake/Pod";
+export declare const TypeId = "@effect/sharding/Pod";
 /**
  * @since 1.0.0
  * @category symbols
@@ -35,17 +35,17 @@ export declare function make(address: PodAddress.PodAddress, version: string): P
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly _id: "@effect/shardcake/Pod";
+    readonly _id: "@effect/sharding/Pod";
     readonly address: {
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     };
     readonly version: string;
 }, Data.Data<{
-    readonly _id: "@effect/shardcake/Pod";
+    readonly _id: "@effect/sharding/Pod";
     readonly address: Data.Data<{
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     }>;

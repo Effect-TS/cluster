@@ -1,8 +1,8 @@
 import * as Effect from "@effect/io/Effect";
-import type * as Message from "@effect/shardcake/Message";
-import type * as ReplyId from "@effect/shardcake/ReplyId";
-import * as ShardingError from "@effect/shardcake/ShardingError";
-import type * as StreamMessage from "@effect/shardcake/StreamMessage";
+import type * as Message from "@effect/sharding/Message";
+import type * as ReplyId from "@effect/sharding/ReplyId";
+import * as ShardingError from "@effect/sharding/ShardingError";
+import type * as StreamMessage from "@effect/sharding/StreamMessage";
 import * as Stream from "@effect/stream/Stream";
 /**
  * An interface to communicate with a remote entity
@@ -41,5 +41,5 @@ export interface Messenger<Msg> {
  * cursor according to what we've seen in the previous stream of responses.
  * @since 1.0.0
  */
-export declare function sendStreamAutoRestart<Msg, Cursor>(messenger: Messenger<Msg>, entityId: string, cursor: Cursor): <A extends Msg & StreamMessage.StreamMessage<any>>(fn: (cursor: Cursor) => (replyId: ReplyId.ReplyId) => A) => (updateCursor: (cursor: Cursor, res: StreamMessage.Success<A>) => Cursor) => Stream.Stream<never, ShardingError.ShardingMessageQueueError | ShardingError.ShardingSerializationError | ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingEntityTypeNotRegisteredError | ShardingError.ShardingPodNoLongerRegisteredError | ShardingError.ShardingPodUnavailableError | ShardingError.ShardingSendTimeoutError, StreamMessage.Success<A>>;
+export declare function sendStreamAutoRestart<Msg, Cursor>(messenger: Messenger<Msg>, entityId: string, cursor: Cursor): <A extends Msg & StreamMessage.StreamMessage<any>>(fn: (cursor: Cursor) => (replyId: ReplyId.ReplyId) => A) => (updateCursor: (cursor: Cursor, res: StreamMessage.Success<A>) => Cursor) => Stream.Stream<never, ShardingError.ShardingSerializationError | ShardingError.ShardingEntityNotManagedByThisPodError | ShardingError.ShardingEntityTypeNotRegisteredError | ShardingError.ShardingMessageQueueError | ShardingError.ShardingPodNoLongerRegisteredError | ShardingError.ShardingPodUnavailableError | ShardingError.ShardingSendTimeoutError, StreamMessage.Success<A>>;
 //# sourceMappingURL=Messenger.d.ts.map

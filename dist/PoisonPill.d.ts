@@ -9,7 +9,7 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export declare const TypeId = "@effect/shardcake/PoisonPill";
+export declare const TypeId = "@effect/sharding/PoisonPill";
 /**
  * @since 1.0.0
  * @category models
@@ -35,9 +35,9 @@ export declare function isPoisonPill(value: unknown): value is PoisonPill;
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly _id: "@effect/shardcake/PoisonPill";
+    readonly _id: "@effect/sharding/PoisonPill";
 }, Data.Data<{
-    readonly _id: "@effect/shardcake/PoisonPill";
+    readonly _id: "@effect/sharding/PoisonPill";
 }>>;
 /**
  * Attempts to take a message from the queue in the same way Queue.take does.

@@ -23,7 +23,7 @@ var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
 var Schema = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/Schema"));
 var TreeFormatter = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/TreeFormatter"));
-var ShardingError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingError"));
+var ShardingError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ShardingError"));
 var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/stream/Stream"));
 var _nodeFetch = /*#__PURE__*/_interopRequireDefault( /*#__PURE__*/require("node-fetch"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -45,14 +45,14 @@ function isFetchError(value) {
 /** @internal */
 function NotAMessageWithReplierDefect(message) {
   return {
-    _tag: "@effect/shardcake/NotAMessageWithReplierDefect",
+    _tag: "@effect/sharding/NotAMessageWithReplierDefect",
     message
   };
 }
 /** @internal */
 function MessageReturnedNotingDefect(message) {
   return {
-    _tag: "@effect/shardcake/MessageReturnedNotingDefect",
+    _tag: "@effect/sharding/MessageReturnedNotingDefect",
     message
   };
 }

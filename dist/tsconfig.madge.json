@@ -4,9 +4,15 @@
     "allowJs": true,
     "baseUrl": ".",
     "paths": {
-      "@effect/shardcake": ["./build/esm/index.js"],
-      "@effect/shardcake/*": ["./build/esm/*"]
+      "@effect/sharding": [
+        "./build/esm/index.js"
+      ],
+      "@effect/sharding/*": [
+        "./build/esm/*"
+      ]
     }
   },
-  "include": ["./build/esm/**/*.js"]
+  "include": [
+    "./build/esm/**/*.js"
+  ]
 }

@@ -6,11 +6,11 @@ import type * as HashSet from "@effect/data/HashSet";
 import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
-import type * as BinaryMessage from "@effect/shardcake/BinaryMessage";
-import type * as ByteArray from "@effect/shardcake/ByteArray";
-import type * as PodAddress from "@effect/shardcake/PodAddress";
-import type * as ShardId from "@effect/shardcake/ShardId";
-import type * as ShardingError from "@effect/shardcake/ShardingError";
+import type * as BinaryMessage from "@effect/sharding/BinaryMessage";
+import type * as ByteArray from "@effect/sharding/ByteArray";
+import type * as PodAddress from "@effect/sharding/PodAddress";
+import type * as ShardId from "@effect/sharding/ShardId";
+import type * as ShardingError from "@effect/sharding/ShardingError";
 import * as Stream from "@effect/stream/Stream";
 /**
  * @since 1.0.0

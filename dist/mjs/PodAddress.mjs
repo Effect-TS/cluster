@@ -7,7 +7,7 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/PodAddress";
+export const TypeId = "@effect/sharding/PodAddress";
 /**
  * @since 1.0.0
  * @category utils

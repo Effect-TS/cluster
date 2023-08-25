@@ -3,14 +3,14 @@
  */
 import * as Effect from "@effect/io/Effect";
 import * as Schema from "@effect/schema/Schema";
-import * as ReplyId from "@effect/shardcake/ReplyId";
-import * as Sharding from "@effect/shardcake/Sharding";
+import * as ReplyId from "@effect/sharding/ReplyId";
+import * as Sharding from "@effect/sharding/Sharding";
 import type * as Stream from "@effect/stream/Stream";
 /**
  * @since 1.0.0
  * @category symbols
  */
-export declare const TypeId = "@effect/shardcake/StreamReplier";
+export declare const TypeId = "@effect/sharding/StreamReplier";
 /**
  * @since 1.0.0
  * @category symbols

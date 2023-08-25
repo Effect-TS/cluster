@@ -8,7 +8,7 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export declare const TypeId = "@effect/shardcake/ReplyId";
+export declare const TypeId = "@effect/sharding/ReplyId";
 /**
  * @since 1.0.0
  * @category symbols
@@ -46,10 +46,10 @@ export declare const makeEffect: Effect.Effect<never, never, ReplyId>;
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly _id: "@effect/shardcake/ReplyId";
+    readonly _id: "@effect/sharding/ReplyId";
     readonly value: string;
 }, Data.Data<{
-    readonly _id: "@effect/shardcake/ReplyId";
+    readonly _id: "@effect/sharding/ReplyId";
     readonly value: string;
 }>>;
 //# sourceMappingURL=ReplyId.d.ts.map

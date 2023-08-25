@@ -3,25 +3,25 @@
  */
 import * as Data from "@effect/data/Data";
 import * as Schema from "@effect/schema/Schema";
-import * as PodAddress from "@effect/shardcake/PodAddress";
+import * as PodAddress from "@effect/sharding/PodAddress";
 /**
  * @since 1.0.0
  * @category symbols
  */
-export declare const ShardingEntityTypeNotRegisteredErrorTag: "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
+export declare const ShardingEntityTypeNotRegisteredErrorTag: "@effect/sharding/ShardingEntityTypeNotRegisteredError";
 declare const ShardingEntityTypeNotRegisteredErrorSchema_: Schema.Schema<{
-    readonly _tag: "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
+    readonly _tag: "@effect/sharding/ShardingEntityTypeNotRegisteredError";
     readonly entityType: string;
     readonly podAddress: {
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     };
 }, Data.Data<{
-    readonly _tag: "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
+    readonly _tag: "@effect/sharding/ShardingEntityTypeNotRegisteredError";
     readonly entityType: string;
     readonly podAddress: Data.Data<{
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     }>;

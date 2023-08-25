@@ -7,7 +7,7 @@ import * as Queue from "@effect/io/Queue";
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/MessageQueueInstance";
+export const TypeId = "@effect/sharding/MessageQueueInstance";
 /**
  * A layer that creates an in-memory message queue.
  *

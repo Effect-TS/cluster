@@ -2,9 +2,9 @@
  * @since 1.0.0
  */
 import * as Schema from "@effect/schema/Schema"
-import * as Pod from "@effect/shardcake/Pod"
-import * as PodAddress from "@effect/shardcake/PodAddress"
-import * as ShardId from "@effect/shardcake/ShardId"
+import * as Pod from "@effect/sharding/Pod"
+import * as PodAddress from "@effect/sharding/PodAddress"
+import * as ShardId from "@effect/sharding/ShardId"
 
 /**
  * @since 1.0.0

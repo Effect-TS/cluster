@@ -8,7 +8,7 @@ import * as Schema from "@effect/schema/Schema"
  * @since 1.0.0
  * @category schema
  */
-export const ShardingSendTimeoutErrorTag = "@effect/shardcake/ShardingSendTimeoutError" as const
+export const ShardingSendTimeoutErrorTag = "@effect/sharding/ShardingSendTimeoutError" as const
 
 const ShardingSendTimeoutErrorSchema_ = Schema.data(
   Schema.struct({

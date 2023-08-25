@@ -4,9 +4,9 @@
 
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
-import * as Pods from "@effect/shardcake/Pods";
-import { ShardingPodUnavailableError } from "@effect/shardcake/ShardingError";
-import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp";
+import * as Pods from "@effect/sharding/Pods";
+import { ShardingPodUnavailableError } from "@effect/sharding/ShardingError";
+import * as ShardingProtocolHttp from "@effect/sharding/ShardingProtocolHttp";
 import * as Stream from "@effect/stream/Stream";
 import { isFetchError, send, sendStream } from "./utils";
 /** @internal */

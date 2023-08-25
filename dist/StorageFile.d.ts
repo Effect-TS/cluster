@@ -1,5 +1,5 @@
 import * as Layer from "@effect/io/Layer";
-import * as Storage from "@effect/shardcake/Storage";
+import * as Storage from "@effect/sharding/Storage";
 /**
  * @since 1.0.0
  * @category layers

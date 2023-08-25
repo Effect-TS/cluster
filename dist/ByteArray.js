@@ -19,7 +19,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category symbols
  */
-const TypeId = "@effect/shardcake/ByteArray";
+const TypeId = "@effect/sharding/ByteArray";
 /**
  * Construct a new `ByteArray` from its internal string value.
  *

@@ -19,30 +19,30 @@ import * as Synchronized from "@effect/io/Ref/Synchronized"
 import * as Schedule from "@effect/io/Schedule"
 import type * as Scope from "@effect/io/Scope"
 import type * as Schema from "@effect/schema/Schema"
-import * as BinaryMessage from "@effect/shardcake/BinaryMessage"
-import type * as Broadcaster from "@effect/shardcake/Broadcaster"
-import type * as ByteArray from "@effect/shardcake/ByteArray"
-import * as EntityManager from "@effect/shardcake/EntityManager"
-import * as EntityState from "@effect/shardcake/EntityState"
-import * as Message from "@effect/shardcake/Message"
-import type { Messenger } from "@effect/shardcake/Messenger"
-import * as PodAddress from "@effect/shardcake/PodAddress"
-import * as Pods from "@effect/shardcake/Pods"
-import type * as RecipientBehaviour from "@effect/shardcake/RecipientBehaviour"
-import * as RecipientType from "@effect/shardcake/RecipientType"
-import type { Replier } from "@effect/shardcake/Replier"
-import * as ReplyChannel from "@effect/shardcake/ReplyChannel"
-import * as ReplyId from "@effect/shardcake/ReplyId"
-import * as Serialization from "@effect/shardcake/Serialization"
-import * as ShardId from "@effect/shardcake/ShardId"
-import * as ShardingConfig from "@effect/shardcake/ShardingConfig"
-import * as ShardingError from "@effect/shardcake/ShardingError"
-import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent"
-import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient"
-import * as Storage from "@effect/shardcake/Storage"
-import * as StreamMessage from "@effect/shardcake/StreamMessage"
-import type * as StreamReplier from "@effect/shardcake/StreamReplier"
-import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "@effect/shardcake/utils"
+import * as BinaryMessage from "@effect/sharding/BinaryMessage"
+import type * as Broadcaster from "@effect/sharding/Broadcaster"
+import type * as ByteArray from "@effect/sharding/ByteArray"
+import * as EntityManager from "@effect/sharding/EntityManager"
+import * as EntityState from "@effect/sharding/EntityState"
+import * as Message from "@effect/sharding/Message"
+import type { Messenger } from "@effect/sharding/Messenger"
+import * as PodAddress from "@effect/sharding/PodAddress"
+import * as Pods from "@effect/sharding/Pods"
+import type * as RecipientBehaviour from "@effect/sharding/RecipientBehaviour"
+import * as RecipientType from "@effect/sharding/RecipientType"
+import type { Replier } from "@effect/sharding/Replier"
+import * as ReplyChannel from "@effect/sharding/ReplyChannel"
+import * as ReplyId from "@effect/sharding/ReplyId"
+import * as Serialization from "@effect/sharding/Serialization"
+import * as ShardId from "@effect/sharding/ShardId"
+import * as ShardingConfig from "@effect/sharding/ShardingConfig"
+import * as ShardingError from "@effect/sharding/ShardingError"
+import * as ShardingRegistrationEvent from "@effect/sharding/ShardingRegistrationEvent"
+import * as ShardManagerClient from "@effect/sharding/ShardManagerClient"
+import * as Storage from "@effect/sharding/Storage"
+import * as StreamMessage from "@effect/sharding/StreamMessage"
+import type * as StreamReplier from "@effect/sharding/StreamReplier"
+import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "@effect/sharding/utils"
 import * as Stream from "@effect/stream/Stream"
 import * as Sharding from "./Sharding"
 
@@ -779,14 +779,11 @@ function make(
               )
             )
           ),
-          Effect.tapErrorCause((_) => Effect.as(replyChannel.fail(_), Option.none()))
+          Effect.tapErrorCause((_) => replyChannel.fail(_))
         )
 
       yield* $(
-        pipe(
-          entityStates,
-          Ref.update(HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))
-        )
+        Ref.update(entityStates, HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))
       )
     })
   }

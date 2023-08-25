@@ -18,7 +18,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category symbols
  */
-const ShardingSerializationErrorTag = "@effect/shardcake/ShardingSerializationError";
+const ShardingSerializationErrorTag = "@effect/sharding/ShardingSerializationError";
 exports.ShardingSerializationErrorTag = ShardingSerializationErrorTag;
 const ShardingSerializationErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingSerializationErrorTag),

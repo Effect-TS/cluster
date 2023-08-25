@@ -8,7 +8,7 @@ import * as Schema from "@effect/schema/Schema"
  * @since 1.0.0
  * @category symbols
  */
-export const ShardingMessageQueueErrorTag = "@effect/shardcake/ShardingMessageQueueError" as const
+export const ShardingMessageQueueErrorTag = "@effect/sharding/ShardingMessageQueueError" as const
 
 const ShardingMessageQueueErrorSchema_ = Schema.data(Schema.struct({
   _tag: Schema.literal(ShardingMessageQueueErrorTag),

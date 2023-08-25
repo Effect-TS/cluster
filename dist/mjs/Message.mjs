@@ -3,7 +3,7 @@
  */
 import * as Data from "@effect/data/Data";
 import * as Schema from "@effect/schema/Schema";
-import * as Replier from "@effect/shardcake/Replier";
+import * as Replier from "@effect/sharding/Replier";
 /**
  * @since 1.0.0
  * @category utils

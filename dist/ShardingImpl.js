@@ -17,24 +17,24 @@ var Layer = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/
 var Ref = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Ref"));
 var Synchronized = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Ref/Synchronized"));
 var Schedule = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Schedule"));
-var BinaryMessage = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/BinaryMessage"));
-var EntityManager = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/EntityManager"));
-var EntityState = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/EntityState"));
-var Message = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Message"));
-var PodAddress = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/PodAddress"));
-var Pods = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Pods"));
-var RecipientType = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/RecipientType"));
-var ReplyChannel = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ReplyChannel"));
-var ReplyId = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ReplyId"));
-var Serialization = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Serialization"));
-var ShardId = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardId"));
-var ShardingConfig = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingConfig"));
-var ShardingError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingError"));
-var ShardingRegistrationEvent = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingRegistrationEvent"));
-var ShardManagerClient = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardManagerClient"));
-var Storage = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Storage"));
-var StreamMessage = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/StreamMessage"));
-var _utils = /*#__PURE__*/require("@effect/shardcake/utils");
+var BinaryMessage = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/BinaryMessage"));
+var EntityManager = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/EntityManager"));
+var EntityState = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/EntityState"));
+var Message = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/Message"));
+var PodAddress = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/PodAddress"));
+var Pods = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/Pods"));
+var RecipientType = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/RecipientType"));
+var ReplyChannel = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ReplyChannel"));
+var ReplyId = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ReplyId"));
+var Serialization = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/Serialization"));
+var ShardId = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ShardId"));
+var ShardingConfig = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ShardingConfig"));
+var ShardingError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ShardingError"));
+var ShardingRegistrationEvent = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ShardingRegistrationEvent"));
+var ShardManagerClient = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ShardManagerClient"));
+var Storage = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/Storage"));
+var StreamMessage = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/StreamMessage"));
+var _utils = /*#__PURE__*/require("@effect/sharding/utils");
 var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/stream/Stream"));
 var Sharding = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("./Sharding"));
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -313,8 +313,8 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
   function registerRecipient(recipientType, behavior, options) {
     return Effect.gen(function* ($) {
       const entityManager = yield* $(EntityManager.make(recipientType, behavior, self, config, options));
-      const processBinary = (msg, replyChannel) => Effect.tapErrorCause(_ => Effect.as(replyChannel.fail(_), Option.none()))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
-      yield* $(Ref.update(HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))(entityStates));
+      const processBinary = (msg, replyChannel) => Effect.tapErrorCause(_ => replyChannel.fail(_))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
+      yield* $(Ref.update(entityStates, HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary))));
     });
   }
   const registerScoped = Effect.acquireRelease(register, _ => Effect.orDie(unregister));

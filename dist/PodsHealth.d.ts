@@ -4,8 +4,8 @@
 import { Tag } from "@effect/data/Context";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
-import type { PodAddress } from "@effect/shardcake/PodAddress";
-import * as Pods from "@effect/shardcake/Pods";
+import type { PodAddress } from "@effect/sharding/PodAddress";
+import * as Pods from "@effect/sharding/Pods";
 /**
  * @since 1.0.0
  * @category symbols

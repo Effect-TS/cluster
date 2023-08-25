@@ -8,7 +8,7 @@ import * as Schema from "@effect/schema/Schema"
  * @since 1.0.0
  * @category symbols
  */
-export const ShardingSerializationErrorTag = "@effect/shardcake/ShardingSerializationError" as const
+export const ShardingSerializationErrorTag = "@effect/sharding/ShardingSerializationError" as const
 
 const ShardingSerializationErrorSchema_ = Schema.data(Schema.struct({
   _tag: Schema.literal(ShardingSerializationErrorTag),

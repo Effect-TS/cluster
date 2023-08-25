@@ -62,8 +62,8 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: '@effect/shardcake/PoisonPill' },
-  Data.Data<{ readonly _id: '@effect/shardcake/PoisonPill' }>
+  { readonly _id: '@effect/sharding/PoisonPill' },
+  Data.Data<{ readonly _id: '@effect/sharding/PoisonPill' }>
 >
 ```
 
@@ -89,7 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/shardcake/PoisonPill'
+export declare const TypeId: '@effect/sharding/PoisonPill'
 ```
 
 Added in v1.0.0

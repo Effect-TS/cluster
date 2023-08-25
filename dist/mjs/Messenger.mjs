@@ -4,7 +4,7 @@
 import * as Duration from "@effect/data/Duration";
 import * as Either from "@effect/data/Either";
 import * as Effect from "@effect/io/Effect";
-import * as ShardingError from "@effect/shardcake/ShardingError";
+import * as ShardingError from "@effect/sharding/ShardingError";
 import * as Stream from "@effect/stream/Stream";
 /**
  * Send a message and receive a stream of responses of type `Res` while restarting the stream when the remote entity

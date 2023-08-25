@@ -16,7 +16,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category symbols
  */
-const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/EntityState");
+const TypeId = /*#__PURE__*/Symbol.for("@effect/sharding/EntityState");
 /**
  * @since 1.0.0
  * @category constructors

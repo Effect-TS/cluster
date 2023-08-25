@@ -15,8 +15,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@effect/shardcake/test": path.join(__dirname, "test"),
-      "@effect/shardcake": path.join(__dirname, "src")
+      "@effect/sharding/test": path.join(__dirname, "test"),
+      "@effect/sharding": path.join(__dirname, "src")
     }
   }
 })

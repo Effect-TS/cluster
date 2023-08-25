@@ -3,13 +3,13 @@
  */
 import * as Effect from "@effect/io/Effect";
 import * as Schema from "@effect/schema/Schema";
-import * as ReplyId from "@effect/shardcake/ReplyId";
-import * as Sharding from "@effect/shardcake/Sharding";
+import * as ReplyId from "@effect/sharding/ReplyId";
+import * as Sharding from "@effect/sharding/Sharding";
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/Replier";
+export const TypeId = "@effect/sharding/Replier";
 /**
  * @since 1.0.0
  * @category constructors

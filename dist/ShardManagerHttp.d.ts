@@ -1,6 +1,6 @@
 import * as Effect from "@effect/io/Effect";
-import * as ManagerConfig from "@effect/shardcake/ManagerConfig";
-import * as ShardManager from "@effect/shardcake/ShardManager";
+import * as ManagerConfig from "@effect/sharding/ManagerConfig";
+import * as ShardManager from "@effect/sharding/ShardManager";
 /**
  * @since 1.0.0
  * @category layers

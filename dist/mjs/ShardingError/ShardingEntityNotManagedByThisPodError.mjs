@@ -7,7 +7,7 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export const ShardingEntityNotManagedByThisPodErrorTag = "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
+export const ShardingEntityNotManagedByThisPodErrorTag = "@effect/sharding/ShardingEntityNotManagedByThisPodError";
 const ShardingEntityNotManagedByThisPodErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingEntityNotManagedByThisPodErrorTag),
   entityId: Schema.string

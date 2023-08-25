@@ -4,10 +4,10 @@
 
 import * as HashSet from "@effect/data/HashSet";
 import * as Effect from "@effect/io/Effect";
-import * as Sharding from "@effect/shardcake/Sharding";
-import * as ShardingConfig from "@effect/shardcake/ShardingConfig";
-import { isShardingEntityTypeNotRegisteredError } from "@effect/shardcake/ShardingError";
-import * as ShardingProtocolHttp from "@effect/shardcake/ShardingProtocolHttp";
+import * as Sharding from "@effect/sharding/Sharding";
+import * as ShardingConfig from "@effect/sharding/ShardingConfig";
+import { isShardingEntityTypeNotRegisteredError } from "@effect/sharding/ShardingError";
+import * as ShardingProtocolHttp from "@effect/sharding/ShardingProtocolHttp";
 import * as Stream from "@effect/stream/Stream";
 import { asHttpServer } from "./node";
 /**

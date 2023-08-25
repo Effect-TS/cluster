@@ -61,20 +61,20 @@ Added in v1.0.0
 ```ts
 export declare const schema: Schema.Schema<
   {
-    readonly _id: '@effect/shardcake/PodWithMetadata'
+    readonly _id: '@effect/sharding/PodWithMetadata'
     readonly pod: {
-      readonly _id: '@effect/shardcake/Pod'
-      readonly address: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+      readonly _id: '@effect/sharding/Pod'
+      readonly address: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
       readonly version: string
     }
     readonly registered: number
   },
   Data.Data<{
-    readonly _id: '@effect/shardcake/PodWithMetadata'
+    readonly _id: '@effect/sharding/PodWithMetadata'
     readonly pod: Data.Data<{
-      readonly _id: '@effect/shardcake/Pod'
+      readonly _id: '@effect/sharding/Pod'
       readonly address: Data.Data<{
-        readonly _id: '@effect/shardcake/PodAddress'
+        readonly _id: '@effect/sharding/PodAddress'
         readonly host: string
         readonly port: number
       }>
@@ -94,7 +94,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/shardcake/PodWithMetadata'
+export declare const TypeId: '@effect/sharding/PodWithMetadata'
 ```
 
 Added in v1.0.0

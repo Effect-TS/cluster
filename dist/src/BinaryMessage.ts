@@ -5,14 +5,14 @@ import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import type * as Option from "@effect/data/Option"
 import * as Schema from "@effect/schema/Schema"
-import * as ByteArray from "@effect/shardcake/ByteArray"
-import * as ReplyId from "@effect/shardcake/ReplyId"
+import * as ByteArray from "@effect/sharding/ByteArray"
+import * as ReplyId from "@effect/sharding/ReplyId"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/BinaryMessage"
+export const TypeId = "@effect/sharding/BinaryMessage"
 
 /**
  * @since 1.0.0

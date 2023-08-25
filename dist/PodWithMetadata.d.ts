@@ -4,12 +4,12 @@
 import * as Data from "@effect/data/Data";
 import * as List from "@effect/data/List";
 import * as Schema from "@effect/schema/Schema";
-import * as Pod from "@effect/shardcake/Pod";
+import * as Pod from "@effect/sharding/Pod";
 /**
  * @since 1.0.0
  * @category symbols
  */
-export declare const TypeId = "@effect/shardcake/PodWithMetadata";
+export declare const TypeId = "@effect/sharding/PodWithMetadata";
 /**
  * @since 1.0.0
  * @category symbols
@@ -46,11 +46,11 @@ export declare function compareVersion(a: List.List<number>, b: List.List<number
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly _id: "@effect/shardcake/PodWithMetadata";
+    readonly _id: "@effect/sharding/PodWithMetadata";
     readonly pod: {
-        readonly _id: "@effect/shardcake/Pod";
+        readonly _id: "@effect/sharding/Pod";
         readonly address: {
-            readonly _id: "@effect/shardcake/PodAddress";
+            readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
         };
@@ -58,11 +58,11 @@ export declare const schema: Schema.Schema<{
     };
     readonly registered: number;
 }, Data.Data<{
-    readonly _id: "@effect/shardcake/PodWithMetadata";
+    readonly _id: "@effect/sharding/PodWithMetadata";
     readonly pod: Data.Data<{
-        readonly _id: "@effect/shardcake/Pod";
+        readonly _id: "@effect/sharding/Pod";
         readonly address: Data.Data<{
-            readonly _id: "@effect/shardcake/PodAddress";
+            readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
         }>;

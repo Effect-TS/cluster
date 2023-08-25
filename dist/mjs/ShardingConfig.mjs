@@ -8,7 +8,7 @@ import * as Layer from "@effect/io/Layer";
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/ShardingConfig");
+export const TypeId = /*#__PURE__*/Symbol.for("@effect/sharding/ShardingConfig");
 /**
  * @since 1.0.0
  * @category context

@@ -6,8 +6,8 @@ import * as HashMap from "@effect/data/HashMap";
 import * as HashSet from "@effect/data/HashSet";
 import * as List from "@effect/data/List";
 import * as Option from "@effect/data/Option";
-import * as PodWithMetadata from "@effect/shardcake/PodWithMetadata";
-import * as ShardId from "@effect/shardcake/ShardId";
+import * as PodWithMetadata from "@effect/sharding/PodWithMetadata";
+import * as ShardId from "@effect/sharding/ShardId";
 /**
  * @since 1.0.0
  * @category constructors

@@ -57,7 +57,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingSerializationErrorSchema: Schema.Schema<
-  { readonly _tag: '@effect/shardcake/ShardingSerializationError'; readonly error: string },
+  { readonly _tag: '@effect/sharding/ShardingSerializationError'; readonly error: string },
   ShardingSerializationError
 >
 ```
@@ -71,7 +71,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingSerializationErrorTag: '@effect/shardcake/ShardingSerializationError'
+export declare const ShardingSerializationErrorTag: '@effect/sharding/ShardingSerializationError'
 ```
 
 Added in v1.0.0

@@ -4,10 +4,10 @@
 import type * as Either from "@effect/data/Either"
 import type * as HashMap from "@effect/data/HashMap"
 import type * as Effect from "@effect/io/Effect"
-import type * as Message from "@effect/shardcake/Message"
-import type * as PodAddress from "@effect/shardcake/PodAddress"
-import type * as ReplyId from "@effect/shardcake/ReplyId"
-import type * as ShardingError from "@effect/shardcake/ShardingError"
+import type * as Message from "@effect/sharding/Message"
+import type * as PodAddress from "@effect/sharding/PodAddress"
+import type * as ReplyId from "@effect/sharding/ReplyId"
+import type * as ShardingError from "@effect/sharding/ShardingError"
 
 /**
  * An interface to communicate with a remote broadcast receiver

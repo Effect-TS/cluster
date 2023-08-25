@@ -1,6 +1,6 @@
 import * as Schema from "@effect/schema/Schema";
-import type * as ReplyId from "@effect/shardcake/ReplyId";
-import * as StreamReplier from "@effect/shardcake/StreamReplier";
+import type * as ReplyId from "@effect/sharding/ReplyId";
+import * as StreamReplier from "@effect/sharding/StreamReplier";
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`
  *

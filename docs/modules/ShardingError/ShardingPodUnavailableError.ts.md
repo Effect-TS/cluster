@@ -58,8 +58,8 @@ Added in v1.0.0
 ```ts
 export declare const ShardingPodUnavailableErrorSchema: Schema.Schema<
   {
-    readonly _tag: '@effect/shardcake/ShardingPodUnavailableError'
-    readonly pod: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+    readonly _tag: '@effect/sharding/ShardingPodUnavailableError'
+    readonly pod: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
   },
   ShardingPodUnavailableError
 >
@@ -74,7 +74,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingPodUnavailableErrorTag: '@effect/shardcake/ShardingPodUnavailableError'
+export declare const ShardingPodUnavailableErrorTag: '@effect/sharding/ShardingPodUnavailableError'
 ```
 
 Added in v1.0.0

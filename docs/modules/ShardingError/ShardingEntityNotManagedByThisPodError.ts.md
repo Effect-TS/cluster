@@ -58,7 +58,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingEntityNotManagedByThisPodErrorSchema: Schema.Schema<
-  { readonly entityId: string; readonly _tag: '@effect/shardcake/ShardingEntityNotManagedByThisPodError' },
+  { readonly entityId: string; readonly _tag: '@effect/sharding/ShardingEntityNotManagedByThisPodError' },
   ShardingEntityNotManagedByThisPodError
 >
 ```
@@ -72,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingEntityNotManagedByThisPodErrorTag: '@effect/shardcake/ShardingEntityNotManagedByThisPodError'
+export declare const ShardingEntityNotManagedByThisPodErrorTag: '@effect/sharding/ShardingEntityNotManagedByThisPodError'
 ```
 
 Added in v1.0.0

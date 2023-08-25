@@ -6,9 +6,9 @@ import * as HashMap from "@effect/data/HashMap";
 import type * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
-import type * as Pod from "@effect/shardcake/Pod";
-import type * as PodAddress from "@effect/shardcake/PodAddress";
-import type * as ShardId from "@effect/shardcake/ShardId";
+import type * as Pod from "@effect/sharding/Pod";
+import type * as PodAddress from "@effect/sharding/PodAddress";
+import type * as ShardId from "@effect/sharding/ShardId";
 import * as Stream from "@effect/stream/Stream";
 /**
  * @since 1.0.0

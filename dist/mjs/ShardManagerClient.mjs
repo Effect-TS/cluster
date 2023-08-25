@@ -6,9 +6,9 @@ import * as HashMap from "@effect/data/HashMap";
 import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
-import * as PodAddress from "@effect/shardcake/PodAddress";
-import * as ShardId from "@effect/shardcake/ShardId";
-import * as ShardingConfig from "@effect/shardcake/ShardingConfig";
+import * as PodAddress from "@effect/sharding/PodAddress";
+import * as ShardId from "@effect/sharding/ShardId";
+import * as ShardingConfig from "@effect/sharding/ShardingConfig";
 /**
  * @since 1.0.0
  * @category context

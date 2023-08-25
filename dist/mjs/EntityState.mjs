@@ -6,7 +6,7 @@ import * as Data from "@effect/data/Data";
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/EntityState");
+export const TypeId = /*#__PURE__*/Symbol.for("@effect/sharding/EntityState");
 /**
  * @since 1.0.0
  * @category constructors

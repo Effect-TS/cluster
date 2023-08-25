@@ -1,13 +1,13 @@
 import { Tag } from "@effect/data/Context";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
-import * as ManagerConfig from "@effect/shardcake/ManagerConfig";
-import type * as Pod from "@effect/shardcake/Pod";
-import * as PodAddress from "@effect/shardcake/PodAddress";
-import * as Pods from "@effect/shardcake/Pods";
-import * as PodsHealth from "@effect/shardcake/PodsHealth";
-import * as ShardingEvent from "@effect/shardcake/ShardingEvent";
-import * as Storage from "@effect/shardcake/Storage";
+import * as ManagerConfig from "@effect/sharding/ManagerConfig";
+import type * as Pod from "@effect/sharding/Pod";
+import * as PodAddress from "@effect/sharding/PodAddress";
+import * as Pods from "@effect/sharding/Pods";
+import * as PodsHealth from "@effect/sharding/PodsHealth";
+import * as ShardingEvent from "@effect/sharding/ShardingEvent";
+import * as Storage from "@effect/sharding/Storage";
 import * as Stream from "@effect/stream/Stream";
 /**
  * @since 1.0.0

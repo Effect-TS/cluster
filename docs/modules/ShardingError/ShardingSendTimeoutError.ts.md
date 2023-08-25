@@ -56,7 +56,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingSendTimeoutErrorSchema: Schema.Schema<
-  { readonly _tag: '@effect/shardcake/ShardingSendTimeoutError' },
+  { readonly _tag: '@effect/sharding/ShardingSendTimeoutError' },
   ShardingSendTimeoutError
 >
 ```
@@ -68,7 +68,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingSendTimeoutErrorTag: '@effect/shardcake/ShardingSendTimeoutError'
+export declare const ShardingSendTimeoutErrorTag: '@effect/sharding/ShardingSendTimeoutError'
 ```
 
 Added in v1.0.0

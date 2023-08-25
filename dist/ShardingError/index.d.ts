@@ -1,49 +1,52 @@
+/**
+ * @since 1.0.0
+ */
 import * as Schema from "@effect/schema/Schema";
-export * from "@effect/shardcake/ShardingError/ShardingEntityNotManagedByThisPodError";
-export * from "@effect/shardcake/ShardingError/ShardingEntityTypeNotRegisteredError";
-export * from "@effect/shardcake/ShardingError/ShardingMessageQueueError";
-export * from "@effect/shardcake/ShardingError/ShardingPodNoLongerRegisteredError";
-export * from "@effect/shardcake/ShardingError/ShardingPodUnavailableError";
-export * from "@effect/shardcake/ShardingError/ShardingSendTimeoutError";
-export * from "@effect/shardcake/ShardingError/ShardingSerializationError";
+export * from "@effect/sharding/ShardingError/ShardingEntityNotManagedByThisPodError";
+export * from "@effect/sharding/ShardingError/ShardingEntityTypeNotRegisteredError";
+export * from "@effect/sharding/ShardingError/ShardingMessageQueueError";
+export * from "@effect/sharding/ShardingError/ShardingPodNoLongerRegisteredError";
+export * from "@effect/sharding/ShardingError/ShardingPodUnavailableError";
+export * from "@effect/sharding/ShardingError/ShardingSendTimeoutError";
+export * from "@effect/sharding/ShardingError/ShardingSerializationError";
 /**
  * @since 1.0.0
  * @category schema
  */
 export declare const ShardingErrorSchema: Schema.Schema<{
-    readonly _tag: "@effect/shardcake/ShardingMessageQueueError";
     readonly error: string;
+    readonly _tag: "@effect/sharding/ShardingSerializationError";
 } | {
-    readonly _tag: "@effect/shardcake/ShardingSerializationError";
-    readonly error: string;
-} | {
-    readonly _tag: "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
+    readonly _tag: "@effect/sharding/ShardingEntityNotManagedByThisPodError";
     readonly entityId: string;
 } | {
-    readonly _tag: "@effect/shardcake/ShardingEntityTypeNotRegisteredError";
+    readonly _tag: "@effect/sharding/ShardingEntityTypeNotRegisteredError";
     readonly entityType: string;
     readonly podAddress: {
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     };
 } | {
-    readonly _tag: "@effect/shardcake/ShardingPodNoLongerRegisteredError";
+    readonly error: string;
+    readonly _tag: "@effect/sharding/ShardingMessageQueueError";
+} | {
+    readonly _tag: "@effect/sharding/ShardingPodNoLongerRegisteredError";
     readonly podAddress: {
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     };
 } | {
-    readonly _tag: "@effect/shardcake/ShardingPodUnavailableError";
     readonly pod: {
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     };
+    readonly _tag: "@effect/sharding/ShardingPodUnavailableError";
 } | {
-    readonly _tag: "@effect/shardcake/ShardingSendTimeoutError";
-}, import("@effect/shardcake/ShardingError/ShardingMessageQueueError").ShardingMessageQueueError | import("@effect/shardcake/ShardingError/ShardingSerializationError").ShardingSerializationError | import("@effect/shardcake/ShardingError/ShardingEntityNotManagedByThisPodError").ShardingEntityNotManagedByThisPodError | import("@effect/shardcake/ShardingError/ShardingEntityTypeNotRegisteredError").ShardingEntityTypeNotRegisteredError | import("@effect/shardcake/ShardingError/ShardingPodNoLongerRegisteredError").ShardingPodNoLongerRegisteredError | import("@effect/shardcake/ShardingError/ShardingPodUnavailableError").ShardingPodUnavailableError | import("@effect/shardcake/ShardingError/ShardingSendTimeoutError").ShardingSendTimeoutError>;
+    readonly _tag: "@effect/sharding/ShardingSendTimeoutError";
+}, import("@effect/sharding/ShardingError/ShardingSerializationError").ShardingSerializationError | import("@effect/sharding/ShardingError/ShardingEntityNotManagedByThisPodError").ShardingEntityNotManagedByThisPodError | import("@effect/sharding/ShardingError/ShardingEntityTypeNotRegisteredError").ShardingEntityTypeNotRegisteredError | import("@effect/sharding/ShardingError/ShardingMessageQueueError").ShardingMessageQueueError | import("@effect/sharding/ShardingError/ShardingPodNoLongerRegisteredError").ShardingPodNoLongerRegisteredError | import("@effect/sharding/ShardingError/ShardingPodUnavailableError").ShardingPodUnavailableError | import("@effect/sharding/ShardingError/ShardingSendTimeoutError").ShardingSendTimeoutError>;
 /**
  * @since 1.0.0
  * @category models

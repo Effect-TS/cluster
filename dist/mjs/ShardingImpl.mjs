@@ -15,24 +15,24 @@ import * as Layer from "@effect/io/Layer";
 import * as Ref from "@effect/io/Ref";
 import * as Synchronized from "@effect/io/Ref/Synchronized";
 import * as Schedule from "@effect/io/Schedule";
-import * as BinaryMessage from "@effect/shardcake/BinaryMessage";
-import * as EntityManager from "@effect/shardcake/EntityManager";
-import * as EntityState from "@effect/shardcake/EntityState";
-import * as Message from "@effect/shardcake/Message";
-import * as PodAddress from "@effect/shardcake/PodAddress";
-import * as Pods from "@effect/shardcake/Pods";
-import * as RecipientType from "@effect/shardcake/RecipientType";
-import * as ReplyChannel from "@effect/shardcake/ReplyChannel";
-import * as ReplyId from "@effect/shardcake/ReplyId";
-import * as Serialization from "@effect/shardcake/Serialization";
-import * as ShardId from "@effect/shardcake/ShardId";
-import * as ShardingConfig from "@effect/shardcake/ShardingConfig";
-import * as ShardingError from "@effect/shardcake/ShardingError";
-import * as ShardingRegistrationEvent from "@effect/shardcake/ShardingRegistrationEvent";
-import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient";
-import * as Storage from "@effect/shardcake/Storage";
-import * as StreamMessage from "@effect/shardcake/StreamMessage";
-import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "@effect/shardcake/utils";
+import * as BinaryMessage from "@effect/sharding/BinaryMessage";
+import * as EntityManager from "@effect/sharding/EntityManager";
+import * as EntityState from "@effect/sharding/EntityState";
+import * as Message from "@effect/sharding/Message";
+import * as PodAddress from "@effect/sharding/PodAddress";
+import * as Pods from "@effect/sharding/Pods";
+import * as RecipientType from "@effect/sharding/RecipientType";
+import * as ReplyChannel from "@effect/sharding/ReplyChannel";
+import * as ReplyId from "@effect/sharding/ReplyId";
+import * as Serialization from "@effect/sharding/Serialization";
+import * as ShardId from "@effect/sharding/ShardId";
+import * as ShardingConfig from "@effect/sharding/ShardingConfig";
+import * as ShardingError from "@effect/sharding/ShardingError";
+import * as ShardingRegistrationEvent from "@effect/sharding/ShardingRegistrationEvent";
+import * as ShardManagerClient from "@effect/sharding/ShardManagerClient";
+import * as Storage from "@effect/sharding/Storage";
+import * as StreamMessage from "@effect/sharding/StreamMessage";
+import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "@effect/sharding/utils";
 import * as Stream from "@effect/stream/Stream";
 import * as Sharding from "./Sharding";
 /** @internal */
@@ -305,8 +305,8 @@ isShuttingDownRef, shardManager, pods, storage, serialization, eventsHub) {
   function registerRecipient(recipientType, behavior, options) {
     return Effect.gen(function* ($) {
       const entityManager = yield* $(EntityManager.make(recipientType, behavior, self, config, options));
-      const processBinary = (msg, replyChannel) => Effect.tapErrorCause(_ => Effect.as(replyChannel.fail(_), Option.none()))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
-      yield* $(Ref.update(HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))(entityStates));
+      const processBinary = (msg, replyChannel) => Effect.tapErrorCause(_ => replyChannel.fail(_))(Effect.flatMap(_ => Effect.as(Message.isMessage(_) ? Option.some(_.replier.schema) : StreamMessage.isStreamMessage(_) ? Option.some(_.replier.schema) : Option.none())(entityManager.send(msg.entityId, _, msg.replyId, replyChannel)))(serialization.decode(msg.body, recipientType.schema)));
+      yield* $(Ref.update(entityStates, HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary))));
     });
   }
   const registerScoped = Effect.acquireRelease(register, _ => Effect.orDie(unregister));

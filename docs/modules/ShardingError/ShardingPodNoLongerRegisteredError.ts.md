@@ -72,8 +72,8 @@ Added in v1.0.0
 ```ts
 export declare const ShardingPodNoLongerRegisteredErrorSchema: Schema.Schema<
   {
-    readonly _tag: '@effect/shardcake/ShardingPodNoLongerRegisteredError'
-    readonly podAddress: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+    readonly _tag: '@effect/sharding/ShardingPodNoLongerRegisteredError'
+    readonly podAddress: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
   },
   ShardingPodNoLongerRegisteredError
 >
@@ -88,7 +88,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingPodNoLongerRegisteredErrorTag: '@effect/shardcake/ShardingPodNoLongerRegisteredError'
+export declare const ShardingPodNoLongerRegisteredErrorTag: '@effect/sharding/ShardingPodNoLongerRegisteredError'
 ```
 
 Added in v1.0.0

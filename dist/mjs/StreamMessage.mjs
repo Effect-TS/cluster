@@ -3,7 +3,7 @@
  */
 import * as Data from "@effect/data/Data";
 import * as Schema from "@effect/schema/Schema";
-import * as StreamReplier from "@effect/shardcake/StreamReplier";
+import * as StreamReplier from "@effect/sharding/StreamReplier";
 /**
  * @since 1.0.0
  * @category utils

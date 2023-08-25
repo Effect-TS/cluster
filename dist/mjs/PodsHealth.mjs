@@ -5,12 +5,12 @@ import { Tag } from "@effect/data/Context";
 import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
-import * as Pods from "@effect/shardcake/Pods";
+import * as Pods from "@effect/sharding/Pods";
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/PodsHealth");
+export const TypeId = /*#__PURE__*/Symbol.for("@effect/sharding/PodsHealth");
 /**
  * @since 1.0.0
  * @category context

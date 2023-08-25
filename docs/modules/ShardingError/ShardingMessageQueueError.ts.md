@@ -57,7 +57,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingMessageQueueErrorSchema: Schema.Schema<
-  { readonly _tag: '@effect/shardcake/ShardingMessageQueueError'; readonly error: string },
+  { readonly _tag: '@effect/sharding/ShardingMessageQueueError'; readonly error: string },
   ShardingMessageQueueError
 >
 ```
@@ -71,7 +71,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingMessageQueueErrorTag: '@effect/shardcake/ShardingMessageQueueError'
+export declare const ShardingMessageQueueErrorTag: '@effect/sharding/ShardingMessageQueueError'
 ```
 
 Added in v1.0.0

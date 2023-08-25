@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import type * as RecipientType from "@effect/shardcake/RecipientType"
+import type * as RecipientType from "@effect/sharding/RecipientType"
 
 /**
  * @since 1.0.0

@@ -10,7 +10,7 @@ import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
-import * as ShardingError from "@effect/shardcake/ShardingError"
+import * as ShardingError from "@effect/sharding/ShardingError"
 import * as Stream from "@effect/stream/Stream"
 import fetch from "node-fetch"
 
@@ -34,12 +34,12 @@ export function isFetchError(value: unknown): value is FetchError {
 
 /** @internal */
 export function NotAMessageWithReplierDefect(message: unknown): unknown {
-  return { _tag: "@effect/shardcake/NotAMessageWithReplierDefect", message }
+  return { _tag: "@effect/sharding/NotAMessageWithReplierDefect", message }
 }
 
 /** @internal */
 export function MessageReturnedNotingDefect(message: unknown): unknown {
-  return { _tag: "@effect/shardcake/MessageReturnedNotingDefect", message }
+  return { _tag: "@effect/sharding/MessageReturnedNotingDefect", message }
 }
 
 /** @internal */

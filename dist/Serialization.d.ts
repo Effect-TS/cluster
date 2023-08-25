@@ -5,8 +5,8 @@ import { Tag } from "@effect/data/Context";
 import * as Effect from "@effect/io/Effect";
 import * as Layer from "@effect/io/Layer";
 import type * as Schema from "@effect/schema/Schema";
-import * as ByteArray from "@effect/shardcake/ByteArray";
-import type * as ShardingError from "@effect/shardcake/ShardingError";
+import * as ByteArray from "@effect/sharding/ByteArray";
+import type * as ShardingError from "@effect/sharding/ShardingError";
 /**
  * @since 1.0.0
  * @category symbols

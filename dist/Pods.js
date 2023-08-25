@@ -19,7 +19,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category symbols
  */
-const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/Pods");
+const TypeId = /*#__PURE__*/Symbol.for("@effect/sharding/Pods");
 /**
  * @since 1.0.0
  * @category context

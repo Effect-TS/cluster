@@ -7,27 +7,27 @@ import * as Schema from "@effect/schema/Schema";
  * @category schema
  */
 export declare const Register_: Schema.Schema<{
-    readonly _tag: "Register";
     readonly pod: {
-        readonly _id: "@effect/shardcake/Pod";
+        readonly _id: "@effect/sharding/Pod";
         readonly address: {
-            readonly _id: "@effect/shardcake/PodAddress";
+            readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
         };
         readonly version: string;
     };
-}, {
     readonly _tag: "Register";
+}, {
     readonly pod: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/Pod";
+        readonly _id: "@effect/sharding/Pod";
         readonly address: import("@effect/data/Data").Data<{
-            readonly _id: "@effect/shardcake/PodAddress";
+            readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
         }>;
         readonly version: string;
     }>;
+    readonly _tag: "Register";
 }>;
 /**
  * @since 1.0.0
@@ -45,27 +45,27 @@ export declare const RegisterResult_: Schema.Schema<{
  * @category schema
  */
 export declare const Unregister_: Schema.Schema<{
-    readonly _tag: "Unregister";
     readonly pod: {
-        readonly _id: "@effect/shardcake/Pod";
+        readonly _id: "@effect/sharding/Pod";
         readonly address: {
-            readonly _id: "@effect/shardcake/PodAddress";
+            readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
         };
         readonly version: string;
     };
-}, {
     readonly _tag: "Unregister";
+}, {
     readonly pod: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/Pod";
+        readonly _id: "@effect/sharding/Pod";
         readonly address: import("@effect/data/Data").Data<{
-            readonly _id: "@effect/shardcake/PodAddress";
+            readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
         }>;
         readonly version: string;
     }>;
+    readonly _tag: "Unregister";
 }>;
 /**
  * @since 1.0.0
@@ -85,14 +85,14 @@ export declare const UnregisterResult_: Schema.Schema<{
 export declare const NotifyUnhealthyPod_: Schema.Schema<{
     readonly _tag: "NotifyUnhealthyPod";
     readonly podAddress: {
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     };
 }, {
     readonly _tag: "NotifyUnhealthyPod";
     readonly podAddress: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     }>;
@@ -127,23 +127,23 @@ export declare const GetAssignmentsResult_: Schema.Schema<{
 } | {
     readonly _tag: "Right";
     readonly right: readonly (readonly [{
-        readonly _id: "@effect/shardcake/ShardId";
+        readonly _id: "@effect/sharding/ShardId";
         readonly value: number;
     }, {
         readonly _tag: "None";
     } | {
         readonly _tag: "Some";
         readonly value: {
-            readonly _id: "@effect/shardcake/PodAddress";
+            readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
         };
     }])[];
 }, import("@effect/data/Either").Either<never, readonly (readonly [import("@effect/data/Data").Data<{
-    readonly _id: "@effect/shardcake/ShardId";
+    readonly _id: "@effect/sharding/ShardId";
     readonly value: number;
 }>, import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
-    readonly _id: "@effect/shardcake/PodAddress";
+    readonly _id: "@effect/sharding/PodAddress";
     readonly host: string;
     readonly port: number;
 }>>])[]>>;
@@ -154,62 +154,62 @@ export declare const GetAssignmentsResult_: Schema.Schema<{
  * @category schema
  */
 export declare const schema: Schema.Schema<{
+    readonly pod: {
+        readonly _id: "@effect/sharding/Pod";
+        readonly address: {
+            readonly _id: "@effect/sharding/PodAddress";
+            readonly host: string;
+            readonly port: number;
+        };
+        readonly version: string;
+    };
     readonly _tag: "Register";
-    readonly pod: {
-        readonly _id: "@effect/shardcake/Pod";
-        readonly address: {
-            readonly _id: "@effect/shardcake/PodAddress";
-            readonly host: string;
-            readonly port: number;
-        };
-        readonly version: string;
-    };
 } | {
-    readonly _tag: "Unregister";
     readonly pod: {
-        readonly _id: "@effect/shardcake/Pod";
+        readonly _id: "@effect/sharding/Pod";
         readonly address: {
-            readonly _id: "@effect/shardcake/PodAddress";
+            readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
         };
         readonly version: string;
     };
+    readonly _tag: "Unregister";
 } | {
     readonly _tag: "NotifyUnhealthyPod";
     readonly podAddress: {
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     };
 } | {
     readonly _tag: "GetAssignments";
 }, {
+    readonly pod: import("@effect/data/Data").Data<{
+        readonly _id: "@effect/sharding/Pod";
+        readonly address: import("@effect/data/Data").Data<{
+            readonly _id: "@effect/sharding/PodAddress";
+            readonly host: string;
+            readonly port: number;
+        }>;
+        readonly version: string;
+    }>;
     readonly _tag: "Register";
-    readonly pod: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/Pod";
-        readonly address: import("@effect/data/Data").Data<{
-            readonly _id: "@effect/shardcake/PodAddress";
-            readonly host: string;
-            readonly port: number;
-        }>;
-        readonly version: string;
-    }>;
 } | {
-    readonly _tag: "Unregister";
     readonly pod: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/Pod";
+        readonly _id: "@effect/sharding/Pod";
         readonly address: import("@effect/data/Data").Data<{
-            readonly _id: "@effect/shardcake/PodAddress";
+            readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
         }>;
         readonly version: string;
     }>;
+    readonly _tag: "Unregister";
 } | {
     readonly _tag: "NotifyUnhealthyPod";
     readonly podAddress: import("@effect/data/Data").Data<{
-        readonly _id: "@effect/shardcake/PodAddress";
+        readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     }>;

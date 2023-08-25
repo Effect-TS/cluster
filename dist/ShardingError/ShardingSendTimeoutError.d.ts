@@ -7,11 +7,11 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category schema
  */
-export declare const ShardingSendTimeoutErrorTag: "@effect/shardcake/ShardingSendTimeoutError";
+export declare const ShardingSendTimeoutErrorTag: "@effect/sharding/ShardingSendTimeoutError";
 declare const ShardingSendTimeoutErrorSchema_: Schema.Schema<{
-    readonly _tag: "@effect/shardcake/ShardingSendTimeoutError";
+    readonly _tag: "@effect/sharding/ShardingSendTimeoutError";
 }, Data.Data<{
-    readonly _tag: "@effect/shardcake/ShardingSendTimeoutError";
+    readonly _tag: "@effect/sharding/ShardingSendTimeoutError";
 }>>;
 /**
  * @since 1.0.0

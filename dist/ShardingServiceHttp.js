@@ -6,10 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 exports.shardingServiceHttp = void 0;
 var HashSet = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/HashSet"));
 var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
-var Sharding = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/Sharding"));
-var ShardingConfig = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingConfig"));
-var _ShardingError = /*#__PURE__*/require("@effect/shardcake/ShardingError");
-var ShardingProtocolHttp = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/shardcake/ShardingProtocolHttp"));
+var Sharding = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/Sharding"));
+var ShardingConfig = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ShardingConfig"));
+var _ShardingError = /*#__PURE__*/require("@effect/sharding/ShardingError");
+var ShardingProtocolHttp = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ShardingProtocolHttp"));
 var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/stream/Stream"));
 var _node = /*#__PURE__*/require("./node");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }

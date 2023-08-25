@@ -6,8 +6,8 @@ import type * as Duration from "@effect/data/Duration";
 import type * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import type * as Queue from "@effect/io/Queue";
-import type { MessageQueueConstructor } from "@effect/shardcake/MessageQueue";
-import * as PoisonPill from "@effect/shardcake/PoisonPill";
+import type { MessageQueueConstructor } from "@effect/sharding/MessageQueue";
+import * as PoisonPill from "@effect/sharding/PoisonPill";
 /**
  * An alias to a RecipientBehaviour
  * @since 1.0.0

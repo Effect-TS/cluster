@@ -21,7 +21,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category symbols
  */
-const TypeId = "@effect/shardcake/ReplyId";
+const TypeId = "@effect/sharding/ReplyId";
 /**
  * @since 1.0.0
  * @category utils

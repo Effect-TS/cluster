@@ -3,12 +3,12 @@
  */
 import * as Data from "@effect/data/Data";
 import * as Schema from "@effect/schema/Schema";
-import * as PodAddress from "@effect/shardcake/PodAddress";
+import * as PodAddress from "@effect/sharding/PodAddress";
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const ShardingPodNoLongerRegisteredErrorTag = "@effect/shardcake/ShardingPodNoLongerRegisteredError";
+export const ShardingPodNoLongerRegisteredErrorTag = "@effect/sharding/ShardingPodNoLongerRegisteredError";
 const ShardingPodNoLongerRegisteredErrorSchema_ = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
   _tag: /*#__PURE__*/Schema.literal(ShardingPodNoLongerRegisteredErrorTag),
   podAddress: PodAddress.schema

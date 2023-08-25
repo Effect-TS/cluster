@@ -1,5 +1,5 @@
 import type * as Schema from "@effect/schema/Schema";
-import * as ShardId from "@effect/shardcake/ShardId";
+import * as ShardId from "@effect/sharding/ShardId";
 /**
  * @since 1.0.0
  * @category models

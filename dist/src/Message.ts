@@ -4,8 +4,8 @@
 import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
-import * as Replier from "@effect/shardcake/Replier"
-import type * as ReplyId from "@effect/shardcake/ReplyId"
+import * as Replier from "@effect/sharding/Replier"
+import type * as ReplyId from "@effect/sharding/ReplyId"
 
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`

@@ -72,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/shardcake/StreamReplier'
+export declare const TypeId: '@effect/sharding/StreamReplier'
 ```
 
 Added in v1.0.0

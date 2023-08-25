@@ -74,7 +74,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/shardcake/Replier'
+export declare const TypeId: '@effect/sharding/Replier'
 ```
 
 Added in v1.0.0

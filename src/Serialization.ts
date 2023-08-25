@@ -6,8 +6,8 @@ import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type * as Schema from "@effect/schema/Schema"
-import * as ByteArray from "@effect/shardcake/ByteArray"
-import type * as ShardingError from "@effect/shardcake/ShardingError"
+import * as ByteArray from "@effect/sharding/ByteArray"
+import type * as ShardingError from "@effect/sharding/ShardingError"
 import { jsonParse, jsonStringify } from "./utils"
 
 /**
@@ -15,7 +15,7 @@ import { jsonParse, jsonStringify } from "./utils"
  * @category symbols
  */
 export const TypeId: unique symbol = Symbol.for(
-  "@effect/shardcake/SerializationTypeId"
+  "@effect/sharding/SerializationTypeId"
 )
 
 /**

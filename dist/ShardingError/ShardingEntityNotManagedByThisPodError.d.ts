@@ -7,12 +7,12 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export declare const ShardingEntityNotManagedByThisPodErrorTag: "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
+export declare const ShardingEntityNotManagedByThisPodErrorTag: "@effect/sharding/ShardingEntityNotManagedByThisPodError";
 declare const ShardingEntityNotManagedByThisPodErrorSchema_: Schema.Schema<{
-    readonly _tag: "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
+    readonly _tag: "@effect/sharding/ShardingEntityNotManagedByThisPodError";
     readonly entityId: string;
 }, Data.Data<{
-    readonly _tag: "@effect/shardcake/ShardingEntityNotManagedByThisPodError";
+    readonly _tag: "@effect/sharding/ShardingEntityNotManagedByThisPodError";
     readonly entityId: string;
 }>>;
 /**

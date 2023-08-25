@@ -1,5 +1,5 @@
 import * as Layer from "@effect/io/Layer";
-import * as Pods from "@effect/shardcake/Pods";
+import * as Pods from "@effect/sharding/Pods";
 /**
  * @since 1.0.0
  * @category layers

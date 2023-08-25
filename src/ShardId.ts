@@ -8,7 +8,7 @@ import * as Schema from "@effect/schema/Schema"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/ShardId"
+export const TypeId = "@effect/sharding/ShardId"
 
 /**
  * @since 1.0.0

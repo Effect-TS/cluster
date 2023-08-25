@@ -16,7 +16,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
  * @since 1.0.0
  * @category symbols
  */
-const TypeId = "@effect/shardcake/MessageQueueInstance";
+const TypeId = "@effect/sharding/MessageQueueInstance";
 /**
  * A layer that creates an in-memory message queue.
  *

@@ -6,14 +6,14 @@ import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
-import type { PodAddress } from "@effect/shardcake/PodAddress"
-import * as Pods from "@effect/shardcake/Pods"
+import type { PodAddress } from "@effect/sharding/PodAddress"
+import * as Pods from "@effect/sharding/Pods"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = Symbol.for("@effect/shardcake/PodsHealth")
+export const TypeId = Symbol.for("@effect/sharding/PodsHealth")
 
 /**
  * @since 1.0.0

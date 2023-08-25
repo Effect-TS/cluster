@@ -72,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/shardcake/MessageQueueInstance'
+export declare const TypeId: '@effect/sharding/MessageQueueInstance'
 ```
 
 Added in v1.0.0

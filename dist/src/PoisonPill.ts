@@ -11,7 +11,7 @@ import * as Schema from "@effect/schema/Schema"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/PoisonPill"
+export const TypeId = "@effect/sharding/PoisonPill"
 
 /**
  * @since 1.0.0

@@ -68,7 +68,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/shardcake/ReplyChannel'
+export declare const TypeId: '@effect/sharding/ReplyChannel'
 ```
 
 Added in v1.0.0

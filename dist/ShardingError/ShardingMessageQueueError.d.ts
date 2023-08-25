@@ -7,13 +7,13 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export declare const ShardingMessageQueueErrorTag: "@effect/shardcake/ShardingMessageQueueError";
+export declare const ShardingMessageQueueErrorTag: "@effect/sharding/ShardingMessageQueueError";
 declare const ShardingMessageQueueErrorSchema_: Schema.Schema<{
-    readonly _tag: "@effect/shardcake/ShardingMessageQueueError";
     readonly error: string;
+    readonly _tag: "@effect/sharding/ShardingMessageQueueError";
 }, Data.Data<{
-    readonly _tag: "@effect/shardcake/ShardingMessageQueueError";
     readonly error: string;
+    readonly _tag: "@effect/sharding/ShardingMessageQueueError";
 }>>;
 /**
  * @since 1.0.0

@@ -7,10 +7,10 @@
     "target": "ES2021",
     "lib": ["ES2021"],
     "paths": {
-      "@effect/shardcake": ["./src/index.ts"],
-      "@effect/shardcake/test/*": ["./test/*"],
-      "@effect/shardcake/examples/*": ["./examples/*"],
-      "@effect/shardcake/*": ["./src/*"]
+      "@effect/sharding": ["./src/index.ts"],
+      "@effect/sharding/test/*": ["./test/*"],
+      "@effect/sharding/examples/*": ["./examples/*"],
+      "@effect/sharding/*": ["./src/*"]
     }
   },
   "examplesCompilerOptions": {
@@ -19,10 +19,10 @@
     "target": "ES2021",
     "lib": ["ES2021"],
     "paths": {
-      "@effect/shardcake": ["../../src/index.ts"],
-      "@effect/shardcake/test/*": ["../../test/*"],
-      "@effect/shardcake/examples/*": ["../../examples/*"],
-      "@effect/shardcake/*": ["../../src/*"]
+      "@effect/sharding": ["../../src/index.ts"],
+      "@effect/sharding/test/*": ["../../test/*"],
+      "@effect/sharding/examples/*": ["../../examples/*"],
+      "@effect/sharding/*": ["../../src/*"]
     }
   }
 }

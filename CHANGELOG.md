@@ -1,1 +1,1 @@
-# @effect/shardcake
+# @effect/sharding

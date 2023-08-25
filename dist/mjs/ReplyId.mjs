@@ -9,7 +9,7 @@ import * as crypto from "crypto";
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/ReplyId";
+export const TypeId = "@effect/sharding/ReplyId";
 /**
  * @since 1.0.0
  * @category utils

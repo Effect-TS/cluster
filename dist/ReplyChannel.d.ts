@@ -1,12 +1,12 @@
 import type * as Cause from "@effect/io/Cause";
 import * as Effect from "@effect/io/Effect";
-import type * as ShardingError from "@effect/shardcake/ShardingError";
+import type * as ShardingError from "@effect/sharding/ShardingError";
 import * as Stream from "@effect/stream/Stream";
 /**
  * @since 1.0.0
  * @category symbols
  */
-export declare const TypeId = "@effect/shardcake/ReplyChannel";
+export declare const TypeId = "@effect/sharding/ReplyChannel";
 /**
  * @since 1.0.0
  * @category symbols

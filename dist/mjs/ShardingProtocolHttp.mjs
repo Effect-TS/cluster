@@ -2,10 +2,10 @@
  * @since 1.0.0
  */
 import * as Schema from "@effect/schema/Schema";
-import * as BinaryMessage from "@effect/shardcake/BinaryMessage";
-import * as ByteArray from "@effect/shardcake/ByteArray";
-import * as ShardId from "@effect/shardcake/ShardId";
-import { ShardingEntityTypeNotRegisteredErrorSchema } from "@effect/shardcake/ShardingError";
+import * as BinaryMessage from "@effect/sharding/BinaryMessage";
+import * as ByteArray from "@effect/sharding/ByteArray";
+import * as ShardId from "@effect/sharding/ShardId";
+import { ShardingEntityTypeNotRegisteredErrorSchema } from "@effect/sharding/ShardingError";
 /**
  * @since 1.0.0
  * @category schema

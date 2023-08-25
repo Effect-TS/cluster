@@ -4,13 +4,13 @@
 import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
-import * as PodAddress from "@effect/shardcake/PodAddress"
+import * as PodAddress from "@effect/sharding/PodAddress"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/Pod"
+export const TypeId = "@effect/sharding/Pod"
 
 /**
  * @since 1.0.0

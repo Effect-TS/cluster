@@ -7,7 +7,7 @@ import * as Schema from "@effect/schema/Schema";
  * @since 1.0.0
  * @category symbols
  */
-export declare const TypeId = "@effect/shardcake/PodAddress";
+export declare const TypeId = "@effect/sharding/PodAddress";
 /**
  * @since 1.0.0
  * @category symbols
@@ -36,11 +36,11 @@ export declare function make(host: string, port: number): PodAddress;
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly _id: "@effect/shardcake/PodAddress";
+    readonly _id: "@effect/sharding/PodAddress";
     readonly host: string;
     readonly port: number;
 }, Data.Data<{
-    readonly _id: "@effect/shardcake/PodAddress";
+    readonly _id: "@effect/sharding/PodAddress";
     readonly host: string;
     readonly port: number;
 }>>;

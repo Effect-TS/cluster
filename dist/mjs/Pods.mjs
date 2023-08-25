@@ -10,7 +10,7 @@ import * as Stream from "@effect/stream/Stream";
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = /*#__PURE__*/Symbol.for("@effect/shardcake/Pods");
+export const TypeId = /*#__PURE__*/Symbol.for("@effect/sharding/Pods");
 /**
  * @since 1.0.0
  * @category context

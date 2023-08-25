@@ -8,9 +8,9 @@ import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Fiber from "@effect/io/Fiber";
 import * as RefSynchronized from "@effect/io/Ref/Synchronized";
-import * as MessageQueue from "@effect/shardcake/MessageQueue";
-import * as PoisonPill from "@effect/shardcake/PoisonPill";
-import * as ShardingError from "@effect/shardcake/ShardingError";
+import * as MessageQueue from "@effect/sharding/MessageQueue";
+import * as PoisonPill from "@effect/sharding/PoisonPill";
+import * as ShardingError from "@effect/sharding/ShardingError";
 /**
  * @since 1.0.0
  * @category constructors

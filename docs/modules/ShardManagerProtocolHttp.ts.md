@@ -37,13 +37,13 @@ export declare const GetAssignmentsResult_: Schema.Schema<
   | {
       readonly _tag: 'Right'
       readonly right: readonly (readonly [
-        { readonly _id: '@effect/shardcake/ShardId'; readonly value: number },
+        { readonly _id: '@effect/sharding/ShardId'; readonly value: number },
         (
           | { readonly _tag: 'None' }
           | {
               readonly _tag: 'Some'
               readonly value: {
-                readonly _id: '@effect/shardcake/PodAddress'
+                readonly _id: '@effect/sharding/PodAddress'
                 readonly host: string
                 readonly port: number
               }
@@ -54,8 +54,8 @@ export declare const GetAssignmentsResult_: Schema.Schema<
   Either<
     never,
     readonly (readonly [
-      Data<{ readonly _id: '@effect/shardcake/ShardId'; readonly value: number }>,
-      Option<Data<{ readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }>>
+      Data<{ readonly _id: '@effect/sharding/ShardId'; readonly value: number }>,
+      Option<Data<{ readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }>>
     ])[]
   >
 >
@@ -97,12 +97,12 @@ Added in v1.0.0
 export declare const NotifyUnhealthyPod_: Schema.Schema<
   {
     readonly _tag: 'NotifyUnhealthyPod'
-    readonly podAddress: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+    readonly podAddress: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
   },
   {
     readonly _tag: 'NotifyUnhealthyPod'
     readonly podAddress: Data<{
-      readonly _id: '@effect/shardcake/PodAddress'
+      readonly _id: '@effect/sharding/PodAddress'
       readonly host: string
       readonly port: number
     }>
@@ -134,17 +134,17 @@ export declare const Register_: Schema.Schema<
   {
     readonly _tag: 'Register'
     readonly pod: {
-      readonly _id: '@effect/shardcake/Pod'
-      readonly address: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+      readonly _id: '@effect/sharding/Pod'
+      readonly address: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
       readonly version: string
     }
   },
   {
     readonly _tag: 'Register'
     readonly pod: Data<{
-      readonly _id: '@effect/shardcake/Pod'
+      readonly _id: '@effect/sharding/Pod'
       readonly address: Data<{
-        readonly _id: '@effect/shardcake/PodAddress'
+        readonly _id: '@effect/sharding/PodAddress'
         readonly host: string
         readonly port: number
       }>
@@ -178,17 +178,17 @@ export declare const Unregister_: Schema.Schema<
   {
     readonly _tag: 'Unregister'
     readonly pod: {
-      readonly _id: '@effect/shardcake/Pod'
-      readonly address: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+      readonly _id: '@effect/sharding/Pod'
+      readonly address: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
       readonly version: string
     }
   },
   {
     readonly _tag: 'Unregister'
     readonly pod: Data<{
-      readonly _id: '@effect/shardcake/Pod'
+      readonly _id: '@effect/sharding/Pod'
       readonly address: Data<{
-        readonly _id: '@effect/shardcake/PodAddress'
+        readonly _id: '@effect/sharding/PodAddress'
         readonly host: string
         readonly port: number
       }>
@@ -211,23 +211,23 @@ export declare const schema: Schema.Schema<
   | {
       readonly _tag: 'Register'
       readonly pod: {
-        readonly _id: '@effect/shardcake/Pod'
-        readonly address: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+        readonly _id: '@effect/sharding/Pod'
+        readonly address: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
         readonly version: string
       }
     }
   | {
       readonly _tag: 'Unregister'
       readonly pod: {
-        readonly _id: '@effect/shardcake/Pod'
-        readonly address: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+        readonly _id: '@effect/sharding/Pod'
+        readonly address: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
         readonly version: string
       }
     }
   | {
       readonly _tag: 'NotifyUnhealthyPod'
       readonly podAddress: {
-        readonly _id: '@effect/shardcake/PodAddress'
+        readonly _id: '@effect/sharding/PodAddress'
         readonly host: string
         readonly port: number
       }
@@ -236,9 +236,9 @@ export declare const schema: Schema.Schema<
   | {
       readonly _tag: 'Register'
       readonly pod: Data<{
-        readonly _id: '@effect/shardcake/Pod'
+        readonly _id: '@effect/sharding/Pod'
         readonly address: Data<{
-          readonly _id: '@effect/shardcake/PodAddress'
+          readonly _id: '@effect/sharding/PodAddress'
           readonly host: string
           readonly port: number
         }>
@@ -248,9 +248,9 @@ export declare const schema: Schema.Schema<
   | {
       readonly _tag: 'Unregister'
       readonly pod: Data<{
-        readonly _id: '@effect/shardcake/Pod'
+        readonly _id: '@effect/sharding/Pod'
         readonly address: Data<{
-          readonly _id: '@effect/shardcake/PodAddress'
+          readonly _id: '@effect/sharding/PodAddress'
           readonly host: string
           readonly port: number
         }>
@@ -260,7 +260,7 @@ export declare const schema: Schema.Schema<
   | {
       readonly _tag: 'NotifyUnhealthyPod'
       readonly podAddress: Data<{
-        readonly _id: '@effect/shardcake/PodAddress'
+        readonly _id: '@effect/sharding/PodAddress'
         readonly host: string
         readonly port: number
       }>

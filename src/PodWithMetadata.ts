@@ -6,13 +6,13 @@ import { pipe } from "@effect/data/Function"
 import * as List from "@effect/data/List"
 import * as Option from "@effect/data/Option"
 import * as Schema from "@effect/schema/Schema"
-import * as Pod from "@effect/shardcake/Pod"
+import * as Pod from "@effect/sharding/Pod"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/PodWithMetadata"
+export const TypeId = "@effect/sharding/PodWithMetadata"
 
 /**
  * @since 1.0.0

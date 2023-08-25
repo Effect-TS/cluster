@@ -74,8 +74,8 @@ Added in v1.0.0
 export declare const ShardingEntityTypeNotRegisteredErrorSchema: Schema.Schema<
   {
     readonly entityType: string
-    readonly _tag: '@effect/shardcake/ShardingEntityTypeNotRegisteredError'
-    readonly podAddress: { readonly _id: '@effect/shardcake/PodAddress'; readonly host: string; readonly port: number }
+    readonly _tag: '@effect/sharding/ShardingEntityTypeNotRegisteredError'
+    readonly podAddress: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
   },
   ShardingEntityTypeNotRegisteredError
 >
@@ -90,7 +90,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingEntityTypeNotRegisteredErrorTag: '@effect/shardcake/ShardingEntityTypeNotRegisteredError'
+export declare const ShardingEntityTypeNotRegisteredErrorTag: '@effect/sharding/ShardingEntityTypeNotRegisteredError'
 ```
 
 Added in v1.0.0

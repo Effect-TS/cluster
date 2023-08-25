@@ -3,9 +3,9 @@
  */
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
-import * as ManagerConfig from "@effect/shardcake/ManagerConfig"
-import * as ShardManager from "@effect/shardcake/ShardManager"
-import * as ShardManagerProtocolHttp from "@effect/shardcake/ShardManagerProtocolHttp"
+import * as ManagerConfig from "@effect/sharding/ManagerConfig"
+import * as ShardManager from "@effect/sharding/ShardManager"
+import * as ShardManagerProtocolHttp from "@effect/sharding/ShardManagerProtocolHttp"
 import { asHttpServer } from "./node"
 
 /**

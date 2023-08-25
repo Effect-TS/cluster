@@ -1,9 +1,9 @@
 import * as Layer from "@effect/io/Layer";
-import * as Pods from "@effect/shardcake/Pods";
-import * as Serialization from "@effect/shardcake/Serialization";
-import * as ShardingConfig from "@effect/shardcake/ShardingConfig";
-import * as ShardManagerClient from "@effect/shardcake/ShardManagerClient";
-import * as Storage from "@effect/shardcake/Storage";
+import * as Pods from "@effect/sharding/Pods";
+import * as Serialization from "@effect/sharding/Serialization";
+import * as ShardingConfig from "@effect/sharding/ShardingConfig";
+import * as ShardManagerClient from "@effect/sharding/ShardManagerClient";
+import * as Storage from "@effect/sharding/Storage";
 import * as Sharding from "./Sharding";
 /**
  * @since 1.0.0

@@ -13,7 +13,7 @@ import * as Take from "@effect/stream/Take";
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/shardcake/ReplyChannel";
+export const TypeId = "@effect/sharding/ReplyChannel";
 /**
  * @since 1.0.0
  * @category utils

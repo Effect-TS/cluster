@@ -8,9 +8,9 @@ import type * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Ref from "@effect/io/Ref"
-import type * as Pod from "@effect/shardcake/Pod"
-import type * as PodAddress from "@effect/shardcake/PodAddress"
-import type * as ShardId from "@effect/shardcake/ShardId"
+import type * as Pod from "@effect/sharding/Pod"
+import type * as PodAddress from "@effect/sharding/PodAddress"
+import type * as ShardId from "@effect/sharding/ShardId"
 import * as Stream from "@effect/stream/Stream"
 import * as SubscriptionRef from "@effect/stream/SubscriptionRef"
 
@@ -18,7 +18,7 @@ import * as SubscriptionRef from "@effect/stream/SubscriptionRef"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("@effect/shardcake/StorageTypeId")
+export const TypeId: unique symbol = Symbol.for("@effect/sharding/StorageTypeId")
 
 /**
  * @since 1.0.0

@@ -2,14 +2,14 @@ import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Logger from "@effect/io/Logger"
-import * as ManagerConfig from "@effect/shardcake/ManagerConfig"
-import * as PodsHealth from "@effect/shardcake/PodsHealth"
-import * as PodsHttp from "@effect/shardcake/PodsHttp"
-import * as ShardManager from "@effect/shardcake/ShardManager"
-import * as StorageFile from "@effect/shardcake/StorageFile"
+import * as ManagerConfig from "@effect/sharding/ManagerConfig"
+import * as PodsHealth from "@effect/sharding/PodsHealth"
+import * as PodsHttp from "@effect/sharding/PodsHttp"
+import * as ShardManager from "@effect/sharding/ShardManager"
+import * as StorageFile from "@effect/sharding/StorageFile"
 
 import * as LogLevel from "@effect/io/Logger/Level"
-import * as ShardManagerHttp from "@effect/shardcake/ShardManagerHttp"
+import * as ShardManagerHttp from "@effect/sharding/ShardManagerHttp"
 
 const liveShardingManager = pipe(
   ShardManager.live,
