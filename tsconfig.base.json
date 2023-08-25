@@ -12,9 +12,7 @@
     "preserveSymlinks": true,
     "moduleResolution": "node",
     "noEmit": false,
-    "lib": [
-      "ES2021"
-    ],
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "sourceMap": true,
     "declarationMap": true,
     "strict": true,
@@ -38,29 +36,18 @@
     "incremental": true,
     "removeComments": false,
     "paths": {
-      "@effect/sharding": [
-        "./src/index.ts"
+      "@effect/sharding/test/*": ["./packages/sharding/test/*"],
+      "@effect/sharding/examples/*": ["./packages/sharding/examples/*"],
+      "@effect/sharding/*": ["./packages/sharding/src/*"],
+
+      "@effect/sharding-node/test/*": ["./packages/sharding-node/test/*"],
+      "@effect/sharding-node/examples/*": [
+        "./packages/sharding-node/examples/*"
       ],
-      "@effect/sharding/test/*": [
-        "./test/*"
-      ],
-      "@effect/sharding/examples/*": [
-        "./examples/*"
-      ],
-      "@effect/sharding/*": [
-        "./src/*"
-      ]
+      "@effect/sharding-node/*": ["./packages/sharding-node/src/*"]
     },
-    "plugins": [
-      {
-        "name": "@effect/language-service"
-      }
-    ]
+    "plugins": [{ "name": "@effect/language-service" }]
   },
   "include": [],
-  "exclude": [
-    "node_modules",
-    "build",
-    "lib"
-  ]
+  "exclude": ["node_modules", "build", "lib"]
 }

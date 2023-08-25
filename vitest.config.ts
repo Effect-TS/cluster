@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+
 import babel from "@vitejs/plugin-react"
 import path from "path"
 import { defineConfig } from "vite"
@@ -9,14 +10,16 @@ const babelConfig = require("./.babel.mjs.json")
 export default defineConfig({
   plugins: [babel({ babel: babelConfig })],
   test: {
-    include: ["./test/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
-    exclude: ["./test/util.ts", "./test/utils/**/*.ts", "./test/**/*.init.ts"],
+    include: ["packages/*/test/**/*.test.ts"],
     globals: true
   },
   resolve: {
     alias: {
-      "@effect/sharding/test": path.join(__dirname, "test"),
-      "@effect/sharding": path.join(__dirname, "src")
+      "@effect/sharding/test": path.join(__dirname, "packages/sharding/test"),
+      "@effect/sharding": path.join(__dirname, "packages/sharding/src"),
+
+      "@effect/sharding-node/test": path.join(__dirname, "packages/sharding-node/test"),
+      "@effect/sharding-node": path.join(__dirname, "packages/sharding-node/src")
     }
   }
 })

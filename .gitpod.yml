@@ -6,4 +6,3 @@ github:
 vscode:
   extensions:
     - dbaeumer.vscode-eslint
-    - effect.effect-debugger

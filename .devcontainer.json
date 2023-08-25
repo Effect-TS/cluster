@@ -1,5 +1,11 @@
 {
-	"name": "Node.js & TypeScript",
-	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
-	"postCreateCommand": "npm install -g pnpm && pnpm install && pnpm run build"
+    "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:16",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint"
+            ]
+        }
+    },
+    "initializeCommand": "npm install -g pnpm && pnpm install && pnpm run build"
 }

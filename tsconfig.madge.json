@@ -4,15 +4,24 @@
     "allowJs": true,
     "baseUrl": ".",
     "paths": {
-      "@effect/sharding": [
-        "./build/esm/index.js"
+      "@effect/sharding/test/*": ["./packages/sharding/build/test/*"],
+      "@effect/sharding/examples/*": ["./packages/sharding/build/examples/*"],
+      "@effect/sharding/*": ["./packages/sharding/build/esm/*"],
+
+      "@effect/sharding-node/test/*": ["./packages/sharding-node/build/test/*"],
+      "@effect/sharding-node/examples/*": [
+        "./packages/sharding-node/build/examples/*"
       ],
-      "@effect/sharding/*": [
-        "./build/esm/*"
-      ]
+      "@effect/sharding-node/*": ["./packages/sharding-node/build/esm/*"]
     }
   },
   "include": [
-    "./build/esm/**/*.js"
+    "./packages/sharding/build/esm/**/*.js",
+    "./packages/sharding/build/test/**/*.js",
+    "./packages/sharding/build/examples/**/*.js",
+
+    "./packages/sharding-node/build/esm/**/*.js",
+    "./packages/sharding-node/build/test/**/*.js",
+    "./packages/sharding-node/build/examples/**/*.js"
   ]
 }

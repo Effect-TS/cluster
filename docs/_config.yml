@@ -1,9 +1,0 @@
-remote_theme: mikearnaldi/just-the-docs
-search_enabled: true
-aux_links:
-  "Docs":
-    - "//mattiamanzati.github.io/shardcake"
-  "API Reference":
-    - "//mattiamanzati.github.io/shardcake/docs/modules"
-  "GitHub":
-    - "//github.com/mattiamanzati/shardcake"
