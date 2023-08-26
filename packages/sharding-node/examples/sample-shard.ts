@@ -4,6 +4,7 @@ import * as Layer from "@effect/io/Layer"
 import * as Logger from "@effect/io/Logger"
 import * as LogLevel from "@effect/io/Logger/Level"
 import * as Ref from "@effect/io/Ref"
+import * as NodeClient from "@effect/platform-node/Http/NodeClient"
 import * as PodsHttp from "@effect/sharding-node/PodsHttp"
 import * as ShardingServiceHttp from "@effect/sharding-node/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/sharding-node/ShardManagerClientHttp"
@@ -22,7 +23,8 @@ const liveSharding = pipe(
   Layer.use(StorageFile.storageFile),
   Layer.use(PodsHttp.httpPods),
   Layer.use(ShardManagerClientHttp.shardManagerClientHttp),
-  Layer.use(Serialization.json)
+  Layer.use(Serialization.json),
+  Layer.use(NodeClient.layer)
 )
 
 const program = pipe(

@@ -5,11 +5,11 @@ import { pipe } from "@effect/data/Function"
 import * as HashMap from "@effect/data/HashMap"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
+import * as Http from "@effect/platform/HttpClient"
 import * as ShardManagerProtocolHttp from "@effect/sharding-node/ShardManagerProtocolHttp"
 import * as Pod from "@effect/sharding/Pod"
 import * as ShardingConfig from "@effect/sharding/ShardingConfig"
 import * as ShardManagerClient from "@effect/sharding/ShardManagerClient"
-import { send } from "./utils"
 
 /**
  * @since 1.0.0
@@ -17,41 +17,62 @@ import { send } from "./utils"
  */
 export const shardManagerClientHttp = Layer.effect(
   ShardManagerClient.ShardManagerClient,
-  pipe(
-    ShardingConfig.ShardingConfig,
-    Effect.map(
-      (config) => ({
-        register: (podAddress) =>
-          send(ShardManagerProtocolHttp.Register_, ShardManagerProtocolHttp.RegisterResult_)(config.shardManagerUri, {
-            _tag: "Register",
-            pod: Pod.make(podAddress, config.serverVersion)
-          }),
-        unregister: (podAddress) =>
-          send(ShardManagerProtocolHttp.Unregister_, ShardManagerProtocolHttp.UnregisterResult_)(
-            config.shardManagerUri,
-            {
-              _tag: "Unregister",
+  Effect.gen(function*(_) {
+    const config = yield* _(ShardingConfig.ShardingConfig)
+    const client = yield* _(Http.client.Client, Effect.map(Http.client.filterStatusOk))
+
+    return ({
+      register: (podAddress) =>
+        Effect.gen(function*(_) {
+          const request = yield* _(
+            Http.request.post("/register"),
+            Http.request.prependUrl(config.shardManagerUri),
+            Http.request.schemaBody(ShardManagerProtocolHttp.Register_)({
               pod: Pod.make(podAddress, config.serverVersion)
-            }
-          ),
-        notifyUnhealthyPod: (podAddress) =>
-          send(ShardManagerProtocolHttp.NotifyUnhealthyPod_, ShardManagerProtocolHttp.NotifyUnhealthyPodResult_)(
-            config.shardManagerUri,
-            {
-              _tag: "NotifyUnhealthyPod",
+            })
+          )
+
+          return yield* _(client(request))
+        }).pipe(Effect.orDie),
+      unregister: (podAddress) =>
+        Effect.gen(function*(_) {
+          const request = yield* _(
+            Http.request.post("/unregister"),
+            Http.request.prependUrl(config.shardManagerUri),
+            Http.request.schemaBody(ShardManagerProtocolHttp.Unregister_)({
+              pod: Pod.make(podAddress, config.serverVersion)
+            })
+          )
+
+          return yield* _(client(request))
+        }).pipe(Effect.orDie),
+      notifyUnhealthyPod: (podAddress) =>
+        Effect.gen(function*(_) {
+          const request = yield* _(
+            Http.request.post("/notify-unhealthy-pod"),
+            Http.request.prependUrl(config.shardManagerUri),
+            Http.request.schemaBody(ShardManagerProtocolHttp.NotifyUnhealthyPod_)({
               podAddress
-            }
-          ),
-        getAssignments: pipe(
-          send(
-            ShardManagerProtocolHttp.GetAssignments_,
-            ShardManagerProtocolHttp.GetAssignmentsResult_
-          )(config.shardManagerUri, {
-            _tag: "GetAssignments"
-          }),
-          Effect.map((data) => HashMap.fromIterable(data))
+            })
+          )
+
+          return yield* _(client(request))
+        }).pipe(Effect.orDie),
+      getAssignments: Effect.gen(function*(_) {
+        const request = pipe(
+          Http.request.get("/get-assignments"),
+          Http.request.prependUrl(config.shardManagerUri)
         )
-      } as ShardManagerClient.ShardManagerClient)
-    )
-  )
+
+        const response = yield* _(
+          client(request),
+          Effect.flatMap(
+            Http.response.schemaBodyJson(ShardManagerProtocolHttp.GetAssignmentsResult_)
+          )
+        )
+
+        return HashMap.fromIterable(response)
+      }).pipe(Effect.orDie)
+    } as ShardManagerClient.ShardManagerClient)
+  })
 )

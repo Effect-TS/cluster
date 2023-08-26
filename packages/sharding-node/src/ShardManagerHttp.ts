@@ -1,48 +1,60 @@
 /**
  * @since 1.0.0
  */
-import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
+import * as Http from "@effect/platform-node/HttpServer"
 import * as ShardManagerProtocolHttp from "@effect/sharding-node/ShardManagerProtocolHttp"
 import * as ManagerConfig from "@effect/sharding/ManagerConfig"
 import * as ShardManager from "@effect/sharding/ShardManager"
-import { asHttpServer } from "./node"
+import { createServer } from "node:http"
 
-/**
- * @since 1.0.0
- * @category layers
- */
-export const shardManagerHttp = <R, E, B>(fa: Effect.Effect<R, E, B>) =>
-  pipe(
-    ShardManager.ShardManager,
-    Effect.flatMap((shardManager) =>
-      pipe(
-        ManagerConfig.ManagerConfig,
-        Effect.flatMap((managerConfig) =>
-          pipe(
-            fa,
-            asHttpServer(managerConfig.apiPort, ShardManagerProtocolHttp.schema, (req, reply) => {
-              switch (req._tag) {
-                case "Register":
-                  return reply(ShardManagerProtocolHttp.RegisterResult_)(
-                    Effect.as(shardManager.register(req.pod), true)
-                  )
-                case "Unregister":
-                  return reply(ShardManagerProtocolHttp.UnregisterResult_)(
-                    Effect.as(shardManager.unregister(req.pod.address), true)
-                  )
-                case "NotifyUnhealthyPod":
-                  return reply(ShardManagerProtocolHttp.NotifyUnhealthyPodResult_)(
-                    Effect.as(shardManager.notifyUnhealthyPod(req.podAddress), true)
-                  )
-                case "GetAssignments":
-                  return reply(ShardManagerProtocolHttp.GetAssignmentsResult_)(
-                    Effect.map(shardManager.getAssignments, (_) => Array.from(_))
-                  )
-              }
-            })
+const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
+  const managerConfig = yield* _(ManagerConfig.ManagerConfig)
+
+  return Http.server.layer(() => createServer(), { port: managerConfig.apiPort })
+}))
+
+export const shardManagerHttp = Layer.scopedDiscard(
+  Effect.gen(function*(_) {
+    const shardManager = yield* _(ShardManager.ShardManager)
+
+    return yield* _(Http.router.empty.pipe(
+      Http.router.post(
+        "/register",
+        Effect.gen(function*(_) {
+          const body = yield* _(Http.request.schemaBodyJson(ShardManagerProtocolHttp.Register_))
+          yield* _(shardManager.register(body.pod))
+          return yield* _(Http.response.json(true))
+        })
+      ),
+      Http.router.post(
+        "/unregister",
+        Effect.gen(function*(_) {
+          const body = yield* _(Http.request.schemaBodyJson(ShardManagerProtocolHttp.Unregister_))
+          yield* _(shardManager.unregister(body.pod.address))
+          return yield* _(Http.response.json(true))
+        })
+      ),
+      Http.router.post(
+        "/notify-unhealthy-pod",
+        Effect.gen(function*(_) {
+          const body = yield* _(Http.request.schemaBodyJson(ShardManagerProtocolHttp.NotifyUnhealthyPod_))
+          yield* _(shardManager.notifyUnhealthyPod(body.podAddress))
+          return yield* _(Http.response.json(true))
+        })
+      ),
+      Http.router.get(
+        "/get-assignments",
+        Effect.gen(function*(_) {
+          const assignments = yield* _(shardManager.getAssignments)
+          return yield* _(
+            Http.response.schemaJson(ShardManagerProtocolHttp.GetAssignmentsResult_)(Array.from(assignments))
           )
-        )
-      )
-    )
-  )
+        })
+      ),
+      Http.router.prefixAll("/api/rest"),
+      Http.server.serve(Http.middleware.logger)
+    ))
+  })
+).pipe(Layer.use(internalServer))
