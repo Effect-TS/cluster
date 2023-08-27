@@ -70,7 +70,7 @@ export interface Pods {
   readonly sendMessage: (
     pod: PodAddress.PodAddress,
     message: BinaryMessage.BinaryMessage
-  ) => Effect.Effect<never, never, Option.Option<ByteArray.ByteArray>>
+  ) => Effect.Effect<never, ShardingError.ShardingError, Option.Option<ByteArray.ByteArray>>
 
   /**
    * Send a message to a pod and receive a stream of replies
@@ -79,7 +79,7 @@ export interface Pods {
   readonly sendMessageStreaming: (
     pod: PodAddress.PodAddress,
     message: BinaryMessage.BinaryMessage
-  ) => Stream.Stream<never, never, ByteArray.ByteArray>
+  ) => Stream.Stream<never, ShardingError.ShardingError, ByteArray.ByteArray>
 }
 
 /**

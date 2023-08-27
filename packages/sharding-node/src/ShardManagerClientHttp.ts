@@ -75,4 +75,4 @@ export const shardManagerClientHttp = Layer.effect(
       }).pipe(Effect.orDie)
     } as ShardManagerClient.ShardManagerClient)
   })
-)
+).pipe(Layer.use(Http.client.layer))

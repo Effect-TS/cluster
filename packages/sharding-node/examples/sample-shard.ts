@@ -5,6 +5,7 @@ import * as Logger from "@effect/io/Logger"
 import * as LogLevel from "@effect/io/Logger/Level"
 import * as Ref from "@effect/io/Ref"
 import * as NodeClient from "@effect/platform-node/Http/NodeClient"
+import { runMain } from "@effect/platform-node/Runtime"
 import * as PodsHttp from "@effect/sharding-node/PodsHttp"
 import * as ShardingServiceHttp from "@effect/sharding-node/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/sharding-node/ShardManagerClientHttp"
@@ -27,7 +28,7 @@ const liveSharding = pipe(
   Layer.use(NodeClient.layer)
 )
 
-const program = pipe(
+const programLayer = Layer.scopedDiscard(pipe(
   Sharding.registerEntity(CounterEntity, (counterId, dequeue) =>
     pipe(
       SubscriptionRef.make(0),
@@ -57,14 +58,18 @@ const program = pipe(
         )
       )
     )),
-  Effect.zipRight(Sharding.register),
-  Effect.zipRight(Effect.never),
-  ShardingServiceHttp.shardingServiceHttp,
-  Effect.scoped,
-  Effect.catchAllCause(Effect.logError),
-  Logger.withMinimumLogLevel(LogLevel.All),
-  Effect.provideSomeLayer(liveSharding),
-  Effect.provideSomeLayer(ShardingConfig.defaults)
+  Effect.zipRight(Sharding.registerScoped)
+))
+
+const liveLayer = pipe(
+  programLayer,
+  Layer.provide(ShardingServiceHttp.shardingServiceHttp),
+  Layer.use(liveSharding),
+  Layer.use(ShardingConfig.defaults)
 )
 
-Effect.runFork(program)
+Layer.launch(liveLayer).pipe(
+  Logger.withMinimumLogLevel(LogLevel.All),
+  Effect.tapErrorCause(Effect.logError),
+  runMain
+)

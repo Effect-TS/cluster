@@ -2,6 +2,7 @@
  * @since 1.0.0
  * @internal
  */
+import * as Chunk from "@effect/data/Chunk"
 import type * as Either from "@effect/data/Either"
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
@@ -107,4 +108,18 @@ export function sendStream<I, A, I2, E, R>(
       Stream.fromEffect,
       Stream.flatten()
     )
+}
+
+export function stringFromUint8ArrayString(encoding: string) {
+  return <R, E>(stream: Stream.Stream<R, E, Uint8Array>) => {
+    const decoder = new TextDecoder(encoding)
+    return Stream.mapChunks(stream, Chunk.map((bytes) => decoder.decode(bytes)))
+  }
+}
+
+export function uint8ArrayFromStringStream() {
+  return <R, E>(stream: Stream.Stream<R, E, string>) => {
+    const decoder = new TextEncoder()
+    return Stream.mapChunks(stream, Chunk.map((strings) => decoder.encode(strings)))
+  }
 }

@@ -3,6 +3,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Logger from "@effect/io/Logger"
 import * as LogLevel from "@effect/io/Logger/Level"
+import * as HttpClient from "@effect/platform-node/HttpClient"
 import { runMain } from "@effect/platform-node/Runtime"
 import * as PodsHttp from "@effect/sharding-node/PodsHttp"
 import * as ShardManagerHttp from "@effect/sharding-node/ShardManagerHttp"
@@ -17,7 +18,8 @@ const liveShardingManager = pipe(
   Layer.use(StorageFile.storageFile),
   Layer.use(PodsHealth.local),
   Layer.use(PodsHttp.httpPods),
-  Layer.use(ManagerConfig.defaults)
+  Layer.use(ManagerConfig.defaults),
+  Layer.use(HttpClient.client.layer)
 )
 
 Layer.launch(liveShardingManager).pipe(
