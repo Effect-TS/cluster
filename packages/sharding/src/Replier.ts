@@ -48,7 +48,7 @@ export const replier = <I, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>):
  * @category utils
  */
 export function isReplier<A>(value: unknown): value is Replier<A> {
-  return typeof value === "object" && value !== null && TypeId in value
+  return typeof value === "object" && value !== null && "_id" in value && value._id === TypeId
 }
 
 /**

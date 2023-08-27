@@ -49,7 +49,7 @@ export const streamReplier = <I, A>(
 
 /** @internal */
 export function isStreamReplier<R>(value: unknown): value is StreamReplier<R> {
-  return typeof value === "object" && value !== null && TypeId in value
+  return typeof value === "object" && value !== null && "_id" in value && value._id === TypeId
 }
 
 /**

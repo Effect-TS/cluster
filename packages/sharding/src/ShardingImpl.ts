@@ -472,6 +472,7 @@ function make(
                           Effect.flatMap(replyChannel.replySingle)
                         )
                       }
+                      console.log("defect 1", msg)
                       return Effect.die(NotAMessageWithReplierDefect(msg))
                     }
                   }
