@@ -12,7 +12,7 @@ import type * as BinaryMessage from "@effect/sharding/BinaryMessage"
 import type * as PodAddress from "@effect/sharding/PodAddress"
 import * as Pods from "@effect/sharding/Pods"
 import type * as ShardId from "@effect/sharding/ShardId"
-import { ShardingPodUnavailableError } from "@effect/sharding/ShardingError"
+import { ShardingErrorPodUnavailable } from "@effect/sharding/ShardingError"
 import * as Stream from "@effect/stream/Stream"
 
 /** @internal */
@@ -75,7 +75,7 @@ export const httpPods = Layer.effect(
         Effect.asUnit,
         Effect.mapError((e) => {
           console.log("error is ", e)
-          return ShardingPodUnavailableError(podAddress)
+          return ShardingErrorPodUnavailable(podAddress)
         })
       )
     }

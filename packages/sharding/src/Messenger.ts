@@ -69,39 +69,39 @@ export function sendStreamAutoRestart<Msg, Cursor>(
   cursor: Cursor
 ) {
   return <A extends Msg & StreamMessage.StreamMessage<any>>(fn: (cursor: Cursor) => (replyId: ReplyId.ReplyId) => A) =>
-    (
-      updateCursor: (cursor: Cursor, res: StreamMessage.Success<A>) => Cursor
-    ): Stream.Stream<never, ShardingError.ShardingError, StreamMessage.Success<A>> => {
-      return pipe(
-        Stream.unwrap(
-          messenger.sendStream(entityId)(fn(cursor))
-        ),
-        Stream.either,
-        Stream.mapAccum(cursor, (c, either) =>
-          Either.match(either, {
-            onLeft: (
-              err
-            ) => [
-              c,
-              Either.left([c, err]) as Either.Either<[Cursor, ShardingError.ShardingError], StreamMessage.Success<A>>
-            ],
-            onRight: (res) =>
-              [
-                updateCursor(c, res),
-                Either.right(res) as Either.Either<[Cursor, ShardingError.ShardingError], StreamMessage.Success<A>>
-              ] as const
-          })),
-        Stream.flatMap(Either.match({
-          onRight: (res) => Stream.succeed(res),
-          onLeft: ([cursor, err]) =>
-            ShardingError.isShardingPodUnavailableError(err) ?
-              pipe(
-                Effect.sleep(Duration.millis(200)),
-                Stream.fromEffect,
-                Stream.zipRight(sendStreamAutoRestart(messenger, entityId, cursor)(fn)(updateCursor))
-              ) :
-              Stream.fail(err)
-        }))
-      )
-    }
+  (
+    updateCursor: (cursor: Cursor, res: StreamMessage.Success<A>) => Cursor
+  ): Stream.Stream<never, ShardingError.ShardingError, StreamMessage.Success<A>> => {
+    return pipe(
+      Stream.unwrap(
+        messenger.sendStream(entityId)(fn(cursor))
+      ),
+      Stream.either,
+      Stream.mapAccum(cursor, (c, either) =>
+        Either.match(either, {
+          onLeft: (
+            err
+          ) => [
+            c,
+            Either.left([c, err]) as Either.Either<[Cursor, ShardingError.ShardingError], StreamMessage.Success<A>>
+          ],
+          onRight: (res) =>
+            [
+              updateCursor(c, res),
+              Either.right(res) as Either.Either<[Cursor, ShardingError.ShardingError], StreamMessage.Success<A>>
+            ] as const
+        })),
+      Stream.flatMap(Either.match({
+        onRight: (res) => Stream.succeed(res),
+        onLeft: ([cursor, err]) =>
+          ShardingError.isShardingErrorPodUnavailable(err) ?
+            pipe(
+              Effect.sleep(Duration.millis(200)),
+              Stream.fromEffect,
+              Stream.zipRight(sendStreamAutoRestart(messenger, entityId, cursor)(fn)(updateCursor))
+            ) :
+            Stream.fail(err)
+      }))
+    )
+  }
 }

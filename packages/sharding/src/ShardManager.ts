@@ -23,7 +23,7 @@ import * as Pods from "@effect/sharding/Pods"
 import * as PodsHealth from "@effect/sharding/PodsHealth"
 import * as PodWithMetadata from "@effect/sharding/PodWithMetadata"
 import * as ShardId from "@effect/sharding/ShardId"
-import { ShardingPodNoLongerRegisteredError } from "@effect/sharding/ShardingError"
+import { ShardingErrorPodNoLongerRegistered } from "@effect/sharding/ShardingError"
 import * as ShardingEvent from "@effect/sharding/ShardingEvent"
 import * as ShardManagerState from "@effect/sharding/ShardManagerState"
 import * as Storage from "@effect/sharding/Storage"
@@ -200,7 +200,7 @@ function make(
   ) {
     return RefSynchronized.updateEffect(stateRef, (state) => {
       if (Option.isSome(pod) && !HashMap.has(state.pods, pod.value)) {
-        return Effect.fail(ShardingPodNoLongerRegisteredError(pod.value))
+        return Effect.fail(ShardingErrorPodNoLongerRegistered(pod.value))
       }
       return Effect.succeed({
         ...state,
@@ -569,7 +569,7 @@ export const live = Effect.gen(function*(_) {
     (pod) => Option.isSome(pod) && HashMap.has(filteredPods, pod.value)
   )
   const cdt = yield* _(Clock.currentTimeMillis)
-  const initialState = (ShardManagerState.make(
+  const initialState = ShardManagerState.make(
     HashMap.map(filteredPods, (pod) => PodWithMetadata.make(pod, cdt)),
     HashMap.union(
       filteredAssignments,
@@ -579,7 +579,7 @@ export const live = Effect.gen(function*(_) {
         HashMap.fromIterable
       )
     )
-  ))
+  )
   const state = yield* _(RefSynchronized.make(initialState))
   const rebalanceSemaphore = yield* _(Effect.makeSemaphore(1))
   const eventsHub = yield* _(Hub.unbounded<ShardingEvent.ShardingEvent>())

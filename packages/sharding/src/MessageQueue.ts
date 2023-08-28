@@ -26,7 +26,7 @@ export interface MessageQueue<Msg> {
   readonly dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>
   readonly offer: (
     msg: Msg | PoisonPill.PoisonPill
-  ) => Effect.Effect<never, ShardingError.ShardingMessageQueueError, void>
+  ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
   readonly shutdown: Effect.Effect<never, never, void>
 }
 

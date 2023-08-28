@@ -342,7 +342,7 @@ function make(
       Effect.map(HashMap.get(msg.entityType)),
       Effect.flatMap((_) =>
         Effect.unified(Option.match(_, {
-          onNone: () => Effect.fail(ShardingError.ShardingEntityTypeNotRegisteredError(msg.entityType, address)),
+          onNone: () => Effect.fail(ShardingError.ShardingErrorEntityTypeNotRegistered(msg.entityType, address)),
           onSome: (entityState) => entityState.processBinary(msg, replyChannel)
         }))
       )
@@ -432,7 +432,7 @@ function make(
                 {
                   onNone: () =>
                     Effect.fail(
-                      ShardingError.ShardingEntityTypeNotRegisteredError(recipientTypeName, pod)
+                      ShardingError.ShardingErrorEntityTypeNotRegistered(recipientTypeName, pod)
                     ),
                   onSome: (state) =>
                     pipe(
@@ -528,7 +528,7 @@ function make(
                 return Effect.die(MessageReturnedNotingDefect(entityId))
               }),
               Effect.timeoutFail({
-                onTimeout: ShardingError.ShardingSendTimeoutError,
+                onTimeout: ShardingError.ShardingErrorSendTimeout,
                 duration: timeout
               }),
               Effect.interruptible
@@ -600,8 +600,8 @@ function make(
               ),
               Effect.catchSome((_) => {
                 if (
-                  ShardingError.isShardingEntityNotManagedByThisPodError(_) ||
-                  ShardingError.isShardingPodUnavailableError(_)
+                  ShardingError.isShardingErrorEntityNotManagedByThisPod(_) ||
+                  ShardingError.isShardingErrorPodUnavailable(_)
                 ) {
                   return pipe(
                     Effect.sleep(Duration.millis(200)),
@@ -663,7 +663,7 @@ function make(
                     replyChannel
                   ),
                   Effect.catchSome((_) => {
-                    if (ShardingError.isShardingPodUnavailableError(_)) {
+                    if (ShardingError.isShardingErrorPodUnavailable(_)) {
                       return pipe(
                         Effect.sleep(Duration.millis(200)),
                         Effect.zipRight(trySend),
@@ -685,7 +685,7 @@ function make(
                 return Effect.die(MessageReturnedNotingDefect(topic))
               }),
               Effect.timeoutFail({
-                onTimeout: ShardingError.ShardingSendTimeoutError,
+                onTimeout: ShardingError.ShardingErrorSendTimeout,
                 duration: timeout
               }),
               Effect.either,

@@ -2,38 +2,38 @@
  * @since 1.0.0
  */
 import * as Schema from "@effect/schema/Schema"
-import { ShardingEntityNotManagedByThisPodErrorSchema } from "@effect/sharding/ShardingError/ShardingEntityNotManagedByThisPodError"
-import { ShardingEntityTypeNotRegisteredErrorSchema } from "@effect/sharding/ShardingError/ShardingEntityTypeNotRegisteredError"
-import { ShardingMessageQueueErrorSchema } from "@effect/sharding/ShardingError/ShardingMessageQueueError"
-import { ShardingPodNoLongerRegisteredErrorSchema } from "@effect/sharding/ShardingError/ShardingPodNoLongerRegisteredError"
-import { ShardingPodUnavailableErrorSchema } from "@effect/sharding/ShardingError/ShardingPodUnavailableError"
-import { ShardingSendTimeoutErrorSchema } from "@effect/sharding/ShardingError/ShardingSendTimeoutError"
-import { ShardingSerializationErrorSchema } from "@effect/sharding/ShardingError/ShardingSerializationError"
+import { ShardingErrorEntityNotManagedByThisPodSchema } from "@effect/sharding/ShardingErrorEntityNotManagedByThisPod"
+import { ShardingErrorEntityTypeNotRegisteredSchema } from "@effect/sharding/ShardingErrorEntityTypeNotRegistered"
+import { ShardingErrorMessageQueueSchema } from "@effect/sharding/ShardingErrorMessageQueue"
+import { ShardingErrorPodNoLongerRegisteredSchema } from "@effect/sharding/ShardingErrorPodNoLongerRegistered"
+import { ShardingErrorPodUnavailableSchema } from "@effect/sharding/ShardingErrorPodUnavailable"
+import { ShardingErrorSendTimeoutSchema } from "@effect/sharding/ShardingErrorSendTimeout"
+import { ShardingErrorSerializationSchema } from "@effect/sharding/ShardingErrorSerialization"
 
-export * from "@effect/sharding/ShardingError/ShardingEntityNotManagedByThisPodError"
-export * from "@effect/sharding/ShardingError/ShardingEntityTypeNotRegisteredError"
-export * from "@effect/sharding/ShardingError/ShardingMessageQueueError"
-export * from "@effect/sharding/ShardingError/ShardingPodNoLongerRegisteredError"
-export * from "@effect/sharding/ShardingError/ShardingPodUnavailableError"
-export * from "@effect/sharding/ShardingError/ShardingSendTimeoutError"
-export * from "@effect/sharding/ShardingError/ShardingSerializationError"
+export * from "@effect/sharding/ShardingErrorEntityNotManagedByThisPod"
+export * from "@effect/sharding/ShardingErrorEntityTypeNotRegistered"
+export * from "@effect/sharding/ShardingErrorMessageQueue"
+export * from "@effect/sharding/ShardingErrorPodNoLongerRegistered"
+export * from "@effect/sharding/ShardingErrorPodUnavailable"
+export * from "@effect/sharding/ShardingErrorSendTimeout"
+export * from "@effect/sharding/ShardingErrorSerialization"
 
 /**
  * @since 1.0.0
  * @category schema
  */
-export const ShardingErrorSchema = Schema.union(
-  ShardingSerializationErrorSchema,
-  ShardingEntityNotManagedByThisPodErrorSchema,
-  ShardingEntityTypeNotRegisteredErrorSchema,
-  ShardingMessageQueueErrorSchema,
-  ShardingPodNoLongerRegisteredErrorSchema,
-  ShardingPodUnavailableErrorSchema,
-  ShardingSendTimeoutErrorSchema
+export const schema = Schema.union(
+  ShardingErrorSerializationSchema,
+  ShardingErrorEntityNotManagedByThisPodSchema,
+  ShardingErrorEntityTypeNotRegisteredSchema,
+  ShardingErrorMessageQueueSchema,
+  ShardingErrorPodNoLongerRegisteredSchema,
+  ShardingErrorPodUnavailableSchema,
+  ShardingErrorSendTimeoutSchema
 )
 
 /**
  * @since 1.0.0
  * @category models
  */
-export type ShardingError = Schema.To<typeof ShardingErrorSchema>
+export type ShardingError = Schema.To<typeof schema>

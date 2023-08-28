@@ -15,7 +15,7 @@ function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
   return pipe(
     value,
     Schema.encode(schema),
-    Effect.mapError((e) => ShardingError.ShardingSerializationError(TreeFormatter.formatErrors(e.errors))),
+    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors))),
     Effect.map((_) => JSON.stringify(_))
   )
 }
@@ -25,7 +25,7 @@ function jsonParse<I, A>(value: string, schema: Schema.Schema<I, A>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
     Effect.flatMap(Schema.decode(schema)),
-    Effect.mapError((e) => ShardingError.ShardingSerializationError(TreeFormatter.formatErrors(e.errors)))
+    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors)))
   )
 }
 
@@ -61,7 +61,7 @@ export interface Serialization {
   readonly encode: <I, A>(
     message: A,
     schema: Schema.Schema<I, A>
-  ) => Effect.Effect<never, ShardingError.ShardingSerializationError, ByteArray.ByteArray>
+  ) => Effect.Effect<never, ShardingError.ShardingErrorSerialization, ByteArray.ByteArray>
 
   /**
    * Transform binary back into the given type
@@ -70,7 +70,7 @@ export interface Serialization {
   readonly decode: <I, A>(
     bytes: ByteArray.ByteArray,
     schema: Schema.Schema<I, A>
-  ) => Effect.Effect<never, ShardingError.ShardingSerializationError, A>
+  ) => Effect.Effect<never, ShardingError.ShardingErrorSerialization, A>
 }
 
 /**

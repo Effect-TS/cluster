@@ -93,7 +93,7 @@ describe.concurrent("SampleTests", () => {
         const error = Cause.failureOption(exit.cause)
         assertTrue(Option.isSome(error))
         if (Option.isSome(error)) {
-          assertTrue(ShardingError.isShardingEntityTypeNotRegisteredError(error.value))
+          assertTrue(ShardingError.isShardingErrorEntityTypeNotRegistered(error.value))
         }
       }
     }).pipe(withTestEnv, Effect.runPromise)
@@ -473,7 +473,7 @@ describe.concurrent("SampleTests", () => {
         offer: (msg: any) =>
           PoisonPill.isPoisonPill(msg) ?
             Queue.offer(queue, msg) :
-            Effect.fail(ShardingError.ShardingMessageQueueError("QUEUE!")),
+            Effect.fail(ShardingError.ShardingErrorMessageQueue("QUEUE!")),
         dequeue: queue,
         shutdown: Queue.shutdown(queue)
       })
@@ -497,7 +497,7 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(
         messenger.sendDiscard("entity1")(1),
-        Effect.catchTag(ShardingError.ShardingMessageQueueErrorTag, () => Ref.set(failed, true))
+        Effect.catchTag(ShardingError.ShardingErrorMessageQueueTag, () => Ref.set(failed, true))
       )
 
       assertTrue(yield* _(Ref.get(failed)))

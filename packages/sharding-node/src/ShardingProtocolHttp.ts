@@ -5,7 +5,7 @@ import * as Schema from "@effect/schema/Schema"
 import * as BinaryMessage from "@effect/sharding/BinaryMessage"
 import * as ByteArray from "@effect/sharding/ByteArray"
 import * as ShardId from "@effect/sharding/ShardId"
-import { ShardingErrorSchema } from "@effect/sharding/ShardingError"
+import * as ShardingError from "@effect/sharding/ShardingError"
 
 /**
  * @since 1.0.0
@@ -36,7 +36,7 @@ export const Send_ = Schema.struct({
  * @category schema
  */
 export const SendResult_ = Schema.either(
-  ShardingErrorSchema,
+  ShardingError.schema,
   Schema.option(ByteArray.schema)
 )
 
@@ -53,7 +53,7 @@ export const SendStream_ = Schema.struct({
  * @category schema
  */
 export const SendStreamResultItem_ = Schema.either(
-  ShardingErrorSchema,
+  ShardingError.schema,
   ByteArray.schema
 )
 
