@@ -110,6 +110,7 @@ export function sendStream<I, A, I2, E, R>(
     )
 }
 
+/** @internal */
 export function stringFromUint8ArrayString(encoding: string) {
   return <R, E>(stream: Stream.Stream<R, E, Uint8Array>) => {
     const decoder = new TextDecoder(encoding)
@@ -117,6 +118,7 @@ export function stringFromUint8ArrayString(encoding: string) {
   }
 }
 
+/** @internal */
 export function uint8ArrayFromStringStream() {
   return <R, E>(stream: Stream.Stream<R, E, string>) => {
     const decoder = new TextEncoder()

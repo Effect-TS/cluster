@@ -57,7 +57,7 @@ export function make<R, Req>(
   behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
-  options: RecipientBehaviour.EntityBehaviourOptions<R, Req> = {}
+  options: RecipientBehaviour.EntityBehaviourOptions<Req> = {}
 ) {
   return Effect.gen(function*(_) {
     const entityMaxIdle = options.entityMaxIdleTime || Option.none()

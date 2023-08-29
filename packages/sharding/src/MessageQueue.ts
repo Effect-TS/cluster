@@ -34,9 +34,9 @@ export interface MessageQueue<Msg> {
  * @since 1.0.0
  * @category models
  */
-export type MessageQueueConstructor<R, Msg> = (
+export type MessageQueueConstructor<Msg> = (
   entityId: string
-) => Effect.Effect<R, never, MessageQueue<Msg>>
+) => Effect.Effect<never, never, MessageQueue<Msg>>
 
 /**
  * A layer that creates an in-memory message queue.
@@ -44,7 +44,7 @@ export type MessageQueueConstructor<R, Msg> = (
  * @since 1.0.0
  * @category layers
  */
-export const inMemory: MessageQueueConstructor<never, any> = () =>
+export const inMemory: MessageQueueConstructor<any> = () =>
   Effect.gen(function*(_) {
     const queue = yield* _(Queue.unbounded<any>())
     return ({

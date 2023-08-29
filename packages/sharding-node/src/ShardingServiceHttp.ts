@@ -78,7 +78,7 @@ export const shardingServiceHttp = Layer.scopedDiscard(
             uint8ArrayFromStringStream()
           )
 
-          return (Http.response.stream(result))
+          return (Http.response.stream(result, { contentType: "text/event-stream" }))
         })
       ),
       Http.server.serve(Http.middleware.logger)

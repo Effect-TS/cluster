@@ -54,7 +54,8 @@ const programLayer = Layer.scopedDiscard(pipe(
           ),
           Effect.zipRight(Ref.get(count)),
           Effect.tap((_) => Effect.log("Counter " + counterId + " is now " + _)),
-          Effect.forever
+          Effect.forever,
+          Effect.withLogSpan(CounterEntity.name + "." + counterId)
         )
       )
     )),
@@ -63,7 +64,7 @@ const programLayer = Layer.scopedDiscard(pipe(
 
 const liveLayer = pipe(
   programLayer,
-  Layer.provide(ShardingServiceHttp.shardingServiceHttp),
+  Layer.merge(ShardingServiceHttp.shardingServiceHttp),
   Layer.use(liveSharding),
   Layer.use(ShardingConfig.defaults)
 )

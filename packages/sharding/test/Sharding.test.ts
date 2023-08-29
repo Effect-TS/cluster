@@ -466,8 +466,8 @@ describe.concurrent("SampleTests", () => {
     )
   })
 
-  it.only("If MessageQueue.offer fails, send should fail.", () => {
-    const messageQueueConstructor: MessageQueue.MessageQueueConstructor<never, number> = () => {
+  it("If MessageQueue.offer fails, send should fail.", () => {
+    const messageQueueConstructor: MessageQueue.MessageQueueConstructor<number> = () => {
       const queue = Effect.runSync(Queue.unbounded<any>())
       return Effect.succeed({
         offer: (msg: any) =>

@@ -15,6 +15,10 @@ const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
   return Http.server.layer(() => createServer(), { port: managerConfig.apiPort })
 }))
 
+/**
+ * @since 1.0.0
+ * @category layers
+ */
 export const shardManagerHttp = Layer.scopedDiscard(
   Effect.gen(function*(_) {
     const shardManager = yield* _(ShardManager.ShardManager)
