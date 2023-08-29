@@ -1,0 +1,38 @@
+{
+  "name": "@effect/sharding-node",
+  "version": "0.13.9",
+  "description": "Unified interfaces for common platform-specific services",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/effect-ts/sharding.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    "./*": {
+      "import": {
+        "types": "./*.d.ts",
+        "default": "./mjs/*.mjs"
+      },
+      "require": {
+        "types": "./*.d.ts",
+        "default": "./*.js"
+      }
+    }
+  },
+  "sideEffects": [],
+  "author": "Effect contributors",
+  "dependencies": {
+    "node-fetch": "2"
+  },
+  "peerDependencies": {
+    "@effect/data": "^0.17.5",
+    "@effect/io": "^0.38.2",
+    "@effect/sharding": "workspace:^",
+    "@effect/stream": "^0.34.0",
+    "@effect/platform": "^0.13.10",
+    "@effect/platform-node": "^0.13.10"
+  }
+}
