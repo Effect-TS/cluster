@@ -8,7 +8,6 @@ import * as HashSet from "@effect/data/HashSet"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Fiber from "@effect/io/Fiber"
-import type * as Queue from "@effect/io/Queue"
 import * as RefSynchronized from "@effect/io/Ref/Synchronized"
 import * as MessageQueue from "@effect/sharding/MessageQueue"
 import * as PoisonPill from "@effect/sharding/PoisonPill"
@@ -71,10 +70,9 @@ export function make<R, Req>(
         >
       >(HashMap.empty())
     )
-    const behaviour = (
-      entityId: string,
-      dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-    ) => Effect.provideContext(behaviour_(entityId, dequeue), env)
+    const behaviour: RecipientBehaviour.RecipientBehaviour<never, Req> = (
+      recipientContext
+    ) => Effect.provideContext(behaviour_(recipientContext), env)
 
     function startExpirationFiber(entityId: string) {
       return pipe(
@@ -165,7 +163,12 @@ export function make<R, Req>(
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const executionFiber = yield* _(
                       pipe(
-                        behaviour(entityId, queue.dequeue),
+                        behaviour({
+                          entityId,
+                          dequeue: queue.dequeue,
+                          reply: (message, reply) => sharding.reply(reply, message.replier),
+                          replyStream: (message, replyStream) => sharding.replyStream(replyStream, message.replier)
+                        }),
                         Effect.ensuring(
                           pipe(
                             RefSynchronized.update(entities, HashMap.remove(entityId)),

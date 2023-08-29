@@ -1,11 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as ReplyId from "@effect/sharding/ReplyId"
-import * as Sharding from "@effect/sharding/Sharding"
-import type * as Stream from "@effect/stream/Stream"
 
 /**
  * @since 1.0.0
@@ -27,7 +24,6 @@ export interface StreamReplier<A> {
   _id: TypeId
   id: ReplyId.ReplyId
   schema: Schema.Schema<unknown, A>
-  reply: (reply: Stream.Stream<never, never, A>) => Effect.Effect<Sharding.Sharding, never, void>
 }
 
 /**
@@ -41,8 +37,7 @@ export const streamReplier = <I, A>(
   const self: StreamReplier<A> = {
     _id: TypeId,
     id,
-    schema: schema as any,
-    reply: (reply) => Effect.flatMap(Sharding.Sharding, (_) => _.replyStream(reply, self))
+    schema: schema as any
   }
   return self
 }

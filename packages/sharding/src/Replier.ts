@@ -1,10 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as ReplyId from "@effect/sharding/ReplyId"
-import * as Sharding from "@effect/sharding/Sharding"
 
 /**
  * @since 1.0.0
@@ -26,7 +24,6 @@ export interface Replier<A> {
   readonly _id: TypeId
   readonly id: ReplyId.ReplyId
   readonly schema: Schema.Schema<unknown, A>
-  readonly reply: (reply: A) => Effect.Effect<Sharding.Sharding, never, void>
 }
 
 /**
@@ -37,8 +34,7 @@ export const replier = <I, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>):
   const self: Replier<A> = {
     _id: TypeId,
     id,
-    schema: schema as any,
-    reply: (reply) => Effect.flatMap(Sharding.Sharding, (_) => _.reply(reply, self))
+    schema: schema as any
   }
   return self
 }

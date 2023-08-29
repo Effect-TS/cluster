@@ -29,7 +29,7 @@ const liveSharding = pipe(
 )
 
 const programLayer = Layer.scopedDiscard(pipe(
-  Sharding.registerEntity(CounterEntity, (counterId, dequeue) =>
+  Sharding.registerEntity(CounterEntity, ({ dequeue, entityId, reply, replyStream }) =>
     pipe(
       SubscriptionRef.make(0),
       Effect.flatMap((count) =>
@@ -45,17 +45,17 @@ const programLayer = Layer.scopedDiscard(pipe(
                 case "GetCurrent":
                   return pipe(
                     SubscriptionRef.get(count),
-                    Effect.flatMap((_) => msg.replier.reply(_))
+                    Effect.flatMap((_) => reply(msg, _))
                   )
                 case "SubscribeChanges":
-                  return msg.replier.reply(Stream.changes(count.changes))
+                  return replyStream(msg, Stream.changes(count.changes))
               }
             }
           ),
           Effect.zipRight(Ref.get(count)),
-          Effect.tap((_) => Effect.log("Counter " + counterId + " is now " + _)),
+          Effect.tap((_) => Effect.log("Counter " + entityId + " is now " + _)),
           Effect.forever,
-          Effect.withLogSpan(CounterEntity.name + "." + counterId)
+          Effect.withLogSpan(CounterEntity.name + "." + entityId)
         )
       )
     )),

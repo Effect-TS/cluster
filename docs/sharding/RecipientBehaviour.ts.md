@@ -16,9 +16,9 @@ Added in v1.0.0
 
 - [models](#models)
   - [RecipientBehaviour (interface)](#recipientbehaviour-interface)
+  - [RecipientContext (interface)](#recipientcontext-interface)
 - [utils](#utils)
   - [EntityBehaviourOptions (type alias)](#entitybehaviouroptions-type-alias)
-  - [process](#process)
 
 ---
 
@@ -32,7 +32,30 @@ An alias to a RecipientBehaviour
 
 ```ts
 export interface RecipientBehaviour<R, Req> {
-  (entityId: string, dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>): Effect.Effect<R, never, void>
+  (args: RecipientContext<Req>): Effect.Effect<R, never, void>
+}
+```
+
+Added in v1.0.0
+
+## RecipientContext (interface)
+
+The args received by the RecipientBehaviour
+
+**Signature**
+
+```ts
+export interface RecipientContext<Req> {
+  readonly entityId: string
+  readonly dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
+  readonly reply: <A extends Req & Message.Message<any>>(
+    message: A,
+    reply: Message.Success<A>
+  ) => Effect.Effect<never, never, void>
+  readonly replyStream: <A extends Req & StreamMessage.StreamMessage<any>>(
+    message: A,
+    reply: Stream.Stream<never, never, StreamMessage.Success<A>>
+  ) => Effect.Effect<never, never, void>
 }
 ```
 
@@ -51,21 +74,6 @@ export type EntityBehaviourOptions<Req> = {
   messageQueueConstructor?: MessageQueueConstructor<Req>
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 }
-```
-
-Added in v1.0.0
-
-## process
-
-An utility that process a message at a time, or interrupts on PoisonPill
-
-**Signature**
-
-```ts
-export declare const process: <Msg, R, E>(
-  dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-  process: (message: Msg) => Effect.Effect<R, E, void>
-) => Effect.Effect<R, E, never>
 ```
 
 Added in v1.0.0

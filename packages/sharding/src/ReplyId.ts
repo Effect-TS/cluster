@@ -49,7 +49,7 @@ export function make(value: string): ReplyId {
 }
 
 /** @internal */
-const makeUUID = typeof crypto !== undefined && typeof crypto.getRandomValues === "function" ?
+const makeUUID = typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function" ?
   Effect.sync(() =>
     // @ts-expect-error
     ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(

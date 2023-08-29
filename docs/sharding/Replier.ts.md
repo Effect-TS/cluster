@@ -49,7 +49,6 @@ export interface Replier<A> {
   readonly _id: TypeId
   readonly id: ReplyId.ReplyId
   readonly schema: Schema.Schema<unknown, A>
-  readonly reply: (reply: A) => Effect.Effect<Sharding.Sharding, never, void>
 }
 ```
 
