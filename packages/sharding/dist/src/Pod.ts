@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
-import { pipe } from "@effect/data/Function"
+import * as Data from "effect/Data"
+import { pipe } from "effect/Function"
 import * as Schema from "@effect/schema/Schema"
 import * as PodAddress from "@effect/sharding/PodAddress"
 

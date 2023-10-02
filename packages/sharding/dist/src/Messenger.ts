@@ -1,15 +1,15 @@
 /**
  * @since 1.0.0
  */
-import * as Duration from "@effect/data/Duration"
-import * as Either from "@effect/data/Either"
-import { pipe } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
+import * as Duration from "effect/Duration"
+import * as Either from "effect/Either"
+import { pipe } from "effect/Function"
+import * as Effect from "effect/Effect"
 import type * as Message from "@effect/sharding/Message"
 import type * as ReplyId from "@effect/sharding/ReplyId"
 import * as ShardingError from "@effect/sharding/ShardingError"
 import type * as StreamMessage from "@effect/sharding/StreamMessage"
-import * as Stream from "@effect/stream/Stream"
+import * as Stream from "effect/Stream"
 
 /**
  * An interface to communicate with a remote entity

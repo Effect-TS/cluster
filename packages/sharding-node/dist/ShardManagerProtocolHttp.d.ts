@@ -17,9 +17,9 @@ export declare const Register_: Schema.Schema<{
         readonly version: string;
     };
 }, {
-    readonly pod: import("@effect/data/Data").Data<{
+    readonly pod: import("effect/Data").Data<{
         readonly _id: "@effect/sharding/Pod";
-        readonly address: import("@effect/data/Data").Data<{
+        readonly address: import("effect/Data").Data<{
             readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
@@ -42,9 +42,9 @@ export declare const Unregister_: Schema.Schema<{
         readonly version: string;
     };
 }, {
-    readonly pod: import("@effect/data/Data").Data<{
+    readonly pod: import("effect/Data").Data<{
         readonly _id: "@effect/sharding/Pod";
-        readonly address: import("@effect/data/Data").Data<{
+        readonly address: import("effect/Data").Data<{
             readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
             readonly port: number;
@@ -63,7 +63,7 @@ export declare const NotifyUnhealthyPod_: Schema.Schema<{
         readonly port: number;
     };
 }, {
-    readonly podAddress: import("@effect/data/Data").Data<{
+    readonly podAddress: import("effect/Data").Data<{
         readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
@@ -85,10 +85,10 @@ export declare const GetAssignmentsResult_: Schema.Schema<readonly (readonly [{
         readonly host: string;
         readonly port: number;
     };
-}])[], readonly (readonly [import("@effect/data/Data").Data<{
+}])[], readonly (readonly [import("effect/Data").Data<{
     readonly _id: "@effect/sharding/ShardId";
     readonly value: number;
-}>, import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
+}>, import("effect/Option").Option<import("effect/Data").Data<{
     readonly _id: "@effect/sharding/PodAddress";
     readonly host: string;
     readonly port: number;

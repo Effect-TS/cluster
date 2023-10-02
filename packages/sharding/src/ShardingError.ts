@@ -36,4 +36,4 @@ export const schema = Schema.union(
  * @since 1.0.0
  * @category models
  */
-export type ShardingError = Schema.To<typeof schema>
+export type ShardingError = Schema.Schema.To<typeof schema>

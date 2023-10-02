@@ -1,7 +1,7 @@
-import type * as Cause from "@effect/io/Cause";
-import * as Effect from "@effect/io/Effect";
+import type * as Cause from "effect/Cause";
+import * as Effect from "effect/Effect";
 import type * as ShardingError from "@effect/sharding/ShardingError";
-import * as Stream from "@effect/stream/Stream";
+import * as Stream from "effect/Stream";
 /**
  * @since 1.0.0
  * @category symbols

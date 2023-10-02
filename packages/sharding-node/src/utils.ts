@@ -2,14 +2,14 @@
  * @since 1.0.0
  * @internal
  */
-import * as Chunk from "@effect/data/Chunk"
-import type * as Either from "@effect/data/Either"
-import { pipe } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
+import * as Chunk from "effect/Chunk"
+import type * as Either from "effect/Either"
+import { pipe } from "effect/Function"
+import * as Effect from "effect/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as ShardingError from "@effect/sharding/ShardingError"
-import * as Stream from "@effect/stream/Stream"
+import * as Stream from "effect/Stream"
 import fetch from "node-fetch"
 
 /** @internal */

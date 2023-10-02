@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
+import * as Data from "effect/Data"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -23,7 +23,7 @@ const ShardingErrorEntityNotManagedByThisPodSchema_ = Schema.data(
  * @category models
  */
 export interface ShardingErrorEntityNotManagedByThisPod
-  extends Schema.To<typeof ShardingErrorEntityNotManagedByThisPodSchema_>
+  extends Schema.Schema.To<typeof ShardingErrorEntityNotManagedByThisPodSchema_>
 {}
 
 /**
@@ -47,6 +47,6 @@ export function isShardingErrorEntityNotManagedByThisPod(value: any): value is S
  * @category schema
  */
 export const ShardingErrorEntityNotManagedByThisPodSchema: Schema.Schema<
-  Schema.From<typeof ShardingErrorEntityNotManagedByThisPodSchema_>,
+  Schema.Schema.From<typeof ShardingErrorEntityNotManagedByThisPodSchema_>,
   ShardingErrorEntityNotManagedByThisPod
 > = ShardingErrorEntityNotManagedByThisPodSchema_

@@ -1,6 +1,6 @@
-import * as HashSet from "@effect/data/HashSet";
-import * as Option from "@effect/data/Option";
-import * as Effect from "@effect/io/Effect";
+import * as HashSet from "effect/HashSet";
+import * as Option from "effect/Option";
+import * as Effect from "effect/Effect";
 import type * as RecipientBehaviour from "@effect/sharding/RecipientBehaviour";
 import type * as RecipientType from "@effect/sharding/RecipientType";
 import type * as ReplyChannel from "@effect/sharding/ReplyChannel";

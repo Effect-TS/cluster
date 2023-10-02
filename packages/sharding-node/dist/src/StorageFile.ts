@@ -1,18 +1,18 @@
 /**
  * @since 1.0.0
  */
-import { pipe } from "@effect/data/Function"
-import * as HashMap from "@effect/data/HashMap"
-import type * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import * as Queue from "@effect/io/Queue"
+import { pipe } from "effect/Function"
+import * as HashMap from "effect/HashMap"
+import type * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Queue from "effect/Queue"
 import * as Schema from "@effect/schema/Schema"
 import * as Pod from "@effect/sharding/Pod"
 import * as PodAddress from "@effect/sharding/PodAddress"
 import * as ShardId from "@effect/sharding/ShardId"
 import * as Storage from "@effect/sharding/Storage"
-import * as Stream from "@effect/stream/Stream"
+import * as Stream from "effect/Stream"
 import * as fs from "fs"
 import { jsonParse, jsonStringify } from "./utils"
 

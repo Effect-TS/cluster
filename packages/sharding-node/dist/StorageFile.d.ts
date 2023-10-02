@@ -1,4 +1,4 @@
-import * as Layer from "@effect/io/Layer";
+import * as Layer from "effect/Layer";
 import * as Storage from "@effect/sharding/Storage";
 /**
  * @since 1.0.0

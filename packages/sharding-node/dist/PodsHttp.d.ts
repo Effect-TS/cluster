@@ -1,4 +1,4 @@
-import * as Layer from "@effect/io/Layer";
+import * as Layer from "effect/Layer";
 import * as Http from "@effect/platform/HttpClient";
 import * as Pods from "@effect/sharding/Pods";
 /**

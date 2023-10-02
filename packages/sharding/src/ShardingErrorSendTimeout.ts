@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
+import * as Data from "effect/Data"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -20,7 +20,7 @@ const ShardingErrorSendTimeoutSchema_ = Schema.data(
  * @since 1.0.0
  * @category models
  */
-export interface ShardingErrorSendTimeout extends Schema.To<typeof ShardingErrorSendTimeoutSchema_> {}
+export interface ShardingErrorSendTimeout extends Schema.Schema.To<typeof ShardingErrorSendTimeoutSchema_> {}
 
 /**
  * @since 1.0.0
@@ -43,6 +43,6 @@ export function isShardingErrorSendTimeout(value: any): value is ShardingErrorSe
  * @category schema
  */
 export const ShardingErrorSendTimeoutSchema: Schema.Schema<
-  Schema.From<typeof ShardingErrorSendTimeoutSchema_>,
+  Schema.Schema.From<typeof ShardingErrorSendTimeoutSchema_>,
   ShardingErrorSendTimeout
 > = ShardingErrorSendTimeoutSchema_

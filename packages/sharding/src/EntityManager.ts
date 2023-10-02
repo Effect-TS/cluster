@@ -1,14 +1,14 @@
 /**
  * @since 1.0.0
  */
-import * as Duration from "@effect/data/Duration"
-import { pipe } from "@effect/data/Function"
-import * as HashMap from "@effect/data/HashMap"
-import * as HashSet from "@effect/data/HashSet"
-import * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import * as Fiber from "@effect/io/Fiber"
-import * as RefSynchronized from "@effect/io/Ref/Synchronized"
+import * as Duration from "effect/Duration"
+import { pipe } from "effect/Function"
+import * as HashMap from "effect/HashMap"
+import * as HashSet from "effect/HashSet"
+import * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
+import * as Fiber from "effect/Fiber"
+import * as RefSynchronized from "effect/SynchronizedRef"
 import * as MessageQueue from "@effect/sharding/MessageQueue"
 import * as PoisonPill from "@effect/sharding/PoisonPill"
 import type * as RecipientBehaviour from "@effect/sharding/RecipientBehaviour"
@@ -72,7 +72,7 @@ export function make<R, Req>(
     )
     const behaviour: RecipientBehaviour.RecipientBehaviour<never, Req> = (
       recipientContext
-    ) => Effect.provideContext(behaviour_(recipientContext), env)
+    ) => Effect.provide(behaviour_(recipientContext), env)
 
     function startExpirationFiber(entityId: string) {
       return pipe(
@@ -158,7 +158,7 @@ export function make<R, Req>(
                   return Effect.gen(function*(_) {
                     const queue = yield* _(pipe(
                       messageQueueConstructor(entityId),
-                      Effect.provideSomeContext(env)
+                      Effect.provide(env)
                     ))
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const executionFiber = yield* _(

@@ -1,19 +1,19 @@
-import * as Chunk from "@effect/data/Chunk"
-import { Tag } from "@effect/data/Context"
-import * as Duration from "@effect/data/Duration"
-import { equals } from "@effect/data/Equal"
-import { pipe } from "@effect/data/Function"
-import * as HashMap from "@effect/data/HashMap"
-import * as Option from "@effect/data/Option"
-import * as Cause from "@effect/io/Cause"
-import * as Deferred from "@effect/io/Deferred"
-import * as Effect from "@effect/io/Effect"
-import * as Exit from "@effect/io/Exit"
-import * as Layer from "@effect/io/Layer"
-import * as Logger from "@effect/io/Logger"
-import * as LogLevel from "@effect/io/Logger/Level"
-import * as Queue from "@effect/io/Queue"
-import * as Ref from "@effect/io/Ref"
+import * as Chunk from "effect/Chunk"
+import { Tag } from "effect/Context"
+import * as Duration from "effect/Duration"
+import { equals } from "effect/Equal"
+import { pipe } from "effect/Function"
+import * as HashMap from "effect/HashMap"
+import * as Option from "effect/Option"
+import * as Cause from "effect/Cause"
+import * as Deferred from "effect/Deferred"
+import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
+import * as Layer from "effect/Layer"
+import * as Logger from "effect/Logger"
+import * as LogLevel from "effect/LogLevel"
+import * as Queue from "effect/Queue"
+import * as Ref from "effect/Ref"
 import * as Schema from "@effect/schema/Schema"
 import * as Message from "@effect/sharding/Message"
 import type * as MessageQueue from "@effect/sharding/MessageQueue"
@@ -30,7 +30,7 @@ import * as ShardManagerClient from "@effect/sharding/ShardManagerClient"
 import * as Storage from "@effect/sharding/Storage"
 import * as StreamMessage from "@effect/sharding/StreamMessage"
 import { assertFalse, assertTrue } from "@effect/sharding/test/util"
-import * as Stream from "@effect/stream/Stream"
+import * as Stream from "effect/Stream"
 
 interface SampleService {
   value: number
@@ -56,7 +56,7 @@ describe.concurrent("SampleTests", () => {
   )
 
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
-    pipe(fa, Effect.provideSomeLayer(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Error))
+    pipe(fa, Effect.provide(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Error))
 
   it("Succefully delivers a message", () => {
     return Effect.gen(function*(_) {
@@ -444,7 +444,7 @@ describe.concurrent("SampleTests", () => {
 
       assertTrue(yield* _(Deferred.await(received)))
     }).pipe(
-      Effect.provideSomeLayer(inMemorySharding),
+      Effect.provide(inMemorySharding),
       Effect.scoped,
       Effect.runPromise
     )
@@ -467,7 +467,7 @@ describe.concurrent("SampleTests", () => {
 
       assertTrue(yield* _(Deferred.await(received)))
     }).pipe(
-      Effect.provideSomeLayer(inMemorySharding),
+      Effect.provide(inMemorySharding),
       Effect.scoped,
       Effect.runPromise
     )

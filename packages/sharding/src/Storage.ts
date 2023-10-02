@@ -1,18 +1,18 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "@effect/data/Context"
-import { pipe } from "@effect/data/Function"
-import * as HashMap from "@effect/data/HashMap"
-import type * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import * as Ref from "@effect/io/Ref"
+import { Tag } from "effect/Context"
+import { pipe } from "effect/Function"
+import * as HashMap from "effect/HashMap"
+import type * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Ref from "effect/Ref"
 import type * as Pod from "@effect/sharding/Pod"
 import type * as PodAddress from "@effect/sharding/PodAddress"
 import type * as ShardId from "@effect/sharding/ShardId"
-import * as Stream from "@effect/stream/Stream"
-import * as SubscriptionRef from "@effect/stream/SubscriptionRef"
+import * as Stream from "effect/Stream"
+import * as SubscriptionRef from "effect/SubscriptionRef"
 
 /**
  * @since 1.0.0

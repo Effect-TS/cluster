@@ -1,10 +1,10 @@
 /**
  * @since 1.0.0
  */
-import { pipe } from "@effect/data/Function"
-import type * as HashSet from "@effect/data/HashSet"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import { pipe } from "effect/Function"
+import type * as HashSet from "effect/HashSet"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Http from "@effect/platform/HttpClient"
 import * as ShardingProtocolHttp from "@effect/sharding-node/ShardingProtocolHttp"
 import { jsonParse, stringFromUint8ArrayString } from "@effect/sharding-node/utils"
@@ -13,7 +13,7 @@ import type * as PodAddress from "@effect/sharding/PodAddress"
 import * as Pods from "@effect/sharding/Pods"
 import type * as ShardId from "@effect/sharding/ShardId"
 import { ShardingErrorPodUnavailable } from "@effect/sharding/ShardingError"
-import * as Stream from "@effect/stream/Stream"
+import * as Stream from "effect/Stream"
 
 /** @internal */
 function asHttpUrl(pod: PodAddress.PodAddress): string {

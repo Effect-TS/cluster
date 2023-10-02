@@ -13,7 +13,7 @@ export declare const AssignShard_: Schema.Schema<{
         readonly value: number;
     }[];
 }, {
-    readonly shards: readonly import("@effect/data/Data").Data<{
+    readonly shards: readonly import("effect/Data").Data<{
         readonly _id: "@effect/sharding/ShardId";
         readonly value: number;
     }>[];
@@ -28,7 +28,7 @@ export declare const UnassignShards_: Schema.Schema<{
         readonly value: number;
     }[];
 }, {
-    readonly shards: readonly import("@effect/data/Data").Data<{
+    readonly shards: readonly import("effect/Data").Data<{
         readonly _id: "@effect/sharding/ShardId";
         readonly value: number;
     }>[];
@@ -57,15 +57,15 @@ export declare const Send_: Schema.Schema<{
         };
     };
 }, {
-    readonly message: import("@effect/data/Data").Data<{
+    readonly message: import("effect/Data").Data<{
         readonly _id: "@effect/sharding/BinaryMessage";
         readonly entityId: string;
         readonly entityType: string;
-        readonly body: import("@effect/data/Data").Data<{
+        readonly body: import("effect/Data").Data<{
             readonly _id: "@effect/sharding/ByteArray";
             readonly value: string;
         }>;
-        readonly replyId: import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
+        readonly replyId: import("effect/Option").Option<import("effect/Data").Data<{
             readonly _id: "@effect/sharding/ReplyId";
             readonly value: string;
         }>>;
@@ -78,14 +78,11 @@ export declare const Send_: Schema.Schema<{
 export declare const SendResult_: Schema.Schema<{
     readonly _tag: "Left";
     readonly left: {
-        readonly _tag: "@effect/sharding/ShardingErrorSerialization";
-        readonly error: string;
-    } | {
-        readonly _tag: "@effect/sharding/ShardingErrorEntityNotManagedByThisPod";
         readonly entityId: string;
+        readonly _tag: "@effect/sharding/ShardingErrorEntityNotManagedByThisPod";
     } | {
-        readonly _tag: "@effect/sharding/ShardingErrorEntityTypeNotRegistered";
         readonly entityType: string;
+        readonly _tag: "@effect/sharding/ShardingErrorEntityTypeNotRegistered";
         readonly podAddress: {
             readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
@@ -110,6 +107,9 @@ export declare const SendResult_: Schema.Schema<{
         };
     } | {
         readonly _tag: "@effect/sharding/ShardingErrorSendTimeout";
+    } | {
+        readonly _tag: "@effect/sharding/ShardingErrorSerialization";
+        readonly error: string;
     };
 } | {
     readonly _tag: "Right";
@@ -122,7 +122,7 @@ export declare const SendResult_: Schema.Schema<{
             readonly value: string;
         };
     };
-}, import("@effect/data/Either").Either<ShardingError.ShardingErrorPodUnavailable | ShardingError.ShardingErrorSerialization | ShardingError.ShardingErrorEntityNotManagedByThisPod | ShardingError.ShardingErrorEntityTypeNotRegistered | ShardingError.ShardingErrorMessageQueue | ShardingError.ShardingErrorPodNoLongerRegistered | ShardingError.ShardingErrorSendTimeout, import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
+}, import("effect/Either").Either<ShardingError.ShardingErrorEntityNotManagedByThisPod | ShardingError.ShardingErrorEntityTypeNotRegistered | ShardingError.ShardingErrorMessageQueue | ShardingError.ShardingErrorPodNoLongerRegistered | ShardingError.ShardingErrorPodUnavailable | ShardingError.ShardingErrorSendTimeout | ShardingError.ShardingErrorSerialization, import("effect/Option").Option<import("effect/Data").Data<{
     readonly _id: "@effect/sharding/ByteArray";
     readonly value: string;
 }>>>>;
@@ -150,15 +150,15 @@ export declare const SendStream_: Schema.Schema<{
         };
     };
 }, {
-    readonly message: import("@effect/data/Data").Data<{
+    readonly message: import("effect/Data").Data<{
         readonly _id: "@effect/sharding/BinaryMessage";
         readonly entityId: string;
         readonly entityType: string;
-        readonly body: import("@effect/data/Data").Data<{
+        readonly body: import("effect/Data").Data<{
             readonly _id: "@effect/sharding/ByteArray";
             readonly value: string;
         }>;
-        readonly replyId: import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
+        readonly replyId: import("effect/Option").Option<import("effect/Data").Data<{
             readonly _id: "@effect/sharding/ReplyId";
             readonly value: string;
         }>>;
@@ -171,14 +171,11 @@ export declare const SendStream_: Schema.Schema<{
 export declare const SendStreamResultItem_: Schema.Schema<{
     readonly _tag: "Left";
     readonly left: {
-        readonly _tag: "@effect/sharding/ShardingErrorSerialization";
-        readonly error: string;
-    } | {
-        readonly _tag: "@effect/sharding/ShardingErrorEntityNotManagedByThisPod";
         readonly entityId: string;
+        readonly _tag: "@effect/sharding/ShardingErrorEntityNotManagedByThisPod";
     } | {
-        readonly _tag: "@effect/sharding/ShardingErrorEntityTypeNotRegistered";
         readonly entityType: string;
+        readonly _tag: "@effect/sharding/ShardingErrorEntityTypeNotRegistered";
         readonly podAddress: {
             readonly _id: "@effect/sharding/PodAddress";
             readonly host: string;
@@ -203,6 +200,9 @@ export declare const SendStreamResultItem_: Schema.Schema<{
         };
     } | {
         readonly _tag: "@effect/sharding/ShardingErrorSendTimeout";
+    } | {
+        readonly _tag: "@effect/sharding/ShardingErrorSerialization";
+        readonly error: string;
     };
 } | {
     readonly _tag: "Right";
@@ -210,7 +210,7 @@ export declare const SendStreamResultItem_: Schema.Schema<{
         readonly _id: "@effect/sharding/ByteArray";
         readonly value: string;
     };
-}, import("@effect/data/Either").Either<ShardingError.ShardingErrorPodUnavailable | ShardingError.ShardingErrorSerialization | ShardingError.ShardingErrorEntityNotManagedByThisPod | ShardingError.ShardingErrorEntityTypeNotRegistered | ShardingError.ShardingErrorMessageQueue | ShardingError.ShardingErrorPodNoLongerRegistered | ShardingError.ShardingErrorSendTimeout, import("@effect/data/Data").Data<{
+}, import("effect/Either").Either<ShardingError.ShardingErrorEntityNotManagedByThisPod | ShardingError.ShardingErrorEntityTypeNotRegistered | ShardingError.ShardingErrorMessageQueue | ShardingError.ShardingErrorPodNoLongerRegistered | ShardingError.ShardingErrorPodUnavailable | ShardingError.ShardingErrorSendTimeout | ShardingError.ShardingErrorSerialization, import("effect/Data").Data<{
     readonly _id: "@effect/sharding/ByteArray";
     readonly value: string;
 }>>>;
@@ -274,39 +274,39 @@ export declare const schema: Schema.Schema<{
         };
     };
 } | {}, {
-    readonly shards: readonly import("@effect/data/Data").Data<{
+    readonly shards: readonly import("effect/Data").Data<{
         readonly _id: "@effect/sharding/ShardId";
         readonly value: number;
     }>[];
 } | {
-    readonly shards: readonly import("@effect/data/Data").Data<{
+    readonly shards: readonly import("effect/Data").Data<{
         readonly _id: "@effect/sharding/ShardId";
         readonly value: number;
     }>[];
 } | {
-    readonly message: import("@effect/data/Data").Data<{
+    readonly message: import("effect/Data").Data<{
         readonly _id: "@effect/sharding/BinaryMessage";
         readonly entityId: string;
         readonly entityType: string;
-        readonly body: import("@effect/data/Data").Data<{
+        readonly body: import("effect/Data").Data<{
             readonly _id: "@effect/sharding/ByteArray";
             readonly value: string;
         }>;
-        readonly replyId: import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
+        readonly replyId: import("effect/Option").Option<import("effect/Data").Data<{
             readonly _id: "@effect/sharding/ReplyId";
             readonly value: string;
         }>>;
     }>;
 } | {
-    readonly message: import("@effect/data/Data").Data<{
+    readonly message: import("effect/Data").Data<{
         readonly _id: "@effect/sharding/BinaryMessage";
         readonly entityId: string;
         readonly entityType: string;
-        readonly body: import("@effect/data/Data").Data<{
+        readonly body: import("effect/Data").Data<{
             readonly _id: "@effect/sharding/ByteArray";
             readonly value: string;
         }>;
-        readonly replyId: import("@effect/data/Option").Option<import("@effect/data/Data").Data<{
+        readonly replyId: import("effect/Option").Option<import("effect/Data").Data<{
             readonly _id: "@effect/sharding/ReplyId";
             readonly value: string;
         }>>;

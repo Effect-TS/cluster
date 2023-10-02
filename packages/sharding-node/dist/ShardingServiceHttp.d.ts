@@ -1,4 +1,4 @@
-import * as Layer from "@effect/io/Layer";
+import * as Layer from "effect/Layer";
 import * as Http from "@effect/platform-node/HttpServer";
 import * as Sharding from "@effect/sharding/Sharding";
 import * as ShardingConfig from "@effect/sharding/ShardingConfig";

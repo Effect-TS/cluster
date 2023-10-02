@@ -1,10 +1,10 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "@effect/data/Context"
-import { pipe } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import { Tag } from "effect/Context"
+import { pipe } from "effect/Function"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as ByteArray from "@effect/sharding/ByteArray"

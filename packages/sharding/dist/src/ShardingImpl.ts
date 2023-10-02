@@ -1,23 +1,23 @@
 /**
  * @since 1.0.0
  */
-import * as Duration from "@effect/data/Duration"
-import type * as Either from "@effect/data/Either"
-import * as Equal from "@effect/data/Equal"
-import { equals } from "@effect/data/Equal"
-import { pipe } from "@effect/data/Function"
-import * as HashMap from "@effect/data/HashMap"
-import * as HashSet from "@effect/data/HashSet"
-import * as List from "@effect/data/List"
-import * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import * as Fiber from "@effect/io/Fiber"
-import * as Hub from "@effect/io/Hub"
-import * as Layer from "@effect/io/Layer"
-import * as Ref from "@effect/io/Ref"
-import * as Synchronized from "@effect/io/Ref/Synchronized"
-import * as Schedule from "@effect/io/Schedule"
-import type * as Scope from "@effect/io/Scope"
+import * as Duration from "effect/Duration"
+import type * as Either from "effect/Either"
+import * as Equal from "effect/Equal"
+import { equals } from "effect/Equal"
+import { pipe } from "effect/Function"
+import * as HashMap from "effect/HashMap"
+import * as HashSet from "effect/HashSet"
+import * as List from "effect/List"
+import * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
+import * as Fiber from "effect/Fiber"
+import * as Hub from "effect/Hub"
+import * as Layer from "effect/Layer"
+import * as Ref from "effect/Ref"
+import * as Synchronized from "effect/SynchronizedRef"
+import * as Schedule from "effect/Schedule"
+import type * as Scope from "effect/Scope"
 import type * as Schema from "@effect/schema/Schema"
 import * as BinaryMessage from "@effect/sharding/BinaryMessage"
 import type * as Broadcaster from "@effect/sharding/Broadcaster"
@@ -43,7 +43,7 @@ import * as Storage from "@effect/sharding/Storage"
 import * as StreamMessage from "@effect/sharding/StreamMessage"
 import type * as StreamReplier from "@effect/sharding/StreamReplier"
 import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "@effect/sharding/utils"
-import * as Stream from "@effect/stream/Stream"
+import * as Stream from "effect/Stream"
 import * as Sharding from "./Sharding"
 
 type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
@@ -55,10 +55,10 @@ function make(
   config: ShardingConfig.ShardingConfig,
   shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress.PodAddress>>,
   entityStates: Ref.Ref<HashMap.HashMap<string, EntityState.EntityState>>,
-  singletons: Synchronized.Synchronized<
+  singletons: Synchronized.SynchronizedRef<
     List.List<SingletonEntry>
   >,
-  replyChannels: Synchronized.Synchronized<
+  replyChannels: Synchronized.SynchronizedRef<
     HashMap.HashMap<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>
   >, // reply channel for each pending reply,
   // lastUnhealthyNodeReported: Ref.Ref<Date>,
@@ -186,7 +186,7 @@ function make(
       Effect.flatMap((context) =>
         Synchronized.update(
           singletons,
-          (list) => (List.prepend(list, [name, Effect.provideContext(run, context), Option.none()] as SingletonEntry))
+          (list) => (List.prepend(list, [name, Effect.provide(run, context), Option.none()] as SingletonEntry))
         )
       ),
       Effect.zipLeft(startSingletonsIfNeeded),

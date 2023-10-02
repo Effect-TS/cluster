@@ -3,12 +3,12 @@
  * @internal
  */
 
-import * as Either from "@effect/data/Either"
-import { pipe } from "@effect/data/Function"
-import * as Cause from "@effect/io/Cause"
-import * as Effect from "@effect/io/Effect"
+import * as Either from "effect/Either"
+import { pipe } from "effect/Function"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
 import type * as Schema from "@effect/schema/Schema"
-import * as Stream from "@effect/stream/Stream"
+import * as Stream from "effect/Stream"
 import * as http from "http"
 import { jsonParse, jsonStringify } from "./utils"
 

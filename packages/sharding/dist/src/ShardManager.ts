@@ -1,21 +1,21 @@
 /**
  * @since 1.0.0
  */
-import * as HashMap from "@effect/data//HashMap"
-import * as Chunk from "@effect/data/Chunk"
-import { Tag } from "@effect/data/Context"
-import { equals } from "@effect/data/Equal"
-import { pipe } from "@effect/data/Function"
-import * as HashSet from "@effect/data/HashSet"
-import * as List from "@effect/data/List"
-import * as Option from "@effect/data/Option"
-import * as Clock from "@effect/io/Clock"
-import * as Effect from "@effect/io/Effect"
-import * as Hub from "@effect/io/Hub"
-import * as Layer from "@effect/io/Layer"
-import * as RefSynchronized from "@effect/io/Ref/Synchronized"
-import * as Schedule from "@effect/io/Schedule"
-import type * as Scope from "@effect/io/Scope"
+import * as HashMap from "effect/HashMap"
+import * as Chunk from "effect/Chunk"
+import { Tag } from "effect/Context"
+import { equals } from "effect/Equal"
+import { pipe } from "effect/Function"
+import * as HashSet from "effect/HashSet"
+import * as List from "effect/List"
+import * as Option from "effect/Option"
+import * as Clock from "effect/Clock"
+import * as Effect from "effect/Effect"
+import * as Hub from "effect/Hub"
+import * as Layer from "effect/Layer"
+import * as RefSynchronized from "effect/SynchronizedRef"
+import * as Schedule from "effect/Schedule"
+import type * as Scope from "effect/Scope"
 import * as ManagerConfig from "@effect/sharding/ManagerConfig"
 import type * as Pod from "@effect/sharding/Pod"
 import * as PodAddress from "@effect/sharding/PodAddress"
@@ -27,7 +27,7 @@ import { ShardingErrorPodNoLongerRegistered } from "@effect/sharding/ShardingErr
 import * as ShardingEvent from "@effect/sharding/ShardingEvent"
 import * as ShardManagerState from "@effect/sharding/ShardManagerState"
 import * as Storage from "@effect/sharding/Storage"
-import * as Stream from "@effect/stream/Stream"
+import * as Stream from "effect/Stream"
 import { groupBy, minByOption, showHashSet } from "./utils"
 
 /**
@@ -59,7 +59,7 @@ export const ShardManager = Tag<ShardManager>()
 
 function make(
   layerScope: Scope.Scope,
-  stateRef: RefSynchronized.Synchronized<ShardManagerState.ShardManagerState>,
+  stateRef: RefSynchronized.SynchronizedRef<ShardManagerState.ShardManagerState>,
   rebalanceSemaphore: Effect.Semaphore,
   eventsHub: Hub.Hub<ShardingEvent.ShardingEvent>,
   healthApi: PodsHealth.PodsHealth,

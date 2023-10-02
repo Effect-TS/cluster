@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Hash from "@effect/data/Hash"
+import * as Hash from "effect/Hash"
 import type * as Schema from "@effect/schema/Schema"
 import * as ShardId from "@effect/sharding/ShardId"
 

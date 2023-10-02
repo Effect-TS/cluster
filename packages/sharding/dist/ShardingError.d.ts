@@ -14,14 +14,11 @@ export * from "@effect/sharding/ShardingErrorSerialization";
  * @category schema
  */
 export declare const schema: Schema.Schema<{
-    readonly _tag: "@effect/sharding/ShardingErrorSerialization";
-    readonly error: string;
-} | {
-    readonly _tag: "@effect/sharding/ShardingErrorEntityNotManagedByThisPod";
     readonly entityId: string;
+    readonly _tag: "@effect/sharding/ShardingErrorEntityNotManagedByThisPod";
 } | {
-    readonly _tag: "@effect/sharding/ShardingErrorEntityTypeNotRegistered";
     readonly entityType: string;
+    readonly _tag: "@effect/sharding/ShardingErrorEntityTypeNotRegistered";
     readonly podAddress: {
         readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
@@ -46,7 +43,10 @@ export declare const schema: Schema.Schema<{
     };
 } | {
     readonly _tag: "@effect/sharding/ShardingErrorSendTimeout";
-}, import("@effect/sharding/ShardingErrorSerialization").ShardingErrorSerialization | import("@effect/sharding/ShardingErrorEntityNotManagedByThisPod").ShardingErrorEntityNotManagedByThisPod | import("@effect/sharding/ShardingErrorEntityTypeNotRegistered").ShardingErrorEntityTypeNotRegistered | import("@effect/sharding/ShardingErrorMessageQueue").ShardingErrorMessageQueue | import("@effect/sharding/ShardingErrorPodNoLongerRegistered").ShardingErrorPodNoLongerRegistered | import("@effect/sharding/ShardingErrorPodUnavailable").ShardingErrorPodUnavailable | import("@effect/sharding/ShardingErrorSendTimeout").ShardingErrorSendTimeout>;
+} | {
+    readonly _tag: "@effect/sharding/ShardingErrorSerialization";
+    readonly error: string;
+}, import("@effect/sharding/ShardingErrorEntityNotManagedByThisPod").ShardingErrorEntityNotManagedByThisPod | import("@effect/sharding/ShardingErrorEntityTypeNotRegistered").ShardingErrorEntityTypeNotRegistered | import("@effect/sharding/ShardingErrorMessageQueue").ShardingErrorMessageQueue | import("@effect/sharding/ShardingErrorPodNoLongerRegistered").ShardingErrorPodNoLongerRegistered | import("@effect/sharding/ShardingErrorPodUnavailable").ShardingErrorPodUnavailable | import("@effect/sharding/ShardingErrorSendTimeout").ShardingErrorSendTimeout | import("@effect/sharding/ShardingErrorSerialization").ShardingErrorSerialization>;
 /**
  * @since 1.0.0
  * @category models

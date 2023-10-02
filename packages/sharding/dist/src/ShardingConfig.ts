@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "@effect/data/Context"
-import * as Duration from "@effect/data/Duration"
-import * as Layer from "@effect/io/Layer"
+import { Tag } from "effect/Context"
+import * as Duration from "effect/Duration"
+import * as Layer from "effect/Layer"
 
 /**
  * @since 1.0.0

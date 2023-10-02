@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data";
-import * as List from "@effect/data/List";
+import * as Data from "effect/Data";
+import * as List from "effect/List";
 import * as Schema from "@effect/schema/Schema";
 import * as Pod from "@effect/sharding/Pod";
 /**

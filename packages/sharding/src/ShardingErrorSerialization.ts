@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
+import * as Data from "effect/Data"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -19,7 +19,7 @@ const ShardingErrorSerializationSchema_ = Schema.data(Schema.struct({
  * @since 1.0.0
  * @category models
  */
-export interface ShardingErrorSerialization extends Schema.To<typeof ShardingErrorSerializationSchema_> {}
+export interface ShardingErrorSerialization extends Schema.Schema.To<typeof ShardingErrorSerializationSchema_> {}
 
 /**
  * @since 1.0.0
@@ -45,6 +45,6 @@ export function isShardingErrorSerialization(value: any): value is ShardingError
  * @category schema
  */
 export const ShardingErrorSerializationSchema: Schema.Schema<
-  Schema.From<typeof ShardingErrorSerializationSchema_>,
+  Schema.Schema.From<typeof ShardingErrorSerializationSchema_>,
   ShardingErrorSerialization
 > = ShardingErrorSerializationSchema_

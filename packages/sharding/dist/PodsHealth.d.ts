@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "@effect/data/Context";
-import * as Effect from "@effect/io/Effect";
-import * as Layer from "@effect/io/Layer";
+import { Tag } from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 import type { PodAddress } from "@effect/sharding/PodAddress";
 import * as Pods from "@effect/sharding/Pods";
 /**

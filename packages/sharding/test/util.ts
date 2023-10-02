@@ -1,4 +1,4 @@
-import { equals } from "@effect/data/Equal"
+import { equals } from "effect/Equal"
 import * as assert from "assert"
 
 export const assertTrue = (self: boolean) => {

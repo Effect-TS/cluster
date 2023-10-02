@@ -1,16 +1,16 @@
 /**
  * @since 1.0.0
  */
-import { pipe } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import type * as Cause from "@effect/io/Cause"
-import * as Deferred from "@effect/io/Deferred"
-import * as Effect from "@effect/io/Effect"
-import * as Exit from "@effect/io/Exit"
-import * as Queue from "@effect/io/Queue"
+import { pipe } from "effect/Function"
+import * as Option from "effect/Option"
+import type * as Cause from "effect/Cause"
+import * as Deferred from "effect/Deferred"
+import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
+import * as Queue from "effect/Queue"
 import type * as ShardingError from "@effect/sharding/ShardingError"
-import * as Stream from "@effect/stream/Stream"
-import * as Take from "@effect/stream/Take"
+import * as Stream from "effect/Stream"
+import * as Take from "effect/Take"
 
 /**
  * @since 1.0.0

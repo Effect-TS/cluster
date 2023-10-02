@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Http from "@effect/platform-node/HttpServer"
 import * as ShardManagerProtocolHttp from "@effect/sharding-node/ShardManagerProtocolHttp"
 import * as ManagerConfig from "@effect/sharding/ManagerConfig"

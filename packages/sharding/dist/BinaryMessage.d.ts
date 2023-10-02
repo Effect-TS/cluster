@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data";
-import type * as Option from "@effect/data/Option";
+import * as Data from "effect/Data";
+import type * as Option from "effect/Option";
 import * as Schema from "@effect/schema/Schema";
 import * as ByteArray from "@effect/sharding/ByteArray";
 import * as ReplyId from "@effect/sharding/ReplyId";

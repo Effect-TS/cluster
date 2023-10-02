@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
+import * as Data from "effect/Data"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -20,7 +20,7 @@ export type TypeId = typeof TypeId
  * @since 1.0.0
  * @category models
  */
-export interface ShardId extends Schema.To<typeof schema> {}
+export interface ShardId extends Schema.Schema.To<typeof schema> {}
 
 /**
  * @since 1.0.0

@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
-import { pipe } from "@effect/data/Function"
+import * as Data from "effect/Data"
+import { pipe } from "effect/Function"
 import * as Schema from "@effect/schema/Schema"
 import type * as ReplyId from "@effect/sharding/ReplyId"
 import * as StreamReplier from "@effect/sharding/StreamReplier"
@@ -48,13 +48,13 @@ export function schema<RI, RA>(success: Schema.Schema<RI, RA>) {
   return function<I, A extends object>(
     item: Schema.Schema<I, A>
   ): readonly [
-    Schema.Schema<I, Schema.Spread<A & StreamMessage<RA>>>,
-    (arg: A) => (replyId: ReplyId.ReplyId) => Schema.Spread<A & StreamMessage<RA>>
+    Schema.Schema<I, A & StreamMessage<RA>>,
+    (arg: A) => (replyId: ReplyId.ReplyId) => A & StreamMessage<RA>
   ] {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: StreamReplier.schema(success) })))
 
     const make = (arg: A) =>
-      (replyId: ReplyId.ReplyId): Schema.Spread<A & StreamMessage<RA>> =>
+      (replyId: ReplyId.ReplyId): A & StreamMessage<RA> =>
         Data.struct({ ...arg, replier: StreamReplier.streamReplier(replyId, success) }) as any
 
     return [result as any, make] as const

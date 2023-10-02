@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
-import type * as Option from "@effect/data/Option"
-import type * as Effect from "@effect/io/Effect"
+import * as Data from "effect/Data"
+import type * as Option from "effect/Option"
+import type * as Effect from "effect/Effect"
 import type * as Schema from "@effect/schema/Schema"
 import type * as BinaryMessage from "@effect/sharding/BinaryMessage"
 import type * as EntityManager from "@effect/sharding/EntityManager"

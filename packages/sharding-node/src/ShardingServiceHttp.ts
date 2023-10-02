@@ -1,17 +1,17 @@
 /**
  * @since 1.0.0
  */
-import * as Either from "@effect/data/Either"
-import { pipe } from "@effect/data/Function"
-import * as HashSet from "@effect/data/HashSet"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import * as Either from "effect/Either"
+import { pipe } from "effect/Function"
+import * as HashSet from "effect/HashSet"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Http from "@effect/platform-node/HttpServer"
 import * as ShardingProtocolHttp from "@effect/sharding-node/ShardingProtocolHttp"
 import { jsonStringify, uint8ArrayFromStringStream } from "@effect/sharding-node/utils"
 import * as Sharding from "@effect/sharding/Sharding"
 import * as ShardingConfig from "@effect/sharding/ShardingConfig"
-import * as Stream from "@effect/stream/Stream"
+import * as Stream from "effect/Stream"
 import { createServer } from "node:http"
 
 const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {

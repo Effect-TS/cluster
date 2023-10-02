@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
-import { pipe } from "@effect/data/Function"
+import * as Data from "effect/Data"
+import { pipe } from "effect/Function"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -21,7 +21,7 @@ export type TypeId = typeof TypeId
  * @since 1.0.0
  * @category models
  */
-export interface PodAddress extends Schema.To<typeof schema> {}
+export interface PodAddress extends Schema.Schema.To<typeof schema> {}
 
 /**
  * @since 1.0.0

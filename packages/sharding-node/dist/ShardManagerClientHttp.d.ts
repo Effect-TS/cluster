@@ -1,4 +1,4 @@
-import * as Layer from "@effect/io/Layer";
+import * as Layer from "effect/Layer";
 import * as ShardingConfig from "@effect/sharding/ShardingConfig";
 import * as ShardManagerClient from "@effect/sharding/ShardManagerClient";
 /**
