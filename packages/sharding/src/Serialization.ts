@@ -1,14 +1,14 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
-import { pipe } from "effect/Function"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as ByteArray from "@effect/sharding/ByteArray"
 import * as ShardingError from "@effect/sharding/ShardingError"
+import { Tag } from "effect/Context"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
+import * as Layer from "effect/Layer"
 
 /** @internal */
 function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {

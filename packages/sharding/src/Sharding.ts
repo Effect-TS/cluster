@@ -1,13 +1,6 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
-import type * as Duration from "effect/Duration"
-import { pipe } from "effect/Function"
-import type * as HashSet from "effect/HashSet"
-import type * as Option from "effect/Option"
-import * as Effect from "effect/Effect"
-import type * as Scope from "effect/Scope"
 import type * as BinaryMessage from "@effect/sharding/BinaryMessage"
 import type { Broadcaster } from "@effect/sharding/Broadcaster"
 import type * as ByteArray from "@effect/sharding/ByteArray"
@@ -22,6 +15,13 @@ import type * as ShardId from "@effect/sharding/ShardId"
 import type * as ShardingError from "@effect/sharding/ShardingError"
 import type * as ShardingRegistrationEvent from "@effect/sharding/ShardingRegistrationEvent"
 import type * as StreamReplier from "@effect/sharding/StreamReplier"
+import { Tag } from "effect/Context"
+import type * as Duration from "effect/Duration"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
+import type * as HashSet from "effect/HashSet"
+import type * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
 import type * as Stream from "effect/Stream"
 
 /**

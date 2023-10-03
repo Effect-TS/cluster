@@ -1,11 +1,11 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
-import { pipe } from "effect/Function"
 import * as Schema from "@effect/schema/Schema"
 import type * as ReplyId from "@effect/sharding/ReplyId"
 import * as StreamReplier from "@effect/sharding/StreamReplier"
+import * as Data from "effect/Data"
+import { pipe } from "effect/Function"
 
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`
@@ -53,9 +53,8 @@ export function schema<RI, RA>(success: Schema.Schema<RI, RA>) {
   ] {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: StreamReplier.schema(success) })))
 
-    const make = (arg: A) =>
-      (replyId: ReplyId.ReplyId): A & StreamMessage<RA> =>
-        Data.struct({ ...arg, replier: StreamReplier.streamReplier(replyId, success) }) as any
+    const make = (arg: A) => (replyId: ReplyId.ReplyId): A & StreamMessage<RA> =>
+      Data.struct({ ...arg, replier: StreamReplier.streamReplier(replyId, success) }) as any
 
     return [result as any, make] as const
   }

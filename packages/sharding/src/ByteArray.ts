@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
+import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
-import * as Schema from "@effect/schema/Schema"
 
 /**
  * @since 1.0.0

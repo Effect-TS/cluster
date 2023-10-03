@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
 import * as Schema from "@effect/schema/Schema"
 import * as PodAddress from "@effect/sharding/PodAddress"
+import * as Data from "effect/Data"
 
 /**
  * @since 1.0.0

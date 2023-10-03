@@ -1,11 +1,11 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
-import { pipe } from "effect/Function"
 import * as Schema from "@effect/schema/Schema"
 import * as Replier from "@effect/sharding/Replier"
 import type * as ReplyId from "@effect/sharding/ReplyId"
+import * as Data from "effect/Data"
+import { pipe } from "effect/Function"
 
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`

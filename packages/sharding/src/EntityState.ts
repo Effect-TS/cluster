@@ -1,14 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
-import type * as Option from "effect/Option"
-import type * as Effect from "effect/Effect"
-import type * as Schema from "@effect/schema/Schema"
-import type * as BinaryMessage from "@effect/sharding/BinaryMessage"
 import type * as EntityManager from "@effect/sharding/EntityManager"
-import type * as ReplyChannel from "@effect/sharding/ReplyChannel"
-import type * as ShardingError from "@effect/sharding/ShardingError"
+import * as Data from "effect/Data"
 
 /**
  * @since 1.0.0
@@ -28,15 +22,7 @@ export type TypeId = typeof TypeId
  */
 export interface EntityState {
   readonly _id: TypeId
-  readonly entityManager: EntityManager.EntityManager<never>
-  readonly processBinary: (
-    binaryMessage: BinaryMessage.BinaryMessage,
-    replyChannel: ReplyChannel.ReplyChannel<any>
-  ) => Effect.Effect<
-    never,
-    ShardingError.ShardingError,
-    Option.Option<Schema.Schema<unknown, any>>
-  >
+  readonly entityManager: EntityManager.EntityManager<unknown>
 }
 
 /**
@@ -44,8 +30,7 @@ export interface EntityState {
  * @category constructors
  */
 export function make(
-  entityManager: EntityState["entityManager"],
-  processBinary: EntityState["processBinary"]
+  entityManager: EntityState["entityManager"]
 ): EntityState {
-  return Data.struct({ _id: TypeId, entityManager, processBinary })
+  return Data.struct({ _id: TypeId, entityManager })
 }

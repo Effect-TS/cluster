@@ -1,14 +1,6 @@
 /**
  * @since 1.0.0
  */
-import * as Duration from "effect/Duration"
-import { pipe } from "effect/Function"
-import * as HashMap from "effect/HashMap"
-import * as HashSet from "effect/HashSet"
-import * as Option from "effect/Option"
-import * as Effect from "effect/Effect"
-import * as Fiber from "effect/Fiber"
-import * as RefSynchronized from "effect/SynchronizedRef"
 import * as MessageQueue from "@effect/sharding/MessageQueue"
 import * as PoisonPill from "@effect/sharding/PoisonPill"
 import type * as RecipientBehaviour from "@effect/sharding/RecipientBehaviour"
@@ -19,12 +11,21 @@ import type * as ShardId from "@effect/sharding/ShardId"
 import type * as Sharding from "@effect/sharding/Sharding"
 import type * as ShardingConfig from "@effect/sharding/ShardingConfig"
 import * as ShardingError from "@effect/sharding/ShardingError"
+import * as Duration from "effect/Duration"
+import * as Effect from "effect/Effect"
+import * as Fiber from "effect/Fiber"
+import { pipe } from "effect/Function"
+import * as HashMap from "effect/HashMap"
+import * as HashSet from "effect/HashSet"
+import * as Option from "effect/Option"
+import * as RefSynchronized from "effect/SynchronizedRef"
 
 /**
  * @since 1.0.0
  * @category models
  */
 export interface EntityManager<Req> {
+  readonly recipientType: RecipientType.RecipientType<Req>
   readonly send: (
     entityId: string,
     req: Req,
@@ -321,7 +322,7 @@ export function make<R, Req>(
       )
     }
 
-    const self: EntityManager<Req> = { send, terminateAllEntities, terminateEntitiesOnShards }
+    const self: EntityManager<Req> = { recipientType, send, terminateAllEntities, terminateEntitiesOnShards }
     return self
   })
 }

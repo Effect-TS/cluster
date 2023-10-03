@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
+import * as Schema from "@effect/schema/Schema"
+import * as Pod from "@effect/sharding/Pod"
 import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
 import * as List from "effect/List"
 import * as Option from "effect/Option"
-import * as Schema from "@effect/schema/Schema"
-import * as Pod from "@effect/sharding/Pod"
 
 /**
  * @since 1.0.0
