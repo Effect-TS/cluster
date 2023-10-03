@@ -1,11 +1,9 @@
-/**
- * @since 1.0.0
- */
-import * as Duration from "@effect/data/Duration";
-import * as Either from "@effect/data/Either";
-import * as Effect from "@effect/io/Effect";
 import * as ShardingError from "@effect/sharding/ShardingError";
-import * as Stream from "@effect/stream/Stream";
+import * as Duration from "effect/Duration";
+import * as Effect from "effect/Effect";
+import * as Either from "effect/Either";
+import { pipe } from "effect/Function";
+import * as Stream from "effect/Stream";
 /**
  * Send a message and receive a stream of responses of type `Res` while restarting the stream when the remote entity
  * is rebalanced.
@@ -18,13 +16,13 @@ import * as Stream from "@effect/stream/Stream";
  */
 export function sendStreamAutoRestart(messenger, entityId, cursor) {
   return fn => updateCursor => {
-    return Stream.flatMap(Either.match({
-      onRight: res => Stream.succeed(res),
-      onLeft: ([cursor, err]) => ShardingError.isShardingErrorPodUnavailable(err) ? Stream.zipRight(sendStreamAutoRestart(messenger, entityId, cursor)(fn)(updateCursor))(Stream.fromEffect(Effect.sleep(Duration.millis(200)))) : Stream.fail(err)
-    }))(Stream.mapAccum(cursor, (c, either) => Either.match(either, {
+    return pipe(Stream.unwrap(messenger.sendStream(entityId)(fn(cursor))), Stream.either, Stream.mapAccum(cursor, (c, either) => Either.match(either, {
       onLeft: err => [c, Either.left([c, err])],
       onRight: res => [updateCursor(c, res), Either.right(res)]
-    }))(Stream.either(Stream.unwrap(messenger.sendStream(entityId)(fn(cursor))))));
+    })), Stream.flatMap(Either.match({
+      onRight: res => Stream.succeed(res),
+      onLeft: ([cursor, err]) => ShardingError.isShardingErrorPodUnavailable(err) ? pipe(Effect.sleep(Duration.millis(200)), Stream.fromEffect, Stream.zipRight(sendStreamAutoRestart(messenger, entityId, cursor)(fn)(updateCursor))) : Stream.fail(err)
+    })));
   };
 }
 //# sourceMappingURL=Messenger.mjs.map

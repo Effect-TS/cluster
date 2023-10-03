@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
 import * as Schema from "@effect/schema/Schema"
+import * as Data from "effect/Data"
 
 /**
  * @since 1.0.0
@@ -19,7 +19,7 @@ const ShardingErrorMessageQueueSchema_ = Schema.data(Schema.struct({
  * @since 1.0.0
  * @category models
  */
-export interface ShardingErrorMessageQueue extends Schema.To<typeof ShardingErrorMessageQueueSchema_> {}
+export interface ShardingErrorMessageQueue extends Schema.Schema.To<typeof ShardingErrorMessageQueueSchema_> {}
 
 /**
  * @since 1.0.0
@@ -46,6 +46,6 @@ export function isShardingErrorMessageQueue(value: unknown): value is ShardingEr
  * @category schema
  */
 export const ShardingErrorMessageQueueSchema: Schema.Schema<
-  Schema.From<typeof ShardingErrorMessageQueueSchema_>,
+  Schema.Schema.From<typeof ShardingErrorMessageQueueSchema_>,
   ShardingErrorMessageQueue
 > = ShardingErrorMessageQueueSchema_

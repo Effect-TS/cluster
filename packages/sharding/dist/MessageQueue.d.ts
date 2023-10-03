@@ -1,10 +1,10 @@
 /**
  * @since 1.0.0
  */
-import * as Effect from "effect/Effect";
-import * as Queue from "effect/Queue";
 import type * as PoisonPill from "@effect/sharding/PoisonPill";
 import type * as ShardingError from "@effect/sharding/ShardingError";
+import * as Effect from "effect/Effect";
+import * as Queue from "effect/Queue";
 /**
  * @since 1.0.0
  * @category symbols

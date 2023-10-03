@@ -1,13 +1,13 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
-import { pipe } from "effect/Function"
-import * as Option from "effect/Option"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
 import type { PodAddress } from "@effect/sharding/PodAddress"
 import * as Pods from "@effect/sharding/Pods"
+import { Tag } from "effect/Context"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
 
 /**
  * @since 1.0.0

@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Schema from "@effect/schema/Schema";
 import * as Replier from "@effect/sharding/Replier";
 import type * as ReplyId from "@effect/sharding/ReplyId";
@@ -28,5 +31,5 @@ export declare function isMessage<R>(value: unknown): value is Message<R>;
  * @since 1.0.0
  * @category schema
  */
-export declare function schema<RI, RA>(replySchema: Schema.Schema<RI, RA>): <I, A extends object>(item: Schema.Schema<I, A>) => readonly [Schema.Schema<I, Schema.Spread<A & Message<RA>>>, (arg: A) => (replyId: ReplyId.ReplyId) => Schema.Spread<A & Message<RA>>];
+export declare function schema<RI, RA>(replySchema: Schema.Schema<RI, RA>): <I, A extends object>(item: Schema.Schema<I, A>) => readonly [Schema.Schema<I, A & Message<RA>>, (arg: A) => (replyId: ReplyId.ReplyId) => A & Message<RA>];
 //# sourceMappingURL=Message.d.ts.map

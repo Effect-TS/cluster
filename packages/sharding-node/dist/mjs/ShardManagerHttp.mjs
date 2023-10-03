@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
-import * as Effect from "@effect/io/Effect";
-import * as Layer from "@effect/io/Layer";
 import * as Http from "@effect/platform-node/HttpServer";
 import * as ShardManagerProtocolHttp from "@effect/sharding-node/ShardManagerProtocolHttp";
 import * as ManagerConfig from "@effect/sharding/ManagerConfig";
 import * as ShardManager from "@effect/sharding/ShardManager";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 import { createServer } from "node:http";
 const internalServer = /*#__PURE__*/Layer.unwrapEffect( /*#__PURE__*/Effect.gen(function* (_) {
   const managerConfig = yield* _(ManagerConfig.ManagerConfig);

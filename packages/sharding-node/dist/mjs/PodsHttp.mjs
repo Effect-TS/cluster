@@ -1,15 +1,15 @@
 /**
  * @since 1.0.0
  */
-
-import * as Effect from "@effect/io/Effect";
-import * as Layer from "@effect/io/Layer";
 import * as Http from "@effect/platform/HttpClient";
 import * as ShardingProtocolHttp from "@effect/sharding-node/ShardingProtocolHttp";
 import { jsonParse, stringFromUint8ArrayString } from "@effect/sharding-node/utils";
 import * as Pods from "@effect/sharding/Pods";
 import { ShardingErrorPodUnavailable } from "@effect/sharding/ShardingError";
-import * as Stream from "@effect/stream/Stream";
+import * as Effect from "effect/Effect";
+import { pipe } from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Stream from "effect/Stream";
 /** @internal */
 function asHttpUrl(pod) {
   return `http://${pod.host}:${pod.port}`;
@@ -38,7 +38,7 @@ export const httpPods = /*#__PURE__*/Layer.effect(Pods.Pods, /*#__PURE__*/Effect
   }
   function ping(podAddress) {
     return Effect.gen(function* (_) {
-      const request = Http.request.prependUrl(asHttpUrl(podAddress))(Http.request.get("/ping"));
+      const request = pipe(Http.request.get("/ping"), Http.request.prependUrl(asHttpUrl(podAddress)));
       return yield* _(client(request));
     }).pipe(Effect.asUnit, Effect.mapError(e => {
       console.log("error is ", e);
@@ -60,7 +60,7 @@ export const httpPods = /*#__PURE__*/Layer.effect(Pods.Pods, /*#__PURE__*/Effect
         message: binaryMessage
       }));
       const response = yield* _(client(request), Effect.map(response => response.stream));
-      return Stream.mapEffect(_ => jsonParse(_, ShardingProtocolHttp.SendStreamResultItem_))(Stream.splitLines(stringFromUint8ArrayString("utf-8")(response)));
+      return pipe(response, stringFromUint8ArrayString("utf-8"), Stream.splitLines, Stream.mapEffect(_ => jsonParse(_, ShardingProtocolHttp.SendStreamResultItem_)));
     }).pipe(Stream.fromEffect, Stream.flatten(), Stream.orDie, Stream.flatten());
   }
   const result = {

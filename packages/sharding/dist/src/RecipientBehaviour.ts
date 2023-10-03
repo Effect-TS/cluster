@@ -2,14 +2,14 @@
  * A module that provides utilities to build basic behaviours
  * @since 1.0.0
  */
-import type * as Duration from "effect/Duration"
-import type * as Option from "effect/Option"
-import type * as Effect from "effect/Effect"
-import type * as Queue from "effect/Queue"
 import type * as Message from "@effect/sharding/Message"
 import type { MessageQueueConstructor } from "@effect/sharding/MessageQueue"
 import type * as PoisonPill from "@effect/sharding/PoisonPill"
 import type * as StreamMessage from "@effect/sharding/StreamMessage"
+import type * as Duration from "effect/Duration"
+import type * as Effect from "effect/Effect"
+import type * as Option from "effect/Option"
+import type * as Queue from "effect/Queue"
 import type * as Stream from "effect/Stream"
 
 /**

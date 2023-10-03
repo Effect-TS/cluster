@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
+import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
-import * as Schema from "@effect/schema/Schema"
 
 /**
  * @since 1.0.0
@@ -21,7 +21,7 @@ export type TypeId = typeof TypeId
  * @since 1.0.0
  * @category models
  */
-export interface ByteArray extends Schema.To<typeof schema> {}
+export interface ByteArray extends Schema.Schema.To<typeof schema> {}
 
 /**
  * Construct a new `ByteArray` from its internal string value.

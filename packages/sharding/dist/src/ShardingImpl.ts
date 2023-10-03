@@ -1,23 +1,6 @@
 /**
  * @since 1.0.0
  */
-import * as Duration from "effect/Duration"
-import type * as Either from "effect/Either"
-import * as Equal from "effect/Equal"
-import { equals } from "effect/Equal"
-import { pipe } from "effect/Function"
-import * as HashMap from "effect/HashMap"
-import * as HashSet from "effect/HashSet"
-import * as List from "effect/List"
-import * as Option from "effect/Option"
-import * as Effect from "effect/Effect"
-import * as Fiber from "effect/Fiber"
-import * as Hub from "effect/Hub"
-import * as Layer from "effect/Layer"
-import * as Ref from "effect/Ref"
-import * as Synchronized from "effect/SynchronizedRef"
-import * as Schedule from "effect/Schedule"
-import type * as Scope from "effect/Scope"
 import type * as Schema from "@effect/schema/Schema"
 import * as BinaryMessage from "@effect/sharding/BinaryMessage"
 import type * as Broadcaster from "@effect/sharding/Broadcaster"
@@ -43,7 +26,24 @@ import * as Storage from "@effect/sharding/Storage"
 import * as StreamMessage from "@effect/sharding/StreamMessage"
 import type * as StreamReplier from "@effect/sharding/StreamReplier"
 import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "@effect/sharding/utils"
+import * as Duration from "effect/Duration"
+import * as Effect from "effect/Effect"
+import type * as Either from "effect/Either"
+import * as Equal from "effect/Equal"
+import { equals } from "effect/Equal"
+import * as Fiber from "effect/Fiber"
+import { pipe } from "effect/Function"
+import * as HashMap from "effect/HashMap"
+import * as HashSet from "effect/HashSet"
+import * as Hub from "effect/Hub"
+import * as Layer from "effect/Layer"
+import * as List from "effect/List"
+import * as Option from "effect/Option"
+import * as Ref from "effect/Ref"
+import * as Schedule from "effect/Schedule"
+import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
+import * as Synchronized from "effect/SynchronizedRef"
 import * as Sharding from "./Sharding"
 
 type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
@@ -69,6 +69,57 @@ function make(
   serialization: Serialization.Serialization,
   eventsHub: Hub.Hub<ShardingRegistrationEvent.ShardingRegistrationEvent>
 ) {
+  function decodeRequest<Req>(
+    binaryMessage: BinaryMessage.BinaryMessage
+  ): Effect.Effect<
+    never,
+    ShardingError.ShardingErrorSerialization | ShardingError.ShardingErrorEntityTypeNotRegistered,
+    readonly [Req, EntityManager.EntityManager<Req>]
+  > {
+    return pipe(
+      Ref.get(entityStates),
+      Effect.map(HashMap.get(binaryMessage.entityType)),
+      Effect.flatMap((_) =>
+        Effect.unified(Option.match(_, {
+          onNone: () =>
+            Effect.fail(ShardingError.ShardingErrorEntityTypeNotRegistered(binaryMessage.entityType, address)),
+          onSome: (entityState) =>
+            pipe(
+              serialization.decode(
+                binaryMessage.body,
+                (entityState.entityManager as EntityManager.EntityManager<Req>).recipientType.schema
+              ),
+              Effect.map((request) => [request, entityState.entityManager as EntityManager.EntityManager<Req>] as const)
+            )
+        }))
+      )
+    )
+  }
+
+  function encodeReply<Req>(
+    request: Req,
+    reply: Message.Success<Req> | StreamMessage.Success<Req>
+  ) {
+    if (!Message.isMessage(request) && !StreamMessage.isStreamMessage(request)) {
+      return Effect.die(NotAMessageWithReplierDefect(request))
+    }
+    return pipe(
+      serialization.encode(reply, request.replier.schema)
+    )
+  }
+
+  function decodeReply<Req, Res>(
+    request: Req,
+    body: ByteArray.ByteArray
+  ) {
+    if (!Message.isMessage(request) && !StreamMessage.isStreamMessage(request)) {
+      return Effect.die(NotAMessageWithReplierDefect(request))
+    }
+    return pipe(
+      serialization.decode(body, request.replier.schema as Schema.Schema<unknown, Res>)
+    )
+  }
+
   function getShardId(recipientType: RecipientType.RecipientType<any>, entityId: string): ShardId.ShardId {
     return RecipientType.getShardId(entityId, config.numberOfShards)
   }
@@ -289,18 +340,7 @@ function make(
     ShardingError.ShardingError,
     Option.Option<ByteArray.ByteArray>
   > {
-    return Effect.gen(function*(_) {
-      const replyChannel = yield* _(ReplyChannel.single<any>())
-      const schema = yield* _(sendToLocalEntity(msg, replyChannel))
-      const res = yield* _(replyChannel.output)
-      if (Option.isSome(res)) {
-        if (Option.isNone(schema)) {
-          return yield* _(Effect.die(NotAMessageWithReplierDefect(msg)))
-        }
-        return Option.some(yield* _(serialization.encode(res.value, schema.value)))
-      }
-      return Option.none()
-    })
+    return pipe(sendToLocalEntityStreamingReply(msg), Stream.runHead)
   }
 
   function sendToLocalEntityStreamingReply(
@@ -312,40 +352,16 @@ function make(
   > {
     return pipe(
       Effect.gen(function*(_) {
+        const [request, entityManager] = yield* _(decodeRequest(msg))
         const replyChannel = yield* _(ReplyChannel.stream<any>())
-        const schema = yield* _(sendToLocalEntity(msg, replyChannel))
+        yield* _(entityManager.send(msg.entityId, request, msg.replyId, replyChannel))
         return pipe(
           replyChannel.output,
-          Stream.mapEffect((value) => {
-            if (Option.isNone(schema)) {
-              return Effect.die(NotAMessageWithReplierDefect(msg))
-            }
-            return serialization.encode(value, schema.value)
-          })
+          Stream.mapEffect((reply) => encodeReply<any>(request, reply))
         )
       }),
       Stream.fromEffect,
       Stream.flatten()
-    )
-  }
-
-  function sendToLocalEntity(
-    msg: BinaryMessage.BinaryMessage,
-    replyChannel: ReplyChannel.ReplyChannel<any>
-  ): Effect.Effect<
-    never,
-    ShardingError.ShardingError,
-    Option.Option<Schema.Schema<unknown, any>>
-  > {
-    return pipe(
-      Ref.get(entityStates),
-      Effect.map(HashMap.get(msg.entityType)),
-      Effect.flatMap((_) =>
-        Effect.unified(Option.match(_, {
-          onNone: () => Effect.fail(ShardingError.ShardingErrorEntityTypeNotRegistered(msg.entityType, address)),
-          onSome: (entityState) => entityState.processBinary(msg, replyChannel)
-        }))
-      )
     )
   }
 
@@ -416,7 +432,10 @@ function make(
       return pipe(
         serialization.encode(msg, msgSchema),
         Effect.flatMap((bytes) =>
-          sendToLocalEntity(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId), replyChannel)
+          pipe(
+            decodeRequest(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)),
+            Effect.flatMap(([request, entityManager]) => entityManager.send(entityId, request, replyId, replyChannel))
+          )
         ),
         Effect.asUnit
       )
@@ -457,46 +476,13 @@ function make(
 
           const binaryMessage = BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
 
-          if (ReplyChannel.isReplyChannelFromDeferred(replyChannel)) {
-            return pipe(
-              pods.sendMessage(pod, binaryMessage),
-              Effect.tapError(errorHandling),
-              Effect.flatMap(
-                Option.match(
-                  {
-                    onNone: () => replyChannel.end,
-                    onSome: (bytes) => {
-                      if (Message.isMessage(msg)) {
-                        return pipe(
-                          serialization.decode(bytes, msg.replier.schema),
-                          Effect.flatMap(replyChannel.replySingle)
-                        )
-                      }
-                      console.log("defect 1", msg)
-                      return Effect.die(NotAMessageWithReplierDefect(msg))
-                    }
-                  }
-                )
-              )
-            )
-          }
-
-          if (ReplyChannel.isReplyChannelFromQueue(replyChannel)) {
-            return pipe(
-              replyChannel.replyStream(pipe(
-                pods.sendMessageStreaming(pod, binaryMessage),
-                Stream.tapError(errorHandling),
-                Stream.mapEffect((bytes) => {
-                  if (StreamMessage.isStreamMessage(msg)) {
-                    return serialization.decode(bytes, msg.replier.schema)
-                  }
-                  return Effect.die(NotAMessageWithReplierDefect(msg))
-                })
-              ))
-            )
-          }
-
-          return Effect.dieMessage("got unknown replyChannel type")
+          return pipe(
+            replyChannel.replyStream(pipe(
+              pods.sendMessageStreaming(pod, binaryMessage),
+              Stream.tapError(errorHandling),
+              Stream.mapEffect((bytes) => decodeReply<Msg, Res>(msg, bytes))
+            ))
+          )
         })
       )
     }
@@ -555,11 +541,11 @@ function make(
       msg: Msg,
       replyId: Option.Option<ReplyId.ReplyId>
     ): Effect.Effect<never, ShardingError.ShardingError, Option.Option<Res>> {
-      return Effect.gen(function*(_) {
-        const replyChannel = yield* _(ReplyChannel.single<Res>())
-        yield* _(sendMessageGeneric(entityId, msg, replyId, replyChannel))
-        return yield* _(replyChannel.output)
-      })
+      return pipe(
+        sendMessageStreaming<Res>(entityId, msg, replyId),
+        Effect.map(Stream.runHead),
+        Effect.flatten
+      )
     }
 
     function sendMessageStreaming<Res>(
@@ -651,7 +637,7 @@ function make(
           Effect.forEach(pods, (pod) => {
             const trySend: Effect.Effect<never, ShardingError.ShardingError, Option.Option<Res>> = Effect.gen(
               function*(_) {
-                const replyChannel = yield* _(ReplyChannel.single<Res>())
+                const replyChannel = yield* _(ReplyChannel.stream<Res>())
                 yield* _(pipe(
                   sendToPod<Msg, Res>(
                     topicType.name,
@@ -674,7 +660,7 @@ function make(
                   }),
                   Effect.onError(replyChannel.fail)
                 ))
-                return yield* _(replyChannel.output)
+                return yield* _(Stream.runHead(replyChannel.output))
               }
             )
 
@@ -765,26 +751,8 @@ function make(
         )
       )
 
-      const processBinary = (msg: BinaryMessage.BinaryMessage, replyChannel: ReplyChannel.ReplyChannel<any>) =>
-        pipe(
-          serialization.decode(msg.body, recipientType.schema),
-          Effect.flatMap((_) =>
-            pipe(
-              entityManager.send(msg.entityId, _, msg.replyId, replyChannel),
-              Effect.as(
-                Message.isMessage(_) ?
-                  Option.some(_.replier.schema) :
-                  StreamMessage.isStreamMessage(_) ?
-                  Option.some(_.replier.schema) :
-                  Option.none()
-              )
-            )
-          ),
-          Effect.tapErrorCause((_) => replyChannel.fail(_))
-        )
-
       yield* $(
-        Ref.update(entityStates, HashMap.set(recipientType.name, EntityState.make(entityManager, processBinary)))
+        Ref.update(entityStates, HashMap.set(recipientType.name, EntityState.make(entityManager as any)))
       )
     })
   }

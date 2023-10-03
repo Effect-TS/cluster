@@ -1,11 +1,11 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
-import { pipe } from "effect/Function"
-import * as Effect from "effect/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as crypto from "crypto"
+import * as Data from "effect/Data"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
 
 /**
  * @since 1.0.0
@@ -23,7 +23,7 @@ export type TypeId = typeof TypeId
  * @since 1.0.0
  * @category models
  */
-export interface ReplyId extends Schema.To<typeof schema> {}
+export interface ReplyId extends Schema.Schema.To<typeof schema> {}
 
 /**
  * @since 1.0.0

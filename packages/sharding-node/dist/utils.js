@@ -12,12 +12,13 @@ exports.sendInternal = sendInternal;
 exports.sendStream = sendStream;
 exports.stringFromUint8ArrayString = stringFromUint8ArrayString;
 exports.uint8ArrayFromStringStream = uint8ArrayFromStringStream;
-var Chunk = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Chunk"));
-var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
+var Chunk = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("effect/Chunk"));
+var _Function = /*#__PURE__*/require("effect/Function");
+var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("effect/Effect"));
 var Schema = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/Schema"));
 var TreeFormatter = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/schema/TreeFormatter"));
 var ShardingError = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/sharding/ShardingError"));
-var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/stream/Stream"));
+var Stream = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("effect/Stream"));
 var _nodeFetch = /*#__PURE__*/_interopRequireDefault( /*#__PURE__*/require("node-fetch"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -42,15 +43,15 @@ function isFetchError(value) {
 }
 /** @internal */
 function jsonStringify(value, schema) {
-  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors)))(Schema.encode(schema)(value)));
+  return (0, _Function.pipe)(value, Schema.encode(schema), Effect.mapError(e => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors))), Effect.map(_ => JSON.stringify(_)));
 }
 /** @internal */
 function jsonParse(value, schema) {
-  return Effect.mapError(e => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors)))(Effect.flatMap(Schema.decode(schema))(Effect.sync(() => JSON.parse(value))));
+  return (0, _Function.pipe)(Effect.sync(() => JSON.parse(value)), Effect.flatMap(Schema.decode(schema)), Effect.mapError(e => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors))));
 }
 /** @internal */
 function sendInternal(send) {
-  return (url, data) =>
+  return (url, data) => (0, _Function.pipe)(jsonStringify(data, send),
   // Effect.tap((body) => Effect.logDebug("Sending HTTP request to " + url + " with data " + body)),
   Effect.flatMap(body => Effect.tryPromise({
     try: signal => {
@@ -63,15 +64,15 @@ function sendInternal(send) {
     catch: error => FetchError(url, body, String(error))
   }))
   // Effect.tap((response) => Effect.logDebug(url + " status: " + response.status))
-  (jsonStringify(data, send));
+  );
 }
 /** @internal */
 function send(send, reply) {
-  return (url, data) => Effect.flatten(Effect.orDie(Effect.flatMap(data => jsonParse(data, reply))(Effect.flatMap(response => Effect.promise(() => response.text()))(sendInternal(send)(url, data)))));
+  return (url, data) => (0, _Function.pipe)(sendInternal(send)(url, data), Effect.flatMap(response => Effect.promise(() => response.text())), Effect.flatMap(data => jsonParse(data, reply)), Effect.orDie, Effect.flatten);
 }
 /** @internal */
 function sendStream(send, reply) {
-  return (url, data) => Stream.flatten()(Stream.fromEffect(Effect.map(response => Stream.mapEffect(_ => _)(Stream.mapEffect(data => jsonParse(data, reply))(Stream.map(line => line.startsWith("data:") ? line.substring("data:".length).trim() : line)(Stream.filter(line => line.length > 0)(Stream.splitLines(Stream.map(value => typeof value === "string" ? value : value.toString())(Stream.fromAsyncIterable(response.body, e => FetchError(url, "", String(e))))))))))(sendInternal(send)(url, data))));
+  return (url, data) => (0, _Function.pipe)(sendInternal(send)(url, data), Effect.map(response => (0, _Function.pipe)(Stream.fromAsyncIterable(response.body, e => FetchError(url, "", String(e))), Stream.map(value => typeof value === "string" ? value : value.toString()), Stream.splitLines, Stream.filter(line => line.length > 0), Stream.map(line => line.startsWith("data:") ? line.substring("data:".length).trim() : line), Stream.mapEffect(data => jsonParse(data, reply)), Stream.mapEffect(_ => _))), Stream.fromEffect, Stream.flatten());
 }
 /** @internal */
 function stringFromUint8ArrayString(encoding) {

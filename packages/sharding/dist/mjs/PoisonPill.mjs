@@ -1,10 +1,11 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data";
-import * as Effect from "@effect/io/Effect";
-import * as Queue from "@effect/io/Queue";
 import * as Schema from "@effect/schema/Schema";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import { pipe } from "effect/Function";
+import * as Queue from "effect/Queue";
 /**
  * @since 1.0.0
  * @category symbols
@@ -43,6 +44,6 @@ export const schema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
  * @category schema
  */
 export function takeOrInterrupt(dequeue) {
-  return Effect.flatMap(msg => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed(msg))(Queue.take(dequeue));
+  return pipe(Queue.take(dequeue), Effect.flatMap(msg => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed(msg)));
 }
 //# sourceMappingURL=PoisonPill.mjs.map

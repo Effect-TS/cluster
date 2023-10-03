@@ -1,11 +1,9 @@
-/**
- * @since 1.0.0
- */
-import { Tag } from "@effect/data/Context";
-import * as Option from "@effect/data/Option";
-import * as Effect from "@effect/io/Effect";
-import * as Layer from "@effect/io/Layer";
 import * as Pods from "@effect/sharding/Pods";
+import { Tag } from "effect/Context";
+import * as Effect from "effect/Effect";
+import { pipe } from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Option from "effect/Option";
 /**
  * @since 1.0.0
  * @category symbols
@@ -34,6 +32,6 @@ export const noop = /*#__PURE__*/Layer.succeed(PodsHealth, {
  */
 export const local = /*#__PURE__*/Layer.effect(PodsHealth, /*#__PURE__*/Effect.map(Pods.Pods, podApi => ({
   _id: TypeId,
-  isAlive: address => Effect.map(Option.isSome)(Effect.option(podApi.ping(address)))
+  isAlive: address => pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome))
 })));
 //# sourceMappingURL=PodsHealth.mjs.map

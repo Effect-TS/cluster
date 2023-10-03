@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
-import { pipe } from "effect/Function"
-import type * as Option from "effect/Option"
 import * as Schema from "@effect/schema/Schema"
 import * as ByteArray from "@effect/sharding/ByteArray"
 import * as ReplyId from "@effect/sharding/ReplyId"
+import * as Data from "effect/Data"
+import { pipe } from "effect/Function"
+import type * as Option from "effect/Option"
 
 /**
  * @since 1.0.0
@@ -24,7 +24,7 @@ export type TypeId = typeof TypeId
  * @since 1.0.0
  * @category models
  */
-export interface BinaryMessage extends Schema.To<typeof schema> {}
+export interface BinaryMessage extends Schema.Schema.To<typeof schema> {}
 
 /**
  * Construct a new `BinaryMessage`

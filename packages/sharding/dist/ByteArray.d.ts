@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data";
 import * as Schema from "@effect/schema/Schema";
+import * as Data from "effect/Data";
 /**
  * @since 1.0.0
  * @category symbols
@@ -17,7 +17,7 @@ export type TypeId = typeof TypeId;
  * @since 1.0.0
  * @category models
  */
-export interface ByteArray extends Schema.To<typeof schema> {
+export interface ByteArray extends Schema.Schema.To<typeof schema> {
 }
 /**
  * Construct a new `ByteArray` from its internal string value.

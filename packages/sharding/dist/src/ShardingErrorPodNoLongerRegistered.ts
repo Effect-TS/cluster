@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
 import * as Schema from "@effect/schema/Schema"
 import * as PodAddress from "@effect/sharding/PodAddress"
+import * as Data from "effect/Data"
 
 /**
  * @since 1.0.0
@@ -23,7 +23,7 @@ const ShardingErrorPodNoLongerRegisteredSchema_ = Schema.data(
  * @category models
  */
 export interface ShardingErrorPodNoLongerRegistered
-  extends Schema.To<typeof ShardingErrorPodNoLongerRegisteredSchema_>
+  extends Schema.Schema.To<typeof ShardingErrorPodNoLongerRegisteredSchema_>
 {}
 
 /**
@@ -50,6 +50,6 @@ export function isShardingErrorPodNoLongerRegistered(value: unknown): value is S
  * @category schema
  */
 export const ShardingErrorPodNoLongerRegisteredSchema: Schema.Schema<
-  Schema.From<typeof ShardingErrorPodNoLongerRegisteredSchema_>,
+  Schema.Schema.From<typeof ShardingErrorPodNoLongerRegisteredSchema_>,
   ShardingErrorPodNoLongerRegistered
 > = ShardingErrorPodNoLongerRegisteredSchema_

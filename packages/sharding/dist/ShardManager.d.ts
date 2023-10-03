@@ -1,12 +1,6 @@
 /**
  * @since 1.0.0
  */
-import * as HashMap from "effect//HashMap";
-import { Tag } from "effect/Context";
-import * as HashSet from "effect/HashSet";
-import * as Option from "effect/Option";
-import * as Effect from "effect/Effect";
-import * as Layer from "effect/Layer";
 import * as ManagerConfig from "@effect/sharding/ManagerConfig";
 import type * as Pod from "@effect/sharding/Pod";
 import * as PodAddress from "@effect/sharding/PodAddress";
@@ -16,6 +10,12 @@ import * as ShardId from "@effect/sharding/ShardId";
 import * as ShardingEvent from "@effect/sharding/ShardingEvent";
 import * as ShardManagerState from "@effect/sharding/ShardManagerState";
 import * as Storage from "@effect/sharding/Storage";
+import { Tag } from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as HashMap from "effect/HashMap";
+import * as HashSet from "effect/HashSet";
+import * as Layer from "effect/Layer";
+import * as Option from "effect/Option";
 import * as Stream from "effect/Stream";
 /**
  * @since 1.0.0
@@ -42,5 +42,5 @@ export declare function decideAssignmentsForUnbalancedShards(state: ShardManager
  * @since 1.0.0
  * @category layers
  */
-export declare const live: Layer.Layer<ManagerConfig.ManagerConfig | Pods.Pods | PodsHealth.PodsHealth | Storage.Storage, never, ShardManager>;
+export declare const live: Layer.Layer<Storage.Storage | Pods.Pods | PodsHealth.PodsHealth | ManagerConfig.ManagerConfig, never, ShardManager>;
 //# sourceMappingURL=ShardManager.d.ts.map

@@ -1,8 +1,9 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data";
 import * as Schema from "@effect/schema/Schema";
+import * as Data from "effect/Data";
+import { pipe } from "effect/Function";
 /**
  * @since 1.0.0
  * @category symbols
@@ -33,10 +34,10 @@ export function isByteArray(value) {
  * @since 1.0.0
  * @category schema
  */
-export const schema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+export const schema = /*#__PURE__*/pipe( /*#__PURE__*/Schema.struct({
   _id: /*#__PURE__*/Schema.literal(TypeId),
   value: Schema.string
-}));
+}), Schema.data);
 /**
  * This is the schema for a value starting from a string.
  *

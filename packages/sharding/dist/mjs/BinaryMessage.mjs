@@ -1,10 +1,11 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data";
 import * as Schema from "@effect/schema/Schema";
 import * as ByteArray from "@effect/sharding/ByteArray";
 import * as ReplyId from "@effect/sharding/ReplyId";
+import * as Data from "effect/Data";
+import { pipe } from "effect/Function";
 /**
  * @since 1.0.0
  * @category symbols
@@ -38,11 +39,11 @@ export function isBinaryMessage(value) {
  * @since 1.0.0
  * @category schema
  */
-export const schema = /*#__PURE__*/Schema.data( /*#__PURE__*/Schema.struct({
+export const schema = /*#__PURE__*/pipe( /*#__PURE__*/Schema.struct({
   _id: /*#__PURE__*/Schema.literal(TypeId),
   entityId: Schema.string,
   entityType: Schema.string,
   body: ByteArray.schema,
   replyId: /*#__PURE__*/Schema.option(ReplyId.schema)
-}));
+}), Schema.data);
 //# sourceMappingURL=BinaryMessage.mjs.map

@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data";
 import * as Schema from "@effect/schema/Schema";
 import * as PodAddress from "@effect/sharding/PodAddress";
+import * as Data from "effect/Data";
 /**
  * @since 1.0.0
  * @category symbols
@@ -28,7 +28,7 @@ declare const ShardingErrorPodNoLongerRegisteredSchema_: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingErrorPodNoLongerRegistered extends Schema.To<typeof ShardingErrorPodNoLongerRegisteredSchema_> {
+export interface ShardingErrorPodNoLongerRegistered extends Schema.Schema.To<typeof ShardingErrorPodNoLongerRegisteredSchema_> {
 }
 /**
  * @since 1.0.0
@@ -44,6 +44,6 @@ export declare function isShardingErrorPodNoLongerRegistered(value: unknown): va
  * @since 1.0.0
  * @category schema
  */
-export declare const ShardingErrorPodNoLongerRegisteredSchema: Schema.Schema<Schema.From<typeof ShardingErrorPodNoLongerRegisteredSchema_>, ShardingErrorPodNoLongerRegistered>;
+export declare const ShardingErrorPodNoLongerRegisteredSchema: Schema.Schema<Schema.Schema.From<typeof ShardingErrorPodNoLongerRegisteredSchema_>, ShardingErrorPodNoLongerRegistered>;
 export {};
 //# sourceMappingURL=ShardingErrorPodNoLongerRegistered.d.ts.map

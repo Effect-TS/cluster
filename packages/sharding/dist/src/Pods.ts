@@ -1,16 +1,16 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
-import type * as HashSet from "effect/HashSet"
-import * as Option from "effect/Option"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
 import type * as BinaryMessage from "@effect/sharding/BinaryMessage"
 import type * as ByteArray from "@effect/sharding/ByteArray"
 import type * as PodAddress from "@effect/sharding/PodAddress"
 import type * as ShardId from "@effect/sharding/ShardId"
 import type * as ShardingError from "@effect/sharding/ShardingError"
+import { Tag } from "effect/Context"
+import * as Effect from "effect/Effect"
+import type * as HashSet from "effect/HashSet"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 
 /**

@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data";
 import * as Schema from "@effect/schema/Schema";
+import * as Data from "effect/Data";
 /**
  * @since 1.0.0
  * @category schema
@@ -17,7 +17,7 @@ declare const ShardingErrorSendTimeoutSchema_: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingErrorSendTimeout extends Schema.To<typeof ShardingErrorSendTimeoutSchema_> {
+export interface ShardingErrorSendTimeout extends Schema.Schema.To<typeof ShardingErrorSendTimeoutSchema_> {
 }
 /**
  * @since 1.0.0
@@ -33,6 +33,6 @@ export declare function isShardingErrorSendTimeout(value: any): value is Shardin
  * @since 1.0.0
  * @category schema
  */
-export declare const ShardingErrorSendTimeoutSchema: Schema.Schema<Schema.From<typeof ShardingErrorSendTimeoutSchema_>, ShardingErrorSendTimeout>;
+export declare const ShardingErrorSendTimeoutSchema: Schema.Schema<Schema.Schema.From<typeof ShardingErrorSendTimeoutSchema_>, ShardingErrorSendTimeout>;
 export {};
 //# sourceMappingURL=ShardingErrorSendTimeout.d.ts.map

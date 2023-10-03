@@ -1,14 +1,12 @@
 /**
  * @since 1.0.0
  */
-import { pipe } from "effect/Function"
-import * as Option from "effect/Option"
+import type * as ShardingError from "@effect/sharding/ShardingError"
 import type * as Cause from "effect/Cause"
-import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
+import { pipe } from "effect/Function"
 import * as Queue from "effect/Queue"
-import type * as ShardingError from "@effect/sharding/ShardingError"
 import * as Stream from "effect/Stream"
 import * as Take from "effect/Take"
 
@@ -55,30 +53,10 @@ export interface ReplyChannel<A> {
   readonly replyStream: (
     stream: Stream.Stream<never, ShardingError.ShardingError, A>
   ) => Effect.Effect<never, never, void>
-}
-
-/** @internal */
-export interface QueueReplyChannel<A> extends ReplyChannel<A> {
-  /**
-   * @since 1.0.0
-   */
-  readonly _tag: "FromQueue"
   /**
    * @since 1.0.0
    */
   readonly output: Stream.Stream<never, ShardingError.ShardingError, A>
-}
-
-/** @internal */
-export interface DeferredReplyChannel<A> extends ReplyChannel<A> {
-  /**
-   * @since 1.0.0
-   */
-  readonly _tag: "FromDeferred"
-  /**
-   * @since 1.0.0
-   */
-  readonly output: Effect.Effect<never, ShardingError.ShardingError, Option.Option<A>>
 }
 
 /**
@@ -94,37 +72,18 @@ export function isReplyChannel(value: unknown): value is ReplyChannel<any> {
   )
 }
 
-/** @internal */
-export function isReplyChannelFromQueue(value: unknown): value is QueueReplyChannel<any> {
-  return (
-    isReplyChannel(value) &&
-    "_tag" in value &&
-    value["_tag"] === "FromQueue"
-  )
-}
-
-/** @internal */
-export function isReplyChannelFromDeferred(value: unknown): value is DeferredReplyChannel<any> {
-  return (
-    isReplyChannel(value) &&
-    "_tag" in value &&
-    value["_tag"] === "FromDeferred"
-  )
-}
-
 /**
  * Construct a new `ReplyChannel` from a queue.
  *
  * @internal
  */
-export function fromQueue<A>(queue: Queue.Queue<Take.Take<ShardingError.ShardingError, A>>): QueueReplyChannel<A> {
+export function fromQueue<A>(queue: Queue.Queue<Take.Take<ShardingError.ShardingError, A>>): ReplyChannel<A> {
   const end = pipe(Queue.offer(queue, Take.end), Effect.exit, Effect.asUnit)
   const fail = (cause: Cause.Cause<ShardingError.ShardingError>) =>
     pipe(Queue.offer(queue, Take.failCause(cause)), Effect.exit, Effect.asUnit)
   const await_ = Queue.awaitShutdown(queue)
   return ({
     _id: TypeId,
-    _tag: "FromQueue",
     await: await_,
     end,
     fail,
@@ -146,46 +105,6 @@ export function fromQueue<A>(queue: Queue.Queue<Take.Take<ShardingError.Sharding
     )
   })
 }
-
-/**
- * Construct a new `ReplyChannel` from a deferred.
- *
- * @internal
- */
-export function fromDeferred<A>(
-  deferred: Deferred.Deferred<ShardingError.ShardingError, Option.Option<A>>
-): DeferredReplyChannel<A> {
-  const end = pipe(Deferred.succeed(deferred, Option.none()), Effect.asUnit)
-  const fail = (cause: Cause.Cause<ShardingError.ShardingError>) =>
-    pipe(Deferred.failCause(deferred, cause), Effect.asUnit)
-  return ({
-    _id: TypeId,
-    _tag: "FromDeferred",
-    await: pipe(Deferred.await(deferred), Effect.exit, Effect.asUnit),
-    end,
-    fail,
-    replySingle: (a) => pipe(Deferred.succeed(deferred, Option.some(a)), Effect.asUnit),
-    replyStream: (stream) =>
-      pipe(
-        Stream.runHead(stream),
-        Effect.flatMap((_) => Deferred.succeed(deferred, _)),
-        Effect.catchAllCause(fail),
-        Effect.fork,
-        Effect.asUnit
-      ),
-    output: pipe(
-      Deferred.await(deferred),
-      Effect.onError(fail)
-    )
-  })
-}
-
-/** @internal */
-export const single = <A>() =>
-  pipe(
-    Deferred.make<ShardingError.ShardingError, Option.Option<A>>(),
-    Effect.map(fromDeferred)
-  )
 
 /** @internal */
 export const stream = <A>() =>

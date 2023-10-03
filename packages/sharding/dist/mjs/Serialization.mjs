@@ -1,20 +1,21 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "@effect/data/Context";
-import * as Effect from "@effect/io/Effect";
-import * as Layer from "@effect/io/Layer";
 import * as Schema from "@effect/schema/Schema";
 import * as TreeFormatter from "@effect/schema/TreeFormatter";
 import * as ByteArray from "@effect/sharding/ByteArray";
 import * as ShardingError from "@effect/sharding/ShardingError";
+import { Tag } from "effect/Context";
+import * as Effect from "effect/Effect";
+import { pipe } from "effect/Function";
+import * as Layer from "effect/Layer";
 /** @internal */
 function jsonStringify(value, schema) {
-  return Effect.map(_ => JSON.stringify(_))(Effect.mapError(e => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors)))(Schema.encode(schema)(value)));
+  return pipe(value, Schema.encode(schema), Effect.mapError(e => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors))), Effect.map(_ => JSON.stringify(_)));
 }
 /** @internal */
 function jsonParse(value, schema) {
-  return Effect.mapError(e => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors)))(Effect.flatMap(Schema.decode(schema))(Effect.sync(() => JSON.parse(value))));
+  return pipe(Effect.sync(() => JSON.parse(value)), Effect.flatMap(Schema.decode(schema)), Effect.mapError(e => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors))));
 }
 /**
  * @since 1.0.0
@@ -34,7 +35,7 @@ export const Serialization = /*#__PURE__*/Tag();
  */
 export const json = /*#__PURE__*/Layer.succeed(Serialization, {
   _id: TypeId,
-  encode: (message, schema) => Effect.map(ByteArray.make)(jsonStringify(message, schema)),
+  encode: (message, schema) => pipe(jsonStringify(message, schema), Effect.map(ByteArray.make)),
   decode: (body, schema) => jsonParse(body.value, schema)
 });
 //# sourceMappingURL=Serialization.mjs.map

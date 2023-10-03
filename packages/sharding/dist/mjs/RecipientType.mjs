@@ -1,8 +1,5 @@
-/**
- * @since 1.0.0
- */
-import * as Hash from "@effect/data/Hash";
 import * as ShardId from "@effect/sharding/ShardId";
+import * as Hash from "effect/Hash";
 /**
  * @since 1.0.0
  * @category constructors

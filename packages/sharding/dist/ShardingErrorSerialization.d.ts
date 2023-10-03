@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data";
 import * as Schema from "@effect/schema/Schema";
+import * as Data from "effect/Data";
 /**
  * @since 1.0.0
  * @category symbols
@@ -19,7 +19,7 @@ declare const ShardingErrorSerializationSchema_: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingErrorSerialization extends Schema.To<typeof ShardingErrorSerializationSchema_> {
+export interface ShardingErrorSerialization extends Schema.Schema.To<typeof ShardingErrorSerializationSchema_> {
 }
 /**
  * @since 1.0.0
@@ -35,6 +35,6 @@ export declare function isShardingErrorSerialization(value: any): value is Shard
  * @since 1.0.0
  * @category schema
  */
-export declare const ShardingErrorSerializationSchema: Schema.Schema<Schema.From<typeof ShardingErrorSerializationSchema_>, ShardingErrorSerialization>;
+export declare const ShardingErrorSerializationSchema: Schema.Schema<Schema.Schema.From<typeof ShardingErrorSerializationSchema_>, ShardingErrorSerialization>;
 export {};
 //# sourceMappingURL=ShardingErrorSerialization.d.ts.map

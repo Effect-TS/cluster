@@ -1,10 +1,11 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data";
-import * as Effect from "@effect/io/Effect";
 import * as Schema from "@effect/schema/Schema";
 import * as crypto from "crypto";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import { pipe } from "effect/Function";
 /**
  * @since 1.0.0
  * @category symbols
@@ -39,7 +40,7 @@ const makeUUID = typeof crypto !== "undefined" && typeof crypto.getRandomValues 
  * @since 1.0.0
  * @category constructors
  */
-export const makeEffect = /*#__PURE__*/Effect.map(make)(makeUUID);
+export const makeEffect = /*#__PURE__*/pipe(makeUUID, /*#__PURE__*/Effect.map(make));
 /**
  * This is the schema for a value.
  *

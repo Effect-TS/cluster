@@ -13,14 +13,11 @@ exports.registerScoped = void 0;
 exports.registerSingleton = registerSingleton;
 exports.registerTopic = registerTopic;
 exports.unregister = void 0;
-var _Context = /*#__PURE__*/require("@effect/data/Context");
-var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/io/Effect"));
+var _Context = /*#__PURE__*/require("effect/Context");
+var Effect = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("effect/Effect"));
+var _Function = /*#__PURE__*/require("effect/Function");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-/**
- * @since 1.0.0
- */
-
 /**
  * @since 1.0.0
  * @category context
@@ -46,7 +43,7 @@ const unregister = /*#__PURE__*/Effect.flatMap(Sharding, _ => _.unregister);
  * @category utils
  */
 exports.unregister = unregister;
-const registerScoped = /*#__PURE__*/Effect.zipRight(Effect.addFinalizer(() => unregister))(register);
+const registerScoped = /*#__PURE__*/(0, _Function.pipe)(register, /*#__PURE__*/Effect.zipRight( /*#__PURE__*/Effect.addFinalizer(() => unregister)));
 /**
  * Start a computation that is guaranteed to run only on a single pod.
  * Each pod should call `registerSingleton` but only a single pod will actually run it at any given time.

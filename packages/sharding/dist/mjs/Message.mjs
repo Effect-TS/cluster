@@ -1,9 +1,10 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data";
 import * as Schema from "@effect/schema/Schema";
 import * as Replier from "@effect/sharding/Replier";
+import * as Data from "effect/Data";
+import { pipe } from "effect/Function";
 /**
  * @since 1.0.0
  * @category utils
@@ -19,9 +20,9 @@ export function isMessage(value) {
  */
 export function schema(replySchema) {
   return function (item) {
-    const result = Schema.extend(Schema.struct({
+    const result = pipe(item, Schema.extend(Schema.struct({
       replier: Replier.schema(replySchema)
-    }))(item);
+    })));
     const make = arg => replyId => Data.struct({
       ...arg,
       replier: Replier.replier(replyId, replySchema)

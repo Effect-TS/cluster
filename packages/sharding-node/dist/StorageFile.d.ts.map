@@ -1,1 +1,1 @@
-{"version":3,"file":"StorageFile.d.ts","sourceRoot":"","sources":["./src/StorageFile.ts"],"names":[],"mappings":"AAOA,OAAO,KAAK,KAAK,MAAM,kBAAkB,CAAA;AAMzC,OAAO,KAAK,OAAO,MAAM,0BAA0B,CAAA;AA6FnD;;;GAGG;AACH,eAAO,MAAM,WAAW,4CASvB,CAAA"}
+{"version":3,"file":"StorageFile.d.ts","sourceRoot":"","sources":["./src/StorageFile.ts"],"names":[],"mappings":"AAOA,OAAO,KAAK,OAAO,MAAM,0BAA0B,CAAA;AAInD,OAAO,KAAK,KAAK,MAAM,cAAc,CAAA;AA+FrC;;;GAGG;AACH,eAAO,MAAM,WAAW,4CASvB,CAAA"}

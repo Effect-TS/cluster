@@ -1,11 +1,11 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
-import { pipe } from "effect/Function"
 import * as Schema from "@effect/schema/Schema"
 import * as Replier from "@effect/sharding/Replier"
 import type * as ReplyId from "@effect/sharding/ReplyId"
+import * as Data from "effect/Data"
+import { pipe } from "effect/Function"
 
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`
@@ -48,12 +48,12 @@ export function schema<RI, RA>(replySchema: Schema.Schema<RI, RA>) {
   return function<I, A extends object>(
     item: Schema.Schema<I, A>
   ): readonly [
-    Schema.Schema<I, Schema.Spread<A & Message<RA>>>,
-    (arg: A) => (replyId: ReplyId.ReplyId) => Schema.Spread<A & Message<RA>>
+    Schema.Schema<I, A & Message<RA>>,
+    (arg: A) => (replyId: ReplyId.ReplyId) => A & Message<RA>
   ] {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: Replier.schema(replySchema) })))
 
-    const make = (arg: A) => (replyId: ReplyId.ReplyId): Schema.Spread<A & Message<RA>> =>
+    const make = (arg: A) => (replyId: ReplyId.ReplyId): A & Message<RA> =>
       Data.struct({ ...arg, replier: Replier.replier(replyId, replySchema) }) as any
 
     return [result as any, make] as const

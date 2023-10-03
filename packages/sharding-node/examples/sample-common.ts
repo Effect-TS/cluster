@@ -26,6 +26,6 @@ export const CounterMsg = Schema.union(
   SubscribeChanges_
 )
 
-export type CounterMsg = Schema.To<typeof CounterMsg>
+export type CounterMsg = Schema.Schema.To<typeof CounterMsg>
 
 export const CounterEntity = RecipientType.makeEntityType("Counter", CounterMsg)

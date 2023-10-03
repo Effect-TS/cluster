@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
 import * as Schema from "@effect/schema/Schema"
 import * as PodAddress from "@effect/sharding/PodAddress"
+import * as Data from "effect/Data"
 
 /**
  * @since 1.0.0
@@ -24,7 +24,7 @@ const ShardingErrorEntityTypeNotRegisteredSchema_ = Schema.data(
  * @category models
  */
 export interface ShardingErrorEntityTypeNotRegistered
-  extends Schema.To<typeof ShardingErrorEntityTypeNotRegisteredSchema_>
+  extends Schema.Schema.To<typeof ShardingErrorEntityTypeNotRegisteredSchema_>
 {}
 
 /**
@@ -52,6 +52,6 @@ export function isShardingErrorEntityTypeNotRegistered(value: unknown): value is
  * @category schema
  */
 export const ShardingErrorEntityTypeNotRegisteredSchema: Schema.Schema<
-  Schema.From<typeof ShardingErrorEntityTypeNotRegisteredSchema_>,
+  Schema.Schema.From<typeof ShardingErrorEntityTypeNotRegisteredSchema_>,
   ShardingErrorEntityTypeNotRegistered
 > = ShardingErrorEntityTypeNotRegisteredSchema_

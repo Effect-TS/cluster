@@ -1,10 +1,10 @@
 /**
  * @since 1.0.0
  */
+import * as Schema from "@effect/schema/Schema";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Queue from "effect/Queue";
-import * as Schema from "@effect/schema/Schema";
 /**
  * @since 1.0.0
  * @category symbols
@@ -14,7 +14,7 @@ export declare const TypeId = "@effect/sharding/PoisonPill";
  * @since 1.0.0
  * @category models
  */
-export interface PoisonPill extends Schema.To<typeof schema> {
+export interface PoisonPill extends Schema.Schema.To<typeof schema> {
 }
 /**
  * `PoisonPill`

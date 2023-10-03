@@ -1,9 +1,10 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data";
 import * as Schema from "@effect/schema/Schema";
 import * as StreamReplier from "@effect/sharding/StreamReplier";
+import * as Data from "effect/Data";
+import { pipe } from "effect/Function";
 /**
  * @since 1.0.0
  * @category utils
@@ -19,9 +20,9 @@ export function isStreamMessage(value) {
  */
 export function schema(success) {
   return function (item) {
-    const result = Schema.extend(Schema.struct({
+    const result = pipe(item, Schema.extend(Schema.struct({
       replier: StreamReplier.schema(success)
-    }))(item);
+    })));
     const make = arg => replyId => Data.struct({
       ...arg,
       replier: StreamReplier.streamReplier(replyId, success)

@@ -1,13 +1,13 @@
 /**
  * @since 1.0.0
  */
-import type * as Either from "effect/Either";
-import type * as HashMap from "effect/HashMap";
-import type * as Effect from "effect/Effect";
 import type * as Message from "@effect/sharding/Message";
 import type * as PodAddress from "@effect/sharding/PodAddress";
 import type * as ReplyId from "@effect/sharding/ReplyId";
 import type * as ShardingError from "@effect/sharding/ShardingError";
+import type * as Effect from "effect/Effect";
+import type * as Either from "effect/Either";
+import type * as HashMap from "effect/HashMap";
 /**
  * An interface to communicate with a remote broadcast receiver
  * @since 1.0.0

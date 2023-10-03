@@ -1,14 +1,14 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context";
-import * as HashMap from "effect/HashMap";
-import * as Option from "effect/Option";
-import * as Effect from "effect/Effect";
-import * as Layer from "effect/Layer";
 import * as PodAddress from "@effect/sharding/PodAddress";
 import * as ShardId from "@effect/sharding/ShardId";
 import * as ShardingConfig from "@effect/sharding/ShardingConfig";
+import { Tag } from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as HashMap from "effect/HashMap";
+import * as Layer from "effect/Layer";
+import * as Option from "effect/Option";
 /**
  * @since 1.0.0
  * @category models

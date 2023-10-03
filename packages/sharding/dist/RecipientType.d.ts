@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import type * as Schema from "@effect/schema/Schema";
 import * as ShardId from "@effect/sharding/ShardId";
 /**

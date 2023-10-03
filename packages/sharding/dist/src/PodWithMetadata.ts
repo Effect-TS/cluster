@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
+import * as Schema from "@effect/schema/Schema"
+import * as Pod from "@effect/sharding/Pod"
 import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
 import * as List from "effect/List"
 import * as Option from "effect/Option"
-import * as Schema from "@effect/schema/Schema"
-import * as Pod from "@effect/sharding/Pod"
 
 /**
  * @since 1.0.0
@@ -24,7 +24,7 @@ export type TypeId = typeof TypeId
  * @since 1.0.0
  * @category models
  */
-export interface PodWithMetadata extends Schema.To<typeof schema> {}
+export interface PodWithMetadata extends Schema.Schema.To<typeof schema> {}
 
 /**
  * @since 1.0.0

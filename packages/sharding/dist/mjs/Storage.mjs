@@ -1,13 +1,11 @@
-/**
- * @since 1.0.0
- */
-import { Tag } from "@effect/data/Context";
-import * as HashMap from "@effect/data/HashMap";
-import * as Effect from "@effect/io/Effect";
-import * as Layer from "@effect/io/Layer";
-import * as Ref from "@effect/io/Ref";
-import * as Stream from "@effect/stream/Stream";
-import * as SubscriptionRef from "@effect/stream/SubscriptionRef";
+import { Tag } from "effect/Context";
+import * as Effect from "effect/Effect";
+import { pipe } from "effect/Function";
+import * as HashMap from "effect/HashMap";
+import * as Layer from "effect/Layer";
+import * as Ref from "effect/Ref";
+import * as Stream from "effect/Stream";
+import * as SubscriptionRef from "effect/SubscriptionRef";
 /**
  * @since 1.0.0
  * @category symbols
@@ -30,10 +28,10 @@ export const memory = /*#__PURE__*/Layer.effect(Storage, /*#__PURE__*/Effect.gen
   const podsRef = yield* $(Ref.make(HashMap.empty()));
   return {
     getAssignments: SubscriptionRef.get(assignmentsRef),
-    saveAssignments: assignments => SubscriptionRef.set(assignments)(assignmentsRef),
+    saveAssignments: assignments => pipe(assignmentsRef, SubscriptionRef.set(assignments)),
     assignmentsStream: assignmentsRef.changes,
     getPods: Ref.get(podsRef),
-    savePods: pods => Ref.set(pods)(podsRef)
+    savePods: pods => pipe(podsRef, Ref.set(pods))
   };
 }));
 /**

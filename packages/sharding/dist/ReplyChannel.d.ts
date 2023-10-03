@@ -1,6 +1,9 @@
+/**
+ * @since 1.0.0
+ */
+import type * as ShardingError from "@effect/sharding/ShardingError";
 import type * as Cause from "effect/Cause";
 import * as Effect from "effect/Effect";
-import type * as ShardingError from "@effect/sharding/ShardingError";
 import * as Stream from "effect/Stream";
 /**
  * @since 1.0.0
@@ -41,6 +44,10 @@ export interface ReplyChannel<A> {
      * @since 1.0.0
      */
     readonly replyStream: (stream: Stream.Stream<never, ShardingError.ShardingError, A>) => Effect.Effect<never, never, void>;
+    /**
+     * @since 1.0.0
+     */
+    readonly output: Stream.Stream<never, ShardingError.ShardingError, A>;
 }
 /**
  * @since 1.0.0

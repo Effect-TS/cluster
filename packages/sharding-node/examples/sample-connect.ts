@@ -1,8 +1,3 @@
-import { pipe } from "effect/Function"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as Logger from "effect/Logger"
-import * as LogLevel from "effect/Logger/Level"
 import * as NodeClient from "@effect/platform-node/Http/NodeClient"
 import * as PodsHttp from "@effect/sharding-node/PodsHttp"
 import * as ShardManagerClientHttp from "@effect/sharding-node/ShardManagerClientHttp"
@@ -11,6 +6,11 @@ import * as Serialization from "@effect/sharding/Serialization"
 import * as Sharding from "@effect/sharding/Sharding"
 import * as ShardingConfig from "@effect/sharding/ShardingConfig"
 import * as ShardingImpl from "@effect/sharding/ShardingImpl"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
+import * as Layer from "effect/Layer"
+import * as Logger from "effect/Logger"
+import * as LogLevel from "effect/LogLevel"
 import * as Stream from "effect/Stream"
 import { CounterEntity, GetCurrent, SubscribeChanges } from "./sample-common"
 
@@ -46,7 +46,7 @@ const program = pipe(
   Effect.scoped,
   Effect.catchAllCause(Effect.logError),
   Logger.withMinimumLogLevel(LogLevel.All),
-  Effect.provideSomeLayer(liveSharding)
+  Effect.provide(liveSharding)
 )
 
 Effect.runFork(program)

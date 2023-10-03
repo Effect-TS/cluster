@@ -1,25 +1,25 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data";
 import * as Schema from "@effect/schema/Schema";
 import * as PodAddress from "@effect/sharding/PodAddress";
+import * as Data from "effect/Data";
 /**
  * @since 1.0.0
  * @category symbols
  */
 export declare const ShardingErrorEntityTypeNotRegisteredTag: "@effect/sharding/ShardingErrorEntityTypeNotRegistered";
 declare const ShardingErrorEntityTypeNotRegisteredSchema_: Schema.Schema<{
-    readonly entityType: string;
     readonly _tag: "@effect/sharding/ShardingErrorEntityTypeNotRegistered";
+    readonly entityType: string;
     readonly podAddress: {
         readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
         readonly port: number;
     };
 }, Data.Data<{
-    readonly entityType: string;
     readonly _tag: "@effect/sharding/ShardingErrorEntityTypeNotRegistered";
+    readonly entityType: string;
     readonly podAddress: Data.Data<{
         readonly _id: "@effect/sharding/PodAddress";
         readonly host: string;
@@ -30,7 +30,7 @@ declare const ShardingErrorEntityTypeNotRegisteredSchema_: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingErrorEntityTypeNotRegistered extends Schema.To<typeof ShardingErrorEntityTypeNotRegisteredSchema_> {
+export interface ShardingErrorEntityTypeNotRegistered extends Schema.Schema.To<typeof ShardingErrorEntityTypeNotRegisteredSchema_> {
 }
 /**
  * @since 1.0.0
@@ -46,6 +46,6 @@ export declare function isShardingErrorEntityTypeNotRegistered(value: unknown): 
  * @since 1.0.0
  * @category schema
  */
-export declare const ShardingErrorEntityTypeNotRegisteredSchema: Schema.Schema<Schema.From<typeof ShardingErrorEntityTypeNotRegisteredSchema_>, ShardingErrorEntityTypeNotRegistered>;
+export declare const ShardingErrorEntityTypeNotRegisteredSchema: Schema.Schema<Schema.Schema.From<typeof ShardingErrorEntityTypeNotRegisteredSchema_>, ShardingErrorEntityTypeNotRegistered>;
 export {};
 //# sourceMappingURL=ShardingErrorEntityTypeNotRegistered.d.ts.map

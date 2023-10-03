@@ -1,7 +1,10 @@
-import * as Layer from "effect/Layer";
+/**
+ * @since 1.0.0
+ */
 import * as Http from "@effect/platform-node/HttpServer";
 import * as ManagerConfig from "@effect/sharding/ManagerConfig";
 import * as ShardManager from "@effect/sharding/ShardManager";
+import * as Layer from "effect/Layer";
 /**
  * @since 1.0.0
  * @category layers

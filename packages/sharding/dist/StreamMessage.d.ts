@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Schema from "@effect/schema/Schema";
 import type * as ReplyId from "@effect/sharding/ReplyId";
 import * as StreamReplier from "@effect/sharding/StreamReplier";
@@ -28,5 +31,5 @@ export declare function isStreamMessage<A>(value: unknown): value is StreamMessa
  * @since 1.0.0
  * @category schema
  */
-export declare function schema<RI, RA>(success: Schema.Schema<RI, RA>): <I, A extends object>(item: Schema.Schema<I, A>) => readonly [Schema.Schema<I, Schema.Spread<A & StreamMessage<RA>>>, (arg: A) => (replyId: ReplyId.ReplyId) => Schema.Spread<A & StreamMessage<RA>>];
+export declare function schema<RI, RA>(success: Schema.Schema<RI, RA>): <I, A extends object>(item: Schema.Schema<I, A>) => readonly [Schema.Schema<I, A & StreamMessage<RA>>, (arg: A) => (replyId: ReplyId.ReplyId) => A & StreamMessage<RA>];
 //# sourceMappingURL=StreamMessage.d.ts.map

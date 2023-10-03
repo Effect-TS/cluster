@@ -1,15 +1,15 @@
 /**
  * @since 1.0.0
  */
-import { pipe } from "effect/Function"
-import * as HashMap from "effect/HashMap"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
 import * as Http from "@effect/platform/HttpClient"
 import * as ShardManagerProtocolHttp from "@effect/sharding-node/ShardManagerProtocolHttp"
 import * as Pod from "@effect/sharding/Pod"
 import * as ShardingConfig from "@effect/sharding/ShardingConfig"
 import * as ShardManagerClient from "@effect/sharding/ShardManagerClient"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
+import * as HashMap from "effect/HashMap"
+import * as Layer from "effect/Layer"
 
 /**
  * @since 1.0.0

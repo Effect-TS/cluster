@@ -1,14 +1,14 @@
 /**
  * @since 1.0.0
  */
-import * as Duration from "effect/Duration"
-import * as Either from "effect/Either"
-import { pipe } from "effect/Function"
-import * as Effect from "effect/Effect"
 import type * as Message from "@effect/sharding/Message"
 import type * as ReplyId from "@effect/sharding/ReplyId"
 import * as ShardingError from "@effect/sharding/ShardingError"
 import type * as StreamMessage from "@effect/sharding/StreamMessage"
+import * as Duration from "effect/Duration"
+import * as Effect from "effect/Effect"
+import * as Either from "effect/Either"
+import { pipe } from "effect/Function"
 import * as Stream from "effect/Stream"
 
 /**

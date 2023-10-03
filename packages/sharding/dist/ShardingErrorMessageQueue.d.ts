@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data";
 import * as Schema from "@effect/schema/Schema";
+import * as Data from "effect/Data";
 /**
  * @since 1.0.0
  * @category symbols
@@ -19,7 +19,7 @@ declare const ShardingErrorMessageQueueSchema_: Schema.Schema<{
  * @since 1.0.0
  * @category models
  */
-export interface ShardingErrorMessageQueue extends Schema.To<typeof ShardingErrorMessageQueueSchema_> {
+export interface ShardingErrorMessageQueue extends Schema.Schema.To<typeof ShardingErrorMessageQueueSchema_> {
 }
 /**
  * @since 1.0.0
@@ -35,6 +35,6 @@ export declare function isShardingErrorMessageQueue(value: unknown): value is Sh
  * @since 1.0.0
  * @category schema
  */
-export declare const ShardingErrorMessageQueueSchema: Schema.Schema<Schema.From<typeof ShardingErrorMessageQueueSchema_>, ShardingErrorMessageQueue>;
+export declare const ShardingErrorMessageQueueSchema: Schema.Schema<Schema.Schema.From<typeof ShardingErrorMessageQueueSchema_>, ShardingErrorMessageQueue>;
 export {};
 //# sourceMappingURL=ShardingErrorMessageQueue.d.ts.map

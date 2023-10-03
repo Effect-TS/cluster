@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "effect/Data"
 import * as Schema from "@effect/schema/Schema"
 import * as PodAddress from "@effect/sharding/PodAddress"
+import * as Data from "effect/Data"
 
 /**
  * @since 1.0.0
@@ -20,7 +20,7 @@ const ShardingErrorPodUnavailableSchema_ = Schema.data(Schema.struct({
  * @since 1.0.0
  * @category models
  */
-export interface ShardingErrorPodUnavailable extends Schema.To<typeof ShardingErrorPodUnavailableSchema_> {}
+export interface ShardingErrorPodUnavailable extends Schema.Schema.To<typeof ShardingErrorPodUnavailableSchema_> {}
 
 /**
  * @since 1.0.0
@@ -43,6 +43,6 @@ export function isShardingErrorPodUnavailable(value: any): value is ShardingErro
  * @category schema
  */
 export const ShardingErrorPodUnavailableSchema: Schema.Schema<
-  Schema.From<typeof ShardingErrorPodUnavailableSchema_>,
+  Schema.Schema.From<typeof ShardingErrorPodUnavailableSchema_>,
   ShardingErrorPodUnavailable
 > = ShardingErrorPodUnavailableSchema_
