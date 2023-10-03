@@ -108,6 +108,18 @@ function make(
     )
   }
 
+  function decodeReply<Req, Res>(
+    request: Req,
+    body: ByteArray.ByteArray
+  ) {
+    if (!Message.isMessage(request) && !StreamMessage.isStreamMessage(request)) {
+      return Effect.die(NotAMessageWithReplierDefect(request))
+    }
+    return pipe(
+      serialization.decode(body, request.replier.schema as Schema.Schema<unknown, Res>)
+    )
+  }
+
   function getShardId(recipientType: RecipientType.RecipientType<any>, entityId: string): ShardId.ShardId {
     return RecipientType.getShardId(entityId, config.numberOfShards)
   }
@@ -328,16 +340,7 @@ function make(
     ShardingError.ShardingError,
     Option.Option<ByteArray.ByteArray>
   > {
-    return Effect.gen(function*(_) {
-      const [request, entityManager] = yield* _(decodeRequest(msg))
-      const replyChannel = yield* _(ReplyChannel.single<any>())
-      yield* _(entityManager.send(msg.entityId, request, msg.replyId, replyChannel))
-      const maybeReply = yield* _(replyChannel.output)
-      if (Option.isSome(maybeReply)) {
-        return Option.some(yield* _(encodeReply<any>(request, maybeReply.value)))
-      }
-      return Option.none()
-    })
+    return pipe(sendToLocalEntityStreamingReply(msg), Stream.runHead)
   }
 
   function sendToLocalEntityStreamingReply(
@@ -473,46 +476,13 @@ function make(
 
           const binaryMessage = BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
 
-          if (ReplyChannel.isReplyChannelFromDeferred(replyChannel)) {
-            return pipe(
-              pods.sendMessage(pod, binaryMessage),
-              Effect.tapError(errorHandling),
-              Effect.flatMap(
-                Option.match(
-                  {
-                    onNone: () => replyChannel.end,
-                    onSome: (bytes) => {
-                      if (Message.isMessage(msg)) {
-                        return pipe(
-                          serialization.decode(bytes, msg.replier.schema),
-                          Effect.flatMap(replyChannel.replySingle)
-                        )
-                      }
-                      console.log("defect 1", msg)
-                      return Effect.die(NotAMessageWithReplierDefect(msg))
-                    }
-                  }
-                )
-              )
-            )
-          }
-
-          if (ReplyChannel.isReplyChannelFromQueue(replyChannel)) {
-            return pipe(
-              replyChannel.replyStream(pipe(
-                pods.sendMessageStreaming(pod, binaryMessage),
-                Stream.tapError(errorHandling),
-                Stream.mapEffect((bytes) => {
-                  if (StreamMessage.isStreamMessage(msg)) {
-                    return serialization.decode(bytes, msg.replier.schema)
-                  }
-                  return Effect.die(NotAMessageWithReplierDefect(msg))
-                })
-              ))
-            )
-          }
-
-          return Effect.dieMessage("got unknown replyChannel type")
+          return pipe(
+            replyChannel.replyStream(pipe(
+              pods.sendMessageStreaming(pod, binaryMessage),
+              Stream.tapError(errorHandling),
+              Stream.mapEffect((bytes) => decodeReply<Msg, Res>(msg, bytes))
+            ))
+          )
         })
       )
     }
@@ -571,11 +541,11 @@ function make(
       msg: Msg,
       replyId: Option.Option<ReplyId.ReplyId>
     ): Effect.Effect<never, ShardingError.ShardingError, Option.Option<Res>> {
-      return Effect.gen(function*(_) {
-        const replyChannel = yield* _(ReplyChannel.single<Res>())
-        yield* _(sendMessageGeneric(entityId, msg, replyId, replyChannel))
-        return yield* _(replyChannel.output)
-      })
+      return pipe(
+        sendMessageStreaming<Res>(entityId, msg, replyId),
+        Effect.map(Stream.runHead),
+        Effect.flatten
+      )
     }
 
     function sendMessageStreaming<Res>(
@@ -667,7 +637,7 @@ function make(
           Effect.forEach(pods, (pod) => {
             const trySend: Effect.Effect<never, ShardingError.ShardingError, Option.Option<Res>> = Effect.gen(
               function*(_) {
-                const replyChannel = yield* _(ReplyChannel.single<Res>())
+                const replyChannel = yield* _(ReplyChannel.stream<Res>())
                 yield* _(pipe(
                   sendToPod<Msg, Res>(
                     topicType.name,
@@ -690,7 +660,7 @@ function make(
                   }),
                   Effect.onError(replyChannel.fail)
                 ))
-                return yield* _(replyChannel.output)
+                return yield* _(Stream.runHead(replyChannel.output))
               }
             )
 
