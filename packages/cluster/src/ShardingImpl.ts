@@ -333,16 +333,6 @@ function make(
     Effect.asUnit
   )
 
-  function sendToLocalEntitySingleReply(
-    msg: BinaryMessage.BinaryMessage
-  ): Effect.Effect<
-    never,
-    ShardingError.ShardingError,
-    Option.Option<ByteArray.ByteArray>
-  > {
-    return pipe(sendToLocalEntityStreamingReply(msg), Stream.runHead)
-  }
-
   function sendToLocalEntityStreamingReply(
     msg: BinaryMessage.BinaryMessage
   ): Stream.Stream<
@@ -779,7 +769,6 @@ function make(
     getShardingRegistrationEvents,
     getPods,
     refreshAssignments,
-    sendToLocalEntitySingleReply,
     sendToLocalEntityStreamingReply
   }
 

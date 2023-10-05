@@ -82,13 +82,6 @@ export interface Sharding {
     ShardingError.ShardingError,
     ByteArray.ByteArray
   >
-  readonly sendToLocalEntitySingleReply: (
-    msg: BinaryMessage.BinaryMessage
-  ) => Effect.Effect<
-    never,
-    ShardingError.ShardingError,
-    Option.Option<ByteArray.ByteArray>
-  >
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
 }
 

@@ -80,27 +80,6 @@ export const httpPods = Layer.effect(
       )
     }
 
-    function sendMessage(podAddress: PodAddress.PodAddress, binaryMessage: BinaryMessage.BinaryMessage) {
-      return Effect.gen(function*(_) {
-        const request = yield* _(
-          Http.request.post(
-            "/send-message"
-          ),
-          Http.request.prependUrl(asHttpUrl(podAddress)),
-          Http.request.schemaBody(ShardingProtocolHttp.Send_)({
-            message: binaryMessage
-          })
-        )
-
-        const response = yield* _(
-          client(request),
-          Effect.flatMap(Http.response.schemaBodyJson(ShardingProtocolHttp.SendResult_))
-        )
-
-        return response
-      }).pipe(Effect.orDie, Effect.flatten)
-    }
-
     function sendMessageStreaming(podAddress: PodAddress.PodAddress, binaryMessage: BinaryMessage.BinaryMessage) {
       return Effect.gen(function*(_) {
         const request = yield* _(
@@ -132,7 +111,6 @@ export const httpPods = Layer.effect(
       assignShards,
       unassignShards,
       ping,
-      sendMessage,
       sendMessageStreaming
     }
 

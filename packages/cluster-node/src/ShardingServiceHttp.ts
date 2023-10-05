@@ -52,20 +52,6 @@ export const shardingServiceHttp = Layer.scopedDiscard(
         })
       ),
       Http.router.post(
-        "/send-message",
-        Effect.gen(function*(_) {
-          const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.Send_))
-          const result = yield* _(
-            sharding.sendToLocalEntitySingleReply(body.message),
-            Effect.match({
-              onFailure: Either.left,
-              onSuccess: Either.right
-            })
-          )
-          return yield* _(Http.response.schemaJson(ShardingProtocolHttp.SendResult_)(result))
-        })
-      ),
-      Http.router.post(
         "/send-message-streaming",
         Effect.gen(function*(_) {
           const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.SendStream_))

@@ -27,23 +27,6 @@ export const UnassignShards_ = Schema.struct({
  * @since 1.0.0
  * @category schema
  */
-export const Send_ = Schema.struct({
-  message: BinaryMessage.schema
-})
-
-/**
- * @since 1.0.0
- * @category schema
- */
-export const SendResult_ = Schema.either(
-  ShardingError.schema,
-  Schema.option(ByteArray.schema)
-)
-
-/**
- * @since 1.0.0
- * @category schema
- */
 export const SendStream_ = Schema.struct({
   message: BinaryMessage.schema
 })
@@ -69,4 +52,4 @@ export const PingShards_ = Schema.struct({})
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.union(AssignShard_, UnassignShards_, Send_, SendStream_, PingShards_)
+export const schema = Schema.union(AssignShard_, UnassignShards_, SendStream_, PingShards_)

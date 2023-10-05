@@ -10,7 +10,6 @@ import { Tag } from "effect/Context"
 import * as Effect from "effect/Effect"
 import type * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
-import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 
 /**
@@ -64,15 +63,6 @@ export interface Pods {
   readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, ShardingError.ShardingErrorPodUnavailable, void>
 
   /**
-   * Send a message to a pod
-   * @since 1.0.0
-   */
-  readonly sendMessage: (
-    pod: PodAddress.PodAddress,
-    message: BinaryMessage.BinaryMessage
-  ) => Effect.Effect<never, ShardingError.ShardingError, Option.Option<ByteArray.ByteArray>>
-
-  /**
    * Send a message to a pod and receive a stream of replies
    * @since 1.0.0
    */
@@ -100,6 +90,5 @@ export const noop = Layer.succeed(Pods, {
   assignShards: () => Effect.unit,
   unassignShards: () => Effect.unit,
   ping: () => Effect.unit,
-  sendMessage: () => Effect.succeed(Option.none()),
   sendMessageStreaming: () => Stream.empty
 })
