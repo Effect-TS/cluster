@@ -1,7 +1,7 @@
 ---
 title: ShardManagerClient.ts
 nav_order: 37
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ShardManagerClient overview

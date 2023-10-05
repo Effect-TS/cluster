@@ -1,7 +1,7 @@
 ---
 title: EntityManager.ts
 nav_order: 4
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## EntityManager overview

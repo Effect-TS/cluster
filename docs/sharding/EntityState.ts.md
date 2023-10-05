@@ -1,7 +1,7 @@
 ---
 title: EntityState.ts
 nav_order: 5
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## EntityState overview

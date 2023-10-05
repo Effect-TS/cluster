@@ -1,7 +1,7 @@
 ---
 title: ShardingErrorEntityNotManagedByThisPod.ts
 nav_order: 26
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ShardingErrorEntityNotManagedByThisPod overview
@@ -58,7 +58,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorEntityNotManagedByThisPodSchema: Schema.Schema<
-  { readonly _tag: '@effect/sharding/ShardingErrorEntityNotManagedByThisPod'; readonly entityId: string },
+  { readonly _tag: '@effect/cluster/ShardingErrorEntityNotManagedByThisPod'; readonly entityId: string },
   ShardingErrorEntityNotManagedByThisPod
 >
 ```
@@ -72,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorEntityNotManagedByThisPodTag: '@effect/sharding/ShardingErrorEntityNotManagedByThisPod'
+export declare const ShardingErrorEntityNotManagedByThisPodTag: '@effect/cluster/ShardingErrorEntityNotManagedByThisPod'
 ```
 
 Added in v1.0.0

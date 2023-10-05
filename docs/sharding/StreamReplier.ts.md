@@ -1,7 +1,7 @@
 ---
 title: StreamReplier.ts
 nav_order: 41
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## StreamReplier overview
@@ -71,7 +71,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/sharding/StreamReplier'
+export declare const TypeId: '@effect/cluster/StreamReplier'
 ```
 
 Added in v1.0.0

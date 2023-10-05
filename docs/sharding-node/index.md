@@ -1,6 +1,6 @@
 ---
-title: "@effect/sharding-node"
+title: "@effect/cluster-node"
 has_children: true
-permalink: /docs/sharding-node
+permalink: /docs/cluster-node
 nav_order: 3
 ---

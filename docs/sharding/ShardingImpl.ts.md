@@ -1,7 +1,7 @@
 ---
 title: ShardingImpl.ts
 nav_order: 34
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ShardingImpl overview

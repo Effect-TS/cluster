@@ -1,7 +1,7 @@
 ---
 title: Storage.ts
 nav_order: 39
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## Storage overview

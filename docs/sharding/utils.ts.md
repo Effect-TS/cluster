@@ -1,7 +1,7 @@
 ---
 title: utils.ts
 nav_order: 42
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## utils overview

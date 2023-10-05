@@ -1,7 +1,7 @@
 ---
 title: PodsHealth.ts
 nav_order: 13
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## PodsHealth overview

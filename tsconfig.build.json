@@ -1,7 +1,11 @@
 {
   "extends": "./tsconfig.base.json",
   "references": [
-    { "path": "packages/sharding/tsconfig.build.json" },
-    { "path": "packages/sharding-node/tsconfig.build.json" },
+    {
+      "path": "packages/cluster/tsconfig.build.json"
+    },
+    {
+      "path": "packages/cluster-node/tsconfig.build.json"
+    },
   ]
 }

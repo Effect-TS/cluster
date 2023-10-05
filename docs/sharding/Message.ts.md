@@ -1,7 +1,7 @@
 ---
 title: Message.ts
 nav_order: 7
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## Message overview

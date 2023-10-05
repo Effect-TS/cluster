@@ -1,7 +1,7 @@
 ---
 title: StreamMessage.ts
 nav_order: 40
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## StreamMessage overview

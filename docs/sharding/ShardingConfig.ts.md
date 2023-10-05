@@ -1,7 +1,7 @@
 ---
 title: ShardingConfig.ts
 nav_order: 24
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ShardingConfig overview

@@ -12,7 +12,11 @@
     "preserveSymlinks": true,
     "moduleResolution": "node",
     "noEmit": false,
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2021",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "sourceMap": true,
     "declarationMap": true,
     "strict": true,
@@ -36,18 +40,35 @@
     "incremental": true,
     "removeComments": false,
     "paths": {
-      "@effect/sharding/test/*": ["./packages/sharding/test/*"],
-      "@effect/sharding/examples/*": ["./packages/sharding/examples/*"],
-      "@effect/sharding/*": ["./packages/sharding/src/*"],
-
-      "@effect/sharding-node/test/*": ["./packages/sharding-node/test/*"],
-      "@effect/sharding-node/examples/*": [
-        "./packages/sharding-node/examples/*"
+      "@effect/cluster/test/*": [
+        "./packages/cluster/test/*"
       ],
-      "@effect/sharding-node/*": ["./packages/sharding-node/src/*"]
+      "@effect/cluster/examples/*": [
+        "./packages/cluster/examples/*"
+      ],
+      "@effect/cluster/*": [
+        "./packages/cluster/src/*"
+      ],
+      "@effect/cluster-node/test/*": [
+        "./packages/cluster-node/test/*"
+      ],
+      "@effect/cluster-node/examples/*": [
+        "./packages/cluster-node/examples/*"
+      ],
+      "@effect/cluster-node/*": [
+        "./packages/cluster-node/src/*"
+      ]
     },
-    "plugins": [{ "name": "@effect/language-service" }]
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ]
   },
   "include": [],
-  "exclude": ["node_modules", "build", "lib"]
+  "exclude": [
+    "node_modules",
+    "build",
+    "lib"
+  ]
 }

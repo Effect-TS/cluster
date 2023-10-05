@@ -108,7 +108,7 @@ importers:
         specifier: 0.34.2
         version: 0.34.2
 
-  packages/sharding:
+  packages/cluster:
     dependencies:
       find-my-way:
         specifier: ^7.6.2
@@ -134,12 +134,15 @@ importers:
         version: 2.0.0-next.41
     publishDirectory: dist
 
-  packages/sharding-node:
+  packages/cluster-node:
     dependencies:
       node-fetch:
         specifier: '2'
         version: 2.7.0
     devDependencies:
+      '@effect/cluster':
+        specifier: workspace:^
+        version: link:../cluster/dist
       '@effect/platform':
         specifier: 0.18.5
         version: 0.18.5(@effect/schema@0.39.2)(effect@2.0.0-next.41)
@@ -149,9 +152,6 @@ importers:
       '@effect/schema':
         specifier: ^0.39.2
         version: 0.39.2(effect@2.0.0-next.41)
-      '@effect/sharding':
-        specifier: workspace:^
-        version: link:../sharding/dist
       '@types/node-fetch':
         specifier: ^2.6.4
         version: 2.6.4

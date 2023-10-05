@@ -1,7 +1,7 @@
 ---
 title: Messenger.ts
 nav_order: 9
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## Messenger overview

@@ -1,7 +1,7 @@
 ---
 title: StorageFile.ts
 nav_order: 8
-parent: "@effect/sharding-node"
+parent: "@effect/cluster-node"
 ---
 
 ## StorageFile overview

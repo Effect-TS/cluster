@@ -1,7 +1,7 @@
 ---
 title: MessageQueue.ts
 nav_order: 8
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## MessageQueue overview
@@ -72,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/sharding/MessageQueueInstance'
+export declare const TypeId: '@effect/cluster/MessageQueueInstance'
 ```
 
 Added in v1.0.0

@@ -1,7 +1,7 @@
 ---
 title: RecipientBehaviour.ts
 nav_order: 16
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## RecipientBehaviour overview

@@ -1,7 +1,7 @@
 ---
 title: ReplyChannel.ts
 nav_order: 19
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ReplyChannel overview
@@ -68,7 +68,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/sharding/ReplyChannel'
+export declare const TypeId: '@effect/cluster/ReplyChannel'
 ```
 
 Added in v1.0.0

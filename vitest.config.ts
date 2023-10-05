@@ -15,11 +15,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@effect/sharding/test": path.join(__dirname, "packages/sharding/test"),
-      "@effect/sharding": path.join(__dirname, "packages/sharding/src"),
+      "@effect/cluster/test": path.join(__dirname, "packages/cluster/test"),
+      "@effect/cluster": path.join(__dirname, "packages/cluster/src"),
 
-      "@effect/sharding-node/test": path.join(__dirname, "packages/sharding-node/test"),
-      "@effect/sharding-node": path.join(__dirname, "packages/sharding-node/src")
+      "@effect/cluster-node/test": path.join(__dirname, "packages/cluster-node/test"),
+      "@effect/cluster-node": path.join(__dirname, "packages/cluster-node/src")
     }
   }
 })

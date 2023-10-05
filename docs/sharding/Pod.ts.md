@@ -1,7 +1,7 @@
 ---
 title: Pod.ts
 nav_order: 10
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## Pod overview
@@ -59,14 +59,14 @@ Added in v1.0.0
 ```ts
 export declare const schema: Schema.Schema<
   {
-    readonly _id: '@effect/sharding/Pod'
-    readonly address: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
+    readonly _id: '@effect/cluster/Pod'
+    readonly address: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
     readonly version: string
   },
   Data.Data<{
-    readonly _id: '@effect/sharding/Pod'
+    readonly _id: '@effect/cluster/Pod'
     readonly address: Data.Data<{
-      readonly _id: '@effect/sharding/PodAddress'
+      readonly _id: '@effect/cluster/PodAddress'
       readonly host: string
       readonly port: number
     }>
@@ -84,7 +84,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/sharding/Pod'
+export declare const TypeId: '@effect/cluster/Pod'
 ```
 
 Added in v1.0.0

@@ -1,7 +1,7 @@
 ---
 title: ShardingErrorMessageQueue.ts
 nav_order: 28
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ShardingErrorMessageQueue overview
@@ -57,7 +57,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorMessageQueueSchema: Schema.Schema<
-  { readonly error: string; readonly _tag: '@effect/sharding/ShardingErrorMessageQueue' },
+  { readonly error: string; readonly _tag: '@effect/cluster/ShardingErrorMessageQueue' },
   ShardingErrorMessageQueue
 >
 ```
@@ -71,7 +71,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorMessageQueueTag: '@effect/sharding/ShardingErrorMessageQueue'
+export declare const ShardingErrorMessageQueueTag: '@effect/cluster/ShardingErrorMessageQueue'
 ```
 
 Added in v1.0.0

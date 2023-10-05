@@ -1,7 +1,7 @@
 ---
 title: Pods.ts
 nav_order: 12
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## Pods overview

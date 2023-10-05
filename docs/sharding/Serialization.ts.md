@@ -1,7 +1,7 @@
 ---
 title: Serialization.ts
 nav_order: 21
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## Serialization overview

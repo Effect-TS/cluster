@@ -1,7 +1,7 @@
 ---
 title: PoisonPill.ts
 nav_order: 15
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## PoisonPill overview
@@ -62,8 +62,8 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: '@effect/sharding/PoisonPill' },
-  Data.Data<{ readonly _id: '@effect/sharding/PoisonPill' }>
+  { readonly _id: '@effect/cluster/PoisonPill' },
+  Data.Data<{ readonly _id: '@effect/cluster/PoisonPill' }>
 >
 ```
 
@@ -89,7 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/sharding/PoisonPill'
+export declare const TypeId: '@effect/cluster/PoisonPill'
 ```
 
 Added in v1.0.0

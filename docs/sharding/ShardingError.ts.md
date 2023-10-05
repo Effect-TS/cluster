@@ -1,7 +1,7 @@
 ---
 title: ShardingError.ts
 nav_order: 25
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ShardingError overview
@@ -39,23 +39,23 @@ Added in v1.0.0
 
 ```ts
 export declare const schema: Schema.Schema<
-  | { readonly error: string; readonly _tag: '@effect/sharding/ShardingErrorSerialization' }
-  | { readonly _tag: '@effect/sharding/ShardingErrorSendTimeout' }
+  | { readonly error: string; readonly _tag: '@effect/cluster/ShardingErrorSerialization' }
+  | { readonly _tag: '@effect/cluster/ShardingErrorSendTimeout' }
   | {
-      readonly _tag: '@effect/sharding/ShardingErrorPodUnavailable'
-      readonly pod: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
+      readonly _tag: '@effect/cluster/ShardingErrorPodUnavailable'
+      readonly pod: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
     }
   | {
-      readonly _tag: '@effect/sharding/ShardingErrorPodNoLongerRegistered'
-      readonly podAddress: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
+      readonly _tag: '@effect/cluster/ShardingErrorPodNoLongerRegistered'
+      readonly podAddress: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
     }
-  | { readonly error: string; readonly _tag: '@effect/sharding/ShardingErrorMessageQueue' }
+  | { readonly error: string; readonly _tag: '@effect/cluster/ShardingErrorMessageQueue' }
   | {
-      readonly _tag: '@effect/sharding/ShardingErrorEntityTypeNotRegistered'
-      readonly podAddress: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
+      readonly _tag: '@effect/cluster/ShardingErrorEntityTypeNotRegistered'
+      readonly podAddress: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
       readonly entityType: string
     }
-  | { readonly _tag: '@effect/sharding/ShardingErrorEntityNotManagedByThisPod'; readonly entityId: string },
+  | { readonly _tag: '@effect/cluster/ShardingErrorEntityNotManagedByThisPod'; readonly entityId: string },
   | ShardingErrorSerialization
   | ShardingErrorSendTimeout
   | ShardingErrorPodUnavailable

@@ -1,7 +1,7 @@
 ---
 title: Broadcaster.ts
 nav_order: 2
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## Broadcaster overview

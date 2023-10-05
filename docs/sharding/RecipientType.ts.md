@@ -1,7 +1,7 @@
 ---
 title: RecipientType.ts
 nav_order: 17
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## RecipientType overview

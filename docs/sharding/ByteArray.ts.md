@@ -1,7 +1,7 @@
 ---
 title: ByteArray.ts
 nav_order: 3
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ByteArray overview
@@ -63,8 +63,8 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: '@effect/sharding/ByteArray'; readonly value: string },
-  Data.Data<{ readonly _id: '@effect/sharding/ByteArray'; readonly value: string }>
+  { readonly _id: '@effect/cluster/ByteArray'; readonly value: string },
+  Data.Data<{ readonly _id: '@effect/cluster/ByteArray'; readonly value: string }>
 >
 ```
 
@@ -89,7 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/sharding/ByteArray'
+export declare const TypeId: '@effect/cluster/ByteArray'
 ```
 
 Added in v1.0.0

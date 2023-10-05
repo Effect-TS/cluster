@@ -5,7 +5,7 @@
   "author": "The Effect contributors",
   "repository": {
     "type": "git",
-    "url": "https://github.com/effect-ts/sharding.git"
+    "url": "https://github.com/effect-ts/cluster.git"
   },
   "workspaces": [
     "packages/*"

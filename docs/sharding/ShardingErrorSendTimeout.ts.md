@@ -1,7 +1,7 @@
 ---
 title: ShardingErrorSendTimeout.ts
 nav_order: 31
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ShardingErrorSendTimeout overview
@@ -56,7 +56,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorSendTimeoutSchema: Schema.Schema<
-  { readonly _tag: '@effect/sharding/ShardingErrorSendTimeout' },
+  { readonly _tag: '@effect/cluster/ShardingErrorSendTimeout' },
   ShardingErrorSendTimeout
 >
 ```
@@ -68,7 +68,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorSendTimeoutTag: '@effect/sharding/ShardingErrorSendTimeout'
+export declare const ShardingErrorSendTimeoutTag: '@effect/cluster/ShardingErrorSendTimeout'
 ```
 
 Added in v1.0.0

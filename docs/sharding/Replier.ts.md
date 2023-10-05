@@ -1,7 +1,7 @@
 ---
 title: Replier.ts
 nav_order: 18
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## Replier overview
@@ -73,7 +73,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/sharding/Replier'
+export declare const TypeId: '@effect/cluster/Replier'
 ```
 
 Added in v1.0.0

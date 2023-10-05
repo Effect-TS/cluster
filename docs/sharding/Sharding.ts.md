@@ -1,7 +1,7 @@
 ---
 title: Sharding.ts
 nav_order: 23
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## Sharding overview

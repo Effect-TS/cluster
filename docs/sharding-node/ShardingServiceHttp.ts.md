@@ -1,7 +1,7 @@
 ---
 title: ShardingServiceHttp.ts
 nav_order: 4
-parent: "@effect/sharding-node"
+parent: "@effect/cluster-node"
 ---
 
 ## ShardingServiceHttp overview

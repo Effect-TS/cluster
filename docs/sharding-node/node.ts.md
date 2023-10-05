@@ -1,7 +1,7 @@
 ---
 title: node.ts
 nav_order: 1
-parent: "@effect/sharding-node"
+parent: "@effect/cluster-node"
 ---
 
 ## node overview

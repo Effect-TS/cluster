@@ -1,0 +1,28 @@
+{
+  "exclude": ["src/internal/**/*.ts"],
+  "theme": "mikearnaldi/just-the-docs",
+  "parseCompilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "target": "es2015",
+    "lib": ["es2015"],
+    "paths": {
+      "@effect/cluster": ["../cluster/src/index.ts"],
+      "@effect/cluster/*": ["../cluster/src/*"],
+      "@effect/cluster-node": ["./src/index.ts"],
+      "@effect/cluster-node/*": ["./src/*"]
+    }
+  },
+  "examplesCompilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "target": "es2015",
+    "lib": ["es2015"],
+    "paths": {
+      "@effect/cluster": ["../cluster/src/index.ts"],
+      "@effect/cluster/*": ["../cluster/src/*"],
+      "@effect/cluster-node": ["./src/index.ts"],
+      "@effect/cluster-node/*": ["./src/*"]
+    }
+  }
+}

@@ -1,7 +1,7 @@
 ---
 title: ManagerConfig.ts
 nav_order: 6
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ManagerConfig overview

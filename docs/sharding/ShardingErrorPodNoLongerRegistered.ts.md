@@ -1,7 +1,7 @@
 ---
 title: ShardingErrorPodNoLongerRegistered.ts
 nav_order: 29
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ShardingErrorPodNoLongerRegistered overview
@@ -72,8 +72,8 @@ Added in v1.0.0
 ```ts
 export declare const ShardingErrorPodNoLongerRegisteredSchema: Schema.Schema<
   {
-    readonly _tag: '@effect/sharding/ShardingErrorPodNoLongerRegistered'
-    readonly podAddress: { readonly _id: '@effect/sharding/PodAddress'; readonly host: string; readonly port: number }
+    readonly _tag: '@effect/cluster/ShardingErrorPodNoLongerRegistered'
+    readonly podAddress: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
   },
   ShardingErrorPodNoLongerRegistered
 >
@@ -88,7 +88,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorPodNoLongerRegisteredTag: '@effect/sharding/ShardingErrorPodNoLongerRegistered'
+export declare const ShardingErrorPodNoLongerRegisteredTag: '@effect/cluster/ShardingErrorPodNoLongerRegistered'
 ```
 
 Added in v1.0.0

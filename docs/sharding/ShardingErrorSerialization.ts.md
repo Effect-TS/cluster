@@ -1,7 +1,7 @@
 ---
 title: ShardingErrorSerialization.ts
 nav_order: 32
-parent: "@effect/sharding"
+parent: "@effect/cluster"
 ---
 
 ## ShardingErrorSerialization overview
@@ -57,7 +57,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorSerializationSchema: Schema.Schema<
-  { readonly error: string; readonly _tag: '@effect/sharding/ShardingErrorSerialization' },
+  { readonly error: string; readonly _tag: '@effect/cluster/ShardingErrorSerialization' },
   ShardingErrorSerialization
 >
 ```
@@ -71,7 +71,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorSerializationTag: '@effect/sharding/ShardingErrorSerialization'
+export declare const ShardingErrorSerializationTag: '@effect/cluster/ShardingErrorSerialization'
 ```
 
 Added in v1.0.0

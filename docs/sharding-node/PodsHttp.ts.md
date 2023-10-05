@@ -1,7 +1,7 @@
 ---
 title: PodsHttp.ts
 nav_order: 2
-parent: "@effect/sharding-node"
+parent: "@effect/cluster-node"
 ---
 
 ## PodsHttp overview
