@@ -105,8 +105,7 @@ export function sendStream<I, A, I2, E, R>(
           Stream.mapEffect((_) => _)
         )
       ),
-      Stream.fromEffect,
-      Stream.flatten()
+      Stream.unwrap
     )
 }
 

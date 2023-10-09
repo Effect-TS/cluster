@@ -4,7 +4,6 @@
 import type * as Message from "@effect/cluster/Message"
 import type * as ReplyId from "@effect/cluster/ReplyId"
 import * as ShardingError from "@effect/cluster/ShardingError"
-import type * as StreamMessage from "@effect/cluster/StreamMessage"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
@@ -44,12 +43,12 @@ export interface Messenger<Msg> {
    */
   sendStream(
     entityId: string
-  ): <A extends Msg & StreamMessage.StreamMessage<any>>(
+  ): <A extends Msg & Message.Message<any>>(
     fn: (replyId: ReplyId.ReplyId) => A
-  ) => Effect.Effect<
+  ) => Stream.Stream<
     never,
     ShardingError.ShardingError,
-    Stream.Stream<never, ShardingError.ShardingError, StreamMessage.Success<A>>
+    Message.Success<A>
   >
 }
 
@@ -68,14 +67,12 @@ export function sendStreamAutoRestart<Msg, Cursor>(
   entityId: string,
   cursor: Cursor
 ) {
-  return <A extends Msg & StreamMessage.StreamMessage<any>>(fn: (cursor: Cursor) => (replyId: ReplyId.ReplyId) => A) =>
+  return <A extends Msg & Message.Message<any>>(fn: (cursor: Cursor) => (replyId: ReplyId.ReplyId) => A) =>
   (
-    updateCursor: (cursor: Cursor, res: StreamMessage.Success<A>) => Cursor
-  ): Stream.Stream<never, ShardingError.ShardingError, StreamMessage.Success<A>> => {
+    updateCursor: (cursor: Cursor, res: Message.Success<A>) => Cursor
+  ): Stream.Stream<never, ShardingError.ShardingError, Message.Success<A>> => {
     return pipe(
-      Stream.unwrap(
-        messenger.sendStream(entityId)(fn(cursor))
-      ),
+      messenger.sendStream(entityId)(fn(cursor)),
       Stream.either,
       Stream.mapAccum(cursor, (c, either) =>
         Either.match(either, {
@@ -83,12 +80,12 @@ export function sendStreamAutoRestart<Msg, Cursor>(
             err
           ) => [
             c,
-            Either.left([c, err]) as Either.Either<[Cursor, ShardingError.ShardingError], StreamMessage.Success<A>>
+            Either.left([c, err]) as Either.Either<[Cursor, ShardingError.ShardingError], Message.Success<A>>
           ],
           onRight: (res) =>
             [
               updateCursor(c, res),
-              Either.right(res) as Either.Either<[Cursor, ShardingError.ShardingError], StreamMessage.Success<A>>
+              Either.right(res) as Either.Either<[Cursor, ShardingError.ShardingError], Message.Success<A>>
             ] as const
         })),
       Stream.flatMap(Either.match({

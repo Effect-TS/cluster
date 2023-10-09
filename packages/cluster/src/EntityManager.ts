@@ -1,11 +1,13 @@
 /**
  * @since 1.0.0
  */
+import type * as Message from "@effect/cluster/Message"
 import * as MessageQueue from "@effect/cluster/MessageQueue"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
 import type * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import type * as RecipientType from "@effect/cluster/RecipientType"
-import type * as ReplyChannel from "@effect/cluster/ReplyChannel"
+import type * as Replier from "@effect/cluster/Replier"
+import * as ReplyChannel from "@effect/cluster/ReplyChannel"
 import type * as ReplyId from "@effect/cluster/ReplyId"
 import type * as ShardId from "@effect/cluster/ShardId"
 import type * as Sharding from "@effect/cluster/Sharding"
@@ -18,6 +20,7 @@ import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
+import * as Stream from "effect/Stream"
 import * as RefSynchronized from "effect/SynchronizedRef"
 
 /**
@@ -26,15 +29,14 @@ import * as RefSynchronized from "effect/SynchronizedRef"
  */
 export interface EntityManager<Req> {
   readonly recipientType: RecipientType.RecipientType<Req>
-  readonly send: (
+  readonly send: <A extends Req>(
     entityId: string,
-    req: Req,
-    replyId: Option.Option<ReplyId.ReplyId>,
-    replyChannel: ReplyChannel.ReplyChannel<any>
-  ) => Effect.Effect<
+    req: A,
+    replyId: Option.Option<ReplyId.ReplyId>
+  ) => Stream.Stream<
     never,
-    ShardingError.ShardingErrorEntityNotManagedByThisPod | ShardingError.ShardingErrorMessageQueue,
-    void
+    ShardingError.ShardingError,
+    Message.Success<A>
   >
   readonly terminateEntitiesOnShards: (
     shards: HashSet.HashSet<ShardId.ShardId>
@@ -71,9 +73,51 @@ export function make<R, Req>(
         >
       >(HashMap.empty())
     )
+    const replyChannels = yield* _(RefSynchronized.make(
+      HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>()
+    ))
     const behaviour: RecipientBehaviour.RecipientBehaviour<never, Req> = (
       recipientContext
     ) => Effect.provide(behaviour_(recipientContext), env)
+
+    function initReply(
+      id: ReplyId.ReplyId,
+      replyChannel: ReplyChannel.ReplyChannel<any>
+    ): Effect.Effect<never, never, void> {
+      return pipe(
+        replyChannels,
+        RefSynchronized.update(HashMap.set(id, replyChannel)),
+        Effect.zipLeft(
+          pipe(
+            replyChannel.await,
+            Effect.ensuring(RefSynchronized.update(replyChannels, HashMap.remove(id))),
+            Effect.fork
+          )
+        )
+      )
+    }
+
+    function reply<Reply>(reply: Reply, replier: Replier.Replier<Reply>): Effect.Effect<never, never, void> {
+      return replyStream(Stream.succeed(reply), replier)
+    }
+
+    function replyStream<Reply>(
+      replies: Stream.Stream<never, never, Reply>,
+      replier: Replier.Replier<Reply>
+    ): Effect.Effect<never, never, void> {
+      return RefSynchronized.updateEffect(replyChannels, (repliers) =>
+        pipe(
+          Effect.suspend(() => {
+            const replyChannel = HashMap.get(repliers, replier.id)
+
+            if (Option.isSome(replyChannel)) {
+              return (replyChannel.value as ReplyChannel.ReplyChannel<Reply>).replyStream(replies)
+            }
+            return Effect.unit
+          }),
+          Effect.as(pipe(repliers, HashMap.remove(replier.id)))
+        ))
+    }
 
     function startExpirationFiber(entityId: string) {
       return pipe(
@@ -129,15 +173,14 @@ export function make<R, Req>(
         ))
     }
 
-    function send(
+    function send<A extends Req>(
       entityId: string,
-      req: Req,
-      replyId: Option.Option<ReplyId.ReplyId>,
-      replyChannel: ReplyChannel.ReplyChannel<any>
-    ): Effect.Effect<
+      req: A,
+      replyId: Option.Option<ReplyId.ReplyId>
+    ): Stream.Stream<
       never,
-      ShardingError.ShardingErrorEntityNotManagedByThisPod | ShardingError.ShardingErrorMessageQueue,
-      void
+      ShardingError.ShardingError,
+      Message.Success<A>
     > {
       function decide(
         map: HashMap.HashMap<
@@ -167,8 +210,8 @@ export function make<R, Req>(
                         behaviour({
                           entityId,
                           dequeue: queue.dequeue,
-                          reply: (message, reply) => sharding.reply(reply, message.replier),
-                          replyStream: (message, replyStream) => sharding.replyStream(replyStream, message.replier)
+                          reply: (message, _) => reply(_, message.replier),
+                          replyStream: (message, _) => replyStream(_, message.replier)
                         }),
                         Effect.ensuring(
                           pipe(
@@ -228,14 +271,14 @@ export function make<R, Req>(
           return Effect.die("Unhandled recipientType")
         }),
         Effect.bind("test", () => RefSynchronized.modifyEffect(entities, (map) => decide(map, entityId))),
-        Effect.tap((_) =>
+        Effect.flatMap((_) =>
           pipe(
             _.test,
             Option.match({
               onNone: () =>
                 pipe(
                   Effect.sleep(Duration.millis(100)),
-                  Effect.zipRight(send(entityId, req, replyId, replyChannel))
+                  Effect.as(send(entityId, req, replyId))
                 ),
               onSome: (messageQueue) => {
                 return pipe(
@@ -244,19 +287,22 @@ export function make<R, Req>(
                     onNone: () =>
                       pipe(
                         messageQueue.offer(req),
-                        Effect.zipLeft(replyChannel.end)
+                        Effect.as(Stream.empty)
                       ),
                     onSome: (replyId_) =>
                       pipe(
-                        sharding.initReply(replyId_, replyChannel),
-                        Effect.zipRight(messageQueue.offer(req))
+                        ReplyChannel.make<Message.Success<A>>(),
+                        Effect.tap((replyChannel) => initReply(replyId_, replyChannel)),
+                        Effect.zipLeft(messageQueue.offer(req)),
+                        Effect.map((_) => _.output)
                       )
                   })
                 )
               }
             })
           )
-        )
+        ),
+        Stream.unwrap
       )
     }
 

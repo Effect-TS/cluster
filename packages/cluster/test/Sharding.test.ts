@@ -11,7 +11,6 @@ import * as ShardingError from "@effect/cluster/ShardingError"
 import * as ShardingImpl from "@effect/cluster/ShardingImpl"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
-import * as StreamMessage from "@effect/cluster/StreamMessage"
 import { assertFalse, assertTrue } from "@effect/cluster/test/util"
 import * as Schema from "@effect/schema/Schema"
 import * as Cause from "effect/Cause"
@@ -188,10 +187,10 @@ describe.concurrent("SampleTests", () => {
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
-  it("Succefully delivers a message with a streaming reply to an entity", () => {
+  it.only("Succefully delivers a message with a streaming reply to an entity", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const [SampleMessage_, SampleMessage] = StreamMessage.schema(Schema.number)(Schema.struct({
+      const [SampleMessage_, SampleMessage] = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
 
@@ -207,10 +206,11 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
+      const stream = messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" }))
       const result = yield* _(Stream.runCollect(stream))
+      console.log(result)
 
-      assertTrue(equals(result, Chunk.fromIterable([1, 2, 3])))
+      assertTrue(equals(result.toJSON(), Chunk.fromIterable([1, 2, 3]).toJSON()))
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
@@ -218,7 +218,7 @@ describe.concurrent("SampleTests", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
       const exit = yield* _(Deferred.make<never, boolean>())
-      const [SampleMessage_, SampleMessage] = StreamMessage.schema(Schema.number)(Schema.struct({
+      const [SampleMessage_, SampleMessage] = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
 
@@ -245,7 +245,7 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
+      const stream = messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" }))
       yield* _(
         Stream.runDrain(stream.pipe(
           Stream.interruptAfter(Duration.millis(500)) // <- interrupts after a while
@@ -261,7 +261,7 @@ describe.concurrent("SampleTests", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
       const exit = yield* _(Deferred.make<never, boolean>())
-      const [SampleMessage_, SampleMessage] = StreamMessage.schema(Schema.number)(Schema.struct({
+      const [SampleMessage_, SampleMessage] = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
 
@@ -286,7 +286,7 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
+      const stream = messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" }))
       const result = yield* _(
         Stream.runCollect(stream)
       )

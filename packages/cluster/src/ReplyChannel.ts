@@ -38,15 +38,7 @@ export interface ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  readonly end: Effect.Effect<never, never, void>
-  /**
-   * @since 1.0.0
-   */
   readonly fail: (cause: Cause.Cause<ShardingError.ShardingError>) => Effect.Effect<never, never, void>
-  /**
-   * @since 1.0.0
-   */
-  readonly replySingle: (a: A) => Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
@@ -78,28 +70,34 @@ export function isReplyChannel(value: unknown): value is ReplyChannel<any> {
  * @internal
  */
 export function fromQueue<A>(queue: Queue.Queue<Take.Take<ShardingError.ShardingError, A>>): ReplyChannel<A> {
-  const end = pipe(Queue.offer(queue, Take.end), Effect.exit, Effect.asUnit)
   const fail = (cause: Cause.Cause<ShardingError.ShardingError>) =>
     pipe(Queue.offer(queue, Take.failCause(cause)), Effect.exit, Effect.asUnit)
   const await_ = Queue.awaitShutdown(queue)
   return ({
     _id: TypeId,
     await: await_,
-    end,
     fail,
-    replySingle: (a) => pipe(Queue.offer(queue, Take.of(a)), Effect.exit, Effect.zipRight(end)),
     replyStream: (stream) =>
       pipe(
-        Stream.runForEach(stream, (a) => Queue.offer(queue, Take.of(a))),
-        Effect.onExit((_) =>
-          Queue.offer(queue, Exit.match(_, { onFailure: (e) => Take.failCause(e), onSuccess: () => Take.end }))
-        ),
+        Stream.runForEach(stream, (a) => {
+          console.log("take", a)
+          return Queue.offer(queue, Take.of(a))
+        }),
+        Effect.onExit((_) => {
+          console.log("exit", _)
+          return Queue.offer(queue, Exit.match(_, { onFailure: (e) => Take.failCause(e), onSuccess: () => Take.end }))
+        }),
         Effect.race(await_),
         Effect.fork,
         Effect.asUnit
       ),
     output: pipe(
       Stream.fromQueue(queue, { shutdown: true }),
+      Stream.tap((a) => {
+        console.log("tap", JSON.stringify(a))
+        return Effect.unit
+      }),
+      // Stream.buffer({ capacity: "unbounded" }),
       Stream.flattenTake,
       Stream.onError(fail)
     )

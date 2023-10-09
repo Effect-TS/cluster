@@ -8,13 +8,9 @@ import type { Messenger } from "@effect/cluster/Messenger"
 import type * as PodAddress from "@effect/cluster/PodAddress"
 import type * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import type * as RecipentType from "@effect/cluster/RecipientType"
-import type { Replier } from "@effect/cluster/Replier"
-import type * as ReplyChannel from "@effect/cluster/ReplyChannel"
-import type * as ReplyId from "@effect/cluster/ReplyId"
 import type * as ShardId from "@effect/cluster/ShardId"
 import type * as ShardingError from "@effect/cluster/ShardingError"
 import type * as ShardingRegistrationEvent from "@effect/cluster/ShardingRegistrationEvent"
-import type * as StreamReplier from "@effect/cluster/StreamReplier"
 import { Tag } from "effect/Context"
 import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
@@ -32,15 +28,6 @@ export interface Sharding {
   readonly getShardId: (recipientType: RecipentType.RecipientType<any>, entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<never, never, void>
   readonly unregister: Effect.Effect<never, never, void>
-  readonly initReply: (
-    id: ReplyId.ReplyId,
-    replyChannel: ReplyChannel.ReplyChannel<any>
-  ) => Effect.Effect<never, never, void>
-  readonly reply: <Reply>(reply: Reply, replier: Replier<Reply>) => Effect.Effect<never, never, void>
-  readonly replyStream: <Reply>(
-    replies: Stream.Stream<never, never, Reply>,
-    replier: StreamReplier.StreamReplier<Reply>
-  ) => Effect.Effect<never, never, void>
   readonly messenger: <Msg>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>

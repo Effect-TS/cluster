@@ -5,7 +5,6 @@
 import type * as Message from "@effect/cluster/Message"
 import type { MessageQueueConstructor } from "@effect/cluster/MessageQueue"
 import type * as PoisonPill from "@effect/cluster/PoisonPill"
-import type * as StreamMessage from "@effect/cluster/StreamMessage"
 import type * as Duration from "effect/Duration"
 import type * as Effect from "effect/Effect"
 import type * as Option from "effect/Option"
@@ -24,9 +23,9 @@ export interface RecipientContext<Req> {
     message: A,
     reply: Message.Success<A>
   ) => Effect.Effect<never, never, void>
-  readonly replyStream: <A extends Req & StreamMessage.StreamMessage<any>>(
+  readonly replyStream: <A extends Req & Message.Message<any>>(
     message: A,
-    reply: Stream.Stream<never, never, StreamMessage.Success<A>>
+    reply: Stream.Stream<never, never, Message.Success<A>>
   ) => Effect.Effect<never, never, void>
 }
 
