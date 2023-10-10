@@ -69,7 +69,11 @@ export interface Pods {
   readonly sendMessageStreaming: (
     pod: PodAddress.PodAddress,
     message: BinaryMessage.BinaryMessage
-  ) => Stream.Stream<never, ShardingError.ShardingError, ByteArray.ByteArray>
+  ) => Effect.Effect<
+    never,
+    ShardingError.ShardingError,
+    Stream.Stream<never, ShardingError.ShardingError, ByteArray.ByteArray>
+  >
 }
 
 /**
@@ -90,5 +94,5 @@ export const noop = Layer.succeed(Pods, {
   assignShards: () => Effect.unit,
   unassignShards: () => Effect.unit,
   ping: () => Effect.unit,
-  sendMessageStreaming: () => Stream.empty
+  sendMessageStreaming: () => Effect.succeed(Stream.empty)
 })

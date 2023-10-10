@@ -79,25 +79,17 @@ export function fromQueue<A>(queue: Queue.Queue<Take.Take<ShardingError.Sharding
     fail,
     replyStream: (stream) =>
       pipe(
-        Stream.runForEach(stream, (a) => {
-          console.log("take", a)
-          return Queue.offer(queue, Take.of(a))
-        }),
-        Effect.onExit((_) => {
-          console.log("exit", _)
-          return Queue.offer(queue, Exit.match(_, { onFailure: (e) => Take.failCause(e), onSuccess: () => Take.end }))
-        }),
+        Stream.runForEach(stream, (a) => Queue.offer(queue, Take.of(a))),
+        Effect.onExit((_) =>
+          Queue.offer(queue, Exit.match(_, { onFailure: (e) => Take.failCause(e), onSuccess: () => Take.end }))
+        ),
         Effect.race(await_),
         Effect.fork,
         Effect.asUnit
       ),
     output: pipe(
       Stream.fromQueue(queue, { shutdown: true }),
-      Stream.tap((a) => {
-        console.log("tap", JSON.stringify(a))
-        return Effect.unit
-      }),
-      // Stream.buffer({ capacity: "unbounded" }),
+      Stream.buffer({ capacity: "unbounded" }),
       Stream.flattenTake,
       Stream.onError(fail)
     )

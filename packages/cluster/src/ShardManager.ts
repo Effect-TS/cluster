@@ -20,10 +20,10 @@ import { equals } from "effect/Equal"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as HashSet from "effect/HashSet"
-import * as Hub from "effect/Hub"
 import * as Layer from "effect/Layer"
 import * as List from "effect/List"
 import * as Option from "effect/Option"
+import * as PubSub from "effect/PubSub"
 import * as Schedule from "effect/Schedule"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
@@ -61,7 +61,7 @@ function make(
   layerScope: Scope.Scope,
   stateRef: RefSynchronized.SynchronizedRef<ShardManagerState.ShardManagerState>,
   rebalanceSemaphore: Effect.Semaphore,
-  eventsHub: Hub.Hub<ShardingEvent.ShardingEvent>,
+  eventsHub: PubSub.PubSub<ShardingEvent.ShardingEvent>,
   healthApi: PodsHealth.PodsHealth,
   podApi: Pods.Pods,
   stateRepository: Storage.Storage,
@@ -76,7 +76,7 @@ function make(
     Effect.map((_) => _.shards)
   )
 
-  const getShardingEvents = Stream.fromHub(eventsHub)
+  const getShardingEvents = Stream.fromPubSub(eventsHub)
 
   function register(pod: Pod.Pod) {
     return pipe(
@@ -93,7 +93,7 @@ function make(
             )
           ))
       ),
-      Effect.zipLeft(Hub.publish(eventsHub, ShardingEvent.PodRegistered(pod.address))),
+      Effect.zipLeft(PubSub.publish(eventsHub, ShardingEvent.PodRegistered(pod.address))),
       Effect.flatMap((state) => Effect.when(rebalance(false), () => HashSet.size(state.unassignedShards) > 0)),
       Effect.zipRight(Effect.forkIn(layerScope)(persistPods)),
       Effect.asUnit
@@ -111,7 +111,7 @@ function make(
     return pipe(
       Effect.whenEffect(
         pipe(
-          Hub.publish(eventsHub, ShardingEvent.PodHealthChecked(podAddress)),
+          PubSub.publish(eventsHub, ShardingEvent.PodHealthChecked(podAddress)),
           Effect.zipRight(
             Effect.unlessEffect(
               Effect.zipRight(
@@ -154,10 +154,10 @@ function make(
             }
           ])
         )),
-      Effect.tap((_) => Hub.publish(eventsHub, ShardingEvent.PodUnregistered(podAddress))),
+      Effect.tap((_) => PubSub.publish(eventsHub, ShardingEvent.PodUnregistered(podAddress))),
       Effect.tap((_) =>
         Effect.when(
-          Hub.publish(eventsHub, ShardingEvent.ShardsUnassigned(podAddress, _.unassignments)),
+          PubSub.publish(eventsHub, ShardingEvent.ShardsUnassigned(podAddress, _.unassignments)),
           () => HashSet.size(_.unassignments) > 0
         )
       ),
@@ -278,7 +278,7 @@ function make(
               onFailure: () => Effect.succeed([HashSet.fromIterable([pod]), shards] as const),
               onSuccess: () =>
                 pipe(
-                  Hub.publish(eventsHub, ShardingEvent.ShardsUnassigned(pod, shards)),
+                  PubSub.publish(eventsHub, ShardingEvent.ShardsUnassigned(pod, shards)),
                   Effect.as(
                     [
                       HashSet.empty<PodAddress.PodAddress>(),
@@ -318,7 +318,7 @@ function make(
               onFailure: () => Effect.succeed(Chunk.fromIterable([pod])),
               onSuccess: () =>
                 pipe(
-                  Hub.publish(eventsHub, ShardingEvent.ShardsAssigned(pod, shards)),
+                  PubSub.publish(eventsHub, ShardingEvent.ShardsAssigned(pod, shards)),
                   Effect.as(Chunk.empty())
                 )
             })
@@ -582,7 +582,7 @@ export const live = Effect.gen(function*(_) {
   )
   const state = yield* _(RefSynchronized.make(initialState))
   const rebalanceSemaphore = yield* _(Effect.makeSemaphore(1))
-  const eventsHub = yield* _(Hub.unbounded<ShardingEvent.ShardingEvent>())
+  const eventsHub = yield* _(PubSub.unbounded<ShardingEvent.ShardingEvent>())
   const shardManager = make(
     layerScope,
     state,

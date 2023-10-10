@@ -33,10 +33,16 @@ export interface EntityManager<Req> {
     entityId: string,
     req: A,
     replyId: Option.Option<ReplyId.ReplyId>
-  ) => Stream.Stream<
+  ) => Effect.Effect<
     never,
-    ShardingError.ShardingError,
-    Message.Success<A>
+    | ShardingError.ShardingErrorEntityNotManagedByThisPod
+    | ShardingError.ShardingErrorPodUnavailable
+    | ShardingError.ShardingErrorMessageQueue,
+    Stream.Stream<
+      never,
+      ShardingError.ShardingError,
+      Message.Success<A>
+    >
   >
   readonly terminateEntitiesOnShards: (
     shards: HashSet.HashSet<ShardId.ShardId>
@@ -177,10 +183,16 @@ export function make<R, Req>(
       entityId: string,
       req: A,
       replyId: Option.Option<ReplyId.ReplyId>
-    ): Stream.Stream<
+    ): Effect.Effect<
       never,
-      ShardingError.ShardingError,
-      Message.Success<A>
+      | ShardingError.ShardingErrorEntityNotManagedByThisPod
+      | ShardingError.ShardingErrorPodUnavailable
+      | ShardingError.ShardingErrorMessageQueue,
+      Stream.Stream<
+        never,
+        ShardingError.ShardingError,
+        Message.Success<A>
+      >
     > {
       function decide(
         map: HashMap.HashMap<
@@ -271,14 +283,14 @@ export function make<R, Req>(
           return Effect.die("Unhandled recipientType")
         }),
         Effect.bind("test", () => RefSynchronized.modifyEffect(entities, (map) => decide(map, entityId))),
-        Effect.flatMap((_) =>
-          pipe(
+        Effect.flatMap((_) => {
+          return pipe(
             _.test,
             Option.match({
               onNone: () =>
                 pipe(
                   Effect.sleep(Duration.millis(100)),
-                  Effect.as(send(entityId, req, replyId))
+                  Effect.flatMap(() => send(entityId, req, replyId))
                 ),
               onSome: (messageQueue) => {
                 return pipe(
@@ -299,10 +311,10 @@ export function make<R, Req>(
                   })
                 )
               }
-            })
+            }),
+            Effect.unified
           )
-        ),
-        Stream.unwrap
+        })
       )
     }
 

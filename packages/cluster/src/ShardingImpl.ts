@@ -32,10 +32,10 @@ import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as HashSet from "effect/HashSet"
-import * as Hub from "effect/Hub"
 import * as Layer from "effect/Layer"
 import * as List from "effect/List"
 import * as Option from "effect/Option"
+import * as PubSub from "effect/PubSub"
 import * as Ref from "effect/Ref"
 import * as Schedule from "effect/Schedule"
 import type * as Scope from "effect/Scope"
@@ -60,7 +60,7 @@ function make(
   pods: Pods.Pods,
   storage: Storage.Storage,
   serialization: Serialization.Serialization,
-  eventsHub: Hub.Hub<ShardingRegistrationEvent.ShardingRegistrationEvent>
+  eventsHub: PubSub.PubSub<ShardingRegistrationEvent.ShardingRegistrationEvent>
 ) {
   function decodeRequest<Req>(
     binaryMessage: BinaryMessage.BinaryMessage
@@ -237,7 +237,7 @@ function make(
         )
       ),
       Effect.zipLeft(startSingletonsIfNeeded),
-      Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))
+      Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.SingletonRegistered(name)))
     )
   }
 
@@ -355,10 +355,14 @@ function make(
     msgSchema: Schema.Schema<unknown, Msg>,
     pod: PodAddress.PodAddress,
     replyId: Option.Option<ReplyId.ReplyId>
-  ): Stream.Stream<
+  ): Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Message.Success<Msg>
+    Stream.Stream<
+      never,
+      ShardingError.ShardingError,
+      Message.Success<Msg>
+    >
   > {
     if (config.simulateRemotePods && equals(pod, address)) {
       return pipe(
@@ -366,10 +370,9 @@ function make(
         Effect.flatMap((bytes) =>
           pipe(
             decodeRequest(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)),
-            Effect.map(([request, entityManager]) => entityManager.send(entityId, request, replyId))
+            Effect.flatMap(([request, entityManager]) => entityManager.send(entityId, request, replyId))
           )
-        ),
-        Stream.unwrap
+        )
       )
     } else if (equals(pod, address)) {
       // if pod = self, shortcut and send directly without serialization
@@ -382,39 +385,35 @@ function make(
               Option.match(
                 {
                   onNone: () =>
-                    Effect.fail(
+                    Effect.fail<ShardingError.ShardingError>(
                       ShardingError.ShardingErrorEntityTypeNotRegistered(recipientTypeName, pod)
                     ),
                   onSome: (state) =>
-                    Effect.succeed(
-                      (state.entityManager as EntityManager.EntityManager<Msg>).send(
-                        entityId,
-                        msg,
-                        replyId
-                      )
+                    (state.entityManager as EntityManager.EntityManager<Msg>).send(
+                      entityId,
+                      msg,
+                      replyId
                     )
                 }
               )
             )
         ),
-        Effect.unified,
-        Stream.unwrap
+        Effect.unified
       )
     } else {
       return pipe(
         serialization.encode(msg, msgSchema),
-        Effect.map((bytes) => {
+        Effect.flatMap((bytes) => {
           const errorHandling = (_: never) => Effect.die("Not handled yet")
 
           const binaryMessage = BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
 
           return pipe(
             pods.sendMessageStreaming(pod, binaryMessage),
-            Stream.tapError(errorHandling),
-            Stream.mapEffect((bytes) => decodeReply(msg, bytes))
+            Effect.tapError(errorHandling),
+            Effect.map((_) => Stream.mapEffect(_, (bytes) => decodeReply(msg, bytes)))
           )
-        }),
-        Stream.unwrap
+        })
       )
     }
   }
@@ -462,8 +461,7 @@ function make(
           Effect.flatMap((replyId) => {
             const body = fn(replyId)
             return sendMessageStreaming(entityId, body, Option.some(replyId))
-          }),
-          Stream.unwrap
+          })
         )
       }
     }
@@ -475,7 +473,7 @@ function make(
     ): Effect.Effect<never, ShardingError.ShardingError, Option.Option<Message.Success<A>>> {
       return pipe(
         sendMessageGeneric(entityId, msg, replyId),
-        Stream.runHead
+        Effect.flatMap(Stream.runHead)
       )
     }
 
@@ -488,7 +486,7 @@ function make(
       ShardingError.ShardingError,
       Stream.Stream<never, ShardingError.ShardingError, Message.Success<A>>
     > {
-      return Effect.succeed(sendMessageGeneric(entityId, msg, replyId))
+      return sendMessageGeneric(entityId, msg, replyId)
     }
 
     function sendMessageGeneric<A extends Msg>(
@@ -498,15 +496,19 @@ function make(
     ) {
       const shardId = getShardId(entityType, entityId)
 
-      const trySend: Stream.Stream<
+      const trySend: Effect.Effect<
         never,
         ShardingError.ShardingError,
-        Message.Success<A>
+        Stream.Stream<
+          never,
+          ShardingError.ShardingError,
+          Message.Success<A>
+        >
       > = pipe(
         Effect.Do,
         Effect.bind("shards", () => Ref.get(shardAssignments)),
         Effect.let("pod", ({ shards }) => HashMap.get(shards, shardId)),
-        Effect.let("response", ({ pod }) => {
+        Effect.bind("response", ({ pod }) => {
           if (Option.isSome(pod)) {
             return pipe(
               sendToPod<Msg>(
@@ -517,15 +519,14 @@ function make(
                 pod.value,
                 replyId
               ),
-              Stream.catchSome((_) => {
+              Effect.catchSome((_) => {
                 if (
                   ShardingError.isShardingErrorEntityNotManagedByThisPod(_) ||
                   ShardingError.isShardingErrorPodUnavailable(_)
                 ) {
                   return pipe(
                     Effect.sleep(Duration.millis(200)),
-                    Stream.fromEffect,
-                    Stream.zipRight(trySend),
+                    Effect.zipRight(trySend),
                     Option.some
                   )
                 }
@@ -534,10 +535,12 @@ function make(
             )
           }
 
-          return pipe(Effect.sleep(Duration.millis(100)), Stream.fromEffect, Stream.zipRight(trySend))
+          return pipe(
+            Effect.sleep(Duration.millis(100)),
+            Effect.zipRight(trySend)
+          )
         }),
-        Effect.map((_) => _.response),
-        Stream.unwrap
+        Effect.map((_) => _.response)
       )
 
       return trySend
@@ -569,7 +572,11 @@ function make(
         Effect.bind("pods", () => getPods),
         Effect.bind("response", ({ pods }) =>
           Effect.forEach(pods, (pod) => {
-            const trySend: Stream.Stream<never, ShardingError.ShardingError, Message.Success<A>> = pipe(
+            const trySend: Effect.Effect<
+              never,
+              ShardingError.ShardingError,
+              Stream.Stream<never, ShardingError.ShardingError, Message.Success<A>>
+            > = pipe(
               sendToPod(
                 topicType.name,
                 topic,
@@ -578,12 +585,11 @@ function make(
                 pod,
                 replyId
               ),
-              Stream.catchSome((_) => {
+              Effect.catchSome((_) => {
                 if (ShardingError.isShardingErrorPodUnavailable(_)) {
                   return pipe(
                     Effect.sleep(Duration.millis(200)),
-                    Stream.fromEffect,
-                    Stream.zipRight(trySend),
+                    Effect.zipRight(trySend),
                     Option.some
                   )
                 }
@@ -592,7 +598,8 @@ function make(
             )
 
             return pipe(
-              Stream.runHead(trySend),
+              trySend,
+              Effect.flatMap(Stream.runHead),
               Effect.flatMap((_) => {
                 if (Option.isSome(_)) return Effect.succeed(_.value)
                 return Effect.die(MessageReturnedNotingDefect(topic))
@@ -639,7 +646,7 @@ function make(
   ): Effect.Effect<R, never, void> {
     return pipe(
       registerRecipient(entityType, behavior, options),
-      Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
+      Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
       Effect.asUnit
     )
   }
@@ -651,7 +658,7 @@ function make(
   ): Effect.Effect<R, never, void> {
     return pipe(
       registerRecipient(topicType, behavior, options),
-      Effect.zipRight(Hub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
+      Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
       Effect.asUnit
     )
   }
@@ -660,7 +667,7 @@ function make(
     never,
     never,
     ShardingRegistrationEvent.ShardingRegistrationEvent
-  > = Stream.fromHub(eventsHub)
+  > = Stream.fromPubSub(eventsHub)
 
   function registerRecipient<R, Req>(
     recipientType: RecipientType.RecipientType<Req>,
@@ -724,7 +731,7 @@ export const live = Layer.scoped(
     const shardsCache = yield* _(Ref.make(HashMap.empty<ShardId.ShardId, PodAddress.PodAddress>()))
     const entityStates = yield* _(Ref.make(HashMap.empty<string, EntityState.EntityState>()))
     const shuttingDown = yield* _(Ref.make(false))
-    const eventsHub = yield* _(Hub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>())
+    const eventsHub = yield* _(PubSub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>())
     const singletons = yield* _(Synchronized.make<List.List<SingletonEntry>>(List.nil()))
     const layerScope = yield* _(Effect.scope)
     yield* _(Effect.addFinalizer(() =>

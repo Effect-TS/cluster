@@ -187,7 +187,7 @@ describe.concurrent("SampleTests", () => {
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
-  it.only("Succefully delivers a message with a streaming reply to an entity", () => {
+  it("Succefully delivers a message with a streaming reply to an entity", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
       const [SampleMessage_, SampleMessage] = Message.schema(Schema.number)(Schema.struct({
@@ -206,11 +206,10 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const stream = messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" }))
-      const result = yield* _(Stream.runCollect(stream))
-      console.log(result)
+      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
+      const result = yield* _(Stream.runCollect(stream.pipe(Stream.buffer({ capacity: "unbounded" }))))
 
-      assertTrue(equals(result.toJSON(), Chunk.fromIterable([1, 2, 3]).toJSON()))
+      assertTrue(equals(result, Chunk.fromIterable([1, 2, 3])))
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
@@ -245,7 +244,7 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const stream = messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" }))
+      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
       yield* _(
         Stream.runDrain(stream.pipe(
           Stream.interruptAfter(Duration.millis(500)) // <- interrupts after a while
@@ -286,7 +285,7 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const stream = messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" }))
+      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
       const result = yield* _(
         Stream.runCollect(stream)
       )

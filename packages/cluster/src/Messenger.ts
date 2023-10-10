@@ -45,10 +45,14 @@ export interface Messenger<Msg> {
     entityId: string
   ): <A extends Msg & Message.Message<any>>(
     fn: (replyId: ReplyId.ReplyId) => A
-  ) => Stream.Stream<
+  ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Message.Success<A>
+    Stream.Stream<
+      never,
+      ShardingError.ShardingError,
+      Message.Success<A>
+    >
   >
 }
 
@@ -73,6 +77,7 @@ export function sendStreamAutoRestart<Msg, Cursor>(
   ): Stream.Stream<never, ShardingError.ShardingError, Message.Success<A>> => {
     return pipe(
       messenger.sendStream(entityId)(fn(cursor)),
+      Stream.unwrap,
       Stream.either,
       Stream.mapAccum(cursor, (c, either) =>
         Either.match(either, {
