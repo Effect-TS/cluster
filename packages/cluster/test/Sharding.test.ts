@@ -207,7 +207,7 @@ describe.concurrent("SampleTests", () => {
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
-      const result = yield* _(Stream.runCollect(stream.pipe(Stream.buffer({ capacity: "unbounded" }))))
+      const result = yield* _(Stream.runCollect(stream))
 
       assertTrue(equals(result, Chunk.fromIterable([1, 2, 3])))
     }).pipe(withTestEnv, Effect.runPromise)

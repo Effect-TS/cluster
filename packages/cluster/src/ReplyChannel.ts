@@ -89,7 +89,6 @@ export function fromQueue<A>(queue: Queue.Queue<Take.Take<ShardingError.Sharding
       ),
     output: pipe(
       Stream.fromQueue(queue, { shutdown: true }),
-      Stream.buffer({ capacity: "unbounded" }),
       Stream.flattenTake,
       Stream.onError(fail)
     )
