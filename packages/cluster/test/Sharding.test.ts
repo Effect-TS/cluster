@@ -125,11 +125,11 @@ describe.concurrent("SampleTests", () => {
   it("Succefully delivers a message with a reply to an entity", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const [SampleMessage_, SampleMessage] = Message.schema(Schema.number)(Schema.struct({
+      const SampleMessage = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
 
-      const SampleProtocol = Schema.union(SampleMessage_)
+      const SampleProtocol = Schema.union(SampleMessage)
 
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
 
@@ -140,7 +140,8 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const result = yield* _(messenger.send("entity1")(SampleMessage({ _tag: "SampleMessage" })))
+      const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
+      const result = yield* _(messenger.send("entity1")(msg))
 
       assertTrue(result === 42)
     }).pipe(withTestEnv, Effect.runPromise)
@@ -149,7 +150,7 @@ describe.concurrent("SampleTests", () => {
   it("Succefully broadcasts a message", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const [GetIncrement_, GetIncrement] = Message.schema(Schema.number)(Schema.struct({
+      const GetIncrement = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("GetIncrement")
       }))
 
@@ -157,7 +158,7 @@ describe.concurrent("SampleTests", () => {
         Schema.struct({
           _tag: Schema.literal("BroadcastIncrement")
         }),
-        GetIncrement_
+        GetIncrement
       )
 
       const SampleTopic = RecipientType.makeTopicType("Sample", SampleProtocol)
@@ -181,7 +182,8 @@ describe.concurrent("SampleTests", () => {
       yield* _(broadcaster.broadcastDiscard("c1")({ _tag: "BroadcastIncrement" }))
       yield* _(Effect.sleep(Duration.seconds(2)))
 
-      const c1 = yield* _(broadcaster.broadcast("c1")(GetIncrement({ _tag: "GetIncrement" })))
+      const msg = yield* _(GetIncrement.makeEffect({ _tag: "GetIncrement" }))
+      const c1 = yield* _(broadcaster.broadcast("c1")(msg))
 
       assertTrue(1 === HashMap.size(c1)) // Here we have just one pod, so there will be just one incrementer
     }).pipe(withTestEnv, Effect.runPromise)
@@ -190,11 +192,11 @@ describe.concurrent("SampleTests", () => {
   it("Succefully delivers a message with a streaming reply to an entity", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const [SampleMessage_, SampleMessage] = Message.schema(Schema.number)(Schema.struct({
+      const SampleMessage = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
 
-      const SampleProtocol = Schema.union(SampleMessage_)
+      const SampleProtocol = Schema.union(SampleMessage)
 
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
 
@@ -206,7 +208,8 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
+      const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
+      const stream = yield* _(messenger.sendStream("entity1")(msg))
       const result = yield* _(Stream.runCollect(stream))
 
       assertTrue(equals(result, Chunk.fromIterable([1, 2, 3])))
@@ -217,12 +220,12 @@ describe.concurrent("SampleTests", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
       const exit = yield* _(Deferred.make<never, boolean>())
-      const [SampleMessage_, SampleMessage] = Message.schema(Schema.number)(Schema.struct({
+      const SampleMessage = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
 
       const SampleProtocol = Schema.union(
-        SampleMessage_
+        SampleMessage
       )
 
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
@@ -244,7 +247,8 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
+      const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
+      const stream = yield* _(messenger.sendStream("entity1")(msg))
       yield* _(
         Stream.runDrain(stream.pipe(
           Stream.interruptAfter(Duration.millis(500)) // <- interrupts after a while
@@ -260,11 +264,11 @@ describe.concurrent("SampleTests", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
       const exit = yield* _(Deferred.make<never, boolean>())
-      const [SampleMessage_, SampleMessage] = Message.schema(Schema.number)(Schema.struct({
+      const SampleMessage = Message.schema(Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
 
-      const SampleProtocol = Schema.union(SampleMessage_)
+      const SampleProtocol = Schema.union(SampleMessage)
 
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
 
@@ -285,7 +289,8 @@ describe.concurrent("SampleTests", () => {
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const stream = yield* _(messenger.sendStream("entity1")(SampleMessage({ _tag: "SampleMessage" })))
+      const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
+      const stream = yield* _(messenger.sendStream("entity1")(msg))
       const result = yield* _(
         Stream.runCollect(stream)
       )

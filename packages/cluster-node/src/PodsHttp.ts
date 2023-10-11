@@ -73,7 +73,7 @@ export const httpPods = Layer.effect(
         return yield* _(client(request))
       }).pipe(
         Effect.asUnit,
-        Effect.mapError((e) => ShardingErrorPodUnavailable(podAddress))
+        Effect.mapError(() => ShardingErrorPodUnavailable(podAddress))
       )
     }
 

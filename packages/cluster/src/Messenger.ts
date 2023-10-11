@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import type * as Message from "@effect/cluster/Message"
-import type * as ReplyId from "@effect/cluster/ReplyId"
 import * as ShardingError from "@effect/cluster/ShardingError"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
@@ -30,7 +29,7 @@ export interface Messenger<Msg> {
   send(
     entityId: string
   ): <A extends Msg & Message.Message<any>>(
-    msg: (replyId: ReplyId.ReplyId) => A
+    msg: A
   ) => Effect.Effect<never, ShardingError.ShardingError, Message.Success<A>>
 
   /**
@@ -44,7 +43,7 @@ export interface Messenger<Msg> {
   sendStream(
     entityId: string
   ): <A extends Msg & Message.Message<any>>(
-    fn: (replyId: ReplyId.ReplyId) => A
+    msg: A
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
@@ -71,7 +70,7 @@ export function sendStreamAutoRestart<Msg, Cursor>(
   entityId: string,
   cursor: Cursor
 ) {
-  return <A extends Msg & Message.Message<any>>(fn: (cursor: Cursor) => (replyId: ReplyId.ReplyId) => A) =>
+  return <A extends Msg & Message.Message<any>>(fn: (cursor: Cursor) => A) =>
   (
     updateCursor: (cursor: Cursor, res: Message.Success<A>) => Cursor
   ): Stream.Stream<never, ShardingError.ShardingError, Message.Success<A>> => {

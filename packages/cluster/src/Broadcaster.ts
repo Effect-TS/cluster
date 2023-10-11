@@ -3,7 +3,6 @@
  */
 import type * as Message from "@effect/cluster/Message"
 import type * as PodAddress from "@effect/cluster/PodAddress"
-import type * as ReplyId from "@effect/cluster/ReplyId"
 import type * as ShardingError from "@effect/cluster/ShardingError"
 import type * as Effect from "effect/Effect"
 import type * as Either from "effect/Either"
@@ -28,7 +27,7 @@ export interface Broadcaster<Msg> {
   readonly broadcast: (
     topic: string
   ) => <A extends Msg & Message.Message<any>>(
-    msg: (replyId: ReplyId.ReplyId) => A
+    msg: A
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,

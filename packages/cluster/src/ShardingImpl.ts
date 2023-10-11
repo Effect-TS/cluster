@@ -12,7 +12,7 @@ import * as PodAddress from "@effect/cluster/PodAddress"
 import * as Pods from "@effect/cluster/Pods"
 import type * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as RecipientType from "@effect/cluster/RecipientType"
-import * as ReplyId from "@effect/cluster/ReplyId"
+import type * as ReplyId from "@effect/cluster/ReplyId"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as ShardId from "@effect/cluster/ShardId"
 import * as Sharding from "@effect/cluster/Sharding"
@@ -432,37 +432,25 @@ function make(
     }
 
     function send(entityId: string) {
-      return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => A) => {
+      return <A extends Msg & Message.Message<any>>(msg: A) => {
         return pipe(
-          ReplyId.makeEffect,
-          Effect.flatMap((replyId) => {
-            const body = fn(replyId)
-            return pipe(
-              sendMessage(entityId, body, Option.some(replyId)),
-              Effect.flatMap((_) => {
-                if (Option.isSome(_)) return Effect.succeed(_.value)
-                return Effect.die(MessageReturnedNotingDefect(entityId))
-              }),
-              Effect.timeoutFail({
-                onTimeout: ShardingError.ShardingErrorSendTimeout,
-                duration: timeout
-              }),
-              Effect.interruptible
-            )
-          })
+          sendMessage(entityId, msg, Option.some(msg.replier.id)),
+          Effect.flatMap((_) => {
+            if (Option.isSome(_)) return Effect.succeed(_.value)
+            return Effect.die(MessageReturnedNotingDefect(entityId))
+          }),
+          Effect.timeoutFail({
+            onTimeout: ShardingError.ShardingErrorSendTimeout,
+            duration: timeout
+          }),
+          Effect.interruptible
         )
       }
     }
 
     function sendStream(entityId: string) {
-      return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => A) => {
-        return pipe(
-          ReplyId.makeEffect,
-          Effect.flatMap((replyId) => {
-            const body = fn(replyId)
-            return sendMessageStreaming(entityId, body, Option.some(replyId))
-          })
-        )
+      return <A extends Msg & Message.Message<any>>(msg: A) => {
+        return sendMessageStreaming(entityId, msg, Option.some(msg.replier.id))
       }
     }
 
@@ -622,16 +610,10 @@ function make(
     }
 
     function broadcast(topic: string) {
-      return <A extends Msg & Message.Message<any>>(fn: (replyId: ReplyId.ReplyId) => A) => {
+      return <A extends Msg & Message.Message<any>>(msg: A) => {
         return pipe(
-          ReplyId.makeEffect,
-          Effect.flatMap((replyId) => {
-            const body = fn(replyId)
-            return pipe(
-              sendMessage(topic, body, Option.some(replyId)),
-              Effect.interruptible
-            )
-          })
+          sendMessage(topic, msg, Option.some(msg.replier.id)),
+          Effect.interruptible
         )
       }
     }
