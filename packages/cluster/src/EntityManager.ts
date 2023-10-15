@@ -52,7 +52,6 @@ export interface EntityManager<Req> {
 
 type EntityManagerEntry<Req> = readonly [
   messageQueue: Option.Option<MessageQueue.MessageQueue<Req>>,
-  replyChannels: HashMap.HashMap<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>,
   expirationFiber: Fiber.RuntimeFiber<never, void>,
   executionFiber: Fiber.RuntimeFiber<never, void>
 ]
@@ -80,7 +79,9 @@ export function make<R, Req>(
         >
       >(HashMap.empty())
     )
-
+    const replyChannels = yield* _(RefSynchronized.make(
+      HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>()
+    ))
     const behaviour: RecipientBehaviour.RecipientBehaviour<never, Req> = (
       recipientContext
     ) => Effect.provide(behaviour_(recipientContext), env)
@@ -90,8 +91,8 @@ export function make<R, Req>(
       replyChannel: ReplyChannel.ReplyChannel<any>
     ): Effect.Effect<never, never, void> {
       return pipe(
-        entities,
-        RefSynchronized.update(HashMap.modify(id, (entityState) => [])),
+        replyChannels,
+        RefSynchronized.update(HashMap.set(id, replyChannel)),
         Effect.zipLeft(
           pipe(
             replyChannel.await,
