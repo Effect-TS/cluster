@@ -14,6 +14,7 @@ import type * as ShardId from "@effect/cluster/ShardId"
 import type * as Sharding from "@effect/cluster/Sharding"
 import type * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as ShardingError from "@effect/cluster/ShardingError"
+import * as Cause from "effect/Cause"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
@@ -207,6 +208,9 @@ export function make<R, Req>(
                       messageQueueConstructor(entityId),
                       Effect.provide(env)
                     ))
+                    const replyChannels = yield* _(
+                      RefSynchronized.make(HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>())
+                    )
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const executionFiber = yield* _(
                       pipe(
@@ -218,16 +222,25 @@ export function make<R, Req>(
                         }),
                         Effect.ensuring(
                           pipe(
+                            // remove from entityStates
                             RefSynchronized.update(entityStates, HashMap.remove(entityId)),
+                            // shutdown the queue
                             Effect.zipRight(queue.shutdown),
-                            Effect.zipRight(Fiber.interrupt(expirationFiber))
+                            // interrupt the expiration timer
+                            Effect.zipRight(Fiber.interrupt(expirationFiber)),
+                            // fail all pending reply channels with PodUnavailable
+                            Effect.zipRight(pipe(
+                              RefSynchronized.get(replyChannels),
+                              Effect.flatMap(Effect.forEach(([_, replyChannels]) =>
+                                replyChannels.fail(
+                                  Cause.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
+                                )
+                              ))
+                            ))
                           )
                         ),
                         Effect.forkDaemon
                       )
-                    )
-                    const replyChannels = yield* _(
-                      RefSynchronized.make(HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>())
                     )
 
                     return [

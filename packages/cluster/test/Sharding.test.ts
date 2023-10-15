@@ -515,4 +515,45 @@ describe.concurrent("SampleTests", () => {
       assertFalse(yield* _(Ref.get(received)))
     }).pipe(withTestEnv, Effect.runPromise)
   })
+
+  it("Upon entity termination, pending replies should get errored", () => {
+    return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
+      const SampleRequest = Message.schema(Schema.number)(
+        Schema.struct({
+          _tag: Schema.literal("Request")
+        })
+      )
+
+      const SampleProtocol = Schema.union(
+        SampleRequest,
+        PoisonPill.schema
+      )
+      const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
+
+      yield* _(Sharding.registerEntity(
+        SampleEntity,
+        ({ dequeue }) =>
+          pipe(
+            PoisonPill.takeOrInterrupt(dequeue),
+            Effect.flatMap(() => {
+              // ignored reply as part of test case
+              return Effect.unit
+            }),
+            Effect.forever
+          ),
+        { entityMaxIdleTime: Option.some(Duration.millis(100)) }
+      ))
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      const msg = yield* _(SampleRequest.makeEffect({ _tag: "Request" }))
+      const exit = yield* _(
+        Effect.all([messenger.send("entity1")(msg), messenger.sendDiscard("entity1")(PoisonPill.make)]),
+        Effect.exit
+      )
+
+      assertTrue(Exit.isFailure(exit))
+      // assertTrue(equals(exit, Exit.fail(ShardingError.ShardingErrorSendTimeout())))
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
 })
