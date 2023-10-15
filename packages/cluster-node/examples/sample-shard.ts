@@ -1,5 +1,5 @@
-import * as ShardingServiceHttp from "@effect/cluster-node/clusterServiceHttp"
 import * as PodsHttp from "@effect/cluster-node/PodsHttp"
+import * as ShardingServiceHttp from "@effect/cluster-node/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/cluster-node/ShardManagerClientHttp"
 import * as StorageFile from "@effect/cluster-node/StorageFile"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
@@ -15,7 +15,6 @@ import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Ref from "effect/Ref"
-import * as Stream from "effect/Stream"
 import * as SubscriptionRef from "effect/SubscriptionRef"
 import { CounterEntity } from "./sample-common"
 
@@ -29,7 +28,7 @@ const liveSharding = pipe(
 )
 
 const programLayer = Layer.scopedDiscard(pipe(
-  Sharding.registerEntity(CounterEntity, ({ dequeue, entityId, reply, replyStream }) =>
+  Sharding.registerEntity(CounterEntity, ({ dequeue, entityId, reply }) =>
     pipe(
       SubscriptionRef.make(0),
       Effect.flatMap((count) =>
@@ -47,8 +46,6 @@ const programLayer = Layer.scopedDiscard(pipe(
                     SubscriptionRef.get(count),
                     Effect.flatMap((_) => reply(msg, _))
                   )
-                case "SubscribeChanges":
-                  return replyStream(msg, Stream.changes(count.changes))
               }
             }
           ),

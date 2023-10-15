@@ -14,12 +14,10 @@ import * as Storage from "@effect/cluster/Storage"
 import { assertFalse, assertTrue } from "@effect/cluster/test/util"
 import * as Schema from "@effect/schema/Schema"
 import * as Cause from "effect/Cause"
-import * as Chunk from "effect/Chunk"
 import { Tag } from "effect/Context"
 import * as Deferred from "effect/Deferred"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
-import { equals } from "effect/Equal"
 import * as Exit from "effect/Exit"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
@@ -29,7 +27,6 @@ import * as LogLevel from "effect/LogLevel"
 import * as Option from "effect/Option"
 import * as Queue from "effect/Queue"
 import * as Ref from "effect/Ref"
-import * as Stream from "effect/Stream"
 
 interface SampleService {
   value: number
@@ -186,117 +183,6 @@ describe.concurrent("SampleTests", () => {
       const c1 = yield* _(broadcaster.broadcast("c1")(msg))
 
       assertTrue(1 === HashMap.size(c1)) // Here we have just one pod, so there will be just one incrementer
-    }).pipe(withTestEnv, Effect.runPromise)
-  })
-
-  it("Succefully delivers a message with a streaming reply to an entity", () => {
-    return Effect.gen(function*(_) {
-      yield* _(Sharding.registerScoped)
-      const SampleMessage = Message.schema(Schema.number)(Schema.struct({
-        _tag: Schema.literal("SampleMessage")
-      }))
-
-      const SampleProtocol = Schema.union(SampleMessage)
-
-      const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
-
-      yield* _(Sharding.registerEntity(SampleEntity, ({ dequeue, replyStream }) =>
-        pipe(
-          PoisonPill.takeOrInterrupt(dequeue),
-          Effect.flatMap((msg) => replyStream(msg, Stream.fromIterable([1, 2, 3]))),
-          Effect.forever
-        )))
-
-      const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
-      const stream = yield* _(messenger.sendStream("entity1")(msg))
-      const result = yield* _(Stream.runCollect(stream))
-
-      assertTrue(equals(result, Chunk.fromIterable([1, 2, 3])))
-    }).pipe(withTestEnv, Effect.runPromise)
-  })
-
-  it("When the messenger interrupts, the stream on the entity should too", () => {
-    return Effect.gen(function*(_) {
-      yield* _(Sharding.registerScoped)
-      const exit = yield* _(Deferred.make<never, boolean>())
-      const SampleMessage = Message.schema(Schema.number)(Schema.struct({
-        _tag: Schema.literal("SampleMessage")
-      }))
-
-      const SampleProtocol = Schema.union(
-        SampleMessage
-      )
-
-      const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
-
-      yield* _(Sharding.registerEntity(SampleEntity, ({ dequeue, replyStream }) =>
-        pipe(
-          PoisonPill.takeOrInterrupt(dequeue),
-          Effect.flatMap((msg) =>
-            replyStream(
-              msg,
-              pipe(
-                Stream.never,
-                Stream.ensuring(Deferred.succeed(exit, true)), // <- signal interruption on shard side
-                Stream.map(() => 42)
-              )
-            )
-          ),
-          Effect.forever
-        )))
-
-      const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
-      const stream = yield* _(messenger.sendStream("entity1")(msg))
-      yield* _(
-        Stream.runDrain(stream.pipe(
-          Stream.interruptAfter(Duration.millis(500)) // <- interrupts after a while
-        ))
-      )
-
-      yield* _(Deferred.await(exit)) // <- hangs if not working
-      assertTrue(true)
-    }).pipe(withTestEnv, Effect.runPromise)
-  })
-
-  it("When the stream on entity interrupts, the stream on the messenger should close", () => {
-    return Effect.gen(function*(_) {
-      yield* _(Sharding.registerScoped)
-      const exit = yield* _(Deferred.make<never, boolean>())
-      const SampleMessage = Message.schema(Schema.number)(Schema.struct({
-        _tag: Schema.literal("SampleMessage")
-      }))
-
-      const SampleProtocol = Schema.union(SampleMessage)
-
-      const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
-
-      yield* _(Sharding.registerEntity(SampleEntity, ({ dequeue, replyStream }) =>
-        pipe(
-          PoisonPill.takeOrInterrupt(dequeue),
-          Effect.flatMap((msg) =>
-            replyStream(
-              msg,
-              pipe(
-                Stream.never,
-                Stream.ensuring(Deferred.succeed(exit, true)), // <- signal interruption on shard side
-                Stream.interruptAfter(Duration.millis(500))
-              )
-            )
-          ),
-          Effect.forever
-        )))
-
-      const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
-      const stream = yield* _(messenger.sendStream("entity1")(msg))
-      const result = yield* _(
-        Stream.runCollect(stream)
-      )
-
-      assertTrue(yield* _(Deferred.await(exit)))
-      assertTrue(Chunk.size(result) === 0)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 

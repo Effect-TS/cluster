@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import * as ShardingProtocolHttp from "@effect/cluster-node/ShardingProtocolHttp"
-import { jsonParse, stringFromUint8ArrayString } from "@effect/cluster-node/utils"
 import type * as BinaryMessage from "@effect/cluster/BinaryMessage"
 import type * as PodAddress from "@effect/cluster/PodAddress"
 import * as Pods from "@effect/cluster/Pods"
@@ -13,7 +12,6 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
-import * as Stream from "effect/Stream"
 
 /** @internal */
 function asHttpUrl(pod: PodAddress.PodAddress): string {
@@ -77,30 +75,25 @@ export const httpPods = Layer.effect(
       )
     }
 
-    function sendMessageStreaming(podAddress: PodAddress.PodAddress, binaryMessage: BinaryMessage.BinaryMessage) {
+    function sendMessage(podAddress: PodAddress.PodAddress, binaryMessage: BinaryMessage.BinaryMessage) {
       return Effect.gen(function*(_) {
         const request = yield* _(
           Http.request.post(
-            "/send-message-streaming"
+            "/send-message"
           ),
           Http.request.prependUrl(asHttpUrl(podAddress)),
-          Http.request.schemaBody(ShardingProtocolHttp.SendStream_)({
+          Http.request.schemaBody(ShardingProtocolHttp.Send_)({
             message: binaryMessage
           })
         )
 
         const response = yield* _(
           client(request),
-          Effect.map((response) => response.stream)
+          Effect.flatMap(Http.response.schemaBodyJson(ShardingProtocolHttp.SendResult_))
         )
 
-        return pipe(
-          response,
-          stringFromUint8ArrayString("utf-8"),
-          Stream.splitLines,
-          Stream.mapEffect((_) => jsonParse(_, ShardingProtocolHttp.SendStreamResultItem_))
-        )
-      }).pipe(Stream.fromEffect, Stream.flatten(), Stream.orDie, Stream.flatten(), Effect.succeed)
+        return response
+      }).pipe(Effect.orDie, Effect.flatten)
     }
 
     const result: Pods.Pods = {
@@ -108,7 +101,7 @@ export const httpPods = Layer.effect(
       assignShards,
       unassignShards,
       ping,
-      sendMessageStreaming
+      sendMessage
     }
 
     return result

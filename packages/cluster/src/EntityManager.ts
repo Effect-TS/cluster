@@ -22,7 +22,6 @@ import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
-import * as Stream from "effect/Stream"
 import * as RefSynchronized from "effect/SynchronizedRef"
 
 /**
@@ -40,9 +39,7 @@ export interface EntityManager<Req> {
     | ShardingError.ShardingErrorEntityNotManagedByThisPod
     | ShardingError.ShardingErrorPodUnavailable
     | ShardingError.ShardingErrorMessageQueue,
-    Stream.Stream<
-      never,
-      ShardingError.ShardingError,
+    Option.Option<
       Message.Success<A>
     >
   >
@@ -100,20 +97,13 @@ export function make<R, Req>(
     }
 
     function reply<Reply>(reply: Reply, replier: Replier.Replier<Reply>): Effect.Effect<never, never, void> {
-      return replyStream(Effect.succeed(reply), replier)
-    }
-
-    function replyStream<Reply>(
-      replies: Stream.Stream<never, never, Reply>,
-      replier: Replier.Replier<Reply>
-    ): Effect.Effect<never, never, void> {
       return RefSynchronized.updateEffect(replyChannels, (repliers) =>
         pipe(
           Effect.suspend(() => {
             const replyChannel = HashMap.get(repliers, replier.id)
 
             if (Option.isSome(replyChannel)) {
-              return (replyChannel.value as ReplyChannel.ReplyChannel<Reply>).replyStream(replies)
+              return (replyChannel.value as ReplyChannel.ReplyChannel<Reply>).reply(reply)
             }
             return Effect.unit
           }),
@@ -180,9 +170,7 @@ export function make<R, Req>(
       | ShardingError.ShardingErrorEntityNotManagedByThisPod
       | ShardingError.ShardingErrorPodUnavailable
       | ShardingError.ShardingErrorMessageQueue,
-      Stream.Stream<
-        never,
-        ShardingError.ShardingError,
+      Option.Option<
         Message.Success<A>
       >
     > {
@@ -217,8 +205,7 @@ export function make<R, Req>(
                         behaviour({
                           entityId,
                           dequeue: queue.dequeue,
-                          reply: (message, _) => reply(_, message.replier),
-                          replyStream: (message, _) => replyStream(_, message.replier)
+                          reply: (message, _) => reply(_, message.replier)
                         }),
                         Effect.ensuring(
                           pipe(
@@ -315,14 +302,14 @@ export function make<R, Req>(
                     onNone: () =>
                       pipe(
                         messageQueue.offer(req),
-                        Effect.as(Stream.empty)
+                        Effect.as(Option.none())
                       ),
                     onSome: (replyId_) =>
                       pipe(
                         ReplyChannel.make<Message.Success<A>>(),
                         Effect.tap((replyChannel) => initReply(replyId_, replyChannel)),
                         Effect.zipLeft(messageQueue.offer(req)),
-                        Effect.map((_) => _.output)
+                        Effect.flatMap((_) => _.output)
                       )
                   })
                 )

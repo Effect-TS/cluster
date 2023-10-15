@@ -9,7 +9,6 @@ import type * as Duration from "effect/Duration"
 import type * as Effect from "effect/Effect"
 import type * as Option from "effect/Option"
 import type * as Queue from "effect/Queue"
-import type * as Stream from "effect/Stream"
 
 /**
  * The args received by the RecipientBehaviour
@@ -22,10 +21,6 @@ export interface RecipientContext<Req> {
   readonly reply: <A extends Req & Message.Message<any>>(
     message: A,
     reply: Message.Success<A>
-  ) => Effect.Effect<never, never, void>
-  readonly replyStream: <A extends Req & Message.Message<any>>(
-    message: A,
-    reply: Stream.Stream<never, never, Message.Success<A>>
   ) => Effect.Effect<never, never, void>
 }
 

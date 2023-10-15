@@ -2,16 +2,13 @@
  * @since 1.0.0
  */
 import * as ShardingProtocolHttp from "@effect/cluster-node/ShardingProtocolHttp"
-import { jsonStringify, uint8ArrayFromStringStream } from "@effect/cluster-node/utils"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as Http from "@effect/platform-node/HttpServer"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
-import { pipe } from "effect/Function"
 import * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
-import * as Stream from "effect/Stream"
 import { createServer } from "node:http"
 
 const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
@@ -52,19 +49,17 @@ export const shardingServiceHttp = Layer.scopedDiscard(
         })
       ),
       Http.router.post(
-        "/send-message-streaming",
+        "/send-message",
         Effect.gen(function*(_) {
-          const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.SendStream_))
-
-          const result = pipe(
-            sharding.sendToLocalEntityStreamingReply(body.message),
-            Stream.map((_) => Either.right(_)),
-            Stream.catchAll((e) => Stream.succeed(Either.left(e))),
-            Stream.mapEffect((_) => jsonStringify(_, ShardingProtocolHttp.SendStreamResultItem_)),
-            uint8ArrayFromStringStream()
+          const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.Send_))
+          const result = yield* _(
+            sharding.sendToLocalEntity(body.message),
+            Effect.match({
+              onFailure: Either.left,
+              onSuccess: Either.right
+            })
           )
-
-          return (Http.response.stream(result, { contentType: "text/event-stream" }))
+          return yield* _(Http.response.schemaJson(ShardingProtocolHttp.SendResult_)(result))
         })
       ),
       Http.server.serve(Http.middleware.logger)

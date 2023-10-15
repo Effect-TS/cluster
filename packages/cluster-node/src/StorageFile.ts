@@ -4,8 +4,10 @@
 import * as Pod from "@effect/cluster/Pod"
 import * as PodAddress from "@effect/cluster/PodAddress"
 import * as ShardId from "@effect/cluster/ShardId"
+import * as ShardingError from "@effect/cluster/ShardingError"
 import * as Storage from "@effect/cluster/Storage"
 import * as Schema from "@effect/schema/Schema"
+import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
@@ -14,7 +16,25 @@ import type * as Option from "effect/Option"
 import * as Queue from "effect/Queue"
 import * as Stream from "effect/Stream"
 import * as fs from "fs"
-import { jsonParse, jsonStringify } from "./utils"
+
+/** @internal */
+export function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
+  return pipe(
+    value,
+    Schema.encode(schema),
+    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors))),
+    Effect.map((_) => JSON.stringify(_))
+  )
+}
+
+/** @internal */
+export function jsonParse<I, A>(value: string, schema: Schema.Schema<I, A>) {
+  return pipe(
+    Effect.sync(() => JSON.parse(value)),
+    Effect.flatMap(Schema.decode(schema)),
+    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors)))
+  )
+}
 
 const PODS_FILE = "pods.json"
 const ASSIGNMENTS_FILE = "assignments.json"

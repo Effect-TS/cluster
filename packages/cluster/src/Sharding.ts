@@ -62,12 +62,12 @@ export interface Sharding {
   readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>
   readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
-  readonly sendToLocalEntityStreamingReply: (
+  readonly sendToLocalEntity: (
     msg: BinaryMessage.BinaryMessage
-  ) => Stream.Stream<
+  ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    ByteArray.ByteArray
+    Option.Option<ByteArray.ByteArray>
   >
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
 }

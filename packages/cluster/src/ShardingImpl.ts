@@ -90,28 +90,36 @@ function make(
 
   function encodeReply<Req>(
     request: Req,
-    reply: Message.Success<Req>
-  ) {
+    reply: Option.Option<Message.Success<Req>>
+  ): Effect.Effect<never, ShardingError.ShardingErrorSerialization, Option.Option<ByteArray.ByteArray>> {
+    if (Option.isNone(reply)) {
+      return Effect.succeed(Option.none())
+    }
     if (!Message.isMessage(request)) {
       return Effect.die(NotAMessageWithReplierDefect(request))
     }
     return pipe(
-      serialization.encode(request.replier.schema, reply)
+      serialization.encode(request.replier.schema, reply),
+      Effect.map(Option.some)
     )
   }
 
   function decodeReply<Req>(
     request: Req,
-    body: ByteArray.ByteArray
-  ) {
+    body: Option.Option<ByteArray.ByteArray>
+  ): Effect.Effect<never, ShardingError.ShardingErrorSerialization, Option.Option<Message.Success<Req>>> {
+    if (Option.isNone(body)) {
+      return Effect.succeed(Option.none())
+    }
     if (!Message.isMessage(request)) {
       return Effect.die(NotAMessageWithReplierDefect(request))
     }
     return pipe(
       serialization.decode(
         request.replier.schema as Schema.Schema<unknown, Message.Success<Req>>,
-        body
-      )
+        body.value
+      ),
+      Effect.map(Option.some)
     )
   }
 
@@ -328,23 +336,20 @@ function make(
     Effect.asUnit
   )
 
-  function sendToLocalEntityStreamingReply(
+  function sendToLocalEntity(
     msg: BinaryMessage.BinaryMessage
-  ): Stream.Stream<
+  ): Effect.Effect<
     never,
     ShardingError.ShardingError,
-    ByteArray.ByteArray
+    Option.Option<ByteArray.ByteArray>
   > {
-    return pipe(
-      Effect.gen(function*(_) {
-        const [request, entityManager] = yield* _(decodeRequest(msg))
-        return pipe(
-          entityManager.send(msg.entityId, request, msg.replyId),
-          Stream.mapEffect((reply) => encodeReply<any>(request, reply))
-        )
-      }),
-      Stream.unwrap
-    )
+    return Effect.gen(function*(_) {
+      const [request, entityManager] = yield* _(decodeRequest(msg))
+      return yield* _(
+        entityManager.send(msg.entityId, request, msg.replyId),
+        Effect.flatMap((_) => encodeReply(request, _))
+      )
+    })
   }
 
   function sendToPod<Msg>(
@@ -357,9 +362,7 @@ function make(
   ): Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Stream.Stream<
-      never,
-      ShardingError.ShardingError,
+    Option.Option<
       Message.Success<Msg>
     >
   > {
@@ -408,9 +411,10 @@ function make(
           const binaryMessage = BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
 
           return pipe(
-            pods.sendMessageStreaming(pod, binaryMessage),
+            pods.sendMessage(pod, binaryMessage),
             Effect.tapError(errorHandling),
-            Effect.map((_) => Stream.mapEffect(_, (bytes) => decodeReply(msg, bytes)))
+            Effect.flatMap((_) => decodeReply(msg, _)),
+            Effect.unified
           )
         })
       )
@@ -447,48 +451,17 @@ function make(
       }
     }
 
-    function sendStream(entityId: string) {
-      return <A extends Msg & Message.Message<any>>(msg: A) => {
-        return sendMessageStreaming(entityId, msg, Option.some(msg.replier.id))
-      }
-    }
-
     function sendMessage<A extends Msg>(
       entityId: string,
       msg: A,
       replyId: Option.Option<ReplyId.ReplyId>
     ): Effect.Effect<never, ShardingError.ShardingError, Option.Option<Message.Success<A>>> {
-      return pipe(
-        sendMessageGeneric(entityId, msg, replyId),
-        Effect.flatMap(Stream.runHead)
-      )
-    }
-
-    function sendMessageStreaming<A extends Msg>(
-      entityId: string,
-      msg: A,
-      replyId: Option.Option<ReplyId.ReplyId>
-    ): Effect.Effect<
-      never,
-      ShardingError.ShardingError,
-      Stream.Stream<never, ShardingError.ShardingError, Message.Success<A>>
-    > {
-      return sendMessageGeneric(entityId, msg, replyId)
-    }
-
-    function sendMessageGeneric<A extends Msg>(
-      entityId: string,
-      msg: A,
-      replyId: Option.Option<ReplyId.ReplyId>
-    ) {
       const shardId = getShardId(entityType, entityId)
 
       const trySend: Effect.Effect<
         never,
         ShardingError.ShardingError,
-        Stream.Stream<
-          never,
-          ShardingError.ShardingError,
+        Option.Option<
           Message.Success<A>
         >
       > = pipe(
@@ -533,7 +506,7 @@ function make(
       return trySend
     }
 
-    return { sendDiscard, send, sendStream }
+    return { sendDiscard, send }
   }
 
   function broadcaster<Msg>(
@@ -562,7 +535,7 @@ function make(
             const trySend: Effect.Effect<
               never,
               ShardingError.ShardingError,
-              Stream.Stream<never, ShardingError.ShardingError, Message.Success<A>>
+              Option.Option<Message.Success<A>>
             > = pipe(
               sendToPod(
                 topicType.name,
@@ -586,7 +559,6 @@ function make(
 
             return pipe(
               trySend,
-              Effect.flatMap(Stream.runHead),
               Effect.flatMap((_) => {
                 if (Option.isSome(_)) return Effect.succeed(_.value)
                 return Effect.die(MessageReturnedNotingDefect(topic))
@@ -691,7 +663,7 @@ function make(
     getShardingRegistrationEvents,
     getPods,
     refreshAssignments,
-    sendToLocalEntityStreamingReply
+    sendToLocalEntity
   }
 
   return self

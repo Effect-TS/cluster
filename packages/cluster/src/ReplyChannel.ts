@@ -3,12 +3,10 @@
  */
 import type * as ShardingError from "@effect/cluster/ShardingError"
 import type * as Cause from "effect/Cause"
+import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
-import * as Exit from "effect/Exit"
 import { pipe } from "effect/Function"
-import * as Queue from "effect/Queue"
-import * as Stream from "effect/Stream"
-import * as Take from "effect/Take"
+import * as Option from "effect/Option"
 
 /**
  * @since 1.0.0
@@ -38,17 +36,19 @@ export interface ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  readonly fail: (cause: Cause.Cause<ShardingError.ShardingError>) => Effect.Effect<never, never, void>
-  /**
-   * @since 1.0.0
-   */
-  readonly replyStream: (
-    stream: Stream.Stream<never, ShardingError.ShardingError, A>
+  readonly fail: (
+    cause: Cause.Cause<ShardingError.ShardingErrorEntityNotManagedByThisPod>
   ) => Effect.Effect<never, never, void>
   /**
    * @since 1.0.0
    */
-  readonly output: Stream.Stream<never, ShardingError.ShardingError, A>
+  readonly reply: (
+    value: A
+  ) => Effect.Effect<never, never, void>
+  /**
+   * @since 1.0.0
+   */
+  readonly output: Effect.Effect<never, ShardingError.ShardingErrorEntityNotManagedByThisPod, Option.Option<A>>
 }
 
 /**
@@ -65,32 +65,23 @@ export function isReplyChannel(value: unknown): value is ReplyChannel<any> {
 }
 
 /**
- * Construct a new `ReplyChannel` from a queue.
+ * Construct a new `ReplyChannel` from a deferred.
  *
  * @internal
  */
-export function fromQueue<A>(queue: Queue.Queue<Take.Take<ShardingError.ShardingError, A>>): ReplyChannel<A> {
-  const fail = (cause: Cause.Cause<ShardingError.ShardingError>) =>
-    pipe(Queue.offer(queue, Take.failCause(cause)), Effect.exit, Effect.asUnit)
-  const await_ = Queue.awaitShutdown(queue)
+export function fromDeferred<A>(
+  deferred: Deferred.Deferred<ShardingError.ShardingErrorEntityNotManagedByThisPod, Option.Option<A>>
+): ReplyChannel<A> {
+  const fail = (cause: Cause.Cause<ShardingError.ShardingErrorEntityNotManagedByThisPod>) =>
+    pipe(Deferred.failCause(deferred, cause), Effect.asUnit)
   return ({
     _id: TypeId,
-    await: await_,
+    await: pipe(Deferred.await(deferred), Effect.exit, Effect.asUnit),
     fail,
-    replyStream: (stream) =>
-      pipe(
-        Stream.runForEach(stream, (a) => Queue.offer(queue, Take.of(a))),
-        Effect.onExit((_) =>
-          Queue.offer(queue, Exit.match(_, { onFailure: (e) => Take.failCause(e), onSuccess: () => Take.end }))
-        ),
-        Effect.race(await_),
-        Effect.fork,
-        Effect.asUnit
-      ),
+    reply: (a) => pipe(Deferred.succeed(deferred, Option.some(a)), Effect.asUnit),
     output: pipe(
-      Stream.fromQueue(queue, { shutdown: true }),
-      Stream.flattenTake,
-      Stream.onError(fail)
+      Deferred.await(deferred),
+      Effect.onError(fail)
     )
   })
 }
@@ -98,6 +89,6 @@ export function fromQueue<A>(queue: Queue.Queue<Take.Take<ShardingError.Sharding
 /** @internal */
 export const make = <A>() =>
   pipe(
-    Queue.unbounded<Take.Take<ShardingError.ShardingError, A>>(),
-    Effect.map(fromQueue)
+    Deferred.make<ShardingError.ShardingErrorEntityNotManagedByThisPod, Option.Option<A>>(),
+    Effect.map(fromDeferred)
   )

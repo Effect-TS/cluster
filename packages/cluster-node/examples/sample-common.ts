@@ -8,12 +8,6 @@ export const GetCurrent = Message.schema(Schema.number)(
   })
 )
 
-export const SubscribeChanges = Message.schema(Schema.number)(
-  Schema.struct({
-    _tag: Schema.literal("SubscribeChanges")
-  })
-)
-
 export const CounterMsg = Schema.union(
   Schema.struct({
     _tag: Schema.literal("Increment")
@@ -21,8 +15,7 @@ export const CounterMsg = Schema.union(
   Schema.struct({
     _tag: Schema.literal("Decrement")
   }),
-  GetCurrent,
-  SubscribeChanges
+  GetCurrent
 )
 
 export type CounterMsg = Schema.Schema.To<typeof CounterMsg>

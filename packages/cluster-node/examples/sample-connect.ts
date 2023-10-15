@@ -11,8 +11,7 @@ import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
-import * as Stream from "effect/Stream"
-import { CounterEntity, GetCurrent, SubscribeChanges } from "./sample-common"
+import { CounterEntity, GetCurrent } from "./sample-common"
 
 const liveSharding = pipe(
   ShardingImpl.live,
@@ -27,20 +26,10 @@ const liveSharding = pipe(
 const program = pipe(
   Effect.Do,
   Effect.bind("messenger", () => Sharding.messenger(CounterEntity)),
-  Effect.bind("changes", (_) => _.messenger.sendStream("entity1")(SubscribeChanges({ _tag: "SubscribeChanges" }))),
-  Effect.tap((_) =>
-    pipe(
-      _.changes,
-      Stream.mapEffect((_) => Effect.logInfo("SubscribeChanges: " + _)),
-      Stream.runDrain,
-      Effect.catchAllCause(Effect.logInfo),
-      Logger.withMinimumLogLevel(LogLevel.All),
-      Effect.forkDaemon
-    )
-  ),
   Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
   Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
-  Effect.flatMap((_) => _.messenger.send("entity1")(GetCurrent({ _tag: "GetCurrent" }))),
+  Effect.bind("msg", () => GetCurrent.makeEffect({ _tag: "GetCurrent" })),
+  Effect.flatMap((_) => _.messenger.send("entity1")(_.msg)),
   Effect.tap((_) => Effect.log("Current count is " + _)),
   Effect.zipRight(Effect.never),
   Effect.scoped,
