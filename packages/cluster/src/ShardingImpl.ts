@@ -79,8 +79,8 @@ function make(
           onSome: (entityState) =>
             pipe(
               serialization.decode(
-                binaryMessage.body,
-                (entityState.entityManager as EntityManager.EntityManager<Req>).recipientType.schema
+                (entityState.entityManager as EntityManager.EntityManager<Req>).recipientType.schema,
+                binaryMessage.body
               ),
               Effect.map((request) => [request, entityState.entityManager as EntityManager.EntityManager<Req>] as const)
             )
@@ -97,7 +97,7 @@ function make(
       return Effect.die(NotAMessageWithReplierDefect(request))
     }
     return pipe(
-      serialization.encode(reply, request.replier.schema)
+      serialization.encode(request.replier.schema, reply)
     )
   }
 
@@ -110,8 +110,8 @@ function make(
     }
     return pipe(
       serialization.decode(
-        body,
-        request.replier.schema as Schema.Schema<unknown, Message.Success<Req>>
+        request.replier.schema as Schema.Schema<unknown, Message.Success<Req>>,
+        body
       )
     )
   }
@@ -366,7 +366,7 @@ function make(
   > {
     if (config.simulateRemotePods && equals(pod, address)) {
       return pipe(
-        serialization.encode(msg, msgSchema),
+        serialization.encode(msgSchema, msg),
         Effect.flatMap((bytes) =>
           pipe(
             decodeRequest(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)),
@@ -402,7 +402,7 @@ function make(
       )
     } else {
       return pipe(
-        serialization.encode(msg, msgSchema),
+        serialization.encode(msgSchema, msg),
         Effect.flatMap((bytes) => {
           const errorHandling = (_: never) => Effect.die("Not handled yet")
 
