@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as BinaryMessage from "@effect/cluster/BinaryMessage"
-import * as ByteArray from "@effect/cluster/ByteArray"
+import * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
+import * as SerializedMessage from "@effect/cluster/SerializedMessage"
 import * as ShardId from "@effect/cluster/ShardId"
 import * as ShardingError from "@effect/cluster/ShardingError"
 import * as Schema from "@effect/schema/Schema"
@@ -28,7 +28,7 @@ export const UnassignShards_ = Schema.struct({
  * @category schema
  */
 export const Send_ = Schema.struct({
-  message: BinaryMessage.schema
+  message: SerializedEnvelope.schema
 })
 
 /**
@@ -37,7 +37,7 @@ export const Send_ = Schema.struct({
  */
 export const SendResult_ = Schema.either(
   ShardingError.schema,
-  Schema.option(ByteArray.schema)
+  Schema.option(SerializedMessage.schema)
 )
 
 /**

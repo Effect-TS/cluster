@@ -2,9 +2,9 @@
  * @since 1.0.0
  */
 import * as ShardingProtocolHttp from "@effect/cluster-node/ShardingProtocolHttp"
-import type * as BinaryMessage from "@effect/cluster/BinaryMessage"
 import type * as PodAddress from "@effect/cluster/PodAddress"
 import * as Pods from "@effect/cluster/Pods"
+import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import type * as ShardId from "@effect/cluster/ShardId"
 import { ShardingErrorPodUnavailable } from "@effect/cluster/ShardingError"
 import * as Http from "@effect/platform/HttpClient"
@@ -75,7 +75,7 @@ export const httpPods = Layer.effect(
       )
     }
 
-    function sendMessage(podAddress: PodAddress.PodAddress, binaryMessage: BinaryMessage.BinaryMessage) {
+    function sendMessage(podAddress: PodAddress.PodAddress, envelope: SerializedEnvelope.SerializedEnvelope) {
       return Effect.gen(function*(_) {
         const request = yield* _(
           Http.request.post(
@@ -83,7 +83,7 @@ export const httpPods = Layer.effect(
           ),
           Http.request.prependUrl(asHttpUrl(podAddress)),
           Http.request.schemaBody(ShardingProtocolHttp.Send_)({
-            message: binaryMessage
+            message: envelope
           })
         )
 

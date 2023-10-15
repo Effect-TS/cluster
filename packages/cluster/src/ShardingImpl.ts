@@ -1,9 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as BinaryMessage from "@effect/cluster/BinaryMessage"
 import type * as Broadcaster from "@effect/cluster/Broadcaster"
-import type * as ByteArray from "@effect/cluster/ByteArray"
 import * as EntityManager from "@effect/cluster/EntityManager"
 import * as Message from "@effect/cluster/Message"
 import type { Messenger } from "@effect/cluster/Messenger"
@@ -13,6 +11,8 @@ import type * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as RecipientType from "@effect/cluster/RecipientType"
 import type * as ReplyId from "@effect/cluster/ReplyId"
 import * as Serialization from "@effect/cluster/Serialization"
+import * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
+import type * as SerializedMessage from "@effect/cluster/SerializedMessage"
 import * as ShardId from "@effect/cluster/ShardId"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
@@ -62,7 +62,7 @@ function make(
   eventsHub: PubSub.PubSub<ShardingRegistrationEvent.ShardingRegistrationEvent>
 ) {
   function decodeRequest<Req>(
-    binaryMessage: BinaryMessage.BinaryMessage
+    envelope: SerializedEnvelope.SerializedEnvelope
   ): Effect.Effect<
     never,
     ShardingError.ShardingErrorSerialization | ShardingError.ShardingErrorEntityTypeNotRegistered,
@@ -70,16 +70,15 @@ function make(
   > {
     return pipe(
       Ref.get(entityManagers),
-      Effect.map(HashMap.get(binaryMessage.entityType)),
+      Effect.map(HashMap.get(envelope.entityType)),
       Effect.flatMap((_) =>
         Effect.unified(Option.match(_, {
-          onNone: () =>
-            Effect.fail(ShardingError.ShardingErrorEntityTypeNotRegistered(binaryMessage.entityType, address)),
+          onNone: () => Effect.fail(ShardingError.ShardingErrorEntityTypeNotRegistered(envelope.entityType, address)),
           onSome: (entityManager) =>
             pipe(
               serialization.decode(
                 (entityManager as EntityManager.EntityManager<Req>).recipientType.schema,
-                binaryMessage.body
+                envelope.body
               ),
               Effect.map((request) => [request, entityManager as EntityManager.EntityManager<Req>] as const)
             )
@@ -91,7 +90,11 @@ function make(
   function encodeReply<Req>(
     request: Req,
     reply: Option.Option<Message.Success<Req>>
-  ): Effect.Effect<never, ShardingError.ShardingErrorSerialization, Option.Option<ByteArray.ByteArray>> {
+  ): Effect.Effect<
+    never,
+    ShardingError.ShardingErrorSerialization,
+    Option.Option<SerializedMessage.SerializedMessage>
+  > {
     if (Option.isNone(reply)) {
       return Effect.succeed(Option.none())
     }
@@ -106,7 +109,7 @@ function make(
 
   function decodeReply<Req>(
     request: Req,
-    body: Option.Option<ByteArray.ByteArray>
+    body: Option.Option<SerializedMessage.SerializedMessage>
   ): Effect.Effect<never, ShardingError.ShardingErrorSerialization, Option.Option<Message.Success<Req>>> {
     if (Option.isNone(body)) {
       return Effect.succeed(Option.none())
@@ -337,16 +340,16 @@ function make(
   )
 
   function sendToLocalEntity(
-    msg: BinaryMessage.BinaryMessage
+    envelope: SerializedEnvelope.SerializedEnvelope
   ): Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<ByteArray.ByteArray>
+    Option.Option<SerializedMessage.SerializedMessage>
   > {
     return Effect.gen(function*(_) {
-      const [request, entityManager] = yield* _(decodeRequest(msg))
+      const [request, entityManager] = yield* _(decodeRequest(envelope))
       return yield* _(
-        entityManager.send(msg.entityId, request, msg.replyId),
+        entityManager.send(envelope.entityId, request, envelope.replyId),
         Effect.flatMap((_) => encodeReply(request, _))
       )
     })
@@ -371,7 +374,7 @@ function make(
         serialization.encode(msgSchema, msg),
         Effect.flatMap((bytes) =>
           pipe(
-            decodeRequest(BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)),
+            decodeRequest(SerializedEnvelope.make(entityId, recipientTypeName, bytes, replyId)),
             Effect.flatMap(([request, entityManager]) => entityManager.send(entityId, request, replyId))
           )
         )
@@ -408,10 +411,10 @@ function make(
         Effect.flatMap((bytes) => {
           const errorHandling = (_: never) => Effect.die("Not handled yet")
 
-          const binaryMessage = BinaryMessage.make(entityId, recipientTypeName, bytes, replyId)
+          const envelope = SerializedEnvelope.make(entityId, recipientTypeName, bytes, replyId)
 
           return pipe(
-            pods.sendMessage(pod, binaryMessage),
+            pods.sendMessage(pod, envelope),
             Effect.tapError(errorHandling),
             Effect.flatMap((_) => decodeReply(msg, _)),
             Effect.unified

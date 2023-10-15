@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import type * as BinaryMessage from "@effect/cluster/BinaryMessage"
-import type * as ByteArray from "@effect/cluster/ByteArray"
 import type * as PodAddress from "@effect/cluster/PodAddress"
+import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
+import type * as SerializedMessage from "@effect/cluster/SerializedMessage"
 import type * as ShardId from "@effect/cluster/ShardId"
 import type * as ShardingError from "@effect/cluster/ShardingError"
 import { Tag } from "effect/Context"
@@ -68,11 +68,11 @@ export interface Pods {
    */
   readonly sendMessage: (
     pod: PodAddress.PodAddress,
-    message: BinaryMessage.BinaryMessage
+    envelope: SerializedEnvelope.SerializedEnvelope
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<ByteArray.ByteArray>
+    Option.Option<SerializedMessage.SerializedMessage>
   >
 }
 

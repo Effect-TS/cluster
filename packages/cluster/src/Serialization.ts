@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as ByteArray from "@effect/cluster/ByteArray"
+import * as SerializedMessage from "@effect/cluster/SerializedMessage"
 import * as ShardingError from "@effect/cluster/ShardingError"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
@@ -42,7 +42,7 @@ export interface Serialization {
   readonly encode: <I, A>(
     schema: Schema.Schema<I, A>,
     message: A
-  ) => Effect.Effect<never, ShardingError.ShardingErrorSerialization, ByteArray.ByteArray>
+  ) => Effect.Effect<never, ShardingError.ShardingErrorSerialization, SerializedMessage.SerializedMessage>
 
   /**
    * Transform binary back into the given type
@@ -50,7 +50,7 @@ export interface Serialization {
    */
   readonly decode: <I, A>(
     schema: Schema.Schema<I, A>,
-    bytes: ByteArray.ByteArray
+    bytes: SerializedMessage.SerializedMessage
   ) => Effect.Effect<never, ShardingError.ShardingErrorSerialization, A>
 }
 
@@ -90,7 +90,7 @@ export const json = Layer.succeed(Serialization, {
   encode: (schema, message) =>
     pipe(
       jsonStringify(message, schema),
-      Effect.map(ByteArray.make)
+      Effect.map(SerializedMessage.make)
     ),
   decode: (schema, body) => jsonParse(body.value, schema)
 })

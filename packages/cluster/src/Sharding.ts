@@ -1,13 +1,13 @@
 /**
  * @since 1.0.0
  */
-import type * as BinaryMessage from "@effect/cluster/BinaryMessage"
 import type { Broadcaster } from "@effect/cluster/Broadcaster"
-import type * as ByteArray from "@effect/cluster/ByteArray"
 import type { Messenger } from "@effect/cluster/Messenger"
 import type * as PodAddress from "@effect/cluster/PodAddress"
 import type * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import type * as RecipentType from "@effect/cluster/RecipientType"
+import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
+import type * as SerializedMessage from "@effect/cluster/SerializedMessage"
 import type * as ShardId from "@effect/cluster/ShardId"
 import type * as ShardingError from "@effect/cluster/ShardingError"
 import type * as ShardingRegistrationEvent from "@effect/cluster/ShardingRegistrationEvent"
@@ -63,11 +63,11 @@ export interface Sharding {
   readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly sendToLocalEntity: (
-    msg: BinaryMessage.BinaryMessage
+    msg: SerializedEnvelope.SerializedEnvelope
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<ByteArray.ByteArray>
+    Option.Option<SerializedMessage.SerializedMessage>
   >
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
 }
