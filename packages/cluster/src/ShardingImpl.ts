@@ -5,7 +5,6 @@ import * as BinaryMessage from "@effect/cluster/BinaryMessage"
 import type * as Broadcaster from "@effect/cluster/Broadcaster"
 import type * as ByteArray from "@effect/cluster/ByteArray"
 import * as EntityManager from "@effect/cluster/EntityManager"
-import * as EntityState from "@effect/cluster/EntityState"
 import * as Message from "@effect/cluster/Message"
 import type { Messenger } from "@effect/cluster/Messenger"
 import * as PodAddress from "@effect/cluster/PodAddress"
@@ -50,7 +49,7 @@ function make(
   address: PodAddress.PodAddress,
   config: ShardingConfig.ShardingConfig,
   shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress.PodAddress>>,
-  entityStates: Ref.Ref<HashMap.HashMap<string, EntityState.EntityState>>,
+  entityManagers: Ref.Ref<HashMap.HashMap<string, EntityManager.EntityManager<unknown>>>,
   singletons: Synchronized.SynchronizedRef<
     List.List<SingletonEntry>
   >,
@@ -70,19 +69,19 @@ function make(
     readonly [Req, EntityManager.EntityManager<Req>]
   > {
     return pipe(
-      Ref.get(entityStates),
+      Ref.get(entityManagers),
       Effect.map(HashMap.get(binaryMessage.entityType)),
       Effect.flatMap((_) =>
         Effect.unified(Option.match(_, {
           onNone: () =>
             Effect.fail(ShardingError.ShardingErrorEntityTypeNotRegistered(binaryMessage.entityType, address)),
-          onSome: (entityState) =>
+          onSome: (entityManager) =>
             pipe(
               serialization.decode(
-                (entityState.entityManager as EntityManager.EntityManager<Req>).recipientType.schema,
+                (entityManager as EntityManager.EntityManager<Req>).recipientType.schema,
                 binaryMessage.body
               ),
-              Effect.map((request) => [request, entityState.entityManager as EntityManager.EntityManager<Req>] as const)
+              Effect.map((request) => [request, entityManager as EntityManager.EntityManager<Req>] as const)
             )
         }))
       )
@@ -136,12 +135,12 @@ function make(
           Effect.zipRight(pipe(isShuttingDownRef, Ref.set(true))),
           Effect.zipRight(
             pipe(
-              Ref.get(entityStates),
+              Ref.get(entityManagers),
               Effect.flatMap(
                 Effect.forEach(
-                  ([name, entityState]) =>
+                  ([name, entityManager]) =>
                     pipe(
-                      entityState.entityManager.terminateAllEntities,
+                      entityManager.terminateAllEntities,
                       Effect.catchAllCause(
                         (_) => Effect.logError("Error during stop of entity " + name, _)
                       )
@@ -377,7 +376,7 @@ function make(
     } else if (equals(pod, address)) {
       // if pod = self, shortcut and send directly without serialization
       return pipe(
-        Ref.get(entityStates),
+        Ref.get(entityManagers),
         Effect.flatMap(
           (_) =>
             pipe(
@@ -388,8 +387,8 @@ function make(
                     Effect.fail<ShardingError.ShardingError>(
                       ShardingError.ShardingErrorEntityTypeNotRegistered(recipientTypeName, pod)
                     ),
-                  onSome: (state) =>
-                    (state.entityManager as EntityManager.EntityManager<Msg>).send(
+                  onSome: (entityManager) =>
+                    (entityManager as EntityManager.EntityManager<Msg>).send(
                       entityId,
                       msg,
                       replyId
@@ -668,7 +667,7 @@ function make(
       )
 
       yield* $(
-        Ref.update(entityStates, HashMap.set(recipientType.name, EntityState.make(entityManager as any)))
+        Ref.update(entityManagers, HashMap.set(recipientType.name, entityManager as any))
       )
     })
   }
@@ -711,7 +710,7 @@ export const live = Layer.scoped(
     const storage = yield* _(Storage.Storage)
     const serialization = yield* _(Serialization.Serialization)
     const shardsCache = yield* _(Ref.make(HashMap.empty<ShardId.ShardId, PodAddress.PodAddress>()))
-    const entityStates = yield* _(Ref.make(HashMap.empty<string, EntityState.EntityState>()))
+    const entityManagers = yield* _(Ref.make(HashMap.empty<string, EntityManager.EntityManager<unknown>>()))
     const shuttingDown = yield* _(Ref.make(false))
     const eventsHub = yield* _(PubSub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>())
     const singletons = yield* _(Synchronized.make<List.List<SingletonEntry>>(List.nil()))
@@ -730,7 +729,7 @@ export const live = Layer.scoped(
       PodAddress.make(config.selfHost, config.shardingPort),
       config,
       shardsCache,
-      entityStates,
+      entityManagers,
       singletons,
       shuttingDown,
       shardManager,
