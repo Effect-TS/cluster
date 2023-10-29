@@ -45,13 +45,13 @@
     "path-browserify": "^1.0.1"
   },
   "devDependencies": {
-    "effect": "2.0.0-next.49",
-    "@effect/schema": "^0.44.0",
+    "effect": "2.0.0-next.52",
+    "@effect/schema": "^0.46.2",
     "@types/mime": "^3.0.1",
     "@types/path-browserify": "^1.0.0"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.49",
-    "@effect/schema": "^0.44.0"
+    "effect": "2.0.0-next.52",
+    "@effect/schema": "^0.46.2"
   }
 }
