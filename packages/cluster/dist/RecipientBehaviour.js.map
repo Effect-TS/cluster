@@ -1,0 +1,1 @@
+{"version":3,"file":"RecipientBehaviour.js","names":["_Context","require","RecipientBehaviourContext","Tag","exports"],"sources":["./src/RecipientBehaviour.ts"],"sourcesContent":[null],"mappings":";;;;;;AAQA,IAAAA,QAAA,gBAAAC,OAAA;AAiBA;;;;;AAKO,MAAMC,yBAAyB,gBAAG,IAAAC,YAAG,GAA6B;AAAAC,OAAA,CAAAF,yBAAA,GAAAA,yBAAA"}

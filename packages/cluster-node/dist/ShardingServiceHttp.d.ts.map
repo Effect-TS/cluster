@@ -1,0 +1,1 @@
+{"version":3,"file":"ShardingServiceHttp.d.ts","sourceRoot":"","sources":["./src/ShardingServiceHttp.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,QAAQ,MAAM,0BAA0B,CAAA;AACpD,OAAO,KAAK,cAAc,MAAM,gCAAgC,CAAA;AAChE,OAAO,KAAK,IAAI,MAAM,kCAAkC,CAAA;AAIxD,OAAO,KAAK,KAAK,MAAM,cAAc,CAAA;AASrC;;;GAGG;AACH,eAAO,MAAM,mBAAmB,8FA4CC,CAAA"}

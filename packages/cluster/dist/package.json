@@ -1,0 +1,36 @@
+{
+  "name": "@effect/cluster",
+  "version": "0.13.9",
+  "description": "Unified interfaces for common platform-specific services",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/effect-ts/cluster.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    "./*": {
+      "import": {
+        "types": "./*.d.ts",
+        "default": "./mjs/*.mjs"
+      },
+      "require": {
+        "types": "./*.d.ts",
+        "default": "./*.js"
+      }
+    }
+  },
+  "sideEffects": [],
+  "author": "Effect contributors",
+  "dependencies": {
+    "find-my-way": "^7.6.2",
+    "mime": "^3.0.0",
+    "path-browserify": "^1.0.1"
+  },
+  "peerDependencies": {
+    "effect": "2.0.0-next.49",
+    "@effect/schema": "^0.44.0"
+  }
+}

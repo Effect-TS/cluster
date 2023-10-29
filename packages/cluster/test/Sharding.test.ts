@@ -130,10 +130,10 @@ describe.concurrent("SampleTests", () => {
 
       const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
 
-      yield* _(Sharding.registerEntity(SampleEntity, (recipientContext) =>
+      yield* _(Sharding.registerEntity(SampleEntity, ({ dequeue }) =>
         pipe(
-          PoisonPill.takeOrInterrupt(recipientContext.dequeue),
-          Effect.flatMap((msg) => recipientContext.reply(msg, 42))
+          PoisonPill.takeOrInterrupt(dequeue),
+          Effect.flatMap((msg) => msg.replier.reply(42))
         )))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
@@ -169,7 +169,7 @@ describe.concurrent("SampleTests", () => {
                 case "BroadcastIncrement":
                   return Ref.update(ref, (_) => _ + 1)
                 case "GetIncrement":
-                  return Effect.flatMap(Ref.get(ref), (_) => recipientContext.reply(msg, _))
+                  return Effect.flatMap(Ref.get(ref), msg.replier.reply)
               }
             }),
             Effect.forever

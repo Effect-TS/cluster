@@ -5,9 +5,8 @@ import * as EntityState from "@effect/cluster/EntityState"
 import type * as Message from "@effect/cluster/Message"
 import * as MessageQueue from "@effect/cluster/MessageQueue"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
-import type * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
+import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import type * as RecipientType from "@effect/cluster/RecipientType"
-import type * as Replier from "@effect/cluster/Replier"
 import * as ReplyChannel from "@effect/cluster/ReplyChannel"
 import type * as ReplyId from "@effect/cluster/ReplyId"
 import type * as ShardId from "@effect/cluster/ShardId"
@@ -63,7 +62,7 @@ export function make<R, Req>(
   return Effect.gen(function*(_) {
     const entityMaxIdle = options.entityMaxIdleTime || Option.none()
     const messageQueueConstructor = options.messageQueueConstructor || MessageQueue.inMemory
-    const env = yield* _(Effect.context<R>())
+    const env = yield* _(Effect.context<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>>())
     const entityStates = yield* _(
       RefSynchronized.make<
         HashMap.HashMap<
@@ -75,9 +74,9 @@ export function make<R, Req>(
     const replyChannels = yield* _(RefSynchronized.make(
       HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>()
     ))
-    const behaviour: RecipientBehaviour.RecipientBehaviour<never, Req> = (
-      recipientContext
-    ) => Effect.provide(behaviour_(recipientContext), env)
+    // const behaviour: RecipientBehaviour.RecipientBehaviour<never, Req> = (
+    //   recipientContext
+    // ) => Effect.provide(behaviour_(recipientContext), env)
 
     function initReply(
       id: ReplyId.ReplyId,
@@ -96,18 +95,18 @@ export function make<R, Req>(
       )
     }
 
-    function reply<Reply>(reply: Reply, replier: Replier.Replier<Reply>): Effect.Effect<never, never, void> {
+    function reply<Reply>(replyId: ReplyId.ReplyId, reply: Reply): Effect.Effect<never, never, void> {
       return RefSynchronized.updateEffect(replyChannels, (repliers) =>
         pipe(
           Effect.suspend(() => {
-            const replyChannel = HashMap.get(repliers, replier.id)
+            const replyChannel = HashMap.get(repliers, replyId)
 
             if (Option.isSome(replyChannel)) {
               return (replyChannel.value as ReplyChannel.ReplyChannel<Reply>).reply(reply)
             }
             return Effect.unit
           }),
-          Effect.as(pipe(repliers, HashMap.remove(replier.id)))
+          Effect.as(pipe(repliers, HashMap.remove(replyId)))
         ))
     }
 
@@ -202,11 +201,15 @@ export function make<R, Req>(
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const executionFiber = yield* _(
                       pipe(
-                        behaviour({
+                        behaviour_({
                           entityId,
-                          dequeue: queue.dequeue,
-                          reply: (message, _) => reply(_, message.replier)
+                          dequeue: queue.dequeue
                         }),
+                        Effect.provideService(RecipientBehaviour.RecipientBehaviourContext, {
+                          entityId,
+                          reply
+                        }),
+                        Effect.provide(env),
                         Effect.ensuring(
                           pipe(
                             // remove from entityStates
