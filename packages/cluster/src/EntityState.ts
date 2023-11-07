@@ -1,13 +1,15 @@
 /**
  * @since 1.0.0
  */
-import type * as MessageQueue from "@effect/cluster/MessageQueue"
 import type * as ReplyChannel from "@effect/cluster/ReplyChannel"
 import type * as ReplyId from "@effect/cluster/ReplyId"
+import type * as ShardingError from "@effect/cluster/ShardingError"
 import * as Data from "effect/Data"
+import type * as Effect from "effect/Effect"
 import type * as Fiber from "effect/Fiber"
 import type * as HashMap from "effect/HashMap"
 import * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
 import type * as RefSynchronized from "effect/SynchronizedRef"
 
 /**
@@ -28,12 +30,13 @@ export type TypeId = typeof TypeId
  */
 export interface EntityState<Req> {
   readonly _id: TypeId
-  readonly messageQueue: Option.Option<MessageQueue.MessageQueue<Req>>
+  readonly offer: (message: Req) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
   readonly replyChannels: RefSynchronized.SynchronizedRef<
     HashMap.HashMap<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>
   >
   readonly expirationFiber: Fiber.RuntimeFiber<never, void>
-  readonly executionFiber: Fiber.RuntimeFiber<never, void>
+  readonly executionScope: Scope.CloseableScope
+  readonly terminationFiber: Option.Option<Fiber.RuntimeFiber<never, void>>
 }
 
 /**
@@ -50,8 +53,10 @@ export function make<Req>(
  * @since 1.0.0
  * @category modifiers
  */
-export function withoutMessageQueue<Req>(entityState: EntityState<Req>): EntityState<Req> {
-  return { ...entityState, messageQueue: Option.none() }
+export function withTerminationFiber(
+  terminationFiber: Fiber.RuntimeFiber<never, void>
+): <Req>(entityState: EntityState<Req>) => EntityState<Req> {
+  return (entityState) => ({ ...entityState, terminationFiber: Option.some(terminationFiber) })
 }
 
 /**

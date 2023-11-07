@@ -2,14 +2,17 @@
  * A module that provides utilities to build basic behaviours
  * @since 1.0.0
  */
-import type { MessageQueueConstructor } from "@effect/cluster/MessageQueue"
-import type * as PoisonPill from "@effect/cluster/PoisonPill"
+import * as PoisonPill from "@effect/cluster/PoisonPill"
 import type * as ReplyId from "@effect/cluster/ReplyId"
+import type * as ShardingError from "@effect/cluster/ShardingError"
+import { Deferred } from "effect"
 import { Tag } from "effect/Context"
 import type * as Duration from "effect/Duration"
-import type * as Effect from "effect/Effect"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
 import type * as Option from "effect/Option"
-import type * as Queue from "effect/Queue"
+import * as Queue from "effect/Queue"
+import type * as Scope from "effect/Scope"
 
 /**
  * The context where a RecipientBehaviour is running, knows the current entityId, entityType, etc...
@@ -33,13 +36,14 @@ export const RecipientBehaviourContext = Tag<RecipientBehaviourContext>()
  * @since 1.0.0
  * @category models
  */
-export interface RecipientBehaviour<R, Req> {
+export interface RecipientBehaviour<R, Msg> {
   (
-    args: {
-      readonly entityId: string
-      readonly dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-    }
-  ): Effect.Effect<R | RecipientBehaviourContext, never, void>
+    entityId: string
+  ): Effect.Effect<
+    R | RecipientBehaviourContext | Scope.Scope,
+    never,
+    (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
+  >
 }
 
 /**
@@ -47,7 +51,48 @@ export interface RecipientBehaviour<R, Req> {
  * @since 1.0.0
  * @category utils
  */
-export type EntityBehaviourOptions<Req> = {
-  messageQueueConstructor?: MessageQueueConstructor<Req>
+export type EntityBehaviourOptions = {
   entityMaxIdleTime?: Option.Option<Duration.Duration>
+}
+
+export function fromInMemoryQueue<R, Msg>(
+  handler: (entityId: string, dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
+): RecipientBehaviour<R, Msg> {
+  return (entityId) =>
+    pipe(
+      Deferred.make<never, boolean>(),
+      Effect.flatMap((shutdownCompleted) =>
+        pipe(
+          Effect.acquireRelease(
+            Queue.unbounded<Msg | PoisonPill.PoisonPill>(),
+            (queue) =>
+              pipe(
+                Queue.offer(queue, PoisonPill.make),
+                Effect.zipLeft(Deferred.await(shutdownCompleted)),
+                Effect.uninterruptible
+              )
+          ),
+          Effect.tap((queue) =>
+            pipe(
+              handler(entityId, queue),
+              Effect.ensuring(Deferred.succeed(shutdownCompleted, true)),
+              Effect.forkDaemon
+            )
+          ),
+          Effect.map((queue) => (message: Msg) => Queue.offer(queue, message))
+        )
+      )
+    )
+}
+
+export function mapOffer<Msg1, Msg>(
+  f: (
+    offer: (message: Msg1) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
+  ) => (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
+) {
+  return <R>(base: RecipientBehaviour<R, Msg1>): RecipientBehaviour<R, Msg> => (entityId) =>
+    pipe(
+      base(entityId),
+      Effect.map((offer) => f(offer))
+    )
 }

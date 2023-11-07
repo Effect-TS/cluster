@@ -3,8 +3,6 @@
  */
 import * as EntityState from "@effect/cluster/EntityState"
 import type * as Message from "@effect/cluster/Message"
-import * as MessageQueue from "@effect/cluster/MessageQueue"
-import * as PoisonPill from "@effect/cluster/PoisonPill"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import type * as RecipientType from "@effect/cluster/RecipientType"
 import * as ReplyChannel from "@effect/cluster/ReplyChannel"
@@ -16,11 +14,13 @@ import * as ShardingError from "@effect/cluster/ShardingError"
 import * as Cause from "effect/Cause"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
 import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
+import * as Scope from "effect/Scope"
 import * as RefSynchronized from "effect/SynchronizedRef"
 
 /**
@@ -57,11 +57,10 @@ export function make<R, Req>(
   behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
-  options: RecipientBehaviour.EntityBehaviourOptions<Req> = {}
+  options: RecipientBehaviour.EntityBehaviourOptions = {}
 ) {
   return Effect.gen(function*(_) {
     const entityMaxIdle = options.entityMaxIdleTime || Option.none()
-    const messageQueueConstructor = options.messageQueueConstructor || MessageQueue.inMemory
     const env = yield* _(Effect.context<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>>())
     const entityStates = yield* _(
       RefSynchronized.make<
@@ -71,16 +70,14 @@ export function make<R, Req>(
         >
       >(HashMap.empty())
     )
-    const replyChannels = yield* _(RefSynchronized.make(
-      HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>()
-    ))
-    // const behaviour: RecipientBehaviour.RecipientBehaviour<never, Req> = (
-    //   recipientContext
-    // ) => Effect.provide(behaviour_(recipientContext), env)
+    const replyChannels = yield* _(
+      RefSynchronized.make(HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>())
+    )
 
     function initReply(
       id: ReplyId.ReplyId,
-      replyChannel: ReplyChannel.ReplyChannel<any>
+      replyChannel: ReplyChannel.ReplyChannel<any>,
+      replyChannels: EntityState.EntityState<Req>["replyChannels"]
     ): Effect.Effect<never, never, void> {
       return pipe(
         replyChannels,
@@ -95,7 +92,11 @@ export function make<R, Req>(
       )
     }
 
-    function reply<Reply>(replyId: ReplyId.ReplyId, reply: Reply): Effect.Effect<never, never, void> {
+    function sendReply<Reply>(
+      replyId: ReplyId.ReplyId,
+      reply: Reply,
+      replyChannels: EntityState.EntityState<Req>["replyChannels"]
+    ): Effect.Effect<never, never, void> {
       return RefSynchronized.updateEffect(replyChannels, (repliers) =>
         pipe(
           Effect.suspend(() => {
@@ -128,7 +129,9 @@ export function make<R, Req>(
     /**
      * Begins entity termination (if needed) by sending the PoisonPill, return the fiber to wait for completed termination (if any)
      */
-    function forkEntityTermination(entityId: string) {
+    function forkEntityTermination(
+      entityId: string
+    ): Effect.Effect<never, never, Option.Option<Fiber.RuntimeFiber<never, void>>> {
       return RefSynchronized.modifyEffect(entityStates, (entityStatesMap) =>
         pipe(
           HashMap.get(entityStatesMap, entityId),
@@ -138,19 +141,20 @@ export function make<R, Req>(
             // there is an entry, so we should begin termination
             onSome: (entityState) =>
               pipe(
-                entityState.messageQueue,
+                entityState.terminationFiber,
                 Option.match({
                   // termination has already begun, keep everything as-is
-                  onNone: () => Effect.succeed([Option.some(entityState.executionFiber), entityStatesMap] as const),
+                  onSome: () => Effect.succeed([entityState.terminationFiber, entityStatesMap] as const),
                   // begin to terminate the queue
-                  onSome: (queue) =>
+                  onNone: () =>
                     pipe(
-                      queue.offer(PoisonPill.make),
+                      Scope.close(entityState.executionScope, Exit.unit),
                       Effect.catchAllCause(Effect.logError),
-                      Effect.as(
+                      Effect.forkDaemon,
+                      Effect.map((terminationFiber) =>
                         [
-                          Option.some(entityState.executionFiber),
-                          HashMap.modify(entityStatesMap, entityId, EntityState.withoutMessageQueue)
+                          Option.some(terminationFiber),
+                          HashMap.modify(entityStatesMap, entityId, EntityState.withTerminationFiber(terminationFiber))
                         ] as const
                       )
                     )
@@ -191,58 +195,56 @@ export function make<R, Req>(
                 } else {
                   // queue doesn't exist, create a new one
                   return Effect.gen(function*(_) {
-                    const queue = yield* _(pipe(
-                      messageQueueConstructor(entityId),
-                      Effect.provide(env)
-                    ))
-                    const replyChannels = yield* _(
-                      RefSynchronized.make(HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>())
-                    )
+                    const executionScope = yield* _(Scope.make())
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
-                    const executionFiber = yield* _(
-                      pipe(
-                        behaviour_({
-                          entityId,
-                          dequeue: queue.dequeue
-                        }),
-                        Effect.provideService(RecipientBehaviour.RecipientBehaviourContext, {
-                          entityId,
-                          reply
-                        }),
-                        Effect.provide(env),
-                        Effect.ensuring(
+
+                    const offer = yield* _(pipe(
+                      Effect.acquireRelease(
+                        behaviour_(entityId),
+                        () =>
                           pipe(
-                            // remove from entityStates
-                            RefSynchronized.update(entityStates, HashMap.remove(entityId)),
-                            // shutdown the queue
-                            Effect.zipRight(queue.shutdown),
-                            // interrupt the expiration timer
-                            Effect.zipRight(Fiber.interrupt(expirationFiber)),
-                            // fail all pending reply channels with PodUnavailable
-                            Effect.zipRight(pipe(
-                              RefSynchronized.get(replyChannels),
-                              Effect.flatMap(Effect.forEach(([_, replyChannels]) =>
-                                replyChannels.fail(
-                                  Cause.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
+                            RefSynchronized.modify(
+                              entityStates,
+                              (map) => [HashMap.get(map, entityId), HashMap.remove(map, entityId)] as const
+                            ),
+                            Effect.flatMap(Option.match({
+                              onNone: () => Effect.unit,
+                              onSome: (entityState) =>
+                                pipe(
+                                  // interrupt the expiration timer
+                                  Fiber.interrupt(entityState.expirationFiber),
+                                  // fail all pending reply channels with PodUnavailable
+                                  Effect.zipRight(pipe(
+                                    RefSynchronized.get(entityState.replyChannels),
+                                    Effect.flatMap(Effect.forEach(([_, replyChannels]) =>
+                                      replyChannels.fail(
+                                        Cause.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
+                                      )
+                                    ))
+                                  ))
                                 )
-                              ))
-                            ))
+                            }))
                           )
-                        ),
-                        Effect.forkDaemon
-                      )
-                    )
+                      ),
+                      Effect.provideService(RecipientBehaviour.RecipientBehaviourContext, {
+                        entityId,
+                        reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
+                      }),
+                      Effect.provide(env),
+                      Scope.extend(executionScope)
+                    ))
 
                     return [
-                      Option.some(queue),
+                      Option.some(offer),
                       HashMap.set(
                         map,
                         entityId,
                         EntityState.make({
-                          messageQueue: Option.some(queue),
+                          offer,
                           expirationFiber,
-                          executionFiber,
-                          replyChannels
+                          executionScope,
+                          replyChannels,
+                          terminationFiber: Option.none()
                         })
                       )
                     ] as const
@@ -251,23 +253,23 @@ export function make<R, Req>(
               }),
             onSome: (entityState) =>
               pipe(
-                entityState.messageQueue,
+                entityState.terminationFiber,
                 Option.match({
-                  // queue exists, delay the interruption fiber and return the queue
-                  onSome: () =>
+                  // offer exists, delay the interruption fiber and return the offer
+                  onNone: () =>
                     pipe(
                       Fiber.interrupt(entityState.expirationFiber),
                       Effect.zipRight(startExpirationFiber(entityId)),
                       Effect.map(
                         (fiber) =>
                           [
-                            entityState.messageQueue,
+                            Option.some(entityState.offer),
                             HashMap.modify(map, entityId, EntityState.withExpirationFiber(fiber))
                           ] as const
                       )
                     ),
                   // the queue is shutting down, stash and retry
-                  onNone: () => Effect.succeed([Option.none(), map] as const)
+                  onSome: () => Effect.succeed([Option.none(), map] as const)
                 })
               )
           })
@@ -298,20 +300,20 @@ export function make<R, Req>(
                   Effect.sleep(Duration.millis(100)),
                   Effect.flatMap(() => send(entityId, req, replyId))
                 ),
-              onSome: (messageQueue) => {
+              onSome: (offer) => {
                 return pipe(
                   replyId,
                   Option.match({
                     onNone: () =>
                       pipe(
-                        messageQueue.offer(req),
+                        offer(req),
                         Effect.as(Option.none())
                       ),
                     onSome: (replyId_) =>
                       pipe(
                         ReplyChannel.make<Message.Success<A>>(),
-                        Effect.tap((replyChannel) => initReply(replyId_, replyChannel)),
-                        Effect.zipLeft(messageQueue.offer(req)),
+                        Effect.tap((replyChannel) => initReply(replyId_, replyChannel, replyChannels)),
+                        Effect.zipLeft(offer(req)),
                         Effect.flatMap((_) => _.output)
                       )
                   })
@@ -343,10 +345,10 @@ export function make<R, Req>(
               forkEntityTermination(entityId),
               Effect.flatMap(Option.match({
                 onNone: () => Effect.unit,
-                onSome: (executionFiber) =>
+                onSome: (terminationFiber) =>
                   pipe(
                     Effect.logDebug("Waiting for shutdown of " + entityId),
-                    Effect.zipRight(Fiber.await(executionFiber)),
+                    Effect.zipRight(Fiber.await(terminationFiber)),
                     Effect.timeout(config.entityTerminationTimeout),
                     Effect.flatMap(Option.match({
                       onNone: () =>
