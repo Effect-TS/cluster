@@ -1,0 +1,9 @@
+remote_theme: mikearnaldi/just-the-docs
+search_enabled: true
+aux_links:
+  "Docs":
+    - "//effect-ts.github.io/cluster"
+  "API Reference":
+    - "//effect-ts.github.io/cluster/docs/cluster"
+  "GitHub":
+    - "//github.com/effect-ts/cluster"

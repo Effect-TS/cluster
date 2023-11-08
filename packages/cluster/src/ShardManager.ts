@@ -12,6 +12,7 @@ import { ShardingErrorPodNoLongerRegistered } from "@effect/cluster/ShardingErro
 import * as ShardingEvent from "@effect/cluster/ShardingEvent"
 import * as ShardManagerState from "@effect/cluster/ShardManagerState"
 import * as Storage from "@effect/cluster/Storage"
+import { groupBy, minByOption, showHashSet } from "@effect/cluster/utils"
 import * as Chunk from "effect/Chunk"
 import * as Clock from "effect/Clock"
 import { Tag } from "effect/Context"
@@ -28,7 +29,6 @@ import * as Schedule from "effect/Schedule"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
 import * as RefSynchronized from "effect/SynchronizedRef"
-import { groupBy, minByOption, showHashSet } from "./utils"
 
 /**
  * @since 1.0.0

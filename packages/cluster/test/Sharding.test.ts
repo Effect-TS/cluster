@@ -11,15 +11,14 @@ import * as ShardingError from "@effect/cluster/ShardingError"
 import * as ShardingImpl from "@effect/cluster/ShardingImpl"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
-import { assertFalse, assertTrue } from "@effect/cluster/test/util"
 import * as Schema from "@effect/schema/Schema"
-import { Fiber } from "effect"
 import * as Cause from "effect/Cause"
 import { Tag } from "effect/Context"
 import * as Deferred from "effect/Deferred"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
+import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as Layer from "effect/Layer"
@@ -28,6 +27,7 @@ import * as LogLevel from "effect/LogLevel"
 import * as Option from "effect/Option"
 import * as Queue from "effect/Queue"
 import * as Ref from "effect/Ref"
+import { describe, expect, it } from "vitest"
 
 interface SampleService {
   value: number
@@ -74,7 +74,7 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")(1))
 
-      assertTrue(yield* _(Ref.get(received)))
+      expect(yield* _(Ref.get(received))).toBe(true)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
@@ -86,13 +86,13 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       const exit = yield* _(messenger.sendDiscard("entity1")(1).pipe(Effect.exit))
 
-      assertTrue(Exit.isFailure(exit))
+      expect(Exit.isFailure(exit)).toBe(true)
 
       if (Exit.isFailure(exit)) {
         const error = Cause.failureOption(exit.cause)
-        assertTrue(Option.isSome(error))
+        expect(Option.isSome(error)).toBe(true)
         if (Option.isSome(error)) {
-          assertTrue(ShardingError.isShardingErrorEntityTypeNotRegistered(error.value))
+          expect(ShardingError.isShardingErrorEntityTypeNotRegistered(error.value)).toBe(true)
         }
       }
     }).pipe(withTestEnv, Effect.runPromise)
@@ -120,8 +120,8 @@ describe.concurrent("SampleTests", () => {
       yield* _(messenger.sendDiscard("entity1")(1))
       yield* _(messenger.sendDiscard("entity2")(2))
 
-      assertTrue(1 === (yield* _(Ref.get(result1))))
-      assertTrue(2 === (yield* _(Ref.get(result2))))
+      expect(yield* _(Ref.get(result1))).toBe(1)
+      expect(yield* _(Ref.get(result2))).toBe(2)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
@@ -150,7 +150,7 @@ describe.concurrent("SampleTests", () => {
       const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
       const result = yield* _(messenger.send("entity1")(msg))
 
-      assertTrue(result === 42)
+      expect(result).toEqual(42)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
@@ -198,7 +198,7 @@ describe.concurrent("SampleTests", () => {
       const msg = yield* _(GetIncrement.makeEffect({ _tag: "GetIncrement" }))
       const c1 = yield* _(broadcaster.broadcast("c1")(msg))
 
-      assertTrue(1 === HashMap.size(c1)) // Here we have just one pod, so there will be just one incrementer
+      expect(HashMap.size(c1)).toBe(1) // Here we have just one pod, so there will be just one incrementer
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
@@ -230,8 +230,10 @@ describe.concurrent("SampleTests", () => {
                   Effect.zipRight(Effect.interrupt)
                 )
               }
-
-              return Deferred.succeed(entityStarted, true)
+              switch (msg._tag) {
+                case "Awake":
+                  return Deferred.succeed(entityStarted, true)
+              }
             }),
             Effect.forever
           )
@@ -242,7 +244,7 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(entityStarted))
-    }).pipe(withTestEnv, Effect.runPromise).then(() => assertTrue(entityInterrupted))
+    }).pipe(withTestEnv, Effect.runPromise).then(() => expect(entityInterrupted).toBe(true))
   })
 
   it("Ensure graceful shutdown is completed if shard is terminated", () => {
@@ -266,14 +268,13 @@ describe.concurrent("SampleTests", () => {
             Effect.flatMap((msg) => {
               if (PoisonPill.isPoisonPill(msg)) {
                 return pipe(
-                  Effect.sleep(Duration.seconds(2)),
+                  Effect.sleep(Duration.seconds(3)),
                   Effect.zipRight(Effect.logDebug("Shutting down...")),
                   Effect.zipRight(
                     Effect.sync(() => {
                       shutdownCompleted = true
                     })
                   ),
-                  Effect.zipRight(Effect.logDebug("Shutdown completed.")),
                   Effect.flatMap(() => Effect.interrupt)
                 )
               }
@@ -288,7 +289,7 @@ describe.concurrent("SampleTests", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(entityStarted))
-    }).pipe(withTestEnv, Effect.runPromise).then(() => assertTrue(shutdownCompleted))
+    }).pipe(withTestEnv, Effect.runPromise).then(() => expect(shutdownCompleted).toBe(true))
   })
 
   it("Ensure graceful shutdown is completed if entity terminates, and then shard is terminated too", () => {
@@ -341,7 +342,7 @@ describe.concurrent("SampleTests", () => {
       yield* _(messenger.sendDiscard("entity1")({ _tag: "Awake" }))
       yield* _(Deferred.await(entityStarted))
       yield* _(Deferred.await(shutdownReceived))
-    }).pipe(withTestEnv, Effect.runPromise).then(() => assertTrue(shutdownCompleted))
+    }).pipe(withTestEnv, Effect.runPromise).then(() => expect(shutdownCompleted).toBe(true))
   })
 
   it("Singletons should start", () => {
@@ -356,7 +357,7 @@ describe.concurrent("SampleTests", () => {
         )
       )
 
-      assertTrue(yield* _(Deferred.await(received)))
+      expect(yield* _(Deferred.await(received))).toBe(true)
     }).pipe(
       Effect.provide(inMemorySharding),
       Effect.scoped,
@@ -379,7 +380,7 @@ describe.concurrent("SampleTests", () => {
         )
       )
 
-      assertTrue(yield* _(Deferred.await(received)))
+      expect(yield* _(Deferred.await(received))).toBe(true)
     }).pipe(
       Effect.provide(inMemorySharding),
       Effect.scoped,
@@ -413,15 +414,15 @@ describe.concurrent("SampleTests", () => {
         Effect.catchTag(ShardingError.ShardingErrorMessageQueueTag, () => Ref.set(failed, true))
       )
 
-      assertTrue(yield* _(Ref.get(failed)))
-      assertFalse(yield* _(Ref.get(received)))
+      expect(yield* _(Ref.get(failed))).toBe(true)
+      expect(yield* _(Ref.get(received))).toBe(false)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Upon entity termination, pending replies should get errored", () => {
     return Effect.gen(function*(_) {
       const requestReceived = yield* _(Deferred.make<never, boolean>())
-      yield* _(Sharding.register)
+      yield* _(Sharding.registerScoped)
       const SampleRequest = Message.schema(Schema.number)(
         Schema.struct({
           _tag: Schema.literal("Request")
@@ -449,7 +450,7 @@ describe.concurrent("SampleTests", () => {
             Effect.forever
           )
         ),
-        { entityMaxIdleTime: Option.some(Duration.millis(1000)) }
+        { entityMaxIdleTime: Option.some(Duration.millis(100)) }
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
@@ -463,8 +464,8 @@ describe.concurrent("SampleTests", () => {
       const exit = yield* _(Fiber.await(replyFiber))
       const expectedExit = Exit.fail(ShardingError.ShardingErrorSendTimeout())
 
-      assertTrue(Exit.isFailure(exit))
-      assertTrue(exit.toString() === expectedExit.toString())
+      expect(Exit.isFailure(exit)).toBe(true)
+      expect(exit.toString() === expectedExit.toString()).toBe(true)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 })

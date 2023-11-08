@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import * as Schema from "@effect/schema/Schema"
-import * as crypto from "crypto"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
