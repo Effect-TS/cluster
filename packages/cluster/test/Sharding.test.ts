@@ -13,6 +13,7 @@ import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
 import { assertFalse, assertTrue } from "@effect/cluster/test/util"
 import * as Schema from "@effect/schema/Schema"
+import { Fiber } from "effect"
 import * as Cause from "effect/Cause"
 import { Tag } from "effect/Context"
 import * as Deferred from "effect/Deferred"
@@ -45,7 +46,7 @@ describe.concurrent("SampleTests", () => {
     Layer.use(
       ShardingConfig.withDefaults({
         simulateRemotePods: true,
-        entityTerminationTimeout: Duration.millis(3000),
+        entityTerminationTimeout: Duration.millis(4000),
         sendTimeout: Duration.millis(1000)
       })
     )
@@ -229,10 +230,8 @@ describe.concurrent("SampleTests", () => {
                   Effect.zipRight(Effect.interrupt)
                 )
               }
-              switch (msg._tag) {
-                case "Awake":
-                  return Deferred.succeed(entityStarted, true)
-              }
+
+              return Deferred.succeed(entityStarted, true)
             }),
             Effect.forever
           )
@@ -267,13 +266,14 @@ describe.concurrent("SampleTests", () => {
             Effect.flatMap((msg) => {
               if (PoisonPill.isPoisonPill(msg)) {
                 return pipe(
-                  Effect.sleep(Duration.seconds(3)),
+                  Effect.sleep(Duration.seconds(2)),
                   Effect.zipRight(Effect.logDebug("Shutting down...")),
                   Effect.zipRight(
                     Effect.sync(() => {
                       shutdownCompleted = true
                     })
                   ),
+                  Effect.zipRight(Effect.logDebug("Shutdown completed.")),
                   Effect.flatMap(() => Effect.interrupt)
                 )
               }
@@ -420,7 +420,8 @@ describe.concurrent("SampleTests", () => {
 
   it("Upon entity termination, pending replies should get errored", () => {
     return Effect.gen(function*(_) {
-      yield* _(Sharding.registerScoped)
+      const requestReceived = yield* _(Deferred.make<never, boolean>())
+      yield* _(Sharding.register)
       const SampleRequest = Message.schema(Schema.number)(
         Schema.struct({
           _tag: Schema.literal("Request")
@@ -440,23 +441,30 @@ describe.concurrent("SampleTests", () => {
             PoisonPill.takeOrInterrupt(dequeue),
             Effect.flatMap(() => {
               // ignored reply as part of test case
-              return Effect.unit
+              return pipe(
+                Deferred.succeed(requestReceived, true),
+                Effect.zipRight(Effect.logDebug("Request received, ignoring reply as part of test case..."))
+              )
             }),
             Effect.forever
           )
         ),
-        { entityMaxIdleTime: Option.some(Duration.millis(100)) }
+        { entityMaxIdleTime: Option.some(Duration.millis(1000)) }
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       const msg = yield* _(SampleRequest.makeEffect({ _tag: "Request" }))
-      const exit = yield* _(
-        Effect.all([messenger.send("entity1")(msg), messenger.sendDiscard("entity1")(PoisonPill.make)]),
-        Effect.exit
+      const replyFiber = yield* _(
+        messenger.send("entity1")(msg),
+        Effect.fork
       )
+      yield* _(Deferred.await(requestReceived))
+      yield* _(Sharding.unregister)
+      const exit = yield* _(Fiber.await(replyFiber))
+      const expectedExit = Exit.fail(ShardingError.ShardingErrorSendTimeout())
 
       assertTrue(Exit.isFailure(exit))
-      // assertTrue(equals(exit, Exit.fail(ShardingError.ShardingErrorSendTimeout())))
+      assertTrue(exit.toString() === expectedExit.toString())
     }).pipe(withTestEnv, Effect.runPromise)
   })
 })

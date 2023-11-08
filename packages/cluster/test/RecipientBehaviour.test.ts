@@ -60,7 +60,6 @@ describe.concurrent("RecipientBehaviour", () => {
           pipe(
             Queue.take(dequeue),
             Effect.flatMap((msg) => {
-              console.log(msg)
               if (PoisonPill.isPoisonPill(msg)) {
                 interrupted = true
                 return Effect.interrupt

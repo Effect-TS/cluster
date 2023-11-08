@@ -137,7 +137,8 @@ function make(
   )
 
   const unregister: Effect.Effect<never, never, void> = pipe(
-    shardManager.getAssignments,
+    Effect.logDebug("Begin unregistering from ShardManager..."),
+    Effect.zipRight(shardManager.getAssignments),
     Effect.matchCauseEffect({
       onFailure: (_) => Effect.logWarning("Shard Manager not available. Can't unregister cleanly", _),
       onSuccess: () =>
@@ -647,7 +648,7 @@ function make(
     })
   }
 
-  const registerScoped = Effect.acquireRelease(register, (_) => Effect.orDie(unregister))
+  const registerScoped = Effect.acquireRelease(register, (_) => unregister)
 
   const self: Sharding.Sharding = {
     getShardId,

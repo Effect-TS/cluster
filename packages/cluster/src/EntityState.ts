@@ -37,6 +37,7 @@ export interface EntityState<Req> {
   readonly expirationFiber: Fiber.RuntimeFiber<never, void>
   readonly executionScope: Scope.CloseableScope
   readonly terminationFiber: Option.Option<Fiber.RuntimeFiber<never, void>>
+  readonly lastReceivedAt: number
 }
 
 /**
@@ -67,4 +68,14 @@ export function withExpirationFiber(
   expirationFiber: Fiber.RuntimeFiber<never, void>
 ): <Req>(entityState: EntityState<Req>) => EntityState<Req> {
   return (entityState) => ({ ...entityState, expirationFiber })
+}
+
+/**
+ * @since 1.0.0
+ * @category modifiers
+ */
+export function withLastReceivedAd(
+  lastReceivedAt: number
+): <Req>(entityState: EntityState<Req>) => EntityState<Req> {
+  return (entityState) => ({ ...entityState, lastReceivedAt })
 }

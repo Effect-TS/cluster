@@ -68,18 +68,25 @@ export function fromInMemoryQueue<R, Msg>(
             (queue) =>
               pipe(
                 Queue.offer(queue, PoisonPill.make),
+                Effect.zipRight(
+                  Effect.logDebug("PoisonPill sent. Waiting for exit of behaviour...")
+                ),
                 Effect.zipLeft(Deferred.await(shutdownCompleted)),
                 Effect.uninterruptible
               )
           ),
           Effect.tap((queue) =>
             pipe(
-              handler(entityId, queue),
+              Effect.logDebug("Behaviour started."),
+              Effect.zipRight(handler(entityId, queue)),
               Effect.ensuring(Deferred.succeed(shutdownCompleted, true)),
+              Effect.zipRight(Effect.logDebug("Behaviour exited.")),
+              Effect.annotateLogs("entityId", entityId),
               Effect.forkDaemon
             )
           ),
-          Effect.map((queue) => (message: Msg) => Queue.offer(queue, message))
+          Effect.map((queue) => (message: Msg) => Queue.offer(queue, message)),
+          Effect.annotateLogs("entityId", entityId)
         )
       )
     )

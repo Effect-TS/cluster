@@ -12,6 +12,7 @@ import type * as Sharding from "@effect/cluster/Sharding"
 import type * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as ShardingError from "@effect/cluster/ShardingError"
 import * as Cause from "effect/Cause"
+import * as Clock from "effect/Clock"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
@@ -70,9 +71,6 @@ export function make<R, Req>(
         >
       >(HashMap.empty())
     )
-    const replyChannels = yield* _(
-      RefSynchronized.make(HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>())
-    )
 
     function initReply(
       id: ReplyId.ReplyId,
@@ -112,22 +110,91 @@ export function make<R, Req>(
     }
 
     function startExpirationFiber(entityId: string) {
+      const maxIdleMillis = pipe(
+        entityMaxIdle,
+        Option.getOrElse(() => config.entityMaxIdleTime),
+        Duration.toMillis
+      )
+
+      function sleep(duration: number): Effect.Effect<never, never, void> {
+        return pipe(
+          Effect.Do,
+          Effect.zipLeft(Clock.sleep(Duration.millis(duration))),
+          Effect.bind("cdt", () => Clock.currentTimeMillis),
+          Effect.bind("map", () => RefSynchronized.get(entityStates)),
+          Effect.let("lastReceivedAt", ({ map }) =>
+            pipe(
+              HashMap.get(map, entityId),
+              Option.map((_) => _.lastReceivedAt),
+              Option.getOrElse(() => 0)
+            )),
+          Effect.let("remaining", ({ cdt, lastReceivedAt }) => (maxIdleMillis - cdt + lastReceivedAt)),
+          Effect.tap((_) => _.remaining > 0 ? sleep(_.remaining) : Effect.unit)
+        )
+      }
+
       return pipe(
-        Effect.sleep(
-          pipe(
-            entityMaxIdle,
-            Option.getOrElse(() => config.entityMaxIdleTime)
-          )
+        sleep(maxIdleMillis),
+        Effect.zipLeft(
+          Effect.logDebug("Entity did not receive new messages, termination starting....")
         ),
         Effect.zipRight(forkEntityTermination(entityId)),
         Effect.asUnit,
         Effect.interruptible,
+        Effect.annotateLogs("entityId", entityId),
+        Effect.annotateLogs("recipientType", recipientType.name),
         Effect.forkDaemon
       )
     }
 
     /**
-     * Begins entity termination (if needed) by sending the PoisonPill, return the fiber to wait for completed termination (if any)
+     * Performs proper termination of the entity, interrupting the expiration timer, closing the scope and failing pending replies
+     */
+    function terminateEntity(entityId: string) {
+      return pipe(
+        // get the things to cleanup
+        RefSynchronized.get(
+          entityStates
+        ),
+        Effect.map(HashMap.get(entityId)),
+        Effect.flatMap(Option.match({
+          // there is no entity state to cleanup
+          onNone: () => Effect.unit,
+          // found it!
+          onSome: (entityState) =>
+            pipe(
+              Effect.logDebug("Termination started..."),
+              // interrupt the expiration timer
+              Effect.ensuring(Fiber.interrupt(entityState.expirationFiber)),
+              // close the scope of the entity,
+              Effect.zipRight(Effect.logDebug("Closing scope...")),
+              Effect.ensuring(Scope.close(entityState.executionScope, Exit.unit)),
+              Effect.zipRight(Effect.logDebug("Closing replyChannels...")),
+              // fail all pending reply channels with PodUnavailable
+              Effect.ensuring(pipe(
+                RefSynchronized.get(entityState.replyChannels),
+                Effect.flatMap(Effect.forEach(([_, replyChannels]) =>
+                  replyChannels.fail(
+                    Cause.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
+                  )
+                ))
+              )),
+              // remove the entry from the map
+              Effect.zipRight(Effect.logDebug("Removing entityState from map...")),
+              Effect.ensuring(RefSynchronized.update(entityStates, HashMap.remove(entityId))),
+              // log error if happens
+              Effect.catchAllCause(Effect.logError),
+              Effect.asUnit,
+              Effect.zipRight(Effect.logDebug("Terminated.")),
+              Effect.annotateLogs("entityId", entityId),
+              Effect.annotateLogs("recipientType", recipientType.name)
+            )
+        }))
+      )
+    }
+
+    /**
+     * Begins entity termination (if needed) and return the fiber to wait for completed termination (if any)
      */
     function forkEntityTermination(
       entityId: string
@@ -148,8 +215,7 @@ export function make<R, Req>(
                   // begin to terminate the queue
                   onNone: () =>
                     pipe(
-                      Scope.close(entityState.executionScope, Exit.unit),
-                      Effect.catchAllCause(Effect.logError),
+                      terminateEntity(entityId),
                       Effect.forkDaemon,
                       Effect.map((terminationFiber) =>
                         [
@@ -160,6 +226,86 @@ export function make<R, Req>(
                     )
                 })
               )
+          })
+        ))
+    }
+
+    function getOrCreateEntityState(
+      entityId: string
+    ): Effect.Effect<
+      never,
+      ShardingError.ShardingErrorEntityNotManagedByThisPod,
+      Option.Option<EntityState.EntityState<Req>>
+    > {
+      return RefSynchronized.modifyEffect(entityStates, (map) =>
+        pipe(
+          HashMap.get(map, entityId),
+          Option.match({
+            onSome: (entityState) =>
+              pipe(
+                entityState.terminationFiber,
+                Option.match({
+                  // offer exists, delay the interruption fiber and return the offer
+                  onNone: () =>
+                    pipe(
+                      Clock.currentTimeMillis,
+                      Effect.map(
+                        (cdt) =>
+                          [
+                            Option.some(entityState),
+                            HashMap.modify(map, entityId, EntityState.withLastReceivedAd(cdt))
+                          ] as const
+                      )
+                    ),
+                  // the queue is shutting down, stash and retry
+                  onSome: () => Effect.succeed([Option.none(), map] as const)
+                })
+              ),
+            onNone: () =>
+              Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
+                if (isGoingDown) {
+                  // don't start any fiber while sharding is shutting down
+                  return Effect.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
+                } else {
+                  // offer doesn't exist, create a new one
+                  return Effect.gen(function*(_) {
+                    const executionScope = yield* _(Scope.make())
+                    const expirationFiber = yield* _(startExpirationFiber(entityId))
+                    const cdt = yield* _(Clock.currentTimeMillis)
+                    const replyChannels = yield* _(
+                      RefSynchronized.make(HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>())
+                    )
+
+                    const offer = yield* _(pipe(
+                      behaviour_(entityId),
+                      Scope.extend(executionScope),
+                      Effect.provideService(RecipientBehaviour.RecipientBehaviourContext, {
+                        entityId,
+                        reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
+                      }),
+                      Effect.provide(env)
+                    ))
+
+                    const entityState = EntityState.make({
+                      offer,
+                      expirationFiber,
+                      executionScope,
+                      replyChannels,
+                      terminationFiber: Option.none(),
+                      lastReceivedAt: cdt
+                    })
+
+                    return [
+                      Option.some(entityState),
+                      HashMap.set(
+                        map,
+                        entityId,
+                        entityState
+                      )
+                    ] as const
+                  })
+                }
+              })
           })
         ))
     }
@@ -177,105 +323,6 @@ export function make<R, Req>(
         Message.Success<A>
       >
     > {
-      function decide(
-        map: HashMap.HashMap<
-          string,
-          EntityState.EntityState<Req>
-        >,
-        entityId: string
-      ) {
-        return pipe(
-          HashMap.get(map, entityId),
-          Option.match({
-            onNone: () =>
-              Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
-                if (isGoingDown) {
-                  // don't start any fiber while sharding is shutting down
-                  return Effect.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
-                } else {
-                  // queue doesn't exist, create a new one
-                  return Effect.gen(function*(_) {
-                    const executionScope = yield* _(Scope.make())
-                    const expirationFiber = yield* _(startExpirationFiber(entityId))
-
-                    const offer = yield* _(pipe(
-                      Effect.acquireRelease(
-                        behaviour_(entityId),
-                        () =>
-                          pipe(
-                            RefSynchronized.modify(
-                              entityStates,
-                              (map) => [HashMap.get(map, entityId), HashMap.remove(map, entityId)] as const
-                            ),
-                            Effect.flatMap(Option.match({
-                              onNone: () => Effect.unit,
-                              onSome: (entityState) =>
-                                pipe(
-                                  // interrupt the expiration timer
-                                  Fiber.interrupt(entityState.expirationFiber),
-                                  // fail all pending reply channels with PodUnavailable
-                                  Effect.zipRight(pipe(
-                                    RefSynchronized.get(entityState.replyChannels),
-                                    Effect.flatMap(Effect.forEach(([_, replyChannels]) =>
-                                      replyChannels.fail(
-                                        Cause.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
-                                      )
-                                    ))
-                                  ))
-                                )
-                            }))
-                          )
-                      ),
-                      Effect.provideService(RecipientBehaviour.RecipientBehaviourContext, {
-                        entityId,
-                        reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
-                      }),
-                      Effect.provide(env),
-                      Scope.extend(executionScope)
-                    ))
-
-                    return [
-                      Option.some(offer),
-                      HashMap.set(
-                        map,
-                        entityId,
-                        EntityState.make({
-                          offer,
-                          expirationFiber,
-                          executionScope,
-                          replyChannels,
-                          terminationFiber: Option.none()
-                        })
-                      )
-                    ] as const
-                  })
-                }
-              }),
-            onSome: (entityState) =>
-              pipe(
-                entityState.terminationFiber,
-                Option.match({
-                  // offer exists, delay the interruption fiber and return the offer
-                  onNone: () =>
-                    pipe(
-                      Fiber.interrupt(entityState.expirationFiber),
-                      Effect.zipRight(startExpirationFiber(entityId)),
-                      Effect.map(
-                        (fiber) =>
-                          [
-                            Option.some(entityState.offer),
-                            HashMap.modify(map, entityId, EntityState.withExpirationFiber(fiber))
-                          ] as const
-                      )
-                    ),
-                  // the queue is shutting down, stash and retry
-                  onSome: () => Effect.succeed([Option.none(), map] as const)
-                })
-              )
-          })
-        )
-      }
-
       return pipe(
         Effect.Do,
         Effect.tap(() => {
@@ -290,39 +337,38 @@ export function make<R, Req>(
           }
           return Effect.die("Unhandled recipientType")
         }),
-        Effect.bind("test", () => RefSynchronized.modifyEffect(entityStates, (map) => decide(map, entityId))),
-        Effect.flatMap((_) => {
-          return pipe(
-            _.test,
+        Effect.bind("maybeEntityState", () => getOrCreateEntityState(entityId)),
+        Effect.flatMap((_) =>
+          pipe(
+            _.maybeEntityState,
             Option.match({
               onNone: () =>
                 pipe(
                   Effect.sleep(Duration.millis(100)),
                   Effect.flatMap(() => send(entityId, req, replyId))
                 ),
-              onSome: (offer) => {
+              onSome: (entityState) => {
                 return pipe(
                   replyId,
                   Option.match({
                     onNone: () =>
                       pipe(
-                        offer(req),
+                        entityState.offer(req),
                         Effect.as(Option.none())
                       ),
                     onSome: (replyId_) =>
                       pipe(
                         ReplyChannel.make<Message.Success<A>>(),
-                        Effect.tap((replyChannel) => initReply(replyId_, replyChannel, replyChannels)),
-                        Effect.zipLeft(offer(req)),
+                        Effect.tap((replyChannel) => initReply(replyId_, replyChannel, entityState.replyChannels)),
+                        Effect.zipLeft(entityState.offer(req)),
                         Effect.flatMap((_) => _.output)
                       )
                   })
                 )
               }
-            }),
-            Effect.unified
+            })
           )
-        })
+        )
       )
     }
 
@@ -347,17 +393,16 @@ export function make<R, Req>(
                 onNone: () => Effect.unit,
                 onSome: (terminationFiber) =>
                   pipe(
-                    Effect.logDebug("Waiting for shutdown of " + entityId),
-                    Effect.zipRight(Fiber.await(terminationFiber)),
+                    Fiber.await(terminationFiber),
                     Effect.timeout(config.entityTerminationTimeout),
                     Effect.flatMap(Option.match({
                       onNone: () =>
                         Effect.logError(
                           `Entity ${
                             recipientType.name + "#" + entityId
-                          } do not interrupted before entityTerminationTimeout (${
+                          } termination is taking more than expected entityTerminationTimeout (${
                             Duration.toMillis(config.entityTerminationTimeout)
-                          }ms) . Are you sure that you properly handled PoisonPill message?`
+                          }ms).`
                         ),
                       onSome: () =>
                         Effect.logDebug(
