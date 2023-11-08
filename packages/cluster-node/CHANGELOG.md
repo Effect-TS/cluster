@@ -1,1 +1,1 @@
-# @effect/cluster-node
+# @effect/cluster

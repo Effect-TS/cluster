@@ -8,12 +8,12 @@ import * as ShardId from "@effect/cluster/ShardId"
 import * as ShardManager from "@effect/cluster/ShardManager"
 import * as ShardManagerState from "@effect/cluster/ShardManagerState"
 import * as Storage from "@effect/cluster/Storage"
-import { assertTrue } from "@effect/cluster/test/util"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import { describe, expect, it } from "vitest"
 
 describe.concurrent("ShardManagerSpec", () => {
   const pod1 = PodWithMetadata.make(Pod.make(PodAddress.make("1", 1), "1.0.0"), 0)
@@ -33,10 +33,10 @@ describe.concurrent("ShardManagerSpec", () => {
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
 
-    assertTrue(HashMap.has(assignments, pod2.pod.address))
-    assertTrue(HashMap.size(assignments) === 1)
-    assertTrue(HashMap.has(unassignments, pod1.pod.address))
-    assertTrue(HashMap.size(unassignments) === 1)
+    expect(HashMap.has(assignments, pod2.pod.address)).toBe(true)
+    expect(HashMap.size(assignments) === 1).toBe(true)
+    expect(HashMap.has(unassignments, pod1.pod.address)).toBe(true)
+    expect(HashMap.size(unassignments) === 1).toBe(true)
   })
 
   it("Don't rebalance to pod with older version", () => {
@@ -53,8 +53,8 @@ describe.concurrent("ShardManagerSpec", () => {
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
 
-    assertTrue(HashMap.isEmpty(assignments))
-    assertTrue(HashMap.isEmpty(unassignments))
+    expect(HashMap.isEmpty(assignments)).toBe(true)
+    expect(HashMap.isEmpty(unassignments)).toBe(true)
   })
 
   it("Don't rebalance when already well balanced", () => {
@@ -70,8 +70,8 @@ describe.concurrent("ShardManagerSpec", () => {
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
 
-    assertTrue(HashMap.isEmpty(assignments))
-    assertTrue(HashMap.isEmpty(unassignments))
+    expect(HashMap.isEmpty(assignments)).toBe(true)
+    expect(HashMap.isEmpty(unassignments)).toBe(true)
   })
   it("Don't rebalance when only 1 shard difference", () => {
     const state = ShardManagerState.make(
@@ -87,8 +87,8 @@ describe.concurrent("ShardManagerSpec", () => {
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
 
-    assertTrue(HashMap.isEmpty(assignments))
-    assertTrue(HashMap.isEmpty(unassignments))
+    expect(HashMap.isEmpty(assignments)).toBe(true)
+    expect(HashMap.isEmpty(unassignments)).toBe(true)
   })
   it("Rebalance when 2 shard difference", () => {
     const state = ShardManagerState.make(
@@ -105,10 +105,10 @@ describe.concurrent("ShardManagerSpec", () => {
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
 
-    assertTrue(HashMap.has(assignments, pod2.pod.address))
-    assertTrue(HashMap.size(assignments) === 1)
-    assertTrue(HashMap.has(unassignments, pod1.pod.address))
-    assertTrue(HashMap.size(unassignments) === 1)
+    expect(HashMap.has(assignments, pod2.pod.address)).toBe(true)
+    expect(HashMap.size(assignments) === 1).toBe(true)
+    expect(HashMap.has(unassignments, pod1.pod.address)).toBe(true)
+    expect(HashMap.size(unassignments) === 1).toBe(true)
   })
   it("Pick the pod with less shards", () => {
     const state = ShardManagerState.make(
@@ -125,10 +125,10 @@ describe.concurrent("ShardManagerSpec", () => {
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
 
-    assertTrue(HashMap.has(assignments, pod3.pod.address))
-    assertTrue(HashMap.size(assignments) === 1)
-    assertTrue(HashMap.has(unassignments, pod1.pod.address))
-    assertTrue(HashMap.size(unassignments) === 1)
+    expect(HashMap.has(assignments, pod3.pod.address)).toBe(true)
+    expect(HashMap.size(assignments) === 1).toBe(true)
+    expect(HashMap.has(unassignments, pod1.pod.address)).toBe(true)
+    expect(HashMap.size(unassignments) === 1).toBe(true)
   })
 
   it("Don't rebalance if pod list is empty", () => {
@@ -140,8 +140,8 @@ describe.concurrent("ShardManagerSpec", () => {
     )
     const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
 
-    assertTrue(HashMap.isEmpty(assignments))
-    assertTrue(HashMap.isEmpty(unassignments))
+    expect(HashMap.isEmpty(assignments)).toBe(true)
+    expect(HashMap.isEmpty(unassignments)).toBe(true)
   })
 })
 

@@ -1,62 +1,55 @@
 {
+  "include": [],
   "compilerOptions": {
+    "strict": true,
     "moduleDetection": "force",
     "composite": true,
     "downlevelIteration": true,
     "resolveJsonModule": true,
-    "esModuleInterop": true,
+    "esModuleInterop": false,
     "declaration": true,
     "skipLibCheck": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "preserveSymlinks": true,
-    "moduleResolution": "node",
-    "noEmit": false,
+    "moduleResolution": "NodeNext",
     "lib": [
-      "ES2021",
+      "ES2022",
       "DOM",
       "DOM.Iterable"
     ],
+    "isolatedModules": true,
     "sourceMap": true,
     "declarationMap": true,
-    "strict": true,
     "noImplicitReturns": false,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": false,
-    "noErrorTruncation": true,
+    "noErrorTruncation": false,
     "allowJs": false,
     "checkJs": false,
     "forceConsistentCasingInFileNames": true,
-    "stripInternal": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noUncheckedIndexedAccess": false,
     "strictNullChecks": true,
     "baseUrl": ".",
-    "target": "ES2021",
-    "module": "ES6",
+    "target": "ES2022",
+    "module": "NodeNext",
     "incremental": true,
     "removeComments": false,
     "paths": {
       "@effect/cluster/test/*": [
-        "./packages/cluster/test/*"
-      ],
-      "@effect/cluster/examples/*": [
-        "./packages/cluster/examples/*"
+        "./packages/cluster/test/*.js"
       ],
       "@effect/cluster/*": [
-        "./packages/cluster/src/*"
+        "./packages/cluster/src/*.js"
       ],
       "@effect/cluster-node/test/*": [
-        "./packages/cluster-node/test/*"
-      ],
-      "@effect/cluster-node/examples/*": [
-        "./packages/cluster-node/examples/*"
+        "./packages/cluster-node/test/*.js"
       ],
       "@effect/cluster-node/*": [
-        "./packages/cluster-node/src/*"
+        "./packages/cluster-node/src/*.js"
       ]
     },
     "plugins": [
@@ -64,11 +57,5 @@
         "name": "@effect/language-service"
       }
     ]
-  },
-  "include": [],
-  "exclude": [
-    "node_modules",
-    "build",
-    "lib"
-  ]
+  }
 }

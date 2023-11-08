@@ -1,6 +1,5 @@
 import * as PoisonPill from "@effect/cluster/PoisonPill"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
-import { assertTrue } from "@effect/cluster/test/util"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
@@ -10,6 +9,7 @@ import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Queue from "effect/Queue"
 import * as Scope from "effect/Scope"
+import { describe, expect, it } from "vitest"
 
 interface Sample {
   _tag: "sample"
@@ -46,7 +46,7 @@ describe.concurrent("RecipientBehaviour", () => {
       yield* _(offer({ _tag: "sample" }))
       yield* _(Scope.close(scope, Exit.interrupt(FiberId.none)))
 
-      assertTrue(yield* _(Deferred.await(received)))
+      expect(yield* _(Deferred.await(received))).toBe(true)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
@@ -75,6 +75,6 @@ describe.concurrent("RecipientBehaviour", () => {
       yield* _(offer({ _tag: "sample" }))
       yield* _(Deferred.await(started))
       yield* _(Scope.close(scope, Exit.interrupt(FiberId.none)))
-    }).pipe(withTestEnv, Effect.runPromise).then(() => assertTrue(interrupted))
+    }).pipe(withTestEnv, Effect.runPromise).then(() => expect(interrupted).toBe(true))
   })
 })

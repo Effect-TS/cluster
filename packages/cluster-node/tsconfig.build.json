@@ -1,17 +1,14 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "build/esm",
-    "declarationDir": "build/dts",
-    "tsBuildInfoFile": "build/tsbuildinfo/esm.tsbuildinfo",
-    "rootDir": "src"
-  },
-  "include": [
-    "src/**/*.ts"
-  ],
+  "extends": "./tsconfig.src.json",
   "references": [
     {
       "path": "../cluster"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",
+    "outDir": "build/esm",
+    "declarationDir": "build/dts",
+    "stripInternal": true
+  }
 }

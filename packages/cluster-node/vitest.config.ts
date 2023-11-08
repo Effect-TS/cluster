@@ -1,16 +1,10 @@
 /// <reference types="vitest" />
-import babel from "@vitejs/plugin-react"
 import path from "path"
-import { defineConfig } from "vite"
+import { defineProject } from "vitest/config"
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const babelConfig = require("../../.babel.mjs.json")
-
-export default defineConfig({
-  plugins: [babel({ babel: babelConfig })],
+export default defineProject({
   test: {
-    include: ["./test/**/*.test.ts"],
-    globals: true
+    include: ["./test/**/*.test.ts"]
   },
   resolve: {
     alias: {

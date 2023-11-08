@@ -1,1 +1,0 @@
-[[{"_id":"@effect/cluster/PodAddress","host":"localhost","port":54321},{"_id":"@effect/cluster/Pod","version":"1.0.0","address":{"_id":"@effect/cluster/PodAddress","host":"localhost","port":54321}}]]
