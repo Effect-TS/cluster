@@ -1,6 +1,6 @@
 ---
 title: RecipientType.ts
-nav_order: 15
+nav_order: 16
 parent: "@effect/cluster"
 ---
 
@@ -54,7 +54,7 @@ Added in v1.0.0
 
 ```ts
 export interface EntityType<Msg> {
-  readonly _tag: 'EntityType'
+  readonly _tag: "EntityType"
   readonly name: string
   readonly schema: Schema.Schema<unknown, Msg>
 }
@@ -80,7 +80,7 @@ Added in v1.0.0
 
 ```ts
 export interface TopicType<Msg> {
-  readonly _tag: 'TopicType'
+  readonly _tag: "TopicType"
   readonly name: string
   readonly schema: Schema.Schema<unknown, Msg>
 }

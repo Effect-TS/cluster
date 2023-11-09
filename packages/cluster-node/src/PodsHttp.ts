@@ -1,17 +1,17 @@
 /**
  * @since 1.0.0
  */
-import * as ShardingProtocolHttp from "@effect/cluster-node/ShardingProtocolHttp"
 import type * as PodAddress from "@effect/cluster/PodAddress"
 import * as Pods from "@effect/cluster/Pods"
 import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import type * as ShardId from "@effect/cluster/ShardId"
 import { ShardingErrorPodUnavailable } from "@effect/cluster/ShardingError"
-import * as Http from "@effect/platform/HttpClient"
+import * as Http from "@effect/platform-node/HttpClient"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
+import * as ShardingProtocolHttp from "./ShardingProtocolHttp.js"
 
 /** @internal */
 function asHttpUrl(pod: PodAddress.PodAddress): string {

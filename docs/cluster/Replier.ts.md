@@ -1,6 +1,6 @@
 ---
 title: Replier.ts
-nav_order: 16
+nav_order: 17
 parent: "@effect/cluster"
 ---
 
@@ -49,6 +49,7 @@ export interface Replier<A> {
   readonly _id: TypeId
   readonly id: ReplyId.ReplyId
   readonly schema: Schema.Schema<unknown, A>
+  readonly reply: (reply: A) => Effect.Effect<RecipientBehaviourContext, never, void>
 }
 ```
 
@@ -73,7 +74,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/cluster/Replier'
+export declare const TypeId: "./Replier"
 ```
 
 Added in v1.0.0

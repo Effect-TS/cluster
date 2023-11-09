@@ -1,16 +1,16 @@
 /**
  * @since 1.0.0
  */
-import { RecipientBehaviourContext } from "@effect/cluster/RecipientBehaviour"
-import * as ReplyId from "@effect/cluster/ReplyId"
 import * as Schema from "@effect/schema/Schema"
 import * as Effect from "effect/Effect"
+import { RecipientBehaviourContext } from "./RecipientBehaviour.js"
+import * as ReplyId from "./ReplyId.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/Replier"
+export const TypeId = "./Replier"
 
 /**
  * @since 1.0.0

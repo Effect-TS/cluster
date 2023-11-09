@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import * as ShardId from "@effect/cluster/ShardId"
 import type * as Schema from "@effect/schema/Schema"
 import * as Hash from "effect/Hash"
+import * as ShardId from "./ShardId.js"
 
 /**
  * @since 1.0.0

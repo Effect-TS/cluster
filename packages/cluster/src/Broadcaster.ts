@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
-import type * as Message from "@effect/cluster/Message"
-import type * as PodAddress from "@effect/cluster/PodAddress"
-import type * as ShardingError from "@effect/cluster/ShardingError"
 import type * as Effect from "effect/Effect"
 import type * as Either from "effect/Either"
 import type * as HashMap from "effect/HashMap"
+import type * as Message from "./Message.js"
+import type * as PodAddress from "./PodAddress.js"
+import type * as ShardingError from "./ShardingError.js"
 
 /**
  * An interface to communicate with a remote broadcast receiver

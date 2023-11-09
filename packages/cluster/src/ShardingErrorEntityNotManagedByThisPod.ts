@@ -8,8 +8,7 @@ import * as Data from "effect/Data"
  * @since 1.0.0
  * @category symbols
  */
-export const ShardingErrorEntityNotManagedByThisPodTag =
-  "@effect/cluster/ShardingErrorEntityNotManagedByThisPod" as const
+export const ShardingErrorEntityNotManagedByThisPodTag = "./ShardingErrorEntityNotManagedByThisPod" as const
 
 const ShardingErrorEntityNotManagedByThisPodSchema_ = Schema.data(
   Schema.struct({

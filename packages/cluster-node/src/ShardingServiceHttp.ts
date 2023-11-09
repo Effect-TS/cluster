@@ -1,7 +1,6 @@
 /**
  * @since 1.0.0
  */
-import * as ShardingProtocolHttp from "@effect/cluster-node/ShardingProtocolHttp"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as Http from "@effect/platform-node/HttpServer"
@@ -10,6 +9,7 @@ import * as Either from "effect/Either"
 import * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
 import { createServer } from "node:http"
+import * as ShardingProtocolHttp from "./ShardingProtocolHttp.js"
 
 const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
   const config = yield* _(ShardingConfig.ShardingConfig)

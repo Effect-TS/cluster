@@ -1,6 +1,6 @@
 ---
 title: Sharding.ts
-nav_order: 23
+nav_order: 24
 parent: "@effect/cluster"
 ---
 
@@ -70,13 +70,13 @@ export interface Sharding {
   readonly registerEntity: <Req, R>(
     entityType: RecipentType.EntityType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
-  ) => Effect.Effect<R, never, void>
+    options?: RecipientBehaviour.EntityBehaviourOptions
+  ) => Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
   readonly registerTopic: <Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
-    options?: RecipientBehaviour.EntityBehaviourOptions<Req>
-  ) => Effect.Effect<R, never, void>
+    options?: RecipientBehaviour.EntityBehaviourOptions
+  ) => Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
   readonly getShardingRegistrationEvents: Stream.Stream<
     never,
     never,
@@ -166,8 +166,8 @@ If entity goes to idle timeout, it will be interrupted from outside.
 export declare function registerEntity<Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
-): Effect.Effect<Sharding | R, never, void>
+  options?: RecipientBehaviour.EntityBehaviourOptions
+): Effect.Effect<Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
 ```
 
 Added in v1.0.0
@@ -213,8 +213,8 @@ If entity goes to idle timeout, it will be interrupted from outside.
 export declare function registerTopic<Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions<Req>
-): Effect.Effect<Sharding | R, never, void>
+  options?: RecipientBehaviour.EntityBehaviourOptions
+): Effect.Effect<Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
 ```
 
 Added in v1.0.0

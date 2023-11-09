@@ -1,6 +1,6 @@
 ---
 title: ShardingImpl.ts
-nav_order: 34
+nav_order: 35
 parent: "@effect/cluster"
 ---
 
@@ -24,7 +24,15 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const live: Layer.Layer<unknown, unknown, Sharding.Sharding>
+export declare const live: Layer.Layer<
+  | Storage.Storage
+  | ShardingConfig.ShardingConfig
+  | Pods.Pods
+  | ShardManagerClient.ShardManagerClient
+  | Serialization.Serialization,
+  never,
+  Sharding.Sharding
+>
 ```
 
 Added in v1.0.0

@@ -8,12 +8,12 @@ import * as Option from "effect/Option"
 
 /** @internal */
 export function NotAMessageWithReplierDefect(message: unknown): unknown {
-  return { _tag: "@effect/cluster/NotAMessageWithReplierDefect", message }
+  return { _tag: "./NotAMessageWithReplierDefect", message }
 }
 
 /** @internal */
 export function MessageReturnedNotingDefect(message: unknown): unknown {
-  return { _tag: "@effect/cluster/MessageReturnedNotingDefect", message }
+  return { _tag: "./MessageReturnedNotingDefect", message }
 }
 
 /** @internal */

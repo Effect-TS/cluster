@@ -1,16 +1,16 @@
 /**
  * @since 1.0.0
  */
-import type * as PoisonPill from "@effect/cluster/PoisonPill"
-import type * as ShardingError from "@effect/cluster/ShardingError"
 import * as Effect from "effect/Effect"
 import * as Queue from "effect/Queue"
+import type * as PoisonPill from "./PoisonPill.js"
+import type * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/MessageQueueInstance"
+export const TypeId = "./MessageQueueInstance"
 
 /**
  * @since 1.0.0

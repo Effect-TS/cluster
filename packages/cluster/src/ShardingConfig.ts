@@ -9,7 +9,7 @@ import * as Layer from "effect/Layer"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("@effect/cluster/ShardingConfig")
+export const TypeId: unique symbol = Symbol.for("./ShardingConfig")
 
 /**
  * @since 1.0.0

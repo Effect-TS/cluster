@@ -1,9 +1,6 @@
 /**
  * @since 1.0.0
  */
-import type * as ReplyChannel from "@effect/cluster/ReplyChannel"
-import type * as ReplyId from "@effect/cluster/ReplyId"
-import type * as ShardingError from "@effect/cluster/ShardingError"
 import * as Data from "effect/Data"
 import type * as Effect from "effect/Effect"
 import type * as Fiber from "effect/Fiber"
@@ -11,12 +8,15 @@ import type * as HashMap from "effect/HashMap"
 import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 import type * as RefSynchronized from "effect/SynchronizedRef"
+import type * as ReplyChannel from "./ReplyChannel.js"
+import type * as ReplyId from "./ReplyId.js"
+import type * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = Symbol.for("@effect/cluster/EntityState")
+export const TypeId = Symbol.for("./EntityState")
 
 /**
  * @since 1.0.0

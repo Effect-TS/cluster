@@ -1,6 +1,6 @@
 ---
 title: StorageFile.ts
-nav_order: 7
+nav_order: 9
 parent: "@effect/cluster-node"
 ---
 
@@ -24,7 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const storageFile: Layer.Layer<never, never, Storage.Storage>
+export declare const storageFile: Layer.Layer<never, never, any>
 ```
 
 Added in v1.0.0

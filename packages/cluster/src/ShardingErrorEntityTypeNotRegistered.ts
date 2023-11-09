@@ -1,15 +1,15 @@
 /**
  * @since 1.0.0
  */
-import * as PodAddress from "@effect/cluster/PodAddress"
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
+import * as PodAddress from "./PodAddress.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const ShardingErrorEntityTypeNotRegisteredTag = "@effect/cluster/ShardingErrorEntityTypeNotRegistered" as const
+export const ShardingErrorEntityTypeNotRegisteredTag = "./ShardingErrorEntityTypeNotRegistered" as const
 
 const ShardingErrorEntityTypeNotRegisteredSchema_ = Schema.data(
   Schema.struct({

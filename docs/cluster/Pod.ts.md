@@ -1,6 +1,6 @@
 ---
 title: Pod.ts
-nav_order: 8
+nav_order: 9
 parent: "@effect/cluster"
 ---
 
@@ -59,17 +59,13 @@ Added in v1.0.0
 ```ts
 export declare const schema: Schema.Schema<
   {
-    readonly _id: '@effect/cluster/Pod'
-    readonly address: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
+    readonly _id: "./Pod"
+    readonly address: { readonly _id: "./PodAddress"; readonly host: string; readonly port: number }
     readonly version: string
   },
   Data.Data<{
-    readonly _id: '@effect/cluster/Pod'
-    readonly address: Data.Data<{
-      readonly _id: '@effect/cluster/PodAddress'
-      readonly host: string
-      readonly port: number
-    }>
+    readonly _id: "./Pod"
+    readonly address: Data.Data<{ readonly _id: "./PodAddress"; readonly host: string; readonly port: number }>
     readonly version: string
   }>
 >
@@ -84,7 +80,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/cluster/Pod'
+export declare const TypeId: "./Pod"
 ```
 
 Added in v1.0.0

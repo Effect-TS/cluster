@@ -11,7 +11,7 @@ import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
-import { CounterEntity, GetCurrent } from "./sample-common"
+import { CounterEntity, GetCurrent } from "./sample-common.js"
 
 const liveSharding = pipe(
   ShardingImpl.live,

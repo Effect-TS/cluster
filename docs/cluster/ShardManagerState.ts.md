@@ -1,6 +1,6 @@
 ---
 title: ShardManagerState.ts
-nav_order: 38
+nav_order: 39
 parent: "@effect/cluster"
 ---
 

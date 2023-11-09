@@ -18,7 +18,8 @@ Added in v1.0.0
   - [EntityState (interface)](#entitystate-interface)
 - [modifiers](#modifiers)
   - [withExpirationFiber](#withexpirationfiber)
-  - [withoutMessageQueue](#withoutmessagequeue)
+  - [withLastReceivedAd](#withlastreceivedad)
+  - [withTerminationFiber](#withterminationfiber)
 - [symbols](#symbols)
   - [TypeId](#typeid)
   - [TypeId (type alias)](#typeid-type-alias)
@@ -32,7 +33,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make<Req>(data: Omit<EntityState<Req>, '_id'>): EntityState<Req>
+export declare function make<Req>(data: Omit<EntityState<Req>, "_id">): EntityState<Req>
 ```
 
 Added in v1.0.0
@@ -46,12 +47,14 @@ Added in v1.0.0
 ```ts
 export interface EntityState<Req> {
   readonly _id: TypeId
-  readonly messageQueue: Option.Option<MessageQueue.MessageQueue<Req>>
+  readonly offer: (message: Req) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
   readonly replyChannels: RefSynchronized.SynchronizedRef<
     HashMap.HashMap<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>
   >
   readonly expirationFiber: Fiber.RuntimeFiber<never, void>
-  readonly executionFiber: Fiber.RuntimeFiber<never, void>
+  readonly executionScope: Scope.CloseableScope
+  readonly terminationFiber: Option.Option<Fiber.RuntimeFiber<never, void>>
+  readonly lastReceivedAt: number
 }
 ```
 
@@ -71,12 +74,26 @@ export declare function withExpirationFiber(
 
 Added in v1.0.0
 
-## withoutMessageQueue
+## withLastReceivedAd
 
 **Signature**
 
 ```ts
-export declare function withoutMessageQueue<Req>(entityState: EntityState<Req>): EntityState<Req>
+export declare function withLastReceivedAd(
+  lastReceivedAt: number
+): <Req>(entityState: EntityState<Req>) => EntityState<Req>
+```
+
+Added in v1.0.0
+
+## withTerminationFiber
+
+**Signature**
+
+```ts
+export declare function withTerminationFiber(
+  terminationFiber: Fiber.RuntimeFiber<never, void>
+): <Req>(entityState: EntityState<Req>) => EntityState<Req>
 ```
 
 Added in v1.0.0
