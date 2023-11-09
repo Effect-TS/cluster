@@ -1,18 +1,18 @@
 /**
  * @since 1.0.0
  */
-import * as Pod from "@effect/cluster/Pod"
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
 import * as List from "effect/List"
 import * as Option from "effect/Option"
+import * as Pod from "./Pod.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/PodWithMetadata"
+export const TypeId = "./PodWithMetadata"
 
 /**
  * @since 1.0.0

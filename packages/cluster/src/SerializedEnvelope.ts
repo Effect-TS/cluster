@@ -1,18 +1,18 @@
 /**
  * @since 1.0.0
  */
-import * as ReplyId from "@effect/cluster/ReplyId"
-import * as SerializedMessage from "@effect/cluster/SerializedMessage"
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
 import type * as Option from "effect/Option"
+import * as ReplyId from "./ReplyId.js"
+import * as SerializedMessage from "./SerializedMessage.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/SerializedEnvelope"
+export const TypeId = "./SerializedEnvelope"
 
 /**
  * @since 1.0.0

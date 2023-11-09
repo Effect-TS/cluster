@@ -8,7 +8,7 @@ import * as Data from "effect/Data"
  * @since 1.0.0
  * @category schema
  */
-export const ShardingErrorSendTimeoutTag = "@effect/cluster/ShardingErrorSendTimeout" as const
+export const ShardingErrorSendTimeoutTag = "./ShardingErrorSendTimeout" as const
 
 const ShardingErrorSendTimeoutSchema_ = Schema.data(
   Schema.struct({

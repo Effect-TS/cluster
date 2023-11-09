@@ -1,21 +1,21 @@
 /**
  * @since 1.0.0
  */
-import * as SerializedMessage from "@effect/cluster/SerializedMessage"
-import * as ShardingError from "@effect/cluster/ShardingError"
 import * as Schema from "@effect/schema/Schema"
 import * as TreeFormatter from "@effect/schema/TreeFormatter"
 import { Tag } from "effect/Context"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
+import * as SerializedMessage from "./SerializedMessage.js"
+import * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
 export const TypeId: unique symbol = Symbol.for(
-  "@effect/cluster/SerializationTypeId"
+  "./SerializationTypeId"
 )
 
 /**

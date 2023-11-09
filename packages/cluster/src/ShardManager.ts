@@ -1,18 +1,6 @@
 /**
  * @since 1.0.0
  */
-import * as ManagerConfig from "@effect/cluster/ManagerConfig"
-import type * as Pod from "@effect/cluster/Pod"
-import * as PodAddress from "@effect/cluster/PodAddress"
-import * as Pods from "@effect/cluster/Pods"
-import * as PodsHealth from "@effect/cluster/PodsHealth"
-import * as PodWithMetadata from "@effect/cluster/PodWithMetadata"
-import * as ShardId from "@effect/cluster/ShardId"
-import { ShardingErrorPodNoLongerRegistered } from "@effect/cluster/ShardingError"
-import * as ShardingEvent from "@effect/cluster/ShardingEvent"
-import * as ShardManagerState from "@effect/cluster/ShardManagerState"
-import * as Storage from "@effect/cluster/Storage"
-import { groupBy, minByOption, showHashSet } from "@effect/cluster/utils"
 import * as Chunk from "effect/Chunk"
 import * as Clock from "effect/Clock"
 import { Tag } from "effect/Context"
@@ -29,6 +17,18 @@ import * as Schedule from "effect/Schedule"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
 import * as RefSynchronized from "effect/SynchronizedRef"
+import * as ManagerConfig from "./ManagerConfig.js"
+import type * as Pod from "./Pod.js"
+import * as PodAddress from "./PodAddress.js"
+import * as Pods from "./Pods.js"
+import * as PodsHealth from "./PodsHealth.js"
+import * as PodWithMetadata from "./PodWithMetadata.js"
+import * as ShardId from "./ShardId.js"
+import { ShardingErrorPodNoLongerRegistered } from "./ShardingError.js"
+import * as ShardingEvent from "./ShardingEvent.js"
+import * as ShardManagerState from "./ShardManagerState.js"
+import * as Storage from "./Storage.js"
+import { groupBy, minByOption, showHashSet } from "./utils.js"
 
 /**
  * @since 1.0.0

@@ -1,9 +1,6 @@
 /**
  * @since 1.0.0
  */
-import type * as Pod from "@effect/cluster/Pod"
-import type * as PodAddress from "@effect/cluster/PodAddress"
-import type * as ShardId from "@effect/cluster/ShardId"
 import { Tag } from "effect/Context"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -13,12 +10,15 @@ import type * as Option from "effect/Option"
 import * as Ref from "effect/Ref"
 import * as Stream from "effect/Stream"
 import * as SubscriptionRef from "effect/SubscriptionRef"
+import type * as Pod from "./Pod.js"
+import type * as PodAddress from "./PodAddress.js"
+import type * as ShardId from "./ShardId.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("@effect/cluster/StorageTypeId")
+export const TypeId: unique symbol = Symbol.for("./StorageTypeId")
 
 /**
  * @since 1.0.0

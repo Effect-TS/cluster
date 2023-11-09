@@ -1,13 +1,13 @@
 /**
  * @since 1.0.0
  */
-import * as Replier from "@effect/cluster/Replier"
-import * as ReplyId from "@effect/cluster/ReplyId"
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import type * as Types from "effect/Types"
+import * as Replier from "./Replier.js"
+import * as ReplyId from "./ReplyId.js"
 
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`

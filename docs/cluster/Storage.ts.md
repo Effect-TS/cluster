@@ -1,6 +1,6 @@
 ---
 title: Storage.ts
-nav_order: 39
+nav_order: 40
 parent: "@effect/cluster"
 ---
 
@@ -47,7 +47,7 @@ This is useful for testing with a single pod only.
 **Signature**
 
 ```ts
-export declare const memory: Layer.Layer<unknown, unknown, Storage>
+export declare const memory: Layer.Layer<never, never, Storage>
 ```
 
 Added in v1.0.0

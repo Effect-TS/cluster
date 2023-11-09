@@ -1,6 +1,6 @@
 ---
 title: ShardManagerProtocolHttp.ts
-nav_order: 6
+nav_order: 8
 parent: "@effect/cluster-node"
 ---
 
@@ -27,22 +27,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const GetAssignmentsResult_: Schema.Schema<
-  readonly (readonly [
-    { readonly _id: '@effect/cluster/ShardId'; readonly value: number },
-    (
-      | { readonly _tag: 'None' }
-      | {
-          readonly _tag: 'Some'
-          readonly value: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
-        }
-    )
-  ])[],
-  readonly (readonly [
-    Data<{ readonly _id: '@effect/cluster/ShardId'; readonly value: number }>,
-    Option<Data<{ readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }>>
-  ])[]
->
+export declare const GetAssignmentsResult_: Schema.Schema<readonly any[], readonly any[]>
 ```
 
 Added in v1.0.0
@@ -52,16 +37,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const NotifyUnhealthyPod_: Schema.Schema<
-  { readonly podAddress: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number } },
-  {
-    readonly podAddress: Data<{
-      readonly _id: '@effect/cluster/PodAddress'
-      readonly host: string
-      readonly port: number
-    }>
-  }
->
+export declare const NotifyUnhealthyPod_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }>
 ```
 
 Added in v1.0.0
@@ -71,26 +47,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Register_: Schema.Schema<
-  {
-    readonly pod: {
-      readonly _id: '@effect/cluster/Pod'
-      readonly address: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
-      readonly version: string
-    }
-  },
-  {
-    readonly pod: Data<{
-      readonly _id: '@effect/cluster/Pod'
-      readonly address: Data<{
-        readonly _id: '@effect/cluster/PodAddress'
-        readonly host: string
-        readonly port: number
-      }>
-      readonly version: string
-    }>
-  }
->
+export declare const Register_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }>
 ```
 
 Added in v1.0.0
@@ -100,26 +57,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Unregister_: Schema.Schema<
-  {
-    readonly pod: {
-      readonly _id: '@effect/cluster/Pod'
-      readonly address: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
-      readonly version: string
-    }
-  },
-  {
-    readonly pod: Data<{
-      readonly _id: '@effect/cluster/Pod'
-      readonly address: Data<{
-        readonly _id: '@effect/cluster/PodAddress'
-        readonly host: string
-        readonly port: number
-      }>
-      readonly version: string
-    }>
-  }
->
+export declare const Unregister_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }>
 ```
 
 Added in v1.0.0

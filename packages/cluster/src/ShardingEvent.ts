@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import type * as PodAddress from "@effect/cluster/PodAddress"
-import type * as ShardId from "@effect/cluster/ShardId"
 import type * as HashSet from "effect/HashSet"
+import type * as PodAddress from "./PodAddress.js"
+import type * as ShardId from "./ShardId.js"
 
 interface ShardsAssigned {
   readonly _tag: "ShardsAssigned"

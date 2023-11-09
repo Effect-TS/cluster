@@ -1,16 +1,6 @@
 /**
  * @since 1.0.0
  */
-import type { Broadcaster } from "@effect/cluster/Broadcaster"
-import type { Messenger } from "@effect/cluster/Messenger"
-import type * as PodAddress from "@effect/cluster/PodAddress"
-import type * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
-import type * as RecipentType from "@effect/cluster/RecipientType"
-import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
-import type * as SerializedMessage from "@effect/cluster/SerializedMessage"
-import type * as ShardId from "@effect/cluster/ShardId"
-import type * as ShardingError from "@effect/cluster/ShardingError"
-import type * as ShardingRegistrationEvent from "@effect/cluster/ShardingRegistrationEvent"
 import { Tag } from "effect/Context"
 import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
@@ -19,6 +9,16 @@ import type * as HashSet from "effect/HashSet"
 import type * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 import type * as Stream from "effect/Stream"
+import type { Broadcaster } from "./Broadcaster.js"
+import type { Messenger } from "./Messenger.js"
+import type * as PodAddress from "./PodAddress.js"
+import type * as RecipientBehaviour from "./RecipientBehaviour.js"
+import type * as RecipentType from "./RecipientType.js"
+import type * as SerializedEnvelope from "./SerializedEnvelope.js"
+import type * as SerializedMessage from "./SerializedMessage.js"
+import type * as ShardId from "./ShardId.js"
+import type * as ShardingError from "./ShardingError.js"
+import type * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
 
 /**
  * @since 1.0.0

@@ -1,6 +1,6 @@
 ---
 title: ShardManagerClient.ts
-nav_order: 37
+nav_order: 38
 parent: "@effect/cluster"
 ---
 
@@ -40,7 +40,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const local: Layer.Layer<unknown, unknown, ShardManagerClient>
+export declare const local: Layer.Layer<ShardingConfig.ShardingConfig, never, ShardManagerClient>
 ```
 
 Added in v1.0.0

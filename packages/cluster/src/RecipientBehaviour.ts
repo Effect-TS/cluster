@@ -2,9 +2,6 @@
  * A module that provides utilities to build basic behaviours
  * @since 1.0.0
  */
-import * as PoisonPill from "@effect/cluster/PoisonPill"
-import type * as ReplyId from "@effect/cluster/ReplyId"
-import type * as ShardingError from "@effect/cluster/ShardingError"
 import { Deferred } from "effect"
 import { Tag } from "effect/Context"
 import type * as Duration from "effect/Duration"
@@ -13,6 +10,9 @@ import { pipe } from "effect/Function"
 import type * as Option from "effect/Option"
 import * as Queue from "effect/Queue"
 import type * as Scope from "effect/Scope"
+import * as PoisonPill from "./PoisonPill.js"
+import type * as ReplyId from "./ReplyId.js"
+import type * as ShardingError from "./ShardingError.js"
 
 /**
  * The context where a RecipientBehaviour is running, knows the current entityId, entityType, etc...
@@ -55,6 +55,10 @@ export type EntityBehaviourOptions = {
   entityMaxIdleTime?: Option.Option<Duration.Duration>
 }
 
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function fromInMemoryQueue<R, Msg>(
   handler: (entityId: string, dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
 ): RecipientBehaviour<R, Msg> {
@@ -92,6 +96,10 @@ export function fromInMemoryQueue<R, Msg>(
     )
 }
 
+/**
+ * @since 1.0.0
+ * @category utils
+ */
 export function mapOffer<Msg1, Msg>(
   f: (
     offer: (message: Msg1) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>

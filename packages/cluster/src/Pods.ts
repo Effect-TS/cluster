@@ -1,22 +1,22 @@
 /**
  * @since 1.0.0
  */
-import type * as PodAddress from "@effect/cluster/PodAddress"
-import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
-import type * as SerializedMessage from "@effect/cluster/SerializedMessage"
-import type * as ShardId from "@effect/cluster/ShardId"
-import type * as ShardingError from "@effect/cluster/ShardingError"
 import { Tag } from "effect/Context"
 import * as Effect from "effect/Effect"
 import type * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import type * as PodAddress from "./PodAddress.js"
+import type * as SerializedEnvelope from "./SerializedEnvelope.js"
+import type * as SerializedMessage from "./SerializedMessage.js"
+import type * as ShardId from "./ShardId.js"
+import type * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("@effect/cluster/Pods")
+export const TypeId: unique symbol = Symbol.for("./Pods")
 
 /**
  * @since 1.0.0

@@ -16,7 +16,7 @@ import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Ref from "effect/Ref"
 import * as SubscriptionRef from "effect/SubscriptionRef"
-import { CounterEntity } from "./sample-common"
+import { CounterEntity } from "./sample-common.js"
 
 const liveSharding = pipe(
   ShardingImpl.live,

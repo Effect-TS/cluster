@@ -1,6 +1,6 @@
 ---
 title: ShardManager.ts
-nav_order: 36
+nav_order: 37
 parent: "@effect/cluster"
 ---
 
@@ -42,7 +42,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const live: Layer.Layer<unknown, unknown, ShardManager>
+export declare const live: Layer.Layer<
+  Storage.Storage | Pods.Pods | ManagerConfig.ManagerConfig | PodsHealth.PodsHealth,
+  never,
+  ShardManager
+>
 ```
 
 Added in v1.0.0

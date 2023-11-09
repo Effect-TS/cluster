@@ -1,15 +1,15 @@
 /**
  * @since 1.0.0
  */
-import * as ShardManagerProtocolHttp from "@effect/cluster-node/ShardManagerProtocolHttp"
 import * as Pod from "@effect/cluster/Pod"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
-import * as Http from "@effect/platform/HttpClient"
+import * as Http from "@effect/platform-node/HttpClient"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as Layer from "effect/Layer"
+import * as ShardManagerProtocolHttp from "./ShardManagerProtocolHttp.js"
 
 /**
  * @since 1.0.0

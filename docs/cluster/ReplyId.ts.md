@@ -1,6 +1,6 @@
 ---
 title: ReplyId.ts
-nav_order: 18
+nav_order: 19
 parent: "@effect/cluster"
 ---
 
@@ -75,8 +75,8 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: '@effect/cluster/ReplyId'; readonly value: string },
-  Data.Data<{ readonly _id: '@effect/cluster/ReplyId'; readonly value: string }>
+  { readonly _id: "./ReplyId"; readonly value: string },
+  Data.Data<{ readonly _id: "./ReplyId"; readonly value: string }>
 >
 ```
 
@@ -89,7 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/cluster/ReplyId'
+export declare const TypeId: "./ReplyId"
 ```
 
 Added in v1.0.0

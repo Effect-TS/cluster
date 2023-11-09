@@ -1,19 +1,19 @@
 /**
  * @since 1.0.0
  */
-import type { PodAddress } from "@effect/cluster/PodAddress"
-import * as Pods from "@effect/cluster/Pods"
 import { Tag } from "effect/Context"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import type { PodAddress } from "./PodAddress.js"
+import * as Pods from "./Pods.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = Symbol.for("@effect/cluster/PodsHealth")
+export const TypeId = Symbol.for("./PodsHealth")
 
 /**
  * @since 1.0.0
@@ -68,9 +68,8 @@ export const noop = Layer.succeed(PodsHealth, {
  */
 export const local = Layer.effect(
   PodsHealth,
-  Effect.map(Pods.Pods, (podApi) =>
-    ({
-      _id: TypeId,
-      isAlive: (address: PodAddress) => pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome))
-    }) as PodsHealth)
+  Effect.map(Pods.Pods, (podApi) => (({
+    _id: TypeId,
+    isAlive: (address: PodAddress) => pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome))
+  }) as PodsHealth))
 )

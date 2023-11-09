@@ -1,6 +1,6 @@
 ---
 title: MessageQueue.ts
-nav_order: 6
+nav_order: 7
 parent: "@effect/cluster"
 ---
 
@@ -72,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: '@effect/cluster/MessageQueueInstance'
+export declare const TypeId: "./MessageQueueInstance"
 ```
 
 Added in v1.0.0

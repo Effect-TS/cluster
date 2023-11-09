@@ -1,16 +1,6 @@
 /**
  * @since 1.0.0
  */
-import * as EntityState from "@effect/cluster/EntityState"
-import type * as Message from "@effect/cluster/Message"
-import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
-import type * as RecipientType from "@effect/cluster/RecipientType"
-import * as ReplyChannel from "@effect/cluster/ReplyChannel"
-import type * as ReplyId from "@effect/cluster/ReplyId"
-import type * as ShardId from "@effect/cluster/ShardId"
-import type * as Sharding from "@effect/cluster/Sharding"
-import type * as ShardingConfig from "@effect/cluster/ShardingConfig"
-import * as ShardingError from "@effect/cluster/ShardingError"
 import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
 import * as Duration from "effect/Duration"
@@ -23,6 +13,16 @@ import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
 import * as RefSynchronized from "effect/SynchronizedRef"
+import * as EntityState from "./EntityState.js"
+import type * as Message from "./Message.js"
+import * as RecipientBehaviour from "./RecipientBehaviour.js"
+import type * as RecipientType from "./RecipientType.js"
+import * as ReplyChannel from "./ReplyChannel.js"
+import type * as ReplyId from "./ReplyId.js"
+import type * as ShardId from "./ShardId.js"
+import type * as Sharding from "./Sharding.js"
+import type * as ShardingConfig from "./ShardingConfig.js"
+import * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0

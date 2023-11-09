@@ -1,16 +1,16 @@
 /**
  * @since 1.0.0
  */
-import * as PodAddress from "@effect/cluster/PodAddress"
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
+import * as PodAddress from "./PodAddress.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/Pod"
+export const TypeId = "./Pod"
 
 /**
  * @since 1.0.0

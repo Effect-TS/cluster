@@ -1,15 +1,15 @@
 /**
  * @since 1.0.0
  */
-import * as PodAddress from "@effect/cluster/PodAddress"
-import * as ShardId from "@effect/cluster/ShardId"
-import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import { Tag } from "effect/Context"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import * as PodAddress from "./PodAddress.js"
+import * as ShardId from "./ShardId.js"
+import * as ShardingConfig from "./ShardingConfig.js"
 
 /**
  * @since 1.0.0

@@ -15,7 +15,7 @@ import * as Layer from "effect/Layer"
 import type * as Option from "effect/Option"
 import * as Queue from "effect/Queue"
 import * as Stream from "effect/Stream"
-import * as fs from "fs"
+import * as fs from "node:fs"
 
 /** @internal */
 export function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {

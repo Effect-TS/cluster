@@ -1,18 +1,18 @@
 /**
  * @since 1.0.0
  */
-import type * as ShardingError from "@effect/cluster/ShardingError"
 import type * as Cause from "effect/Cause"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
+import type * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/ReplyChannel"
+export const TypeId = "./ReplyChannel"
 
 /**
  * @since 1.0.0

@@ -22,14 +22,15 @@
     "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
     "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
-  "dependencies": {
-  },
   "peerDependencies": {
-    "@effect/schema": "^0.47.1",
+    "@effect/platform-node": "^0.28.3",
+    "@effect/schema": "^0.47.2",
     "effect": "2.0.0-next.54"
   },
   "devDependencies": {
+    "@effect/platform-node": "^0.28.3",
     "@effect/schema": "^0.47.2",
+    "@types/node": "^20.9.0",
     "@types/path-browserify": "^1.0.1",
     "effect": "2.0.0-next.54"
   }

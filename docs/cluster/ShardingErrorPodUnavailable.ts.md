@@ -1,6 +1,6 @@
 ---
 title: ShardingErrorPodUnavailable.ts
-nav_order: 30
+nav_order: 31
 parent: "@effect/cluster"
 ---
 
@@ -58,8 +58,8 @@ Added in v1.0.0
 ```ts
 export declare const ShardingErrorPodUnavailableSchema: Schema.Schema<
   {
-    readonly _tag: '@effect/cluster/ShardingErrorPodUnavailable'
-    readonly pod: { readonly _id: '@effect/cluster/PodAddress'; readonly host: string; readonly port: number }
+    readonly _tag: "./ShardingErrorPodUnavailable"
+    readonly pod: { readonly _id: "./PodAddress"; readonly host: string; readonly port: number }
   },
   ShardingErrorPodUnavailable
 >
@@ -74,7 +74,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorPodUnavailableTag: '@effect/cluster/ShardingErrorPodUnavailable'
+export declare const ShardingErrorPodUnavailableTag: "./ShardingErrorPodUnavailable"
 ```
 
 Added in v1.0.0

@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import type * as Message from "@effect/cluster/Message"
-import type * as ShardingError from "@effect/cluster/ShardingError"
 import type * as Effect from "effect/Effect"
+import type * as Message from "./Message.js"
+import type * as ShardingError from "./ShardingError.js"
 
 /**
  * An interface to communicate with a remote entity

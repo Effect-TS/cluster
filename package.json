@@ -15,8 +15,7 @@
     "docgen": "pnpm -r exec docgen && pnpm docgen-cp",
     "docgen-cp": "node scripts/docs-cp.js",
     "lint": "eslint \"packages/*/{src,test,examples}/**/*.ts\"",
-    "lint-fix": "pnpm lint --fix",
-    "aaa": "tsc -b tsconfig.build.json"
+    "lint-fix": "pnpm lint --fix"
   },
   "devDependencies": {
     "@babel/cli": "^7.23.0",
