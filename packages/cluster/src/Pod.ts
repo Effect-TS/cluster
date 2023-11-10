@@ -45,11 +45,6 @@ export function make(address: PodAddress.PodAddress, version: string): Pod {
   return Data.struct({ _id: TypeId, address, version })
 }
 
-/** @internal */
-export function show(value: Pod) {
-  return "Pod(address=" + value.address + ", version=" + value.version + ")"
-}
-
 /**
  * @since 1.0.0
  * @category schema

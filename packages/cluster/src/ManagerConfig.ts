@@ -1,9 +1,22 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
-import * as Duration from "effect/Duration"
-import * as Layer from "effect/Layer"
+import type * as Context from "effect/Context"
+import type * as Duration from "effect/Duration"
+import type * as Layer from "effect/Layer"
+import * as internal from "./internal/managerConfig.js"
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export const ManagerConfigTypeId: unique symbol = internal.ManagerConfigTypeId
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type ManagerConfigTypeId = typeof ManagerConfigTypeId
 
 /**
  * Shard Manager configuration
@@ -19,6 +32,7 @@ import * as Layer from "effect/Layer"
  * @category models
  */
 export interface ManagerConfig {
+  readonly [ManagerConfigTypeId]: ManagerConfigTypeId
   readonly numberOfShards: number
   readonly apiPort: number
   readonly rebalanceInterval: Duration.Duration
@@ -33,19 +47,10 @@ export interface ManagerConfig {
  * @since 1.0.0
  * @category context
  */
-export const ManagerConfig = Tag<ManagerConfig>()
+export const ManagerConfig: Context.Tag<ManagerConfig, ManagerConfig> = internal.managerConfigTag
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const defaults = Layer.succeed(ManagerConfig, {
-  numberOfShards: 300,
-  apiPort: 8080,
-  rebalanceInterval: Duration.seconds(20),
-  rebalanceRetryInterval: Duration.seconds(10),
-  pingTimeout: Duration.seconds(3),
-  persistRetryInterval: Duration.seconds(3),
-  persistRetryCount: 100,
-  rebalanceRate: 2 / 100
-})
+export const defaults: Layer.Layer<never, never, ManagerConfig> = internal.defaults

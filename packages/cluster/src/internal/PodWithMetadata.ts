@@ -89,11 +89,6 @@ export function compareVersion(a: List.List<number>, b: List.List<number>): 0 | 
   return 0
 }
 
-/** @internal */
-export function show(value: PodWithMetadata) {
-  return "PodWithMetadata(pod=" + Pod.show(value.pod) + ", registered=" + value.registered + ")"
-}
-
 /**
  * @since 1.0.0
  * @category schema
