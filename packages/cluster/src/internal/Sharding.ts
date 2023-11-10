@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import type * as Schema from "@effect/schema/Schema"
+import { Tag } from "effect/Context"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import type * as Either from "effect/Either"
@@ -20,30 +21,118 @@ import * as Schedule from "effect/Schedule"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
 import * as Synchronized from "effect/SynchronizedRef"
-import type * as Broadcaster from "./Broadcaster.js"
+import type * as Broadcaster from "../Broadcaster.js"
+import * as Message from "../Message.js"
+import type { Messenger } from "../Messenger.js"
+import * as PodAddress from "../PodAddress.js"
+import * as Pods from "../Pods.js"
+import type * as RecipientBehaviour from "../RecipientBehaviour.js"
+import * as RecipientType from "../RecipientType.js"
+import type * as ReplyId from "../ReplyId.js"
+import * as Serialization from "../Serialization.js"
+import * as SerializedEnvelope from "../SerializedEnvelope.js"
+import type * as SerializedMessage from "../SerializedMessage.js"
+import * as ShardId from "../ShardId.js"
+import type * as Sharding from "../Sharding.js"
+import * as ShardingConfig from "../ShardingConfig.js"
+import * as ShardingError from "../ShardingError.js"
+import * as ShardingRegistrationEvent from "../ShardingRegistrationEvent.js"
+import * as ShardManagerClient from "../ShardManagerClient.js"
+import * as Storage from "../Storage.js"
 import * as EntityManager from "./EntityManager.js"
-import * as Message from "./Message.js"
-import type { Messenger } from "./Messenger.js"
-import * as PodAddress from "./PodAddress.js"
-import * as Pods from "./Pods.js"
-import type * as RecipientBehaviour from "./RecipientBehaviour.js"
-import * as RecipientType from "./RecipientType.js"
-import type * as ReplyId from "./ReplyId.js"
-import * as Serialization from "./Serialization.js"
-import * as SerializedEnvelope from "./SerializedEnvelope.js"
-import type * as SerializedMessage from "./SerializedMessage.js"
-import * as ShardId from "./ShardId.js"
-import * as Sharding from "./Sharding.js"
-import * as ShardingConfig from "./ShardingConfig.js"
-import * as ShardingError from "./ShardingError.js"
-import * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
-import * as ShardManagerClient from "./ShardManagerClient.js"
-import * as Storage from "./Storage.js"
 import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "./utils.js"
+
+/**
+ * @internal
+ */
+export const shardingTag: Tag<Sharding.Sharding, Sharding.Sharding> = Tag<Sharding.Sharding>()
+
+/**
+ * @internal
+ */
+export const register: Effect.Effect<Sharding.Sharding, never, void> = Effect.flatMap(shardingTag, (_) => _.register)
+
+/**
+ * @internal
+ */
+export const unregister: Effect.Effect<Sharding.Sharding, never, void> = Effect.flatMap(
+  shardingTag,
+  (_) => _.unregister
+)
+
+/**
+ * @internal
+ */
+export const registerScoped: Effect.Effect<Sharding.Sharding | Scope.Scope, never, void> = pipe(
+  register,
+  Effect.zipRight(Effect.addFinalizer(() => unregister))
+)
+
+/**
+ * @internal
+ */
+export function registerSingleton<R>(
+  name: string,
+  run: Effect.Effect<R, never, void>
+): Effect.Effect<Sharding.Sharding | R, never, void> {
+  return Effect.flatMap(shardingTag, (_) => _.registerSingleton(name, run))
+}
+
+/**
+ * @internal
+ */
+export function registerEntity<Req, R>(
+  entityType: RecipientType.EntityType<Req>,
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  options?: RecipientBehaviour.EntityBehaviourOptions
+): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void> {
+  return Effect.flatMap(shardingTag, (_) => _.registerEntity(entityType, behavior, options))
+}
+
+/**
+ * @internal
+ */
+export function registerTopic<Req, R>(
+  topicType: RecipientType.TopicType<Req>,
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  options?: RecipientBehaviour.EntityBehaviourOptions
+): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void> {
+  return Effect.flatMap(shardingTag, (_) => _.registerTopic(topicType, behavior, options))
+}
+
+/**
+ * @internal
+ */
+export function messenger<Msg>(
+  entityType: RecipientType.EntityType<Msg>,
+  sendTimeout?: Option.Option<Duration.Duration>
+): Effect.Effect<Sharding.Sharding, never, Messenger<Msg>> {
+  return Effect.map(shardingTag, (_) => _.messenger(entityType, sendTimeout))
+}
+
+/**
+ * @internal
+ */
+export function broadcaster<Msg>(
+  topicType: RecipientType.TopicType<Msg>,
+  sendTimeout?: Option.Option<Duration.Duration>
+): Effect.Effect<Sharding.Sharding, never, Broadcaster.Broadcaster<Msg>> {
+  return Effect.map(shardingTag, (_) => _.broadcaster(topicType, sendTimeout))
+}
+
+/**
+ * @internal
+ */
+export const getPods: Effect.Effect<Sharding.Sharding, never, HashSet.HashSet<PodAddress.PodAddress>> = Effect.flatMap(
+  shardingTag,
+  (_) => _.getPods
+)
 
 type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
 
-/** @internal */
+/**
+ * @internal
+ */
 function make(
   layerScope: Scope.Scope,
   address: PodAddress.PodAddress,
@@ -672,13 +761,11 @@ function make(
 
   return self
 }
-
 /**
- * @since 1.0.0
- * @category layers
+ * @internal
  */
 export const live = Layer.scoped(
-  Sharding.Sharding,
+  shardingTag,
   Effect.gen(function*(_) {
     const config = yield* _(ShardingConfig.ShardingConfig)
     const pods = yield* _(Pods.Pods)

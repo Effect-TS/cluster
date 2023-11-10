@@ -1,6 +1,6 @@
 ---
 title: ShardingErrorEntityTypeNotRegistered.ts
-nav_order: 27
+nav_order: 23
 parent: "@effect/cluster"
 ---
 

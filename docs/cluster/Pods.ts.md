@@ -1,6 +1,6 @@
 ---
 title: Pods.ts
-nav_order: 10
+nav_order: 8
 parent: "@effect/cluster"
 ---
 

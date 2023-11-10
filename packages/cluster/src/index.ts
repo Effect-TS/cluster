@@ -6,16 +6,6 @@ export * as Broadcaster from "./Broadcaster.js"
 /**
  * @since 1.0.0
  */
-export * as EntityManager from "./EntityManager.js"
-
-/**
- * @since 1.0.0
- */
-export * as EntityState from "./EntityState.js"
-
-/**
- * @since 1.0.0
- */
 export * as ManagerConfig from "./ManagerConfig.js"
 
 /**
@@ -37,11 +27,6 @@ export * as Pod from "./Pod.js"
  * @since 1.0.0
  */
 export * as PodAddress from "./PodAddress.js"
-
-/**
- * @since 1.0.0
- */
-export * as PodWithMetadata from "./PodWithMetadata.js"
 
 /**
  * @since 1.0.0
@@ -77,11 +62,6 @@ export * as Replier from "./Replier.js"
 /**
  * @since 1.0.0
  */
-export * as ReplyChannel from "./ReplyChannel.js"
-
-/**
- * @since 1.0.0
- */
 export * as ReplyId from "./ReplyId.js"
 
 /**
@@ -113,11 +93,6 @@ export * as ShardManager from "./ShardManager.js"
  * @since 1.0.0
  */
 export * as ShardManagerClient from "./ShardManagerClient.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardManagerState from "./ShardManagerState.js"
 
 /**
  * @since 1.0.0
@@ -173,11 +148,6 @@ export * as ShardingErrorSerialization from "./ShardingErrorSerialization.js"
  * @since 1.0.0
  */
 export * as ShardingEvent from "./ShardingEvent.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingImpl from "./ShardingImpl.js"
 
 /**
  * @since 1.0.0

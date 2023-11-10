@@ -6,7 +6,7 @@ import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
-import type * as ShardingError from "./ShardingError.js"
+import type * as ShardingError from "../ShardingError.js"
 
 /**
  * @since 1.0.0

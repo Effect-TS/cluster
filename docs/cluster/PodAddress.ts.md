@@ -1,6 +1,6 @@
 ---
 title: PodAddress.ts
-nav_order: 9
+nav_order: 7
 parent: "@effect/cluster"
 ---
 

@@ -8,9 +8,9 @@ import type * as HashMap from "effect/HashMap"
 import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 import type * as RefSynchronized from "effect/SynchronizedRef"
+import type * as ReplyId from "../ReplyId.js"
+import type * as ShardingError from "../ShardingError.js"
 import type * as ReplyChannel from "./ReplyChannel.js"
-import type * as ReplyId from "./ReplyId.js"
-import type * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0

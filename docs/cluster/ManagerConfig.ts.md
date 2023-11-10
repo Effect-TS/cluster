@@ -1,6 +1,6 @@
 ---
 title: ManagerConfig.ts
-nav_order: 5
+nav_order: 3
 parent: "@effect/cluster"
 ---
 

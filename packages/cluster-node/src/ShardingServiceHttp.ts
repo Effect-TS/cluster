@@ -23,7 +23,7 @@ const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
  */
 export const shardingServiceHttp = Layer.scopedDiscard(
   Effect.gen(function*(_) {
-    const sharding = yield* _(Sharding.Sharding)
+    const sharding = yield* _(Sharding.Tag)
 
     return yield* _(Http.router.empty.pipe(
       Http.router.post(

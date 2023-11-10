@@ -1,6 +1,6 @@
 ---
 title: RecipientBehaviour.ts
-nav_order: 14
+nav_order: 11
 parent: "@effect/cluster"
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: ShardingErrorEntityNotManagedByThisPod.ts
-nav_order: 26
+nav_order: 22
 parent: "@effect/cluster"
 ---
 

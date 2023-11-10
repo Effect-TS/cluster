@@ -1,6 +1,6 @@
 ---
 title: ShardingErrorPodUnavailable.ts
-nav_order: 30
+nav_order: 26
 parent: "@effect/cluster"
 ---
 

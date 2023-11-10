@@ -1,6 +1,6 @@
 ---
 title: PoisonPill.ts
-nav_order: 13
+nav_order: 10
 parent: "@effect/cluster"
 ---
 

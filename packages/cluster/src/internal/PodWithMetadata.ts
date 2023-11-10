@@ -6,7 +6,7 @@ import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
 import * as List from "effect/List"
 import * as Option from "effect/Option"
-import * as Pod from "./Pod.js"
+import * as Pod from "../Pod.js"
 
 /**
  * @since 1.0.0

@@ -1,6 +1,6 @@
 ---
 title: ShardingError.ts
-nav_order: 25
+nav_order: 21
 parent: "@effect/cluster"
 ---
 
@@ -133,7 +133,7 @@ Added in v1.0.0
 
 ```ts
 export declare const schema: Schema.Schema<
-  | { readonly error: string; readonly _tag: "./ShardingErrorSerialization" }
+  | { readonly _tag: "./ShardingErrorSerialization"; readonly error: string }
   | { readonly _tag: "./ShardingErrorSendTimeout" }
   | {
       readonly _tag: "./ShardingErrorPodUnavailable"
@@ -143,7 +143,7 @@ export declare const schema: Schema.Schema<
       readonly _tag: "./ShardingErrorPodNoLongerRegistered"
       readonly podAddress: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
     }
-  | { readonly error: string; readonly _tag: "./ShardingErrorMessageQueue" }
+  | { readonly _tag: "./ShardingErrorMessageQueue"; readonly error: string }
   | {
       readonly _tag: "./ShardingErrorEntityTypeNotRegistered"
       readonly podAddress: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }

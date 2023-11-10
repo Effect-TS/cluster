@@ -1,6 +1,6 @@
 ---
 title: Serialization.ts
-nav_order: 19
+nav_order: 15
 parent: "@effect/cluster"
 ---
 
