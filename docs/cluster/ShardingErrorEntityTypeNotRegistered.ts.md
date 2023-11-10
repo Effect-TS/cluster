@@ -1,6 +1,6 @@
 ---
 title: ShardingErrorEntityTypeNotRegistered.ts
-nav_order: 28
+nav_order: 27
 parent: "@effect/cluster"
 ---
 
@@ -74,7 +74,7 @@ Added in v1.0.0
 export declare const ShardingErrorEntityTypeNotRegisteredSchema: Schema.Schema<
   {
     readonly _tag: "./ShardingErrorEntityTypeNotRegistered"
-    readonly podAddress: { readonly _id: "./PodAddress"; readonly host: string; readonly port: number }
+    readonly podAddress: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
     readonly entityType: string
   },
   ShardingErrorEntityTypeNotRegistered

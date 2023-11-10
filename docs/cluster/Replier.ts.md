@@ -1,6 +1,6 @@
 ---
 title: Replier.ts
-nav_order: 17
+nav_order: 16
 parent: "@effect/cluster"
 ---
 
@@ -74,7 +74,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: "./Replier"
+export declare const TypeId: "@effect/cluster/Replier"
 ```
 
 Added in v1.0.0
