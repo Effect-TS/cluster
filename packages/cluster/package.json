@@ -15,6 +15,15 @@
   "author": "Effect contributors",
   "license": "MIT",
   "sideEffects": false,
+  "effect": {
+    "generateIndex": {
+      "exclude": ["utils.ts"]
+    },
+    "generateExports": {
+      "exclude": ["utils.ts"]
+    }
+  },
+
   "scripts": {
     "build": "pnpm build-prepare && pnpm build-esm && pnpm build-cjs && pnpm build-annotate && build-utils pack-v2",
     "build-prepare": "build-utils prepare-v2",

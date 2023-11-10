@@ -193,9 +193,3 @@ export * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
  * @since 1.0.0
  */
 export * as Storage from "./Storage.js"
-
-/**
- * @since 1.0.0
- * @internal
- */
-export * as utils from "./utils.js"

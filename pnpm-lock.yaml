@@ -32,8 +32,8 @@ importers:
         specifier: ^2.26.2
         version: 2.26.2
       '@effect/build-utils':
-        specifier: ^0.3.1
-        version: 0.3.1
+        specifier: ^0.4.0
+        version: 0.4.0
       '@effect/docgen':
         specifier: ^0.3.0
         version: 0.3.0(fast-check@3.13.2)(tsx@3.14.0)(typescript@5.2.2)
@@ -721,8 +721,8 @@ packages:
     resolution: {integrity: sha512-rPwwm/RrFIolz6xHa8Kzpshuwpe+xu/XcEw9iUmRF2tnyIwxxaW7XoFKaQ+GfPju81cKpH4vJeq7/2IizKvyjg==}
     dev: true
 
-  /@effect/build-utils@0.3.1:
-    resolution: {integrity: sha512-MoyN7zj3Y068rV08SDaOSAyoKXjOSgG2C4O1fHuDmihnti5XLNt0rpCORbPhQhIwzFp14YLYeZihp3ypDmWlQQ==}
+  /@effect/build-utils@0.4.0:
+    resolution: {integrity: sha512-1dL2qgzfGECCvMZ2BXhNjAdSDsKS9zpNJne8caxXRI8FtjFNPuj3HYOhYZVmaYfSvzwlC+p9nPBTRaiczoLe8w==}
     engines: {node: '>=16.17.1'}
     hasBin: true
     dev: true
@@ -2913,7 +2913,7 @@ packages:
     resolution: {integrity: sha512-ouTiFyeMoqmNg253xqy4NSacr5sHxH6pZpLOaHgaAdgZxFWdtsfxExwolpveoAE9CJdV+WYjqErNGef6SqA5Mg==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      pure-rand: 6.0.2
+      pure-rand: 6.0.4
     dev: true
 
   /fast-decode-uri-component@1.0.1:
@@ -4686,8 +4686,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /pure-rand@6.0.2:
-    resolution: {integrity: sha512-6Yg0ekpKICSjPswYOuC5sku/TSWaRYlA0qsXqJgM/d/4pLPHPuTxK7Nbf7jFKzAeedUhR8C7K9Uv63FBsSo8xQ==}
+  /pure-rand@6.0.4:
+    resolution: {integrity: sha512-LA0Y9kxMYv47GIPJy6MI84fqTd2HmYZI83W/kM/SkKfDlajnZYfmXFTxkbY+xSBPkLJxltMa9hIkmdc29eguMA==}
     dev: true
 
   /queue-microtask@1.2.3:
