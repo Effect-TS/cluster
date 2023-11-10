@@ -26,11 +26,6 @@ export * as Message from "./Message.js"
 /**
  * @since 1.0.0
  */
-export * as MessageQueue from "./MessageQueue.js"
-
-/**
- * @since 1.0.0
- */
 export * as Messenger from "./Messenger.js"
 
 /**
