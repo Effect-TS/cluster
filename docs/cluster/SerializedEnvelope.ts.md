@@ -1,6 +1,6 @@
 ---
 title: SerializedEnvelope.ts
-nav_order: 21
+nav_order: 20
 parent: "@effect/cluster"
 ---
 
@@ -68,20 +68,20 @@ This is the schema for a value.
 ```ts
 export declare const schema: Schema.Schema<
   {
-    readonly _id: "./SerializedEnvelope"
+    readonly _id: "@effect/cluster/SerializedEnvelope"
     readonly entityType: string
     readonly entityId: string
-    readonly body: { readonly _id: "./SerializedMessage"; readonly value: string }
+    readonly body: { readonly _id: "@effect/cluster/SerializedMessage"; readonly value: string }
     readonly replyId:
       | { readonly _tag: "None" }
-      | { readonly _tag: "Some"; readonly value: { readonly _id: "./ReplyId"; readonly value: string } }
+      | { readonly _tag: "Some"; readonly value: { readonly _id: "@effect/cluster/ReplyId"; readonly value: string } }
   },
   Data.Data<{
-    readonly _id: "./SerializedEnvelope"
+    readonly _id: "@effect/cluster/SerializedEnvelope"
     readonly entityType: string
     readonly entityId: string
-    readonly body: Data.Data<{ readonly _id: "./SerializedMessage"; readonly value: string }>
-    readonly replyId: Option.Option<Data.Data<{ readonly _id: "./ReplyId"; readonly value: string }>>
+    readonly body: Data.Data<{ readonly _id: "@effect/cluster/SerializedMessage"; readonly value: string }>
+    readonly replyId: Option.Option<Data.Data<{ readonly _id: "@effect/cluster/ReplyId"; readonly value: string }>>
   }>
 >
 ```
@@ -95,7 +95,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: "./SerializedEnvelope"
+export declare const TypeId: "@effect/cluster/SerializedEnvelope"
 ```
 
 Added in v1.0.0

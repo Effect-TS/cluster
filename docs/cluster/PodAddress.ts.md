@@ -1,6 +1,6 @@
 ---
 title: PodAddress.ts
-nav_order: 10
+nav_order: 9
 parent: "@effect/cluster"
 ---
 
@@ -60,8 +60,8 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: "./PodAddress"; readonly host: string; readonly port: number },
-  Data.Data<{ readonly _id: "./PodAddress"; readonly host: string; readonly port: number }>
+  { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number },
+  Data.Data<{ readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }>
 >
 ```
 
@@ -74,7 +74,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: "./PodAddress"
+export declare const TypeId: "@effect/cluster/PodAddress"
 ```
 
 Added in v1.0.0

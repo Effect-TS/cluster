@@ -1,6 +1,6 @@
 ---
 title: ReplyChannel.ts
-nav_order: 18
+nav_order: 17
 parent: "@effect/cluster"
 ---
 
@@ -64,7 +64,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const TypeId: "./ReplyChannel"
+export declare const TypeId: "@effect/cluster/ReplyChannel"
 ```
 
 Added in v1.0.0

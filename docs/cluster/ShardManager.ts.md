@@ -1,6 +1,6 @@
 ---
 title: ShardManager.ts
-nav_order: 37
+nav_order: 36
 parent: "@effect/cluster"
 ---
 

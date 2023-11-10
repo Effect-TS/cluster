@@ -18,7 +18,6 @@ Added in v1.0.0
   - [From "./EntityState.js"](#from-entitystatejs)
   - [From "./ManagerConfig.js"](#from-managerconfigjs)
   - [From "./Message.js"](#from-messagejs)
-  - [From "./MessageQueue.js"](#from-messagequeuejs)
   - [From "./Messenger.js"](#from-messengerjs)
   - [From "./Pod.js"](#from-podjs)
   - [From "./PodAddress.js"](#from-podaddressjs)
@@ -52,7 +51,6 @@ Added in v1.0.0
   - [From "./ShardingImpl.js"](#from-shardingimpljs)
   - [From "./ShardingRegistrationEvent.js"](#from-shardingregistrationeventjs)
   - [From "./Storage.js"](#from-storagejs)
-  - [From "./utils.js"](#from-utilsjs)
 
 ---
 
@@ -114,18 +112,6 @@ Re-exports all named exports from the "./Message.js" module as `Message`.
 
 ```ts
 export * as Message from "./Message.js"
-```
-
-Added in v1.0.0
-
-## From "./MessageQueue.js"
-
-Re-exports all named exports from the "./MessageQueue.js" module as `MessageQueue`.
-
-**Signature**
-
-```ts
-export * as MessageQueue from "./MessageQueue.js"
 ```
 
 Added in v1.0.0
@@ -522,18 +508,6 @@ Re-exports all named exports from the "./Storage.js" module as `Storage`.
 
 ```ts
 export * as Storage from "./Storage.js"
-```
-
-Added in v1.0.0
-
-## From "./utils.js"
-
-Re-exports all named exports from the "./utils.js" module as `utils`.
-
-**Signature**
-
-```ts
-export * as utils from "./utils.js"
 ```
 
 Added in v1.0.0

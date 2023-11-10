@@ -1,6 +1,6 @@
 ---
 title: ShardingError.ts
-nav_order: 26
+nav_order: 25
 parent: "@effect/cluster"
 ---
 
@@ -137,16 +137,16 @@ export declare const schema: Schema.Schema<
   | { readonly _tag: "./ShardingErrorSendTimeout" }
   | {
       readonly _tag: "./ShardingErrorPodUnavailable"
-      readonly pod: { readonly _id: "./PodAddress"; readonly host: string; readonly port: number }
+      readonly pod: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
     }
   | {
       readonly _tag: "./ShardingErrorPodNoLongerRegistered"
-      readonly podAddress: { readonly _id: "./PodAddress"; readonly host: string; readonly port: number }
+      readonly podAddress: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
     }
   | { readonly error: string; readonly _tag: "./ShardingErrorMessageQueue" }
   | {
       readonly _tag: "./ShardingErrorEntityTypeNotRegistered"
-      readonly podAddress: { readonly _id: "./PodAddress"; readonly host: string; readonly port: number }
+      readonly podAddress: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
       readonly entityType: string
     }
   | { readonly _tag: "./ShardingErrorEntityNotManagedByThisPod"; readonly entityId: string },
