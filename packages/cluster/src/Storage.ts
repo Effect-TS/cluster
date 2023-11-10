@@ -18,7 +18,7 @@ import type * as ShardId from "./ShardId.js"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("./StorageTypeId")
+export const TypeId: unique symbol = Symbol.for("@effect/cluster/StorageTypeId")
 
 /**
  * @since 1.0.0

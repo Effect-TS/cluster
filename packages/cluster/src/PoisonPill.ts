@@ -11,7 +11,7 @@ import * as Queue from "effect/Queue"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./PoisonPill"
+export const TypeId = "@effect/cluster/PoisonPill"
 
 /**
  * @since 1.0.0

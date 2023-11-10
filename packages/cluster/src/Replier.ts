@@ -10,7 +10,7 @@ import * as ReplyId from "./ReplyId.js"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./Replier"
+export const TypeId = "@effect/cluster/Replier"
 
 /**
  * @since 1.0.0

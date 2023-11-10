@@ -13,7 +13,7 @@ import * as Pods from "./Pods.js"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = Symbol.for("./PodsHealth")
+export const TypeId = Symbol.for("@effect/cluster/PodsHealth")
 
 /**
  * @since 1.0.0

@@ -3,6 +3,7 @@ import * as ShardingServiceHttp from "@effect/cluster-node/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/cluster-node/ShardManagerClientHttp"
 import * as StorageFile from "@effect/cluster-node/StorageFile"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
+import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
@@ -28,34 +29,38 @@ const liveSharding = pipe(
 )
 
 const programLayer = Layer.scopedDiscard(pipe(
-  Sharding.registerEntity(CounterEntity, ({ dequeue, entityId }) =>
-    pipe(
-      SubscriptionRef.make(0),
-      Effect.flatMap((count) =>
-        pipe(
-          PoisonPill.takeOrInterrupt(dequeue),
-          Effect.flatMap(
-            (msg) => {
-              switch (msg._tag) {
-                case "Increment":
-                  return SubscriptionRef.update(count, (a) => a + 1)
-                case "Decrement":
-                  return SubscriptionRef.update(count, (a) => a - 1)
-                case "GetCurrent":
-                  return pipe(
-                    SubscriptionRef.get(count),
-                    Effect.flatMap(msg.replier.reply)
-                  )
+  Sharding.registerEntity(
+    CounterEntity,
+    RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
+      pipe(
+        SubscriptionRef.make(0),
+        Effect.flatMap((count) =>
+          pipe(
+            PoisonPill.takeOrInterrupt(dequeue),
+            Effect.flatMap(
+              (msg) => {
+                switch (msg._tag) {
+                  case "Increment":
+                    return SubscriptionRef.update(count, (a) => a + 1)
+                  case "Decrement":
+                    return SubscriptionRef.update(count, (a) => a - 1)
+                  case "GetCurrent":
+                    return pipe(
+                      SubscriptionRef.get(count),
+                      Effect.flatMap(msg.replier.reply)
+                    )
+                }
               }
-            }
-          ),
-          Effect.zipRight(Ref.get(count)),
-          Effect.tap((_) => Effect.log("Counter " + entityId + " is now " + _)),
-          Effect.forever,
-          Effect.withLogSpan(CounterEntity.name + "." + entityId)
+            ),
+            Effect.zipRight(Ref.get(count)),
+            Effect.tap((_) => Effect.log("Counter " + entityId + " is now " + _)),
+            Effect.forever,
+            Effect.withLogSpan(CounterEntity.name + "." + entityId)
+          )
         )
       )
-    )),
+    )
+  ),
   Effect.zipRight(Sharding.registerScoped)
 ))
 

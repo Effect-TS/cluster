@@ -16,7 +16,7 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("./Pods")
+export const TypeId: unique symbol = Symbol.for("@effect/cluster/Pods")
 
 /**
  * @since 1.0.0

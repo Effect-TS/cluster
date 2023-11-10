@@ -12,7 +12,7 @@ import * as SerializedMessage from "./SerializedMessage.js"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./SerializedEnvelope"
+export const TypeId = "@effect/cluster/SerializedEnvelope"
 
 /**
  * @since 1.0.0

@@ -9,7 +9,7 @@ import { pipe } from "effect/Function"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./PodAddress"
+export const TypeId = "@effect/cluster/PodAddress"
 
 /**
  * @since 1.0.0
