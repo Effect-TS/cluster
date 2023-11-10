@@ -9,7 +9,7 @@ import { pipe } from "effect/Function"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./SerializedMessage"
+export const TypeId = "@effect/cluster/SerializedMessage"
 
 /**
  * @since 1.0.0

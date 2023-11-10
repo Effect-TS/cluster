@@ -12,7 +12,7 @@ import * as Pod from "./Pod.js"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./PodWithMetadata"
+export const TypeId = "@effect/cluster/PodWithMetadata"
 
 /**
  * @since 1.0.0

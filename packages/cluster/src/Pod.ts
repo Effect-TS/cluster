@@ -10,7 +10,7 @@ import * as PodAddress from "./PodAddress.js"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./Pod"
+export const TypeId = "@effect/cluster/Pod"
 
 /**
  * @since 1.0.0

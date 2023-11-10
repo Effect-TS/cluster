@@ -10,7 +10,7 @@ import { pipe } from "effect/Function"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./ReplyId"
+export const TypeId = "@effect/cluster/ReplyId"
 
 /**
  * @since 1.0.0

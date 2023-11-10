@@ -12,7 +12,7 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./ReplyChannel"
+export const TypeId = "@effect/cluster/ReplyChannel"
 
 /**
  * @since 1.0.0

@@ -8,7 +8,7 @@ import * as Data from "effect/Data"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "./ShardId"
+export const TypeId = "@effect/cluster/ShardId"
 
 /**
  * @since 1.0.0
