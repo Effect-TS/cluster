@@ -96,14 +96,11 @@ export const httpPods = Layer.effect(
       }).pipe(Effect.orDie, Effect.flatten)
     }
 
-    const result: Pods.Pods = {
-      _id: Pods.TypeId,
+    return Pods.make({
       assignShards,
       unassignShards,
       ping,
       sendMessage
-    }
-
-    return result
+    })
   })
 )
