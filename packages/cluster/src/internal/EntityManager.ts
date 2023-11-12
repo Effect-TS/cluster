@@ -1,6 +1,4 @@
-/**
- * @since 1.0.0
- */
+/** @internal */
 import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
 import * as Duration from "effect/Duration"
@@ -21,15 +19,28 @@ import type * as ShardId from "../ShardId.js"
 import type * as Sharding from "../Sharding.js"
 import type * as ShardingConfig from "../ShardingConfig.js"
 import * as ShardingError from "../ShardingError.js"
-import * as EntityState from "./EntityState.js"
+import * as EntityState from "./entityState.js"
 import * as ReplyChannel from "./ReplyChannel.js"
 
-/**
- * @since 1.0.0
- * @category models
- */
+/** @internal */
+const EntityManagerSymbolKey = "@effect/cluster/EntityManager"
+
+/** @internal */
+export const EntityManagerTypeId = Symbol.for(
+  EntityManagerSymbolKey
+)
+
+/** @internal */
+export type EntityManagerTypeId = typeof EntityManagerTypeId
+
+/** @internal */
 export interface EntityManager<Req> {
+  readonly [EntityManagerTypeId]: EntityManagerTypeId
+
+  /** @internal */
   readonly recipientType: RecipientType.RecipientType<Req>
+
+  /** @internal */
   readonly send: <A extends Req>(
     entityId: string,
     req: A,
@@ -43,16 +54,17 @@ export interface EntityManager<Req> {
       Message.Success<A>
     >
   >
+
+  /** @internal */
   readonly terminateEntitiesOnShards: (
     shards: HashSet.HashSet<ShardId.ShardId>
   ) => Effect.Effect<never, never, void>
+
+  /** @internal */
   readonly terminateAllEntities: Effect.Effect<never, never, void>
 }
 
-/**
- * @since 1.0.0
- * @category constructors
- */
+/** @internal */
 export function make<R, Req>(
   recipientType: RecipientType.RecipientType<Req>,
   behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
@@ -433,7 +445,13 @@ export function make<R, Req>(
       )
     }
 
-    const self: EntityManager<Req> = { recipientType, send, terminateAllEntities, terminateEntitiesOnShards }
+    const self: EntityManager<Req> = {
+      [EntityManagerTypeId]: EntityManagerTypeId,
+      recipientType,
+      send,
+      terminateAllEntities,
+      terminateEntitiesOnShards
+    }
     return self
   })
 }

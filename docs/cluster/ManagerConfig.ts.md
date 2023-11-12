@@ -16,6 +16,9 @@ Added in v1.0.0
   - [ManagerConfig](#managerconfig)
 - [models](#models)
   - [ManagerConfig (interface)](#managerconfig-interface)
+- [symbols](#symbols)
+  - [ManagerConfigTypeId](#managerconfigtypeid)
+  - [ManagerConfigTypeId (type alias)](#managerconfigtypeid-type-alias)
 - [utils](#utils)
   - [defaults](#defaults)
 
@@ -28,7 +31,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ManagerConfig: Tag<ManagerConfig, ManagerConfig>
+export declare const ManagerConfig: Context.Tag<ManagerConfig, ManagerConfig>
 ```
 
 Added in v1.0.0
@@ -43,6 +46,7 @@ Shard Manager configuration
 
 ```ts
 export interface ManagerConfig {
+  readonly [ManagerConfigTypeId]: ManagerConfigTypeId
   readonly numberOfShards: number
   readonly apiPort: number
   readonly rebalanceInterval: Duration.Duration
@@ -52,6 +56,28 @@ export interface ManagerConfig {
   readonly persistRetryCount: number
   readonly rebalanceRate: number
 }
+```
+
+Added in v1.0.0
+
+# symbols
+
+## ManagerConfigTypeId
+
+**Signature**
+
+```ts
+export declare const ManagerConfigTypeId: typeof ManagerConfigTypeId
+```
+
+Added in v1.0.0
+
+## ManagerConfigTypeId (type alias)
+
+**Signature**
+
+```ts
+export type ManagerConfigTypeId = typeof ManagerConfigTypeId
 ```
 
 Added in v1.0.0

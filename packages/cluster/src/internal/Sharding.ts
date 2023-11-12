@@ -39,7 +39,7 @@ import * as ShardingError from "../ShardingError.js"
 import * as ShardingRegistrationEvent from "../ShardingRegistrationEvent.js"
 import * as ShardManagerClient from "../ShardManagerClient.js"
 import * as Storage from "../Storage.js"
-import * as EntityManager from "./EntityManager.js"
+import * as EntityManager from "./entityManager.js"
 import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "./utils.js"
 
 /**

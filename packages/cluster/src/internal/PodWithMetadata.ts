@@ -1,6 +1,4 @@
-/**
- * @since 1.0.0
- */
+/** @internal */
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
@@ -8,49 +6,40 @@ import * as List from "effect/List"
 import * as Option from "effect/Option"
 import * as Pod from "../Pod.js"
 
-/**
- * @since 1.0.0
- * @category symbols
- */
-export const TypeId = "@effect/cluster/PodWithMetadata"
+/** @internal */
+const PodWithMetadataSymbolKey = "@effect/cluster/PodWithMetadata"
 
-/**
- * @since 1.0.0
- * @category symbols
- */
-export type TypeId = typeof TypeId
+/** @internal */
+export const PodWithMetadataTypeId = Symbol.for(PodWithMetadataSymbolKey)
 
-/**
- * @since 1.0.0
- * @category models
- */
-export interface PodWithMetadata extends Schema.Schema.To<typeof schema> {}
+/** @internal */
+export type PodWithMetadataTypeId = typeof PodWithMetadataTypeId
 
-/**
- * @since 1.0.0
- * @category utils
- */
+/** @internal */
+export interface PodWithMetadata extends
+  Data.Data<{
+    [PodWithMetadataTypeId]: PodWithMetadataTypeId
+    pod: Pod.Pod
+    registered: number
+  }>
+{}
+
+/** @internal */
+export function make(pod: Pod.Pod, registered: number): PodWithMetadata {
+  return Data.struct({ [PodWithMetadataTypeId]: PodWithMetadataTypeId, pod, registered })
+}
+
+/** @internal */
 export function isPodWithMetadata(value: unknown): value is PodWithMetadata {
   return (
     typeof value === "object" &&
     value !== null &&
-    "_id" in value &&
-    value["_id"] === TypeId
+    PodWithMetadataTypeId in value &&
+    value[PodWithMetadataTypeId] === PodWithMetadataTypeId
   )
 }
 
-/**
- * @since 1.0.0
- * @category constructors
- */
-export function make(pod: Pod.Pod, registered: number): PodWithMetadata {
-  return Data.struct({ _id: TypeId, pod, registered })
-}
-
-/**
- * @since 1.0.0
- * @category utils
- */
+/** @internal */
 export function extractVersion(pod: PodWithMetadata): List.List<number> {
   return pipe(
     List.fromIterable(pod.pod.version.split(".")),
@@ -58,10 +47,7 @@ export function extractVersion(pod: PodWithMetadata): List.List<number> {
   )
 }
 
-/**
- * @since 1.0.0
- * @category utils
- */
+/** @internal */
 export function compareVersion(a: List.List<number>, b: List.List<number>): 0 | 1 | -1 {
   let restA = a
   let restB = b
@@ -89,15 +75,26 @@ export function compareVersion(a: List.List<number>, b: List.List<number>): 0 | 
   return 0
 }
 
-/**
- * @since 1.0.0
- * @category schema
- */
-export const schema = pipe(
+/** @internal */
+export const schema: Schema.Schema<
+  {
+    readonly "@effect/cluster/PodWithMetadata": "@effect/cluster/PodWithMetadata"
+    readonly pod: {
+      readonly _id: "@effect/cluster/Pod"
+      readonly address: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
+      readonly version: string
+    }
+    readonly registered: number
+  },
+  PodWithMetadata
+> = Schema.data(Schema.rename(
   Schema.struct({
-    _id: Schema.literal(TypeId),
+    [PodWithMetadataSymbolKey]: Schema.compose(
+      Schema.symbolFromString(Schema.literal(PodWithMetadataSymbolKey)),
+      Schema.uniqueSymbol(PodWithMetadataTypeId)
+    ),
     pod: Pod.schema,
     registered: Schema.number
   }),
-  Schema.data
-)
+  { [PodWithMetadataSymbolKey]: PodWithMetadataTypeId }
+))

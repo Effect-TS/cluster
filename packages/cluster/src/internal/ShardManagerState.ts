@@ -9,7 +9,7 @@ import * as List from "effect/List"
 import * as Option from "effect/Option"
 import type * as PodAddress from "../PodAddress.js"
 import * as ShardId from "../ShardId.js"
-import * as PodWithMetadata from "./PodWithMetadata.js"
+import * as PodWithMetadata from "./podWithMetadata.js"
 
 /**
  * @since 1.0.0
