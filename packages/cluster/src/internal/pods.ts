@@ -1,4 +1,3 @@
-/** @internal */
 import type * as Pods from "@effect/cluster/Pods"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"

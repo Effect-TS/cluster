@@ -1,4 +1,3 @@
-/** @internal */
 import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
 import * as Duration from "effect/Duration"

@@ -1,4 +1,3 @@
-/** @internal */
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"

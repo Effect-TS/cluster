@@ -1,4 +1,3 @@
-/** @internal */
 import * as Data from "effect/Data"
 import type * as Effect from "effect/Effect"
 import type * as Fiber from "effect/Fiber"

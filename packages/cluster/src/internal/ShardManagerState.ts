@@ -1,6 +1,3 @@
-/**
- * @since 1.0.0
- */
 import { equals } from "effect/Equal"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"

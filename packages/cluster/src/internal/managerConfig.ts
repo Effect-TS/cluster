@@ -1,4 +1,3 @@
-/** @internal */
 import * as Context from "effect/Context"
 import * as Duration from "effect/Duration"
 import * as Layer from "effect/Layer"

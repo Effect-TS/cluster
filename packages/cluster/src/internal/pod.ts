@@ -1,4 +1,3 @@
-/** @internal */
 import type * as Pod from "@effect/cluster/Pod"
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
