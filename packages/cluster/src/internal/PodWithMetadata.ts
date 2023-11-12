@@ -80,8 +80,12 @@ export const schema: Schema.Schema<
   {
     readonly "@effect/cluster/PodWithMetadata": "@effect/cluster/PodWithMetadata"
     readonly pod: {
-      readonly _id: "@effect/cluster/Pod"
-      readonly address: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
+      readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
+      readonly address: {
+        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
+        readonly host: string
+        readonly port: number
+      }
       readonly version: string
     }
     readonly registered: number

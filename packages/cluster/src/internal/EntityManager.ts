@@ -20,7 +20,7 @@ import type * as Sharding from "../Sharding.js"
 import type * as ShardingConfig from "../ShardingConfig.js"
 import * as ShardingError from "../ShardingError.js"
 import * as EntityState from "./entityState.js"
-import * as ReplyChannel from "./ReplyChannel.js"
+import * as ReplyChannel from "./replyChannel.js"
 
 /** @internal */
 const EntityManagerSymbolKey = "@effect/cluster/EntityManager"

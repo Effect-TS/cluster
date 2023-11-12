@@ -1,59 +1,60 @@
 /**
  * @since 1.0.0
  */
-import * as Schema from "@effect/schema/Schema"
-import * as Data from "effect/Data"
-import { pipe } from "effect/Function"
-import * as PodAddress from "./PodAddress.js"
+import type * as Schema from "@effect/schema/Schema"
+import type * as Data from "effect/Data"
+import * as internal from "./internal/pod.js"
+import type * as PodAddress from "./PodAddress.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/Pod"
+export const PodTypeId: unique symbol = internal.PodTypeId
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId
+export type PodTypeId = typeof PodTypeId
 
 /**
  * @since 1.0.0
  * @category models
  */
-export interface Pod extends Schema.Schema.To<typeof schema> {}
+export interface Pod extends
+  Data.Data<{
+    readonly [PodTypeId]: PodTypeId
+    readonly address: PodAddress.PodAddress
+    readonly version: string
+  }>
+{}
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export function isPod(value: unknown): value is Pod {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "_id" in value &&
-    value["_id"] === TypeId
-  )
-}
+export const isPod: (value: unknown) => value is Pod = internal.isPod
 
 /**
  * @since 1.0.0
  * @category constructors
  */
-export function make(address: PodAddress.PodAddress, version: string): Pod {
-  return Data.struct({ _id: TypeId, address, version })
-}
+export const make: (address: PodAddress.PodAddress, version: string) => Pod = internal.make
 
 /**
  * @since 1.0.0
  * @category schema
  */
-export const schema = pipe(
-  Schema.struct({
-    _id: Schema.literal(TypeId),
-    address: PodAddress.schema,
-    version: Schema.string
-  }),
-  Schema.data
-)
+export const schema: Schema.Schema<
+  {
+    readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
+    readonly address: {
+      readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
+      readonly host: string
+      readonly port: number
+    }
+    readonly version: string
+  },
+  Pod
+> = internal.schema
