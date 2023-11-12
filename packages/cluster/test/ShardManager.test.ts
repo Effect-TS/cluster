@@ -1,4 +1,4 @@
-import * as PodWithMetadata from "@effect/cluster/internal/PodWithMetadata"
+import * as PodWithMetadata from "@effect/cluster/internal/podWithMetadata"
 import { decideAssignmentsForUnbalancedShards } from "@effect/cluster/internal/shardManager"
 import * as ShardManagerState from "@effect/cluster/internal/shardManagerState"
 import * as ManagerConfig from "@effect/cluster/ManagerConfig"
