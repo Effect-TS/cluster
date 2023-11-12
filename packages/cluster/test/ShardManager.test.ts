@@ -1,5 +1,5 @@
 import * as PodWithMetadata from "@effect/cluster/internal/PodWithMetadata"
-import * as ShardManagerState from "@effect/cluster/internal/ShardManagerState"
+import * as ShardManagerState from "@effect/cluster/internal/shardManagerState"
 import * as ManagerConfig from "@effect/cluster/ManagerConfig"
 import * as Pod from "@effect/cluster/Pod"
 import * as PodAddress from "@effect/cluster/PodAddress"
