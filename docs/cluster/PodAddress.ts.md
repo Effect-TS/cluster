@@ -19,8 +19,8 @@ Added in v1.0.0
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [PodAddressTypeId](#podaddresstypeid)
+  - [PodAddressTypeId (type alias)](#podaddresstypeid-type-alias)
 - [utils](#utils)
   - [isPodAddress](#ispodaddress)
 
@@ -33,7 +33,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make(host: string, port: number): PodAddress
+export declare const make: (host: string, port: number) => PodAddress
 ```
 
 Added in v1.0.0
@@ -45,7 +45,12 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface PodAddress extends Schema.Schema.To<typeof schema> {}
+export interface PodAddress
+  extends Data.Data<{
+    readonly [PodAddressTypeId]: PodAddressTypeId
+    readonly host: string
+    readonly port: number
+  }> {}
 ```
 
 Added in v1.0.0
@@ -60,8 +65,8 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number },
-  Data.Data<{ readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }>
+  { readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"; readonly host: string; readonly port: number },
+  PodAddress
 >
 ```
 
@@ -69,22 +74,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## PodAddressTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: "@effect/cluster/PodAddress"
+export declare const PodAddressTypeId: typeof PodAddressTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## PodAddressTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type PodAddressTypeId = typeof PodAddressTypeId
 ```
 
 Added in v1.0.0
@@ -96,7 +101,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isPodAddress(value: unknown): value is PodAddress
+export declare const isPodAddress: (value: unknown) => value is PodAddress
 ```
 
 Added in v1.0.0

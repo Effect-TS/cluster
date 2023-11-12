@@ -59,7 +59,11 @@ Added in v1.0.0
 export declare const ShardingErrorPodUnavailableSchema: Schema.Schema<
   {
     readonly _tag: "./ShardingErrorPodUnavailable"
-    readonly pod: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
+    readonly pod: {
+      readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
+      readonly host: string
+      readonly port: number
+    }
   },
   ShardingErrorPodUnavailable
 >

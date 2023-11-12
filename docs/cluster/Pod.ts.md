@@ -19,8 +19,8 @@ Added in v1.0.0
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [PodTypeId](#podtypeid)
+  - [PodTypeId (type alias)](#podtypeid-type-alias)
 - [utils](#utils)
   - [isPod](#ispod)
 
@@ -33,7 +33,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make(address: PodAddress.PodAddress, version: string): Pod
+export declare const make: (address: PodAddress.PodAddress, version: string) => Pod
 ```
 
 Added in v1.0.0
@@ -45,7 +45,12 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Pod extends Schema.Schema.To<typeof schema> {}
+export interface Pod
+  extends Data.Data<{
+    readonly [PodTypeId]: PodTypeId
+    readonly address: PodAddress.PodAddress
+    readonly version: string
+  }> {}
 ```
 
 Added in v1.0.0
@@ -59,19 +64,15 @@ Added in v1.0.0
 ```ts
 export declare const schema: Schema.Schema<
   {
-    readonly _id: "@effect/cluster/Pod"
-    readonly address: { readonly _id: "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
-    readonly version: string
-  },
-  Data.Data<{
-    readonly _id: "@effect/cluster/Pod"
-    readonly address: Data.Data<{
-      readonly _id: "@effect/cluster/PodAddress"
+    readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
+    readonly address: {
+      readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
       readonly host: string
       readonly port: number
-    }>
+    }
     readonly version: string
-  }>
+  },
+  Pod
 >
 ```
 
@@ -79,22 +80,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## PodTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: "@effect/cluster/Pod"
+export declare const PodTypeId: typeof PodTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## PodTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type PodTypeId = typeof PodTypeId
 ```
 
 Added in v1.0.0
@@ -106,7 +107,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isPod(value: unknown): value is Pod
+export declare const isPod: (value: unknown) => value is Pod
 ```
 
 Added in v1.0.0
