@@ -1,25 +1,24 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
-import * as Effect from "effect/Effect"
-import { pipe } from "effect/Function"
-import * as Layer from "effect/Layer"
-import * as Option from "effect/Option"
-import type { PodAddress } from "./PodAddress.js"
-import * as Pods from "./Pods.js"
+import type * as PodAddress from "@effect/cluster/PodAddress"
+import type * as Pods from "@effect/cluster/Pods"
+import type * as Context from "effect/Context"
+import type * as Effect from "effect/Effect"
+import type * as Layer from "effect/Layer"
+import * as internal from "./internal/podsHealth.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = Symbol.for("@effect/cluster/PodsHealth")
+export const PodsHealthTypeId: unique symbol = internal.PodsHealthTypeId
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId
+export type PodsHealthTypeId = typeof PodsHealthTypeId
 
 /**
  * An interface to check a pod's health.
@@ -34,20 +33,26 @@ export interface PodsHealth {
   /**
    * @since 1.0.0
    */
-  readonly _id: TypeId
+  readonly [PodsHealthTypeId]: PodsHealthTypeId
 
   /**
    * Check if a pod is still alive.
    * @since 1.0.0
    */
-  readonly isAlive: (podAddress: PodAddress) => Effect.Effect<never, never, boolean>
+  readonly isAlive: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, boolean>
 }
+
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export const make: (args: Omit<PodsHealth, typeof PodsHealthTypeId>) => PodsHealth = internal.make
 
 /**
  * @since 1.0.0
  * @category context
  */
-export const PodsHealth = Tag<PodsHealth>()
+export const PodsHealth: Context.Tag<PodsHealth, PodsHealth> = internal.podsHealthTag
 
 /**
  * A layer that considers pods as always alive.
@@ -55,10 +60,7 @@ export const PodsHealth = Tag<PodsHealth>()
  * @since 1.0.0
  * @category layers
  */
-export const noop = Layer.succeed(PodsHealth, {
-  _id: TypeId,
-  isAlive: () => Effect.succeed(true)
-})
+export const noop: Layer.Layer<never, never, PodsHealth> = internal.noop
 
 /**
  * A layer that pings the pod directly to check if it's alive.
@@ -66,10 +68,4 @@ export const noop = Layer.succeed(PodsHealth, {
  * @since 1.0.0
  * @category layers
  */
-export const local = Layer.effect(
-  PodsHealth,
-  Effect.map(Pods.Pods, (podApi) => (({
-    _id: TypeId,
-    isAlive: (address: PodAddress) => pipe(podApi.ping(address), Effect.option, Effect.map(Option.isSome))
-  }) as PodsHealth))
-)
+export const local: Layer.Layer<Pods.Pods, never, PodsHealth> = internal.local
