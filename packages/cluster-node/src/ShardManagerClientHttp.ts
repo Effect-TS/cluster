@@ -21,7 +21,7 @@ export const shardManagerClientHttp = Layer.effect(
     const config = yield* _(ShardingConfig.ShardingConfig)
     const client = yield* _(Http.client.Client, Effect.map(Http.client.filterStatusOk))
 
-    return ({
+    return ShardManagerClient.make({
       register: (podAddress) =>
         Effect.gen(function*(_) {
           const request = yield* _(
@@ -73,6 +73,6 @@ export const shardManagerClientHttp = Layer.effect(
 
         return HashMap.fromIterable(response)
       }).pipe(Effect.orDie)
-    } as ShardManagerClient.ShardManagerClient)
+    })
   })
 ).pipe(Layer.use(Http.client.layer))

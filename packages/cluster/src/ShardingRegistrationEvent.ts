@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import type * as RecipientType from "./RecipientType.js"
+import type * as RecipientType from "@effect/cluster/RecipientType"
 
 /**
  * @since 1.0.0

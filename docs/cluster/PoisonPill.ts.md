@@ -81,7 +81,9 @@ If the result is a PoisonPill, it will interrupt the effect.
 **Signature**
 
 ```ts
-export declare const takeOrInterrupt: typeof internal.takeOrInterrupt
+export declare const takeOrInterrupt: <Req>(
+  dequeue: Queue.Dequeue<PoisonPill | Req>
+) => Effect.Effect<never, never, Req>
 ```
 
 Added in v1.0.0
@@ -115,7 +117,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isPoisonPill: typeof internal.isPoisonPill
+export declare const isPoisonPill: (value: unknown) => value is PoisonPill
 ```
 
 Added in v1.0.0

@@ -2,6 +2,8 @@
  * @since 1.0.0
  */
 import type * as Data from "effect/Data"
+import type * as Effect from "effect/Effect"
+import type * as Queue from "effect/Queue"
 import * as internal from "./internal/poisonPill.js"
 
 /**
@@ -38,7 +40,7 @@ export const make: PoisonPill = internal.make
  * @since 1.0.0
  * @category utils
  */
-export const isPoisonPill = internal.isPoisonPill
+export const isPoisonPill: (value: unknown) => value is PoisonPill = internal.isPoisonPill
 
 /**
  * This is the schema for a value.
@@ -55,4 +57,5 @@ export const schema = internal.schema
  * @since 1.0.0
  * @category schema
  */
-export const takeOrInterrupt = internal.takeOrInterrupt
+export const takeOrInterrupt: <Req>(dequeue: Queue.Dequeue<PoisonPill | Req>) => Effect.Effect<never, never, Req> =
+  internal.takeOrInterrupt
