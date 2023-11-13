@@ -68,18 +68,18 @@ This is the schema for a value.
 ```ts
 export declare const schema: Schema.Schema<
   {
-    readonly _id: "@effect/cluster/SerializedEnvelope"
     readonly entityType: string
     readonly entityId: string
+    readonly _id: "@effect/cluster/SerializedEnvelope"
     readonly body: { readonly _id: "@effect/cluster/SerializedMessage"; readonly value: string }
     readonly replyId:
       | { readonly _tag: "None" }
       | { readonly _tag: "Some"; readonly value: { readonly _id: "@effect/cluster/ReplyId"; readonly value: string } }
   },
   Data.Data<{
-    readonly _id: "@effect/cluster/SerializedEnvelope"
     readonly entityType: string
     readonly entityId: string
+    readonly _id: "@effect/cluster/SerializedEnvelope"
     readonly body: Data.Data<{ readonly _id: "@effect/cluster/SerializedMessage"; readonly value: string }>
     readonly replyId: Option.Option<Data.Data<{ readonly _id: "@effect/cluster/ReplyId"; readonly value: string }>>
   }>
