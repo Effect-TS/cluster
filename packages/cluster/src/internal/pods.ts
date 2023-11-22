@@ -1,8 +1,8 @@
-import type * as Pods from "@effect/cluster/Pods"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import type * as Pods from "../Pods.js"
 
 /** @internal */
 const PodsSymbolKey = "@effect/cluster/Pods"

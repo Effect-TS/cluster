@@ -51,6 +51,12 @@ export * as RecipientBehaviour from "./RecipientBehaviour.js"
 
 /**
  * @since 1.0.0
+ * This module provides the context that is given to a RecipientBehaviour
+ */
+export * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
+
+/**
+ * @since 1.0.0
  */
 export * as RecipientType from "./RecipientType.js"
 

@@ -1,5 +1,6 @@
 import * as PoisonPill from "@effect/cluster/PoisonPill"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
+import * as RecipientBehaviourContext from "@effect/cluster/RecipientBehaviourContext"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
@@ -22,10 +23,13 @@ describe.concurrent("RecipientBehaviour", () => {
   const makeTestActor = <R, A>(fa: RecipientBehaviour.RecipientBehaviour<R, A>, scope: Scope.Scope) =>
     pipe(
       fa("test"),
-      Effect.provideService(RecipientBehaviour.RecipientBehaviourContext, {
-        entityId: "entity1",
-        reply: (_, __) => Effect.unit
-      }),
+      Effect.provideService(
+        RecipientBehaviourContext.RecipientBehaviourContext,
+        RecipientBehaviourContext.make({
+          entityId: "entity1",
+          reply: (_, __) => Effect.unit
+        })
+      ),
       Scope.extend(scope)
     )
 

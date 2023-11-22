@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
-import type * as PodAddress from "@effect/cluster/PodAddress"
-import type * as Pods from "@effect/cluster/Pods"
 import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import type * as Layer from "effect/Layer"
 import * as internal from "./internal/podsHealth.js"
+import type * as PodAddress from "./PodAddress.js"
+import type * as Pods from "./Pods.js"
 
 /**
  * @since 1.0.0

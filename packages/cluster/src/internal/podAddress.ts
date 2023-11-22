@@ -1,6 +1,6 @@
-import type * as PodAddress from "@effect/cluster/PodAddress"
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
+import type * as PodAddress from "../PodAddress.js"
 
 /** @internal */
 const PodAddressSymbolKey = "@effect/cluster/PodAddress"

@@ -1,7 +1,3 @@
-import type * as Pod from "@effect/cluster/Pod"
-import type * as PodAddress from "@effect/cluster/PodAddress"
-import type * as ShardId from "@effect/cluster/ShardId"
-import type * as Storage from "@effect/cluster/Storage"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -11,6 +7,10 @@ import type * as Option from "effect/Option"
 import * as Ref from "effect/Ref"
 import * as Stream from "effect/Stream"
 import * as SubscriptionRef from "effect/SubscriptionRef"
+import type * as Pod from "../Pod.js"
+import type * as PodAddress from "../PodAddress.js"
+import type * as ShardId from "../ShardId.js"
+import type * as Storage from "../Storage.js"
 
 /** @internal */
 const StorageSymbolKey = "@effect/cluster/StorageTypeId"

@@ -11,7 +11,8 @@ import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
 import * as RefSynchronized from "effect/SynchronizedRef"
 import type * as Message from "../Message.js"
-import * as RecipientBehaviour from "../RecipientBehaviour.js"
+import type * as RecipientBehaviour from "../RecipientBehaviour.js"
+import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import type * as RecipientType from "../RecipientType.js"
 import type * as ReplyId from "../ReplyId.js"
 import type * as ShardId from "../ShardId.js"
@@ -73,7 +74,7 @@ export function make<R, Req>(
 ) {
   return Effect.gen(function*(_) {
     const entityMaxIdle = options.entityMaxIdleTime || Option.none()
-    const env = yield* _(Effect.context<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>>())
+    const env = yield* _(Effect.context<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>())
     const entityStates = yield* _(
       RefSynchronized.make<
         HashMap.HashMap<
@@ -290,10 +291,13 @@ export function make<R, Req>(
                     const offer = yield* _(pipe(
                       behaviour_(entityId),
                       Scope.extend(executionScope),
-                      Effect.provideService(RecipientBehaviour.RecipientBehaviourContext, {
-                        entityId,
-                        reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
-                      }),
+                      Effect.provideService(
+                        RecipientBehaviourContext.RecipientBehaviourContext,
+                        RecipientBehaviourContext.make({
+                          entityId,
+                          reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
+                        })
+                      ),
                       Effect.provide(env)
                     ))
 

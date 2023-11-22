@@ -1,6 +1,6 @@
-import type * as Pod from "@effect/cluster/Pod"
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
+import type * as Pod from "../Pod.js"
 import * as PodAddress from "../PodAddress.js"
 
 /** @internal */

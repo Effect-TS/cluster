@@ -1,6 +1,6 @@
 ---
 title: Sharding.ts
-nav_order: 19
+nav_order: 20
 parent: "@effect/cluster"
 ---
 
@@ -85,12 +85,12 @@ export interface Sharding {
     entityType: RecipentType.EntityType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
   readonly registerTopic: <Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
   readonly getShardingRegistrationEvents: Stream.Stream<
     never,
     never,
@@ -181,7 +181,7 @@ export declare const registerEntity: <Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
-) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
 ```
 
 Added in v1.0.0
@@ -228,7 +228,7 @@ export declare const registerTopic: <Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
-) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
 ```
 
 Added in v1.0.0

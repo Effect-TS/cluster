@@ -24,6 +24,7 @@ import type { Messenger } from "../Messenger.js"
 import * as PodAddress from "../PodAddress.js"
 import * as Pods from "../Pods.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
+import type * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import * as RecipientType from "../RecipientType.js"
 import type * as ReplyId from "../ReplyId.js"
 import * as Serialization from "../Serialization.js"
@@ -82,7 +83,7 @@ export function registerEntity<Req, R>(
   entityType: RecipientType.EntityType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
   options?: RecipientBehaviour.EntityBehaviourOptions
-): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void> {
+): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
   return Effect.flatMap(shardingTag, (_) => _.registerEntity(entityType, behavior, options))
 }
 
@@ -93,7 +94,7 @@ export function registerTopic<Req, R>(
   topicType: RecipientType.TopicType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
   options?: RecipientBehaviour.EntityBehaviourOptions
-): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void> {
+): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
   return Effect.flatMap(shardingTag, (_) => _.registerTopic(topicType, behavior, options))
 }
 
@@ -686,7 +687,7 @@ function make(
     entityType: RecipientType.EntityType<Req>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ): Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void> {
+  ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
     return pipe(
       registerRecipient(entityType, behavior, options),
       Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
@@ -698,7 +699,7 @@ function make(
     topicType: RecipientType.TopicType<Req>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ): Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void> {
+  ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
     return pipe(
       registerRecipient(topicType, behavior, options),
       Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),

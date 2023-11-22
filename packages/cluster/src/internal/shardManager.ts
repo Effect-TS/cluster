@@ -1,7 +1,6 @@
 /**
  * @since 1.0.0
  */
-import type * as ShardManager from "@effect/cluster/ShardManager"
 import * as Chunk from "effect/Chunk"
 import * as Clock from "effect/Clock"
 import { Tag } from "effect/Context"
@@ -26,6 +25,7 @@ import * as PodsHealth from "../PodsHealth.js"
 import * as ShardId from "../ShardId.js"
 import { ShardingErrorPodNoLongerRegistered } from "../ShardingError.js"
 import * as ShardingEvent from "../ShardingEvent.js"
+import type * as ShardManager from "../ShardManager.js"
 import * as Storage from "../Storage.js"
 import * as PodWithMetadata from "./podWithMetadata.js"
 import * as ShardManagerState from "./shardManagerState.js"

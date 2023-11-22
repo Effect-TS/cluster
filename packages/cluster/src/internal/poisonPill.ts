@@ -1,9 +1,9 @@
-import type * as PoisonPill from "@effect/cluster/PoisonPill"
 import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Queue from "effect/Queue"
+import type * as PoisonPill from "../PoisonPill.js"
 
 /** @internal */
 const PoisonPillSymbolKey = "@effect/cluster/PoisonPill"

@@ -1,13 +1,13 @@
-import * as PodAddress from "@effect/cluster/PodAddress"
-import * as ShardId from "@effect/cluster/ShardId"
-import * as ShardingConfig from "@effect/cluster/ShardingConfig"
-import type * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import * as PodAddress from "../PodAddress.js"
+import * as ShardId from "../ShardId.js"
+import * as ShardingConfig from "../ShardingConfig.js"
+import type * as ShardManagerClient from "../ShardManagerClient.js"
 
 /** @internal */
 const ShardManagerSymbolKey = "@effect/cluster/ShardManagerClient"

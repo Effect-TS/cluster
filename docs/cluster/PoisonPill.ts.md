@@ -65,10 +65,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema<
-  { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
-  PoisonPill.PoisonPill
->
+export declare const schema: Schema<{ readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" }, PoisonPill>
 ```
 
 Added in v1.0.0

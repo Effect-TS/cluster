@@ -23,6 +23,7 @@ Added in v1.0.0
   - [From "./PodsHealth.js"](#from-podshealthjs)
   - [From "./PoisonPill.js"](#from-poisonpilljs)
   - [From "./RecipientBehaviour.js"](#from-recipientbehaviourjs)
+  - [From "./RecipientBehaviourContext.js"](#from-recipientbehaviourcontextjs)
   - [From "./RecipientType.js"](#from-recipienttypejs)
   - [From "./Replier.js"](#from-replierjs)
   - [From "./ReplyId.js"](#from-replyidjs)
@@ -169,6 +170,19 @@ export * as RecipientBehaviour from "./RecipientBehaviour.js"
 ```
 
 Added in v1.0.0
+
+## From "./RecipientBehaviourContext.js"
+
+Re-exports all named exports from the "./RecipientBehaviourContext.js" module as `RecipientBehaviourContext`.
+
+**Signature**
+
+```ts
+export * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
+```
+
+Added in v1.0.0
+This module provides the context that is given to a RecipientBehaviour
 
 ## From "./RecipientType.js"
 

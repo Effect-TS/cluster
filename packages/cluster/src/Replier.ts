@@ -3,7 +3,7 @@
  */
 import * as Schema from "@effect/schema/Schema"
 import * as Effect from "effect/Effect"
-import { RecipientBehaviourContext } from "./RecipientBehaviour.js"
+import { RecipientBehaviourContext } from "./RecipientBehaviourContext.js"
 import * as ReplyId from "./ReplyId.js"
 
 /**

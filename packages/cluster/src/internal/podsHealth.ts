@@ -1,11 +1,11 @@
-import * as Pods from "@effect/cluster/Pods"
-import type * as PodsHealth from "@effect/cluster/PodsHealth"
 import * as Context from "effect/Context"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import * as Pods from "../Pods.js"
+import type * as PodsHealth from "../PodsHealth.js"
 
 /** @internal */
 const PodsHealthSymbolKey = "@effect/cluster/PodsHealth"
