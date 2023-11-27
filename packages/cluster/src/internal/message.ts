@@ -24,7 +24,7 @@ export function schema<RI, RA>(replySchema: Schema.Schema<RI, RA>) {
     const result = pipe(item, Schema.extend(Schema.struct({ replier: Replier.schema(replySchema) })))
 
     const make = (arg: A, replyId: ReplyId.ReplyId): A & Message.Message<RA> =>
-      Data.struct({ ...arg, replier: Replier.replier(replyId, replySchema) }) as any
+      Data.struct({ ...arg, replier: Replier.make(replyId, replySchema) }) as any
 
     const makeEffect = (arg: A): Effect.Effect<never, never, A & Message.Message<RA>> =>
       pipe(
