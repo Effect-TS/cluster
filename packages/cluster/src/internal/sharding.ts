@@ -444,7 +444,7 @@ function make(
   }
 
   function sendToPod<Msg>(
-    recipientTypeName: string,
+    entityType: string,
     entityId: string,
     msg: Msg,
     msgSchema: Schema.Schema<unknown, Msg>,
@@ -460,9 +460,9 @@ function make(
     if (config.simulateRemotePods && equals(pod, address)) {
       return pipe(
         serialization.encode(msgSchema, msg),
-        Effect.flatMap((bytes) =>
+        Effect.flatMap((body) =>
           pipe(
-            decodeRequest(SerializedEnvelope.make(entityId, recipientTypeName, bytes, replyId)),
+            decodeRequest(SerializedEnvelope.make(entityType, entityId, body, replyId)),
             Effect.flatMap(([request, entityManager]) => entityManager.send(entityId, request, replyId))
           )
         )
@@ -474,12 +474,12 @@ function make(
         Effect.flatMap(
           (_) =>
             pipe(
-              HashMap.get(_, recipientTypeName),
+              HashMap.get(_, entityType),
               Option.match(
                 {
                   onNone: () =>
                     Effect.fail<ShardingError.ShardingError>(
-                      ShardingError.ShardingErrorEntityTypeNotRegistered(recipientTypeName, pod)
+                      ShardingError.ShardingErrorEntityTypeNotRegistered(entityType, pod)
                     ),
                   onSome: (entityManager) =>
                     (entityManager as EntityManager.EntityManager<Msg>).send(
@@ -496,10 +496,10 @@ function make(
     } else {
       return pipe(
         serialization.encode(msgSchema, msg),
-        Effect.flatMap((bytes) => {
+        Effect.flatMap((body) => {
           const errorHandling = (_: never) => Effect.die("Not handled yet")
 
-          const envelope = SerializedEnvelope.make(entityId, recipientTypeName, bytes, replyId)
+          const envelope = SerializedEnvelope.make(entityType, entityId, body, replyId)
 
           return pipe(
             pods.sendMessage(pod, envelope),

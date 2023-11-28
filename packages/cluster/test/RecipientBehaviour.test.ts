@@ -18,7 +18,7 @@ interface Sample {
 
 describe.concurrent("RecipientBehaviour", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
-    pipe(fa, Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Debug))
+    pipe(fa, Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
 
   const makeTestActor = <R, A>(fa: RecipientBehaviour.RecipientBehaviour<R, A>, scope: Scope.Scope) =>
     pipe(

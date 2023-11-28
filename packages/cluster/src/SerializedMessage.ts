@@ -1,27 +1,32 @@
 /**
  * @since 1.0.0
  */
-import * as Schema from "@effect/schema/Schema"
-import * as Data from "effect/Data"
-import { pipe } from "effect/Function"
+import type * as Schema from "@effect/schema/Schema"
+import type * as Data from "effect/Data"
+import * as internal from "./internal/serializedMessage.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/SerializedMessage"
+export const SerializedMessageTypeId: unique symbol = internal.SerializedMessageTypeId
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId
+export type SerializedMessageTypeId = typeof SerializedMessageTypeId
 
 /**
  * @since 1.0.0
  * @category models
  */
-export interface SerializedMessage extends Schema.Schema.To<typeof schema> {}
+export interface SerializedMessage extends
+  Data.Data<{
+    readonly [SerializedMessageTypeId]: SerializedMessageTypeId
+    readonly value: string
+  }>
+{}
 
 /**
  * Construct a new `SerializedMessage` from its internal string value.
@@ -29,22 +34,13 @@ export interface SerializedMessage extends Schema.Schema.To<typeof schema> {}
  * @since 1.0.0
  * @category constructors
  */
-export function make(value: string): SerializedMessage {
-  return Data.struct({ _id: TypeId, value })
-}
+export const make: (value: string) => SerializedMessage = internal.make
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export function isSerializedMessage(value: unknown): value is SerializedMessage {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "_id" in value &&
-    value["_id"] === TypeId
-  )
-}
+export const isSerializedMessage: (value: unknown) => value is SerializedMessage = internal.isSerializedMessage
 
 /**
  * This is the schema for a value.
@@ -52,23 +48,7 @@ export function isSerializedMessage(value: unknown): value is SerializedMessage 
  * @since 1.0.0
  * @category schema
  */
-export const schema = pipe(
-  Schema.struct({
-    _id: Schema.literal(TypeId),
-    value: Schema.string
-  }),
-  Schema.data
-)
-
-/**
- * This is the schema for a value starting from a string.
- *
- * @since 1.0.0
- * @category schema
- */
-export const schemaFromString: Schema.Schema<string, SerializedMessage> = Schema.transform(
-  Schema.string,
-  schema,
-  make,
-  (_) => _.value
-)
+export const schema: Schema.Schema<
+  { readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"; readonly value: string },
+  SerializedMessage
+> = internal.schema
