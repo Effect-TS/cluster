@@ -1,21 +1,22 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
-import * as Duration from "effect/Duration"
-import * as Layer from "effect/Layer"
+import type * as Context from "effect/Context"
+import type * as Duration from "effect/Duration"
+import type * as Layer from "effect/Layer"
+import * as internal from "./internal/shardingConfig.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("@effect/cluster/ShardingConfig")
+export const ShardingConfigTypeId: unique symbol = internal.ShardingConfigTypeId
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId
+export type ShardingConfigTypeId = typeof ShardingConfigTypeId
 
 /**
  * Sharding configuration
@@ -51,43 +52,17 @@ export interface ShardingConfig {
  * @since 1.0.0
  * @category context
  */
-export const ShardingConfig = Tag<ShardingConfig>()
+export const ShardingConfig: Context.Tag<ShardingConfig, ShardingConfig> = internal.shardingConfigTag
 
 /**
  * @since 1.0.0
  * @category layers
  */
-export const defaults = Layer.succeed(ShardingConfig, {
-  numberOfShards: 300,
-  selfHost: "localhost",
-  shardingPort: 54321,
-  shardManagerUri: "http://localhost:8080/api/rest",
-  serverVersion: "1.0.0",
-  entityMaxIdleTime: Duration.minutes(1),
-  entityTerminationTimeout: Duration.seconds(3),
-  sendTimeout: Duration.seconds(5),
-  refreshAssignmentsRetryInterval: Duration.seconds(5),
-  unhealthyPodReportInterval: Duration.seconds(5),
-  simulateRemotePods: false
-})
+export const defaults: Layer.Layer<never, never, ShardingConfig> = internal.defaults
 
 /**
  * @since 1.0.0
  * @category layers
  */
-export function withDefaults(customs: Partial<ShardingConfig>) {
-  return Layer.succeed(ShardingConfig, {
-    numberOfShards: 300,
-    selfHost: "localhost",
-    shardingPort: 54321,
-    shardManagerUri: "http://localhost:8080/api/rest",
-    serverVersion: "1.0.0",
-    entityMaxIdleTime: Duration.minutes(1),
-    entityTerminationTimeout: Duration.seconds(3),
-    sendTimeout: Duration.seconds(5),
-    refreshAssignmentsRetryInterval: Duration.seconds(5),
-    unhealthyPodReportInterval: Duration.seconds(5),
-    simulateRemotePods: false,
-    ...customs
-  })
-}
+export const withDefaults: (customs: Partial<ShardingConfig>) => Layer.Layer<never, never, ShardingConfig> =
+  internal.withDefaults

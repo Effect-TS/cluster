@@ -6,16 +6,6 @@ export * as Broadcaster from "./Broadcaster.js"
 /**
  * @since 1.0.0
  */
-export * as EntityManager from "./EntityManager.js"
-
-/**
- * @since 1.0.0
- */
-export * as EntityState from "./EntityState.js"
-
-/**
- * @since 1.0.0
- */
 export * as ManagerConfig from "./ManagerConfig.js"
 
 /**
@@ -41,11 +31,6 @@ export * as PodAddress from "./PodAddress.js"
 /**
  * @since 1.0.0
  */
-export * as PodWithMetadata from "./PodWithMetadata.js"
-
-/**
- * @since 1.0.0
- */
 export * as Pods from "./Pods.js"
 
 /**
@@ -66,6 +51,12 @@ export * as RecipientBehaviour from "./RecipientBehaviour.js"
 
 /**
  * @since 1.0.0
+ * This module provides the context that is given to a RecipientBehaviour
+ */
+export * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
+
+/**
+ * @since 1.0.0
  */
 export * as RecipientType from "./RecipientType.js"
 
@@ -73,11 +64,6 @@ export * as RecipientType from "./RecipientType.js"
  * @since 1.0.0
  */
 export * as Replier from "./Replier.js"
-
-/**
- * @since 1.0.0
- */
-export * as ReplyChannel from "./ReplyChannel.js"
 
 /**
  * @since 1.0.0
@@ -113,11 +99,6 @@ export * as ShardManager from "./ShardManager.js"
  * @since 1.0.0
  */
 export * as ShardManagerClient from "./ShardManagerClient.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardManagerState from "./ShardManagerState.js"
 
 /**
  * @since 1.0.0
@@ -173,11 +154,6 @@ export * as ShardingErrorSerialization from "./ShardingErrorSerialization.js"
  * @since 1.0.0
  */
 export * as ShardingEvent from "./ShardingEvent.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingImpl from "./ShardingImpl.js"
 
 /**
  * @since 1.0.0

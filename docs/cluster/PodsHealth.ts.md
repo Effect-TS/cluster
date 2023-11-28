@@ -1,6 +1,6 @@
 ---
 title: PodsHealth.ts
-nav_order: 11
+nav_order: 9
 parent: "@effect/cluster"
 ---
 
@@ -12,6 +12,8 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [constructors](#constructors)
+  - [make](#make)
 - [context](#context)
   - [PodsHealth](#podshealth)
 - [layers](#layers)
@@ -20,10 +22,22 @@ Added in v1.0.0
 - [models](#models)
   - [PodsHealth (interface)](#podshealth-interface)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [PodsHealthTypeId](#podshealthtypeid)
+  - [PodsHealthTypeId (type alias)](#podshealthtypeid-type-alias)
 
 ---
+
+# constructors
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: (args: Omit<PodsHealth, typeof PodsHealthTypeId>) => PodsHealth
+```
+
+Added in v1.0.0
 
 # context
 
@@ -32,7 +46,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const PodsHealth: Tag<PodsHealth, PodsHealth>
+export declare const PodsHealth: Context.Tag<PodsHealth, PodsHealth>
 ```
 
 Added in v1.0.0
@@ -82,13 +96,13 @@ export interface PodsHealth {
   /**
    * @since 1.0.0
    */
-  readonly _id: TypeId
+  readonly [PodsHealthTypeId]: PodsHealthTypeId
 
   /**
    * Check if a pod is still alive.
    * @since 1.0.0
    */
-  readonly isAlive: (podAddress: PodAddress) => Effect.Effect<never, never, boolean>
+  readonly isAlive: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, boolean>
 }
 ```
 
@@ -96,22 +110,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## PodsHealthTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: typeof TypeId
+export declare const PodsHealthTypeId: typeof PodsHealthTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## PodsHealthTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type PodsHealthTypeId = typeof PodsHealthTypeId
 ```
 
 Added in v1.0.0

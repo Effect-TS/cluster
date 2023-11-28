@@ -4,7 +4,6 @@ import * as StorageFile from "@effect/cluster-node/StorageFile"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
-import * as ShardingImpl from "@effect/cluster/ShardingImpl"
 import * as NodeClient from "@effect/platform-node/Http/NodeClient"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -14,7 +13,7 @@ import * as LogLevel from "effect/LogLevel"
 import { CounterEntity, GetCurrent } from "./sample-common.js"
 
 const liveSharding = pipe(
-  ShardingImpl.live,
+  Sharding.live,
   Layer.use(StorageFile.storageFile),
   Layer.use(PodsHttp.httpPods),
   Layer.use(ShardManagerClientHttp.shardManagerClientHttp),

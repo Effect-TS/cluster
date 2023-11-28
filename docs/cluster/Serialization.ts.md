@@ -1,6 +1,6 @@
 ---
 title: Serialization.ts
-nav_order: 19
+nav_order: 16
 parent: "@effect/cluster"
 ---
 
@@ -12,6 +12,8 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [constructors](#constructors)
+  - [make](#make)
 - [context](#context)
   - [Serialization](#serialization)
 - [layers](#layers)
@@ -19,10 +21,22 @@ Added in v1.0.0
 - [models](#models)
   - [Serialization (interface)](#serialization-interface)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [SerializationTypeId](#serializationtypeid)
+  - [SerializationTypeId (type alias)](#serializationtypeid-type-alias)
 
 ---
+
+# constructors
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: (args: Omit<Serialization, typeof SerializationTypeId>) => Serialization
+```
+
+Added in v1.0.0
 
 # context
 
@@ -31,7 +45,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Serialization: Tag<Serialization, Serialization>
+export declare const Serialization: Context.Tag<Serialization, Serialization>
 ```
 
 Added in v1.0.0
@@ -40,7 +54,7 @@ Added in v1.0.0
 
 ## json
 
-A layer that uses Java serialization for encoding and decoding messages.
+A layer that uses JSON serialization for encoding and decoding messages.
 This is useful for testing and not recommended to use in production.
 
 **Signature**
@@ -64,7 +78,7 @@ export interface Serialization {
   /**
    * @since 1.0.0
    */
-  readonly _id: TypeId
+  readonly [SerializationTypeId]: SerializationTypeId
 
   /**
    * Transforms the given message into binary
@@ -90,22 +104,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## SerializationTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: typeof TypeId
+export declare const SerializationTypeId: typeof SerializationTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## SerializationTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type SerializationTypeId = typeof SerializationTypeId
 ```
 
 Added in v1.0.0

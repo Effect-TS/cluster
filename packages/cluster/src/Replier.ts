@@ -1,29 +1,30 @@
 /**
  * @since 1.0.0
  */
-import * as Schema from "@effect/schema/Schema"
-import * as Effect from "effect/Effect"
-import { RecipientBehaviourContext } from "./RecipientBehaviour.js"
-import * as ReplyId from "./ReplyId.js"
+import type * as Schema from "@effect/schema/Schema"
+import type * as Effect from "effect/Effect"
+import * as internal from "./internal/replier.js"
+import type { RecipientBehaviourContext } from "./RecipientBehaviourContext.js"
+import type * as ReplyId from "./ReplyId.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/Replier"
+export const ReplierTypeId: unique symbol = internal.ReplierTypeId
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId
+export type ReplierTypeId = typeof ReplierTypeId
 
 /**
  * @since 1.0.0
  * @category models
  */
 export interface Replier<A> {
-  readonly _id: TypeId
+  readonly [ReplierTypeId]: ReplierTypeId
   readonly id: ReplyId.ReplyId
   readonly schema: Schema.Schema<unknown, A>
   readonly reply: (
@@ -35,39 +36,16 @@ export interface Replier<A> {
  * @since 1.0.0
  * @category constructors
  */
-export const replier = <I, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>): Replier<A> => {
-  const self: Replier<A> = {
-    _id: TypeId,
-    id,
-    schema: schema as any,
-    reply: (reply) =>
-      Effect.flatMap(
-        RecipientBehaviourContext,
-        (recipientBehaviourContext) => recipientBehaviourContext.reply(id, reply)
-      )
-  }
-  return self
-}
+export const make: <I, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>) => Replier<A> = internal.make
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export function isReplier<A>(value: unknown): value is Replier<A> {
-  return typeof value === "object" && value !== null && "_id" in value && value._id === TypeId
-}
+export const isReplier: <A>(value: unknown) => value is Replier<A> = internal.isReplier
 
 /**
  * @since 1.0.0
  * @category schema
  */
-export const schema = <I, A>(schema: Schema.Schema<I, A>): Schema.Schema<I, Replier<A>> => {
-  return Schema.transform(
-    ReplyId.schema,
-    Schema.unknown,
-    (id) => replier(id, schema) as any,
-    (_) => {
-      return (_ as any).id
-    }
-  ) as any
-}
+export const schema: <I, A>(schema: Schema.Schema<I, A>) => Schema.Schema<I, Replier<A>> = internal.schema

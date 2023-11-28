@@ -24,12 +24,12 @@
   },
   "peerDependencies": {
     "@effect/platform-node": "^0.28.3",
-    "@effect/schema": "^0.47.2",
+    "@effect/schema": "^0.47.6",
     "effect": "2.0.0-next.54"
   },
   "devDependencies": {
     "@effect/platform-node": "^0.28.3",
-    "@effect/schema": "^0.47.2",
+    "@effect/schema": "^0.47.6",
     "@types/node": "^20.9.0",
     "@types/path-browserify": "^1.0.1",
     "effect": "2.0.0-next.54"

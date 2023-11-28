@@ -1,41 +1,39 @@
 /**
  * @since 1.0.0
  */
-import * as Schema from "@effect/schema/Schema"
-import * as Data from "effect/Data"
-import * as Effect from "effect/Effect"
-import { pipe } from "effect/Function"
+import type * as Schema from "@effect/schema/Schema"
+import type * as Data from "effect/Data"
+import type * as Effect from "effect/Effect"
+import * as internal from "./internal/replyId.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/ReplyId"
+export const ReplyIdTypeId: unique symbol = internal.ReplyIdTypeId
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId
+export type ReplyIdTypeId = typeof ReplyIdTypeId
 
 /**
  * @since 1.0.0
  * @category models
  */
-export interface ReplyId extends Schema.Schema.To<typeof schema> {}
+export interface ReplyId extends
+  Data.Data<{
+    readonly [ReplyIdTypeId]: ReplyIdTypeId
+    readonly value: string
+  }>
+{}
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export function isReplyId(value: unknown): value is ReplyId {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "_id" in value &&
-    value["_id"] === TypeId
-  )
-}
+export const isReplyId: (value: unknown) => value is ReplyId = internal.isReplyId
 
 /**
  * Construct a new `ReplyId` from its internal id string value.
@@ -43,20 +41,7 @@ export function isReplyId(value: unknown): value is ReplyId {
  * @since 1.0.0
  * @category constructors
  */
-export function make(value: string): ReplyId {
-  return Data.struct({ _id: TypeId, value })
-}
-
-/** @internal */
-const makeUUID = typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function" ?
-  Effect.sync(() =>
-    // @ts-expect-error
-    ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(
-      /[018]/g,
-      (c: any) => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
-    )
-  ) :
-  Effect.sync(() => (Math.random() * 10000).toString(36))
+export const make = internal.make
 
 /**
  * Construct a new `ReplyId` by internally building a UUID.
@@ -64,10 +49,7 @@ const makeUUID = typeof crypto !== "undefined" && typeof crypto.getRandomValues 
  * @since 1.0.0
  * @category constructors
  */
-export const makeEffect = pipe(
-  makeUUID,
-  Effect.map(make)
-)
+export const makeEffect: Effect.Effect<never, never, ReplyId> = internal.makeEffect
 
 /**
  * This is the schema for a value.
@@ -75,9 +57,7 @@ export const makeEffect = pipe(
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.data(
-  Schema.struct({
-    _id: Schema.literal(TypeId),
-    value: Schema.string
-  })
-)
+export const schema: Schema.Schema<
+  { readonly "@effect/cluster/ReplyId": "@effect/cluster/ReplyId"; readonly value: string },
+  ReplyId
+> = internal.schema

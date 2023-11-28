@@ -1,6 +1,6 @@
 ---
 title: RecipientBehaviour.ts
-nav_order: 14
+nav_order: 11
 parent: "@effect/cluster"
 ---
 
@@ -14,31 +14,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [context](#context)
-  - [RecipientBehaviourContext](#recipientbehaviourcontext)
 - [models](#models)
   - [RecipientBehaviour (interface)](#recipientbehaviour-interface)
-  - [RecipientBehaviourContext (interface)](#recipientbehaviourcontext-interface)
 - [utils](#utils)
   - [EntityBehaviourOptions (type alias)](#entitybehaviouroptions-type-alias)
   - [fromInMemoryQueue](#frominmemoryqueue)
   - [mapOffer](#mapoffer)
 
 ---
-
-# context
-
-## RecipientBehaviourContext
-
-A tag to access current RecipientBehaviour
-
-**Signature**
-
-```ts
-export declare const RecipientBehaviourContext: Tag<RecipientBehaviourContext, RecipientBehaviourContext>
-```
-
-Added in v1.0.0
 
 # models
 
@@ -53,25 +36,10 @@ export interface RecipientBehaviour<R, Msg> {
   (
     entityId: string
   ): Effect.Effect<
-    R | RecipientBehaviourContext | Scope.Scope,
+    R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
     never,
     (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
   >
-}
-```
-
-Added in v1.0.0
-
-## RecipientBehaviourContext (interface)
-
-The context where a RecipientBehaviour is running, knows the current entityId, entityType, etc...
-
-**Signature**
-
-```ts
-export interface RecipientBehaviourContext {
-  readonly entityId: string
-  readonly reply: (replyId: ReplyId.ReplyId, reply: unknown) => Effect.Effect<never, never, void>
 }
 ```
 
@@ -98,9 +66,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function fromInMemoryQueue<R, Msg>(
+export declare const fromInMemoryQueue: <R, Msg>(
   handler: (entityId: string, dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
-): RecipientBehaviour<R, Msg>
+) => RecipientBehaviour<R, Msg>
 ```
 
 Added in v1.0.0
@@ -110,11 +78,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function mapOffer<Msg1, Msg>(
+export declare const mapOffer: <Msg1, Msg>(
   f: (
     offer: (message: Msg1) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
   ) => (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
-)
+) => <R>(base: RecipientBehaviour<R, Msg1>) => RecipientBehaviour<R, Msg>
 ```
 
 Added in v1.0.0

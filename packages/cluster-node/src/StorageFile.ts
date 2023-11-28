@@ -130,11 +130,11 @@ const assignmentsStream = pipe(
  */
 export const storageFile = Layer.scoped(
   Storage.Storage,
-  Effect.succeed({
+  Effect.succeed(Storage.make({
     getAssignments,
     saveAssignments,
     assignmentsStream,
     getPods,
     savePods
-  })
+  }))
 )

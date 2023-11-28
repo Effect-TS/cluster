@@ -1,12 +1,13 @@
+import * as PodWithMetadata from "@effect/cluster/internal/podWithMetadata"
+import { decideAssignmentsForUnbalancedShards } from "@effect/cluster/internal/shardManager"
+import * as ShardManagerState from "@effect/cluster/internal/shardManagerState"
 import * as ManagerConfig from "@effect/cluster/ManagerConfig"
 import * as Pod from "@effect/cluster/Pod"
 import * as PodAddress from "@effect/cluster/PodAddress"
 import * as Pods from "@effect/cluster/Pods"
 import * as PodsHealth from "@effect/cluster/PodsHealth"
-import * as PodWithMetadata from "@effect/cluster/PodWithMetadata"
 import * as ShardId from "@effect/cluster/ShardId"
 import * as ShardManager from "@effect/cluster/ShardManager"
-import * as ShardManagerState from "@effect/cluster/ShardManagerState"
 import * as Storage from "@effect/cluster/Storage"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -31,7 +32,7 @@ describe.concurrent("ShardManagerSpec", () => {
         [ShardId.make(2), Option.some(pod1.pod.address)]
       ])
     )
-    const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
+    const [assignments, unassignments] = decideAssignmentsForUnbalancedShards(state, 1)
 
     expect(HashMap.has(assignments, pod2.pod.address)).toBe(true)
     expect(HashMap.size(assignments) === 1).toBe(true)
@@ -51,7 +52,7 @@ describe.concurrent("ShardManagerSpec", () => {
         [ShardId.make(2), Option.some(pod1.pod.address)]
       ])
     )
-    const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
+    const [assignments, unassignments] = decideAssignmentsForUnbalancedShards(state, 1)
 
     expect(HashMap.isEmpty(assignments)).toBe(true)
     expect(HashMap.isEmpty(unassignments)).toBe(true)
@@ -68,7 +69,7 @@ describe.concurrent("ShardManagerSpec", () => {
         [ShardId.make(2), Option.some(pod2.pod.address)]
       ])
     )
-    const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
+    const [assignments, unassignments] = decideAssignmentsForUnbalancedShards(state, 1)
 
     expect(HashMap.isEmpty(assignments)).toBe(true)
     expect(HashMap.isEmpty(unassignments)).toBe(true)
@@ -85,7 +86,7 @@ describe.concurrent("ShardManagerSpec", () => {
         [ShardId.make(3), Option.some(pod2.pod.address)]
       ])
     )
-    const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
+    const [assignments, unassignments] = decideAssignmentsForUnbalancedShards(state, 1)
 
     expect(HashMap.isEmpty(assignments)).toBe(true)
     expect(HashMap.isEmpty(unassignments)).toBe(true)
@@ -103,7 +104,7 @@ describe.concurrent("ShardManagerSpec", () => {
         [ShardId.make(4), Option.some(pod2.pod.address)]
       ])
     )
-    const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
+    const [assignments, unassignments] = decideAssignmentsForUnbalancedShards(state, 1)
 
     expect(HashMap.has(assignments, pod2.pod.address)).toBe(true)
     expect(HashMap.size(assignments) === 1).toBe(true)
@@ -123,7 +124,7 @@ describe.concurrent("ShardManagerSpec", () => {
         [ShardId.make(3), Option.some(pod2.pod.address)]
       ])
     )
-    const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
+    const [assignments, unassignments] = decideAssignmentsForUnbalancedShards(state, 1)
 
     expect(HashMap.has(assignments, pod3.pod.address)).toBe(true)
     expect(HashMap.size(assignments) === 1).toBe(true)
@@ -138,7 +139,7 @@ describe.concurrent("ShardManagerSpec", () => {
         [ShardId.make(1), Option.some(pod1.pod.address)]
       ])
     )
-    const [assignments, unassignments] = ShardManager.decideAssignmentsForUnbalancedShards(state, 1)
+    const [assignments, unassignments] = decideAssignmentsForUnbalancedShards(state, 1)
 
     expect(HashMap.isEmpty(assignments)).toBe(true)
     expect(HashMap.isEmpty(unassignments)).toBe(true)

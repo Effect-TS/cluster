@@ -1,7 +1,3 @@
-/**
- * @since 1.0.0
- * @internal
- */
 import * as HashMap from "effect/HashMap"
 import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"

@@ -1,6 +1,6 @@
 ---
 title: Storage.ts
-nav_order: 39
+nav_order: 34
 parent: "@effect/cluster"
 ---
 
@@ -12,6 +12,8 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [constructors](#constructors)
+  - [make](#make)
 - [context](#context)
   - [Storage](#storage)
 - [layers](#layers)
@@ -20,10 +22,22 @@ Added in v1.0.0
 - [models](#models)
   - [Storage (interface)](#storage-interface)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [StorageTypeId](#storagetypeid)
+  - [StorageTypeId (type alias)](#storagetypeid-type-alias)
 
 ---
+
+# constructors
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: (args: Omit<Storage, typeof StorageTypeId>) => Storage
+```
+
+Added in v1.0.0
 
 # context
 
@@ -32,7 +46,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Storage: Tag<Storage, Storage>
+export declare const Storage: Context.Tag<Storage, Storage>
 ```
 
 Added in v1.0.0
@@ -72,6 +86,8 @@ Added in v1.0.0
 
 ```ts
 export interface Storage {
+  readonly [StorageTypeId]: StorageTypeId
+
   /**
    * Get the current state of shard assignments to pods
    */
@@ -113,22 +129,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## StorageTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: typeof TypeId
+export declare const StorageTypeId: typeof StorageTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## StorageTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type StorageTypeId = typeof StorageTypeId
 ```
 
 Added in v1.0.0

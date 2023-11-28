@@ -1,6 +1,6 @@
 ---
 title: PoisonPill.ts
-nav_order: 13
+nav_order: 10
 parent: "@effect/cluster"
 ---
 
@@ -20,7 +20,8 @@ Added in v1.0.0
   - [schema](#schema-1)
   - [takeOrInterrupt](#takeorinterrupt)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
+  - [PoisonPillTypeId](#poisonpilltypeid)
+  - [PoisonPillTypeId (type alias)](#poisonpilltypeid-type-alias)
 - [utils](#utils)
   - [isPoisonPill](#ispoisonpill)
 
@@ -47,7 +48,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface PoisonPill extends Schema.Schema.To<typeof schema> {}
+export interface PoisonPill
+  extends Data.Data<{
+    [PoisonPillTypeId]: PoisonPillTypeId
+  }> {}
 ```
 
 Added in v1.0.0
@@ -61,10 +65,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<
-  { readonly _id: "@effect/cluster/PoisonPill" },
-  Data.Data<{ readonly _id: "@effect/cluster/PoisonPill" }>
->
+export declare const schema: Schema<{ readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" }, PoisonPill>
 ```
 
 Added in v1.0.0
@@ -77,19 +78,31 @@ If the result is a PoisonPill, it will interrupt the effect.
 **Signature**
 
 ```ts
-export declare function takeOrInterrupt<Req>(dequeue: Queue.Dequeue<Req | PoisonPill>): Effect.Effect<never, never, Req>
+export declare const takeOrInterrupt: <Req>(
+  dequeue: Queue.Dequeue<PoisonPill | Req>
+) => Effect.Effect<never, never, Req>
 ```
 
 Added in v1.0.0
 
 # symbols
 
-## TypeId
+## PoisonPillTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: "@effect/cluster/PoisonPill"
+export declare const PoisonPillTypeId: typeof PoisonPillTypeId
+```
+
+Added in v1.0.0
+
+## PoisonPillTypeId (type alias)
+
+**Signature**
+
+```ts
+export type PoisonPillTypeId = typeof PoisonPillTypeId
 ```
 
 Added in v1.0.0
@@ -101,7 +114,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isPoisonPill(value: unknown): value is PoisonPill
+export declare const isPoisonPill: (value: unknown) => value is PoisonPill
 ```
 
 Added in v1.0.0

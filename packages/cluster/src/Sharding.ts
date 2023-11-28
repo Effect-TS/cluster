@@ -1,18 +1,18 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
 import type * as Duration from "effect/Duration"
-import * as Effect from "effect/Effect"
-import { pipe } from "effect/Function"
+import type * as Effect from "effect/Effect"
 import type * as HashSet from "effect/HashSet"
 import type * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 import type * as Stream from "effect/Stream"
 import type { Broadcaster } from "./Broadcaster.js"
+import * as internal from "./internal/sharding.js"
 import type { Messenger } from "./Messenger.js"
 import type * as PodAddress from "./PodAddress.js"
 import type * as RecipientBehaviour from "./RecipientBehaviour.js"
+import type * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
 import type * as RecipentType from "./RecipientType.js"
 import type * as SerializedEnvelope from "./SerializedEnvelope.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
@@ -47,12 +47,12 @@ export interface Sharding {
     entityType: RecipentType.EntityType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
   readonly registerTopic: <Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
   readonly getShardingRegistrationEvents: Stream.Stream<
     never,
     never,
@@ -76,28 +76,34 @@ export interface Sharding {
  * @since 1.0.0
  * @category context
  */
-export const Sharding = Tag<Sharding>()
+export const Tag = internal.shardingTag
+
+/**
+ * @since 1.0.0
+ * @category layers
+ */
+export const live = internal.live
 
 /**
  * Notify the shard manager that shards can now be assigned to this pod.
  * @since 1.0.0
  * @category utils
  */
-export const register = Effect.flatMap(Sharding, (_) => _.register)
+export const register: Effect.Effect<Sharding, never, void> = internal.register
 
 /**
  * Notify the shard manager that shards must be unassigned from this pod.
  * @since 1.0.0
  * @category utils
  */
-export const unregister = Effect.flatMap(Sharding, (_) => _.unregister)
+export const unregister: Effect.Effect<Sharding, never, void> = internal.unregister
 
 /**
  * Same as `register`, but will automatically call `unregister` when the `Scope` is terminated.
  * @since 1.0.0
  * @category utils
  */
-export const registerScoped = pipe(register, Effect.zipRight(Effect.addFinalizer(() => unregister)))
+export const registerScoped: Effect.Effect<Scope.Scope | Sharding, never, void> = internal.registerScoped
 
 /**
  * Start a computation that is guaranteed to run only on a single pod.
@@ -105,12 +111,10 @@ export const registerScoped = pipe(register, Effect.zipRight(Effect.addFinalizer
  * @since 1.0.0
  * @category utils
  */
-export function registerSingleton<R>(
+export const registerSingleton: <R>(
   name: string,
   run: Effect.Effect<R, never, void>
-): Effect.Effect<Sharding | R, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerSingleton(name, run))
-}
+) => Effect.Effect<Sharding | R, never, void> = internal.registerSingleton
 
 /**
  * Register a new entity type, allowing pods to send messages to entities of this type.
@@ -120,13 +124,12 @@ export function registerSingleton<R>(
  * @since 1.0.0
  * @category utils
  */
-export function registerEntity<Req, R>(
+export const registerEntity: <Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions
-): Effect.Effect<Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerEntity(entityType, behavior, options))
-}
+  options?: RecipientBehaviour.EntityBehaviourOptions | undefined
+) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =
+  internal.registerEntity
 
 /**
  * Register a new topic type, allowing pods to broadcast messages to subscribers.
@@ -136,13 +139,12 @@ export function registerEntity<Req, R>(
  * @since 1.0.0
  * @category utils
  */
-export function registerTopic<Req, R>(
+export const registerTopic: <Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions
-): Effect.Effect<Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void> {
-  return Effect.flatMap(Sharding, (_) => _.registerTopic(topicType, behavior, options))
-}
+  options?: RecipientBehaviour.EntityBehaviourOptions | undefined
+) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =
+  internal.registerTopic
 
 /**
  * Get an object that allows sending messages to a given entity type.
@@ -150,12 +152,10 @@ export function registerTopic<Req, R>(
  * @since 1.0.0
  * @category utils
  */
-export function messenger<Msg>(
+export const messenger: <Msg>(
   entityType: RecipentType.EntityType<Msg>,
-  sendTimeout?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding, never, Messenger<Msg>> {
-  return Effect.map(Sharding, (_) => _.messenger(entityType, sendTimeout))
-}
+  sendTimeout?: Option.Option<Duration.Duration> | undefined
+) => Effect.Effect<Sharding, never, Messenger<Msg>> = internal.messenger
 
 /**
  * Get an object that allows broadcasting messages to a given topic type.
@@ -163,19 +163,14 @@ export function messenger<Msg>(
  * @since 1.0.0
  * @category utils
  */
-export function broadcaster<Msg>(
+export const broadcaster: <Msg>(
   topicType: RecipentType.TopicType<Msg>,
-  sendTimeout?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding, never, Broadcaster<Msg>> {
-  return Effect.map(Sharding, (_) => _.broadcaster(topicType, sendTimeout))
-}
+  sendTimeout?: Option.Option<Duration.Duration> | undefined
+) => Effect.Effect<Sharding, never, Broadcaster<Msg>> = internal.broadcaster
 
 /**
  * Get the list of pods currently registered to the Shard Manager
  * @since 1.0.0
  * @category utils
  */
-export const getPods: Effect.Effect<Sharding, never, HashSet.HashSet<PodAddress.PodAddress>> = Effect.flatMap(
-  Sharding,
-  (_) => _.getPods
-)
+export const getPods: Effect.Effect<Sharding, never, HashSet.HashSet<PodAddress.PodAddress>> = internal.getPods

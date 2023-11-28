@@ -1,6 +1,6 @@
 ---
 title: ShardingErrorSendTimeout.ts
-nav_order: 31
+nav_order: 28
 parent: "@effect/cluster"
 ---
 

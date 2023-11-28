@@ -1,6 +1,6 @@
 ---
 title: Message.ts
-nav_order: 6
+nav_order: 4
 parent: "@effect/cluster"
 ---
 
@@ -63,7 +63,9 @@ Creates both the schema and a constructor for a `Message<A>`
 **Signature**
 
 ```ts
-export declare function schema<RI, RA>(replySchema: Schema.Schema<RI, RA>)
+export declare const schema: <RI, RA>(
+  replySchema: Schema.Schema<RI, RA>
+) => <I extends object, A extends object>(item: Schema.Schema<I, A>) => MessageSchema<I, A, RA>
 ```
 
 Added in v1.0.0
@@ -87,7 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isMessage<R>(value: unknown): value is Message<R>
+export declare const isMessage: <R>(value: unknown) => value is Message<R>
 ```
 
 Added in v1.0.0

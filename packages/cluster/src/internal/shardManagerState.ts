@@ -1,15 +1,12 @@
-/**
- * @since 1.0.0
- */
 import { equals } from "effect/Equal"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as HashSet from "effect/HashSet"
 import * as List from "effect/List"
 import * as Option from "effect/Option"
-import type * as PodAddress from "./PodAddress.js"
-import * as PodWithMetadata from "./PodWithMetadata.js"
-import * as ShardId from "./ShardId.js"
+import type * as PodAddress from "../PodAddress.js"
+import * as ShardId from "../ShardId.js"
+import * as PodWithMetadata from "./podWithMetadata.js"
 
 /**
  * @since 1.0.0

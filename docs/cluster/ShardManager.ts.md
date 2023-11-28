@@ -1,6 +1,6 @@
 ---
 title: ShardManager.ts
-nav_order: 36
+nav_order: 32
 parent: "@effect/cluster"
 ---
 
@@ -18,8 +18,9 @@ Added in v1.0.0
   - [live](#live)
 - [models](#models)
   - [ShardManager (interface)](#shardmanager-interface)
-- [utils](#utils)
-  - [decideAssignmentsForUnbalancedShards](#decideassignmentsforunbalancedshards)
+- [symbols](#symbols)
+  - [ShardManagerTypeId](#shardmanagertypeid)
+  - [ShardManagerTypeId (type alias)](#shardmanagertypeid-type-alias)
 
 ---
 
@@ -42,11 +43,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const live: Layer.Layer<
-  Storage.Storage | Pods.Pods | ManagerConfig.ManagerConfig | PodsHealth.PodsHealth,
-  never,
-  ShardManager
->
+export declare const live: Layer<Storage | Pods | ManagerConfig | PodsHealth, never, ShardManager>
 ```
 
 Added in v1.0.0
@@ -78,17 +75,24 @@ export interface ShardManager {
 
 Added in v1.0.0
 
-# utils
+# symbols
 
-## decideAssignmentsForUnbalancedShards
+## ShardManagerTypeId
 
 **Signature**
 
 ```ts
-export declare function decideAssignmentsForUnbalancedShards(
-  state: ShardManagerState.ShardManagerState,
-  rebalanceRate: number
-)
+export declare const ShardManagerTypeId: typeof ShardManagerTypeId
+```
+
+Added in v1.0.0
+
+## ShardManagerTypeId (type alias)
+
+**Signature**
+
+```ts
+export type ShardManagerTypeId = typeof ShardManagerTypeId
 ```
 
 Added in v1.0.0

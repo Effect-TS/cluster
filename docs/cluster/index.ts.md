@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 4
+nav_order: 2
 parent: "@effect/cluster"
 ---
 
@@ -14,21 +14,18 @@ Added in v1.0.0
 
 - [exports](#exports)
   - [From "./Broadcaster.js"](#from-broadcasterjs)
-  - [From "./EntityManager.js"](#from-entitymanagerjs)
-  - [From "./EntityState.js"](#from-entitystatejs)
   - [From "./ManagerConfig.js"](#from-managerconfigjs)
   - [From "./Message.js"](#from-messagejs)
   - [From "./Messenger.js"](#from-messengerjs)
   - [From "./Pod.js"](#from-podjs)
   - [From "./PodAddress.js"](#from-podaddressjs)
-  - [From "./PodWithMetadata.js"](#from-podwithmetadatajs)
   - [From "./Pods.js"](#from-podsjs)
   - [From "./PodsHealth.js"](#from-podshealthjs)
   - [From "./PoisonPill.js"](#from-poisonpilljs)
   - [From "./RecipientBehaviour.js"](#from-recipientbehaviourjs)
+  - [From "./RecipientBehaviourContext.js"](#from-recipientbehaviourcontextjs)
   - [From "./RecipientType.js"](#from-recipienttypejs)
   - [From "./Replier.js"](#from-replierjs)
-  - [From "./ReplyChannel.js"](#from-replychanneljs)
   - [From "./ReplyId.js"](#from-replyidjs)
   - [From "./Serialization.js"](#from-serializationjs)
   - [From "./SerializedEnvelope.js"](#from-serializedenvelopejs)
@@ -36,7 +33,6 @@ Added in v1.0.0
   - [From "./ShardId.js"](#from-shardidjs)
   - [From "./ShardManager.js"](#from-shardmanagerjs)
   - [From "./ShardManagerClient.js"](#from-shardmanagerclientjs)
-  - [From "./ShardManagerState.js"](#from-shardmanagerstatejs)
   - [From "./Sharding.js"](#from-shardingjs)
   - [From "./ShardingConfig.js"](#from-shardingconfigjs)
   - [From "./ShardingError.js"](#from-shardingerrorjs)
@@ -48,7 +44,6 @@ Added in v1.0.0
   - [From "./ShardingErrorSendTimeout.js"](#from-shardingerrorsendtimeoutjs)
   - [From "./ShardingErrorSerialization.js"](#from-shardingerrorserializationjs)
   - [From "./ShardingEvent.js"](#from-shardingeventjs)
-  - [From "./ShardingImpl.js"](#from-shardingimpljs)
   - [From "./ShardingRegistrationEvent.js"](#from-shardingregistrationeventjs)
   - [From "./Storage.js"](#from-storagejs)
 
@@ -64,30 +59,6 @@ Re-exports all named exports from the "./Broadcaster.js" module as `Broadcaster`
 
 ```ts
 export * as Broadcaster from "./Broadcaster.js"
-```
-
-Added in v1.0.0
-
-## From "./EntityManager.js"
-
-Re-exports all named exports from the "./EntityManager.js" module as `EntityManager`.
-
-**Signature**
-
-```ts
-export * as EntityManager from "./EntityManager.js"
-```
-
-Added in v1.0.0
-
-## From "./EntityState.js"
-
-Re-exports all named exports from the "./EntityState.js" module as `EntityState`.
-
-**Signature**
-
-```ts
-export * as EntityState from "./EntityState.js"
 ```
 
 Added in v1.0.0
@@ -152,18 +123,6 @@ export * as PodAddress from "./PodAddress.js"
 
 Added in v1.0.0
 
-## From "./PodWithMetadata.js"
-
-Re-exports all named exports from the "./PodWithMetadata.js" module as `PodWithMetadata`.
-
-**Signature**
-
-```ts
-export * as PodWithMetadata from "./PodWithMetadata.js"
-```
-
-Added in v1.0.0
-
 ## From "./Pods.js"
 
 Re-exports all named exports from the "./Pods.js" module as `Pods`.
@@ -212,6 +171,19 @@ export * as RecipientBehaviour from "./RecipientBehaviour.js"
 
 Added in v1.0.0
 
+## From "./RecipientBehaviourContext.js"
+
+Re-exports all named exports from the "./RecipientBehaviourContext.js" module as `RecipientBehaviourContext`.
+
+**Signature**
+
+```ts
+export * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
+```
+
+Added in v1.0.0
+This module provides the context that is given to a RecipientBehaviour
+
 ## From "./RecipientType.js"
 
 Re-exports all named exports from the "./RecipientType.js" module as `RecipientType`.
@@ -232,18 +204,6 @@ Re-exports all named exports from the "./Replier.js" module as `Replier`.
 
 ```ts
 export * as Replier from "./Replier.js"
-```
-
-Added in v1.0.0
-
-## From "./ReplyChannel.js"
-
-Re-exports all named exports from the "./ReplyChannel.js" module as `ReplyChannel`.
-
-**Signature**
-
-```ts
-export * as ReplyChannel from "./ReplyChannel.js"
 ```
 
 Added in v1.0.0
@@ -328,18 +288,6 @@ Re-exports all named exports from the "./ShardManagerClient.js" module as `Shard
 
 ```ts
 export * as ShardManagerClient from "./ShardManagerClient.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardManagerState.js"
-
-Re-exports all named exports from the "./ShardManagerState.js" module as `ShardManagerState`.
-
-**Signature**
-
-```ts
-export * as ShardManagerState from "./ShardManagerState.js"
 ```
 
 Added in v1.0.0
@@ -472,18 +420,6 @@ Re-exports all named exports from the "./ShardingEvent.js" module as `ShardingEv
 
 ```ts
 export * as ShardingEvent from "./ShardingEvent.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardingImpl.js"
-
-Re-exports all named exports from the "./ShardingImpl.js" module as `ShardingImpl`.
-
-**Signature**
-
-```ts
-export * as ShardingImpl from "./ShardingImpl.js"
 ```
 
 Added in v1.0.0

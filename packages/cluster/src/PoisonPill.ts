@@ -1,23 +1,32 @@
 /**
  * @since 1.0.0
  */
-import * as Schema from "@effect/schema/Schema"
-import * as Data from "effect/Data"
-import * as Effect from "effect/Effect"
-import { pipe } from "effect/Function"
-import * as Queue from "effect/Queue"
+import type * as Data from "effect/Data"
+import type * as Effect from "effect/Effect"
+import type * as Queue from "effect/Queue"
+import * as internal from "./internal/poisonPill.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId = "@effect/cluster/PoisonPill"
+export const PoisonPillTypeId: unique symbol = internal.PoisonPillTypeId
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type PoisonPillTypeId = typeof PoisonPillTypeId
 
 /**
  * @since 1.0.0
  * @category models
  */
-export interface PoisonPill extends Schema.Schema.To<typeof schema> {}
+export interface PoisonPill extends
+  Data.Data<{
+    [PoisonPillTypeId]: PoisonPillTypeId
+  }>
+{}
 
 /**
  * `PoisonPill`
@@ -25,20 +34,13 @@ export interface PoisonPill extends Schema.Schema.To<typeof schema> {}
  * @since 1.0.0
  * @category constructors
  */
-export const make: PoisonPill = Data.struct({ _id: TypeId })
+export const make: PoisonPill = internal.make
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export function isPoisonPill(value: unknown): value is PoisonPill {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "_id" in value &&
-    value["_id"] === TypeId
-  )
-}
+export const isPoisonPill: (value: unknown) => value is PoisonPill = internal.isPoisonPill
 
 /**
  * This is the schema for a value.
@@ -46,11 +48,7 @@ export function isPoisonPill(value: unknown): value is PoisonPill {
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.data(
-  Schema.struct({
-    _id: Schema.literal(TypeId)
-  })
-)
+export const schema = internal.schema
 
 /**
  * Attempts to take a message from the queue in the same way Queue.take does.
@@ -59,9 +57,5 @@ export const schema = Schema.data(
  * @since 1.0.0
  * @category schema
  */
-export function takeOrInterrupt<Req>(dequeue: Queue.Dequeue<Req | PoisonPill>): Effect.Effect<never, never, Req> {
-  return pipe(
-    Queue.take(dequeue),
-    Effect.flatMap((msg) => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed(msg))
-  )
-}
+export const takeOrInterrupt: <Req>(dequeue: Queue.Dequeue<PoisonPill | Req>) => Effect.Effect<never, never, Req> =
+  internal.takeOrInterrupt

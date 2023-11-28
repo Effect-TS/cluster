@@ -1,11 +1,12 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
-import * as Effect from "effect/Effect"
+import type * as Context from "effect/Context"
+import type * as Effect from "effect/Effect"
 import type * as HashSet from "effect/HashSet"
-import * as Layer from "effect/Layer"
-import * as Option from "effect/Option"
+import type * as Layer from "effect/Layer"
+import type * as Option from "effect/Option"
+import * as internal from "./internal/pods.js"
 import type * as PodAddress from "./PodAddress.js"
 import type * as SerializedEnvelope from "./SerializedEnvelope.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
@@ -16,13 +17,13 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for("@effect/cluster/Pods")
+export const PodsTypeId: unique symbol = internal.PodsTypeId
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId
+export type PodsTypeId = typeof PodsTypeId
 
 /**
  * An interface to communicate with remote pods.
@@ -36,7 +37,7 @@ export interface Pods {
   /**
    * @since 1.0.0
    */
-  readonly _id: TypeId
+  readonly [PodsTypeId]: PodsTypeId
 
   /**
    * Notify a pod that it was assigned a list of shards
@@ -80,7 +81,13 @@ export interface Pods {
  * @since 1.0.0
  * @category context
  */
-export const Pods = Tag<Pods>()
+export const Pods: Context.Tag<Pods, Pods> = internal.podsTag
+
+/**
+ * @since 1.0.0
+ * @category context
+ */
+export const make: (args: Omit<Pods, typeof PodsTypeId>) => Pods = internal.make
 
 /**
  * A layer that creates a service that does nothing when called.
@@ -89,10 +96,4 @@ export const Pods = Tag<Pods>()
  * @since 1.0.0
  * @category layers
  */
-export const noop = Layer.succeed(Pods, {
-  _id: TypeId,
-  assignShards: () => Effect.unit,
-  unassignShards: () => Effect.unit,
-  ping: () => Effect.unit,
-  sendMessage: () => Effect.succeed(Option.none())
-})
+export const noop: Layer.Layer<never, never, Pods> = internal.noop

@@ -1,6 +1,6 @@
 ---
 title: Pods.ts
-nav_order: 10
+nav_order: 8
 parent: "@effect/cluster"
 ---
 
@@ -14,13 +14,14 @@ Added in v1.0.0
 
 - [context](#context)
   - [Pods](#pods)
+  - [make](#make)
 - [layers](#layers)
   - [noop](#noop)
 - [models](#models)
   - [Pods (interface)](#pods-interface)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [PodsTypeId](#podstypeid)
+  - [PodsTypeId (type alias)](#podstypeid-type-alias)
 
 ---
 
@@ -31,7 +32,17 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Pods: Tag<Pods, Pods>
+export declare const Pods: Context.Tag<Pods, Pods>
+```
+
+Added in v1.0.0
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: (args: Omit<Pods, typeof PodsTypeId>) => Pods
 ```
 
 Added in v1.0.0
@@ -66,7 +77,7 @@ export interface Pods {
   /**
    * @since 1.0.0
    */
-  readonly _id: TypeId
+  readonly [PodsTypeId]: PodsTypeId
 
   /**
    * Notify a pod that it was assigned a list of shards
@@ -107,22 +118,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## PodsTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: typeof TypeId
+export declare const PodsTypeId: typeof PodsTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## PodsTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type PodsTypeId = typeof PodsTypeId
 ```
 
 Added in v1.0.0

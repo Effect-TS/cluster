@@ -1,6 +1,6 @@
 ---
 title: Sharding.ts
-nav_order: 23
+nav_order: 20
 parent: "@effect/cluster"
 ---
 
@@ -13,7 +13,9 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [context](#context)
-  - [Sharding](#sharding)
+  - [Tag](#tag)
+- [layers](#layers)
+  - [live](#live)
 - [models](#models)
   - [Sharding (interface)](#sharding-interface)
 - [utils](#utils)
@@ -31,12 +33,24 @@ Added in v1.0.0
 
 # context
 
-## Sharding
+## Tag
 
 **Signature**
 
 ```ts
-export declare const Sharding: Tag<Sharding, Sharding>
+export declare const Tag: Tag<Sharding, Sharding>
+```
+
+Added in v1.0.0
+
+# layers
+
+## live
+
+**Signature**
+
+```ts
+export declare const live: Layer<Storage | ShardingConfig | Pods | ShardManagerClient | Serialization, never, Sharding>
 ```
 
 Added in v1.0.0
@@ -71,12 +85,12 @@ export interface Sharding {
     entityType: RecipentType.EntityType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
   readonly registerTopic: <Req, R>(
     topicType: RecipentType.TopicType<Req>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
   readonly getShardingRegistrationEvents: Stream.Stream<
     never,
     never,
@@ -105,10 +119,10 @@ You can provide a custom send timeout to override the one globally defined.
 **Signature**
 
 ```ts
-export declare function broadcaster<Msg>(
+export declare const broadcaster: <Msg>(
   topicType: RecipentType.TopicType<Msg>,
-  sendTimeout?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding, never, Broadcaster<Msg>>
+  sendTimeout?: Option.Option<Duration.Duration> | undefined
+) => Effect.Effect<Sharding, never, Broadcaster<Msg>>
 ```
 
 Added in v1.0.0
@@ -133,10 +147,10 @@ You can provide a custom send timeout to override the one globally defined.
 **Signature**
 
 ```ts
-export declare function messenger<Msg>(
+export declare const messenger: <Msg>(
   entityType: RecipentType.EntityType<Msg>,
-  sendTimeout?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding, never, Messenger<Msg>>
+  sendTimeout?: Option.Option<Duration.Duration> | undefined
+) => Effect.Effect<Sharding, never, Messenger<Msg>>
 ```
 
 Added in v1.0.0
@@ -163,11 +177,11 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare function registerEntity<Req, R>(
+export declare const registerEntity: <Req, R>(
   entityType: RecipentType.EntityType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions
-): Effect.Effect<Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+  options?: RecipientBehaviour.EntityBehaviourOptions | undefined
+) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
 ```
 
 Added in v1.0.0
@@ -192,10 +206,10 @@ Each pod should call `registerSingleton` but only a single pod will actually run
 **Signature**
 
 ```ts
-export declare function registerSingleton<R>(
+export declare const registerSingleton: <R>(
   name: string,
   run: Effect.Effect<R, never, void>
-): Effect.Effect<Sharding | R, never, void>
+) => Effect.Effect<Sharding | R, never, void>
 ```
 
 Added in v1.0.0
@@ -210,11 +224,11 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare function registerTopic<Req, R>(
+export declare const registerTopic: <Req, R>(
   topicType: RecipentType.TopicType<Req>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
-  options?: RecipientBehaviour.EntityBehaviourOptions
-): Effect.Effect<Sharding | Exclude<R, RecipientBehaviour.RecipientBehaviourContext>, never, void>
+  options?: RecipientBehaviour.EntityBehaviourOptions | undefined
+) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
 ```
 
 Added in v1.0.0

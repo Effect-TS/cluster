@@ -1,28 +1,25 @@
 /**
  * @since 1.0.0
  */
-import * as Schema from "@effect/schema/Schema"
-import * as TreeFormatter from "@effect/schema/TreeFormatter"
-import { Tag } from "effect/Context"
-import * as Effect from "effect/Effect"
-import { pipe } from "effect/Function"
-import * as Layer from "effect/Layer"
-import * as SerializedMessage from "./SerializedMessage.js"
-import * as ShardingError from "./ShardingError.js"
+import type * as Schema from "@effect/schema/Schema"
+import type * as Context from "effect/Context"
+import type * as Effect from "effect/Effect"
+import type * as Layer from "effect/Layer"
+import * as internal from "./internal/serialization.js"
+import type * as SerializedMessage from "./SerializedMessage.js"
+import type * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const TypeId: unique symbol = Symbol.for(
-  "./SerializationTypeId"
-)
+export const SerializationTypeId: unique symbol = internal.SerializationTypeId
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export type TypeId = typeof TypeId
+export type SerializationTypeId = typeof SerializationTypeId
 
 /**
  * An interface to serialize user messages that will be sent between pods.
@@ -33,7 +30,7 @@ export interface Serialization {
   /**
    * @since 1.0.0
    */
-  readonly _id: TypeId
+  readonly [SerializationTypeId]: SerializationTypeId
 
   /**
    * Transforms the given message into binary
@@ -58,39 +55,18 @@ export interface Serialization {
  * @since 1.0.0
  * @category context
  */
-export const Serialization = Tag<Serialization>()
-
-/** @internal */
-function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
-  return pipe(
-    value,
-    Schema.encode(schema),
-    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors))),
-    Effect.map((_) => JSON.stringify(_))
-  )
-}
-
-/** @internal */
-function jsonParse<I, A>(value: string, schema: Schema.Schema<I, A>) {
-  return pipe(
-    Effect.sync(() => JSON.parse(value)),
-    Effect.flatMap(Schema.decode(schema)),
-    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors)))
-  )
-}
+export const Serialization: Context.Tag<Serialization, Serialization> = internal.serializationTag
 
 /**
- * A layer that uses Java serialization for encoding and decoding messages.
+ * @since 1.0.0
+ * @category constructors
+ */
+export const make: (args: Omit<Serialization, typeof SerializationTypeId>) => Serialization = internal.make
+
+/**
+ * A layer that uses JSON serialization for encoding and decoding messages.
  * This is useful for testing and not recommended to use in production.
  * @since 1.0.0
  * @category layers
  */
-export const json = Layer.succeed(Serialization, {
-  _id: TypeId,
-  encode: (schema, message) =>
-    pipe(
-      jsonStringify(message, schema),
-      Effect.map(SerializedMessage.make)
-    ),
-  decode: (schema, body) => jsonParse(body.value, schema)
-})
+export const json: Layer.Layer<never, never, Serialization> = internal.json

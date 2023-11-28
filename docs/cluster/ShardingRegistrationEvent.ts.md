@@ -1,6 +1,6 @@
 ---
 title: ShardingRegistrationEvent.ts
-nav_order: 35
+nav_order: 31
 parent: "@effect/cluster"
 ---
 

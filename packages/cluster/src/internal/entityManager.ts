@@ -1,6 +1,3 @@
-/**
- * @since 1.0.0
- */
 import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
 import * as Duration from "effect/Duration"
@@ -13,23 +10,37 @@ import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
 import * as RefSynchronized from "effect/SynchronizedRef"
-import * as EntityState from "./EntityState.js"
-import type * as Message from "./Message.js"
-import * as RecipientBehaviour from "./RecipientBehaviour.js"
-import type * as RecipientType from "./RecipientType.js"
-import * as ReplyChannel from "./ReplyChannel.js"
-import type * as ReplyId from "./ReplyId.js"
-import type * as ShardId from "./ShardId.js"
-import type * as Sharding from "./Sharding.js"
-import type * as ShardingConfig from "./ShardingConfig.js"
-import * as ShardingError from "./ShardingError.js"
+import type * as Message from "../Message.js"
+import type * as RecipientBehaviour from "../RecipientBehaviour.js"
+import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
+import type * as RecipientType from "../RecipientType.js"
+import type * as ReplyId from "../ReplyId.js"
+import type * as ShardId from "../ShardId.js"
+import type * as Sharding from "../Sharding.js"
+import type * as ShardingConfig from "../ShardingConfig.js"
+import * as ShardingError from "../ShardingError.js"
+import * as EntityState from "./entityState.js"
+import * as ReplyChannel from "./replyChannel.js"
 
-/**
- * @since 1.0.0
- * @category models
- */
+/** @internal */
+const EntityManagerSymbolKey = "@effect/cluster/EntityManager"
+
+/** @internal */
+export const EntityManagerTypeId = Symbol.for(
+  EntityManagerSymbolKey
+)
+
+/** @internal */
+export type EntityManagerTypeId = typeof EntityManagerTypeId
+
+/** @internal */
 export interface EntityManager<Req> {
+  readonly [EntityManagerTypeId]: EntityManagerTypeId
+
+  /** @internal */
   readonly recipientType: RecipientType.RecipientType<Req>
+
+  /** @internal */
   readonly send: <A extends Req>(
     entityId: string,
     req: A,
@@ -43,16 +54,17 @@ export interface EntityManager<Req> {
       Message.Success<A>
     >
   >
+
+  /** @internal */
   readonly terminateEntitiesOnShards: (
     shards: HashSet.HashSet<ShardId.ShardId>
   ) => Effect.Effect<never, never, void>
+
+  /** @internal */
   readonly terminateAllEntities: Effect.Effect<never, never, void>
 }
 
-/**
- * @since 1.0.0
- * @category constructors
- */
+/** @internal */
 export function make<R, Req>(
   recipientType: RecipientType.RecipientType<Req>,
   behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
@@ -62,7 +74,7 @@ export function make<R, Req>(
 ) {
   return Effect.gen(function*(_) {
     const entityMaxIdle = options.entityMaxIdleTime || Option.none()
-    const env = yield* _(Effect.context<Exclude<R, RecipientBehaviour.RecipientBehaviourContext>>())
+    const env = yield* _(Effect.context<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>())
     const entityStates = yield* _(
       RefSynchronized.make<
         HashMap.HashMap<
@@ -279,10 +291,13 @@ export function make<R, Req>(
                     const offer = yield* _(pipe(
                       behaviour_(entityId),
                       Scope.extend(executionScope),
-                      Effect.provideService(RecipientBehaviour.RecipientBehaviourContext, {
-                        entityId,
-                        reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
-                      }),
+                      Effect.provideService(
+                        RecipientBehaviourContext.RecipientBehaviourContext,
+                        RecipientBehaviourContext.make({
+                          entityId,
+                          reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
+                        })
+                      ),
                       Effect.provide(env)
                     ))
 
@@ -433,7 +448,13 @@ export function make<R, Req>(
       )
     }
 
-    const self: EntityManager<Req> = { recipientType, send, terminateAllEntities, terminateEntitiesOnShards }
+    const self: EntityManager<Req> = {
+      [EntityManagerTypeId]: EntityManagerTypeId,
+      recipientType,
+      send,
+      terminateAllEntities,
+      terminateEntitiesOnShards
+    }
     return self
   })
 }

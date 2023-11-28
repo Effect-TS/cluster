@@ -8,7 +8,6 @@ import * as Serialization from "@effect/cluster/Serialization"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as ShardingError from "@effect/cluster/ShardingError"
-import * as ShardingImpl from "@effect/cluster/ShardingImpl"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
 import * as Schema from "@effect/schema/Schema"
@@ -37,7 +36,7 @@ const SampleService = Tag<SampleService>()
 
 describe.concurrent("SampleTests", () => {
   const inMemorySharding = pipe(
-    ShardingImpl.live,
+    Sharding.live,
     Layer.use(PodsHealth.local),
     Layer.use(Pods.noop),
     Layer.use(Storage.memory),
@@ -53,7 +52,7 @@ describe.concurrent("SampleTests", () => {
   )
 
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
-    pipe(fa, Effect.provide(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Debug))
+    pipe(fa, Effect.provide(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
 
   it("Succefully delivers a message", () => {
     return Effect.gen(function*(_) {

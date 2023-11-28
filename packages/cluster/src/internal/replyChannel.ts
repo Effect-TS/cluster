@@ -1,34 +1,25 @@
-/**
- * @since 1.0.0
- */
 import type * as Cause from "effect/Cause"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
-import type * as ShardingError from "./ShardingError.js"
+import type * as ShardingError from "../ShardingError.js"
 
-/**
- * @since 1.0.0
- * @category symbols
- */
-export const TypeId = "@effect/cluster/ReplyChannel"
+/** @internal */
+const ReplyChannelSymbolKey = "@effect/cluster/ReplyChannel"
 
-/**
- * @since 1.0.0
- * @category symbols
- */
-export type TypeId = typeof TypeId
+/** @internal */
+export const ReplyChannelTypeId = Symbol.for(ReplyChannelSymbolKey)
 
-/**
- * @since 1.0.0
- * @category models
- */
+/** @internal */
+export type ReplyChannelTypeId = typeof ReplyChannelTypeId
+
+/** @internal */
 export interface ReplyChannel<A> {
   /**
    * @since 1.0.0
    */
-  readonly _id: TypeId
+  readonly [ReplyChannelTypeId]: ReplyChannelTypeId
   /**
    * @since 1.0.0
    */
@@ -59,8 +50,8 @@ export function isReplyChannel(value: unknown): value is ReplyChannel<any> {
   return (
     typeof value === "object" &&
     value !== null &&
-    "_id" in value &&
-    value["_id"] === TypeId
+    ReplyChannelTypeId in value &&
+    value[ReplyChannelTypeId] === ReplyChannelTypeId
   )
 }
 
@@ -75,7 +66,7 @@ export function fromDeferred<A>(
   const fail = (cause: Cause.Cause<ShardingError.ShardingErrorEntityNotManagedByThisPod>) =>
     pipe(Deferred.failCause(deferred, cause), Effect.asUnit)
   return ({
-    _id: TypeId,
+    [ReplyChannelTypeId]: ReplyChannelTypeId,
     await: pipe(Deferred.await(deferred), Effect.exit, Effect.asUnit),
     fail,
     reply: (a) => pipe(Deferred.succeed(deferred, Option.some(a)), Effect.asUnit),
