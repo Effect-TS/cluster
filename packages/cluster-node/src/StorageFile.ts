@@ -107,7 +107,7 @@ function getChangesStream(fileName: string) {
           ),
           ([watcher, queue]) =>
             Effect.zip(
-              queue.shutdown(),
+              queue.shutdown,
               Effect.sync(() => watcher.unref()),
               { concurrent: true }
             )
