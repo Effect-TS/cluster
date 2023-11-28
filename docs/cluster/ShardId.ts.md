@@ -19,8 +19,8 @@ Added in v1.0.0
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [ShardIdTypeId](#shardidtypeid)
+  - [ShardIdTypeId (type alias)](#shardidtypeid-type-alias)
 
 ---
 
@@ -31,7 +31,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make(value: number): ShardId
+export declare const make: (value: number) => ShardId
 ```
 
 Added in v1.0.0
@@ -43,7 +43,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface ShardId extends Schema.Schema.To<typeof schema> {}
+export interface ShardId
+  extends Data.Data<{
+    readonly [ShardIdTypeId]: ShardIdTypeId
+    readonly value: number
+  }> {}
 ```
 
 Added in v1.0.0
@@ -58,8 +62,8 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: "@effect/cluster/ShardId"; readonly value: number },
-  Data.Data<{ readonly _id: "@effect/cluster/ShardId"; readonly value: number }>
+  { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number },
+  ShardId
 >
 ```
 
@@ -67,22 +71,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## ShardIdTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: "@effect/cluster/ShardId"
+export declare const ShardIdTypeId: typeof ShardIdTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## ShardIdTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type ShardIdTypeId = typeof ShardIdTypeId
 ```
 
 Added in v1.0.0

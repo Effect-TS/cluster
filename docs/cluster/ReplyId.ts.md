@@ -20,8 +20,8 @@ Added in v1.0.0
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [ReplyIdTypeId](#replyidtypeid)
+  - [ReplyIdTypeId (type alias)](#replyidtypeid-type-alias)
 - [utils](#utils)
   - [isReplyId](#isreplyid)
 
@@ -36,7 +36,7 @@ Construct a new `ReplyId` from its internal id string value.
 **Signature**
 
 ```ts
-export declare function make(value: string): ReplyId
+export declare const make: typeof internal.make
 ```
 
 Added in v1.0.0
@@ -60,7 +60,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface ReplyId extends Schema.Schema.To<typeof schema> {}
+export interface ReplyId
+  extends Data.Data<{
+    readonly [ReplyIdTypeId]: ReplyIdTypeId
+    readonly value: string
+  }> {}
 ```
 
 Added in v1.0.0
@@ -75,8 +79,8 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: "@effect/cluster/ReplyId"; readonly value: string },
-  Data.Data<{ readonly _id: "@effect/cluster/ReplyId"; readonly value: string }>
+  { readonly "@effect/cluster/ReplyId": "@effect/cluster/ReplyId"; readonly value: string },
+  ReplyId
 >
 ```
 
@@ -84,22 +88,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## ReplyIdTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: "@effect/cluster/ReplyId"
+export declare const ReplyIdTypeId: typeof ReplyIdTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## ReplyIdTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type ReplyIdTypeId = typeof ReplyIdTypeId
 ```
 
 Added in v1.0.0
@@ -111,7 +115,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isReplyId(value: unknown): value is ReplyId
+export declare const isReplyId: (value: unknown) => value is ReplyId
 ```
 
 Added in v1.0.0

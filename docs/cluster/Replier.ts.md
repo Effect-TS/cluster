@@ -13,14 +13,14 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructors](#constructors)
-  - [replier](#replier)
+  - [make](#make)
 - [models](#models)
   - [Replier (interface)](#replier-interface)
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [ReplierTypeId](#repliertypeid)
+  - [ReplierTypeId (type alias)](#repliertypeid-type-alias)
 - [utils](#utils)
   - [isReplier](#isreplier)
 
@@ -28,12 +28,12 @@ Added in v1.0.0
 
 # constructors
 
-## replier
+## make
 
 **Signature**
 
 ```ts
-export declare const replier: <I, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>) => Replier<A>
+export declare const make: <I, A>(id: ReplyId.ReplyId, schema: Schema.Schema<I, A>) => Replier<A>
 ```
 
 Added in v1.0.0
@@ -46,7 +46,7 @@ Added in v1.0.0
 
 ```ts
 export interface Replier<A> {
-  readonly _id: TypeId
+  readonly [ReplierTypeId]: ReplierTypeId
   readonly id: ReplyId.ReplyId
   readonly schema: Schema.Schema<unknown, A>
   readonly reply: (reply: A) => Effect.Effect<RecipientBehaviourContext, never, void>
@@ -69,22 +69,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## ReplierTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: "@effect/cluster/Replier"
+export declare const ReplierTypeId: typeof ReplierTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## ReplierTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type ReplierTypeId = typeof ReplierTypeId
 ```
 
 Added in v1.0.0
@@ -96,7 +96,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isReplier<A>(value: unknown): value is Replier<A>
+export declare const isReplier: <A>(value: unknown) => value is Replier<A>
 ```
 
 Added in v1.0.0

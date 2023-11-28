@@ -19,8 +19,8 @@ Added in v1.0.0
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [SerializedEnvelopeTypeId](#serializedenvelopetypeid)
+  - [SerializedEnvelopeTypeId (type alias)](#serializedenvelopetypeid-type-alias)
 - [utils](#utils)
   - [isSerializedEnvelope](#isserializedenvelope)
 
@@ -35,12 +35,12 @@ Construct a new `SerializedEnvelope`
 **Signature**
 
 ```ts
-export declare function make(
-  entityId: string,
+export declare const make: (
   entityType: string,
+  entityId: string,
   body: SerializedMessage.SerializedMessage,
   replyId: Option.Option<ReplyId.ReplyId>
-): SerializedEnvelope
+) => SerializedEnvelope
 ```
 
 Added in v1.0.0
@@ -52,7 +52,14 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface SerializedEnvelope extends Schema.Schema.To<typeof schema> {}
+export interface SerializedEnvelope
+  extends Data.Data<{
+    readonly [SerializedEnvelopeTypeId]: SerializedEnvelopeTypeId
+    readonly entityId: string
+    readonly entityType: string
+    readonly body: SerializedMessage.SerializedMessage
+    readonly replyId: Option.Option<ReplyId.ReplyId>
+  }> {}
 ```
 
 Added in v1.0.0
@@ -68,21 +75,21 @@ This is the schema for a value.
 ```ts
 export declare const schema: Schema.Schema<
   {
-    readonly entityType: string
     readonly entityId: string
-    readonly _id: "@effect/cluster/SerializedEnvelope"
-    readonly body: { readonly _id: "@effect/cluster/SerializedMessage"; readonly value: string }
+    readonly entityType: string
+    readonly body: {
+      readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
+      readonly value: string
+    }
     readonly replyId:
       | { readonly _tag: "None" }
-      | { readonly _tag: "Some"; readonly value: { readonly _id: "@effect/cluster/ReplyId"; readonly value: string } }
+      | {
+          readonly _tag: "Some"
+          readonly value: { readonly "@effect/cluster/ReplyId": "@effect/cluster/ReplyId"; readonly value: string }
+        }
+    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
   },
-  Data.Data<{
-    readonly entityType: string
-    readonly entityId: string
-    readonly _id: "@effect/cluster/SerializedEnvelope"
-    readonly body: Data.Data<{ readonly _id: "@effect/cluster/SerializedMessage"; readonly value: string }>
-    readonly replyId: Option.Option<Data.Data<{ readonly _id: "@effect/cluster/ReplyId"; readonly value: string }>>
-  }>
+  SerializedEnvelope
 >
 ```
 
@@ -90,22 +97,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## SerializedEnvelopeTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: "@effect/cluster/SerializedEnvelope"
+export declare const SerializedEnvelopeTypeId: typeof SerializedEnvelopeTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## SerializedEnvelopeTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type SerializedEnvelopeTypeId = typeof SerializedEnvelopeTypeId
 ```
 
 Added in v1.0.0
@@ -117,7 +124,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isSerializedEnvelope(value: unknown): value is SerializedEnvelope
+export declare const isSerializedEnvelope: (value: unknown) => value is SerializedEnvelope
 ```
 
 Added in v1.0.0

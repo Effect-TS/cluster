@@ -18,10 +18,9 @@ Added in v1.0.0
   - [SerializedMessage (interface)](#serializedmessage-interface)
 - [schema](#schema)
   - [schema](#schema-1)
-  - [schemaFromString](#schemafromstring)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [SerializedMessageTypeId](#serializedmessagetypeid)
+  - [SerializedMessageTypeId (type alias)](#serializedmessagetypeid-type-alias)
 - [utils](#utils)
   - [isSerializedMessage](#isserializedmessage)
 
@@ -36,7 +35,7 @@ Construct a new `SerializedMessage` from its internal string value.
 **Signature**
 
 ```ts
-export declare function make(value: string): SerializedMessage
+export declare const make: (value: string) => SerializedMessage
 ```
 
 Added in v1.0.0
@@ -48,7 +47,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface SerializedMessage extends Schema.Schema.To<typeof schema> {}
+export interface SerializedMessage
+  extends Data.Data<{
+    readonly [SerializedMessageTypeId]: SerializedMessageTypeId
+    readonly value: string
+  }> {}
 ```
 
 Added in v1.0.0
@@ -63,43 +66,31 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly _id: "@effect/cluster/SerializedMessage"; readonly value: string },
-  Data.Data<{ readonly _id: "@effect/cluster/SerializedMessage"; readonly value: string }>
+  { readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"; readonly value: string },
+  SerializedMessage
 >
-```
-
-Added in v1.0.0
-
-## schemaFromString
-
-This is the schema for a value starting from a string.
-
-**Signature**
-
-```ts
-export declare const schemaFromString: Schema.Schema<string, SerializedMessage>
 ```
 
 Added in v1.0.0
 
 # symbols
 
-## TypeId
+## SerializedMessageTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: "@effect/cluster/SerializedMessage"
+export declare const SerializedMessageTypeId: typeof SerializedMessageTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## SerializedMessageTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type SerializedMessageTypeId = typeof SerializedMessageTypeId
 ```
 
 Added in v1.0.0
@@ -111,7 +102,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isSerializedMessage(value: unknown): value is SerializedMessage
+export declare const isSerializedMessage: (value: unknown) => value is SerializedMessage
 ```
 
 Added in v1.0.0

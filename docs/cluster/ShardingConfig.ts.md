@@ -20,8 +20,8 @@ Added in v1.0.0
 - [models](#models)
   - [ShardingConfig (interface)](#shardingconfig-interface)
 - [symbols](#symbols)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
+  - [ShardingConfigTypeId](#shardingconfigtypeid)
+  - [ShardingConfigTypeId (type alias)](#shardingconfigtypeid-type-alias)
 
 ---
 
@@ -32,7 +32,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingConfig: Tag<ShardingConfig, ShardingConfig>
+export declare const ShardingConfig: Context.Tag<ShardingConfig, ShardingConfig>
 ```
 
 Added in v1.0.0
@@ -54,7 +54,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function withDefaults(customs: Partial<ShardingConfig>)
+export declare const withDefaults: (customs: Partial<ShardingConfig>) => Layer.Layer<never, never, ShardingConfig>
 ```
 
 Added in v1.0.0
@@ -87,22 +87,22 @@ Added in v1.0.0
 
 # symbols
 
-## TypeId
+## ShardingConfigTypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: typeof TypeId
+export declare const ShardingConfigTypeId: typeof ShardingConfigTypeId
 ```
 
 Added in v1.0.0
 
-## TypeId (type alias)
+## ShardingConfigTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+export type ShardingConfigTypeId = typeof ShardingConfigTypeId
 ```
 
 Added in v1.0.0
