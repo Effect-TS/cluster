@@ -37,12 +37,12 @@ const SampleService = Tag<SampleService>()
 describe.concurrent("SampleTests", () => {
   const inMemorySharding = pipe(
     Sharding.live,
-    Layer.use(PodsHealth.local),
-    Layer.use(Pods.noop),
-    Layer.use(Storage.memory),
-    Layer.use(Serialization.json),
-    Layer.use(ShardManagerClient.local),
-    Layer.use(
+    Layer.provide(PodsHealth.local),
+    Layer.provide(Pods.noop),
+    Layer.provide(Storage.memory),
+    Layer.provide(Serialization.json),
+    Layer.provide(ShardManagerClient.local),
+    Layer.provide(
       ShardingConfig.withDefaults({
         simulateRemotePods: true,
         entityTerminationTimeout: Duration.millis(4000),

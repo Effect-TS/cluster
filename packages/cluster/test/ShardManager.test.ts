@@ -169,10 +169,10 @@ export const config = ManagerConfig.defaults
 
 export const shardManager = pipe(
   ShardManager.live,
-  Layer.use(config),
-  Layer.use(PodsHealth.local),
-  Layer.use(Pods.noop),
-  Layer.use(Storage.noop)
+  Layer.provide(config),
+  Layer.provide(PodsHealth.local),
+  Layer.provide(Pods.noop),
+  Layer.provide(Storage.noop)
 )
 
 export function simulate(events: Iterable<SimulationEvent>) {

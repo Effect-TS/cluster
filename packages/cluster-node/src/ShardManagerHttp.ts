@@ -61,4 +61,4 @@ export const shardManagerHttp = Layer.scopedDiscard(
       Http.server.serve(Http.middleware.logger)
     ))
   })
-).pipe(Layer.use(internalServer))
+).pipe(Layer.provide(internalServer))
