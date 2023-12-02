@@ -14,12 +14,12 @@ import { CounterEntity, GetCurrent } from "./sample-common.js"
 
 const liveSharding = pipe(
   Sharding.live,
-  Layer.use(StorageFile.storageFile),
-  Layer.use(PodsHttp.httpPods),
-  Layer.use(ShardManagerClientHttp.shardManagerClientHttp),
-  Layer.use(ShardingConfig.withDefaults({ shardingPort: 54322 })),
-  Layer.use(Serialization.json),
-  Layer.use(NodeClient.layer)
+  Layer.provide(StorageFile.storageFile),
+  Layer.provide(PodsHttp.httpPods),
+  Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
+  Layer.provide(ShardingConfig.withDefaults({ shardingPort: 54322 })),
+  Layer.provide(Serialization.json),
+  Layer.provide(NodeClient.layer)
 )
 
 const program = pipe(

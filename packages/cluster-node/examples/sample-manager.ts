@@ -14,12 +14,12 @@ import * as LogLevel from "effect/LogLevel"
 
 const liveShardingManager = pipe(
   ShardManagerHttp.shardManagerHttp,
-  Layer.use(ShardManager.live),
-  Layer.use(StorageFile.storageFile),
-  Layer.use(PodsHealth.local),
-  Layer.use(PodsHttp.httpPods),
-  Layer.use(ManagerConfig.defaults),
-  Layer.use(HttpClient.client.layer)
+  Layer.provide(ShardManager.live),
+  Layer.provide(StorageFile.storageFile),
+  Layer.provide(PodsHealth.local),
+  Layer.provide(PodsHttp.httpPods),
+  Layer.provide(ManagerConfig.defaults),
+  Layer.provide(HttpClient.client.layer)
 )
 
 Layer.launch(liveShardingManager).pipe(
