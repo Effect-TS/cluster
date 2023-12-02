@@ -224,13 +224,13 @@ function make(
               Effect.flatMap(Option.match({ onNone: () => Effect.fail(1), onSome: () => Effect.succeed(2) })),
               Effect.match({
                 onFailure: () => Chunk.fromIterable([pod]),
-                onSuccess: () => Chunk.empty()
+                onSuccess: () => Chunk.empty<PodAddress.PodAddress>()
               })
             ),
           { concurrency: "inherit" }
         ),
         Effect.map(Chunk.fromIterable),
-        Effect.map(Chunk.flatten),
+        Effect.map((_) => Chunk.flatten(_)),
         Effect.map(HashSet.fromIterable)
       )
 
@@ -310,7 +310,7 @@ function make(
             })
           ), { concurrency: "inherit" }),
         Effect.map(Chunk.fromIterable),
-        Effect.map(Chunk.flatten),
+        Effect.map((_) => Chunk.flatten(_)),
         Effect.map(HashSet.fromIterable)
       )
 
@@ -320,7 +320,7 @@ function make(
       )
 
       // check if failing pods are still up
-      yield* _(Effect.forkIn(layerScope)(Effect.forEach(failedPods, notifyUnhealthyPod, { discard: true })))
+      yield* _(Effect.forkIn(layerScope)(Effect.forEach(failedPods, (_) => notifyUnhealthyPod(_), { discard: true })))
 
       if (HashSet.size(failedPods) > 0) {
         yield* _(
