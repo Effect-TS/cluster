@@ -345,7 +345,7 @@ export function make<R, Req>(
           if (recipientType._tag === "EntityType") {
             return Effect.asUnit(Effect.unlessEffect(
               Effect.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId)),
-              sharding.isEntityOnLocalShards(recipientType, entityId)
+              sharding.isEntityOnLocalShards(entityId)
             ))
           } else if (recipientType._tag === "TopicType") {
             return Effect.unit
@@ -439,7 +439,7 @@ export function make<R, Req>(
         RefSynchronized.modify(entityStates, (entities) => [
           HashMap.filter(
             entities,
-            (_, entityId) => HashSet.has(shards, sharding.getShardId(recipientType, entityId))
+            (_, entityId) => HashSet.has(shards, sharding.getShardId(entityId))
           ),
           entities
         ]),
