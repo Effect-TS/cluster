@@ -25,7 +25,7 @@ import type * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
  * @category models
  */
 export interface Sharding {
-  readonly getShardId: (recipientType: RecipentType.RecipientType<any>, entityId: string) => ShardId.ShardId
+  readonly getShardId: (entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<never, never, void>
   readonly unregister: Effect.Effect<never, never, void>
   readonly messenger: <Msg>(
@@ -37,7 +37,6 @@ export interface Sharding {
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Broadcaster<Msg>
   readonly isEntityOnLocalShards: (
-    recipientType: RecipentType.RecipientType<any>,
     entityId: string
   ) => Effect.Effect<never, never, boolean>
   readonly isShuttingDown: Effect.Effect<never, never, boolean>
@@ -62,7 +61,7 @@ export interface Sharding {
   readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>
   readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
-  readonly sendToLocalEntity: (
+  readonly sendMessageToLocalEntityManagerWithoutRetries: (
     msg: SerializedEnvelope.SerializedEnvelope
   ) => Effect.Effect<
     never,

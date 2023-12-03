@@ -53,7 +53,7 @@ export const shardingServiceHttp = Layer.scopedDiscard(
         Effect.gen(function*(_) {
           const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.Send_))
           const result = yield* _(
-            sharding.sendToLocalEntity(body.message),
+            sharding.sendMessageToLocalEntityManagerWithoutRetries(body.message),
             Effect.match({
               onFailure: Either.left,
               onSuccess: Either.right
