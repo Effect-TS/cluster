@@ -9,3 +9,5 @@ dist/
 .direnv/
 .idea/
 packages/*/docs
+packages/cluster-node/assignments.json
+packages/cluster-node/pods.json

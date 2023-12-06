@@ -14,7 +14,6 @@ Added in v1.0.0
 
 - [exports](#exports)
   - [From "./PodsHttp.js"](#from-podshttpjs)
-  - [From "./PostgresIndempotency.js"](#from-postgresindempotencyjs)
   - [From "./ShardManagerClientHttp.js"](#from-shardmanagerclienthttpjs)
   - [From "./ShardManagerHttp.js"](#from-shardmanagerhttpjs)
   - [From "./ShardManagerProtocolHttp.js"](#from-shardmanagerprotocolhttpjs)
@@ -34,18 +33,6 @@ Re-exports all named exports from the "./PodsHttp.js" module as `PodsHttp`.
 
 ```ts
 export * as PodsHttp from "./PodsHttp.js"
-```
-
-Added in v1.0.0
-
-## From "./PostgresIndempotency.js"
-
-Re-exports all named exports from the "./PostgresIndempotency.js" module as `PostgresIndempotency`.
-
-**Signature**
-
-```ts
-export * as PostgresIndempotency from "./PostgresIndempotency.js"
 ```
 
 Added in v1.0.0

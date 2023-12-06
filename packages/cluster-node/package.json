@@ -16,6 +16,7 @@
   "license": "MIT",
   "sideEffects": false,
   "scripts": {
+    "example": "tsx --tsconfig tsconfig.examples.json",
     "build": "pnpm build-prepare && pnpm build-esm && pnpm build-cjs && pnpm build-annotate && build-utils pack-v2",
     "build-prepare": "build-utils prepare-v2",
     "build-esm": "tsc -b tsconfig.build.json",
@@ -23,15 +24,16 @@
     "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
   "peerDependencies": {
-    "@effect/platform-node": "^0.33.4",
-    "@effect/schema": "^0.51.1",
-    "effect": "2.0.0-next.58"
+    "@effect/platform-node": "^0.34.0",
+    "@effect/schema": "^0.52.0",
+    "effect": "2.0.0-next.59"
   },
   "devDependencies": {
-    "@effect/platform-node": "^0.33.4",
-    "@effect/schema": "^0.51.1",
+    "@effect/platform-node": "^0.34.0",
+    "@effect/schema": "^0.52.0",
     "@types/node": "^20.9.0",
     "@types/path-browserify": "^1.0.1",
-    "effect": "2.0.0-next.58"
+    "effect": "2.0.0-next.59",
+    "tsx": "^4.6.2"
   }
 }

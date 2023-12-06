@@ -101,24 +101,24 @@ importers:
   packages/cluster:
     devDependencies:
       '@effect/schema':
-        specifier: ^0.51.1
-        version: 0.51.1(effect@2.0.0-next.58)(fast-check@3.13.2)
+        specifier: ^0.52.0
+        version: 0.52.0(effect@2.0.0-next.59)(fast-check@3.13.2)
       '@types/path-browserify':
         specifier: ^1.0.1
         version: 1.0.2
       effect:
-        specifier: 2.0.0-next.58
-        version: 2.0.0-next.58
+        specifier: 2.0.0-next.59
+        version: 2.0.0-next.59
     publishDirectory: dist
 
   packages/cluster-node:
     devDependencies:
       '@effect/platform-node':
-        specifier: ^0.33.4
-        version: 0.33.4(@effect/schema@0.51.1)(effect@2.0.0-next.58)
+        specifier: ^0.34.0
+        version: 0.34.0(@effect/schema@0.52.0)(effect@2.0.0-next.59)
       '@effect/schema':
-        specifier: ^0.51.1
-        version: 0.51.1(effect@2.0.0-next.58)(fast-check@3.13.2)
+        specifier: ^0.52.0
+        version: 0.52.0(effect@2.0.0-next.59)(fast-check@3.13.2)
       '@types/node':
         specifier: ^20.9.0
         version: 20.9.0
@@ -126,8 +126,11 @@ importers:
         specifier: ^1.0.1
         version: 1.0.2
       effect:
-        specifier: 2.0.0-next.58
-        version: 2.0.0-next.58
+        specifier: 2.0.0-next.59
+        version: 2.0.0-next.59
+      tsx:
+        specifier: ^4.6.2
+        version: 4.6.2
     publishDirectory: dist
 
 packages:
@@ -777,13 +780,13 @@ packages:
       - '@effect/schema'
     dev: true
 
-  /@effect/platform-node@0.33.4(@effect/schema@0.51.1)(effect@2.0.0-next.58):
-    resolution: {integrity: sha512-l77ogcpAXXY64p5FTdOOE3prGzhkmtZWnLAE0GPJsDIVNqI9BwDDkZFdCPye+Vc1IIJ9abcPqcdqqdsQu6JIsg==}
+  /@effect/platform-node@0.34.0(@effect/schema@0.52.0)(effect@2.0.0-next.59):
+    resolution: {integrity: sha512-T5GNvJcl3vshkBs/Jg8EbEpce/GA6eVBXWPEyOpusIHNaOfGzLvfAKuElR35K7Rv473UmNiX+yH4rM9+VsyNNA==}
     peerDependencies:
-      effect: 2.0.0-next.58
+      effect: 2.0.0-next.59
     dependencies:
-      '@effect/platform': 0.32.2(@effect/schema@0.51.1)(effect@2.0.0-next.58)
-      effect: 2.0.0-next.58
+      '@effect/platform': 0.33.0(@effect/schema@0.52.0)(effect@2.0.0-next.59)
+      effect: 2.0.0-next.59
       mime: 3.0.0
       multipasta: 0.1.19
     transitivePeerDependencies:
@@ -802,14 +805,14 @@ packages:
       path-browserify: 1.0.1
     dev: true
 
-  /@effect/platform@0.32.2(@effect/schema@0.51.1)(effect@2.0.0-next.58):
-    resolution: {integrity: sha512-wI9vSTb0PWjxdX/8aC41Y01kXJoaG/tqzNPQJEnUoetAWpAfdUeaKSTGQEBzEDI1gj0tp2qPsHUlNzVGG8REQg==}
+  /@effect/platform@0.33.0(@effect/schema@0.52.0)(effect@2.0.0-next.59):
+    resolution: {integrity: sha512-WJv91JDpoglNn/iEFq8i/Uye+1W+w44coQikG0PfRyiYg47Jr303xHe6c6KtUijK1DdImXHfA8w6lb0+TN88wg==}
     peerDependencies:
-      '@effect/schema': ^0.51.1
-      effect: 2.0.0-next.58
+      '@effect/schema': ^0.52.0
+      effect: 2.0.0-next.59
     dependencies:
-      '@effect/schema': 0.51.1(effect@2.0.0-next.58)(fast-check@3.13.2)
-      effect: 2.0.0-next.58
+      '@effect/schema': 0.52.0(effect@2.0.0-next.59)(fast-check@3.13.2)
+      effect: 2.0.0-next.59
       find-my-way: 7.7.0
       multipasta: 0.1.19
       path-browserify: 1.0.1
@@ -825,13 +828,13 @@ packages:
       fast-check: 3.13.2
     dev: true
 
-  /@effect/schema@0.51.1(effect@2.0.0-next.58)(fast-check@3.13.2):
-    resolution: {integrity: sha512-ZuULzdmAUTtdC/OFaVsEtc7NUCCElYYBE6LJSc9sYG8sDQisA5AQnWFsRk6MZPxzD2EdpTlKgQE0gysn14sttA==}
+  /@effect/schema@0.52.0(effect@2.0.0-next.59)(fast-check@3.13.2):
+    resolution: {integrity: sha512-x6SmSdoL6PeZVAaK895NoRkKF8D/w+XyO8i17cUsQYFJBHNyUTi9Y1H2wrO8TkxhTmC93ejburpM+35/OKCi2Q==}
     peerDependencies:
-      effect: 2.0.0-next.58
+      effect: 2.0.0-next.59
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.0.0-next.58
+      effect: 2.0.0-next.59
       fast-check: 3.13.2
     dev: true
 
@@ -2486,8 +2489,8 @@ packages:
     resolution: {integrity: sha512-qROhKMxlm6fpa90YRfWSgKeelDfhaDq2igPK+pIKupGehiCnZH4vd2qrY71HVZ10qZgXxh0VXpGyDQxJC+EQqw==}
     dev: true
 
-  /effect@2.0.0-next.58:
-    resolution: {integrity: sha512-3JtlhJWIZlKe2krJp8ZsKCWCsKMemRVMNOGKtW6bLbg1ZYDi9riuDO44heqEyh7mVBhGsLh/Ut+Hz4olFbfhyg==}
+  /effect@2.0.0-next.59:
+    resolution: {integrity: sha512-EE87vFl0/zIN5lKDtFccU3YCnbPqjxg9rY72obNN65/GE4JOJsXciyX8XC4pIDr3lE6KeJ0le8IXf+A7d92ntQ==}
     dev: true
 
   /electron-to-chromium@1.4.502:
@@ -5518,6 +5521,17 @@ packages:
       esbuild: 0.18.20
       get-tsconfig: 4.7.2
       source-map-support: 0.5.21
+    optionalDependencies:
+      fsevents: 2.3.3
+    dev: true
+
+  /tsx@4.6.2:
+    resolution: {integrity: sha512-QPpBdJo+ZDtqZgAnq86iY/PD2KYCUPSUGIunHdGwyII99GKH+f3z3FZ8XNFLSGQIA4I365ui8wnQpl8OKLqcsg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    dependencies:
+      esbuild: 0.18.20
+      get-tsconfig: 4.7.2
     optionalDependencies:
       fsevents: 2.3.3
     dev: true
