@@ -63,7 +63,7 @@ Added in v1.0.0
 
 ```ts
 export interface Sharding {
-  readonly getShardId: (recipientType: RecipentType.RecipientType<any>, entityId: string) => ShardId.ShardId
+  readonly getShardId: (entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<never, never, void>
   readonly unregister: Effect.Effect<never, never, void>
   readonly messenger: <Msg>(
@@ -74,10 +74,7 @@ export interface Sharding {
     topicType: RecipentType.TopicType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Broadcaster<Msg>
-  readonly isEntityOnLocalShards: (
-    recipientType: RecipentType.RecipientType<any>,
-    entityId: string
-  ) => Effect.Effect<never, never, boolean>
+  readonly isEntityOnLocalShards: (entityId: string) => Effect.Effect<never, never, boolean>
   readonly isShuttingDown: Effect.Effect<never, never, boolean>
 
   readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
@@ -100,7 +97,7 @@ export interface Sharding {
   readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>
   readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
-  readonly sendToLocalEntity: (
+  readonly sendMessageToLocalEntityManagerWithoutRetries: (
     msg: SerializedEnvelope.SerializedEnvelope
   ) => Effect.Effect<never, ShardingError.ShardingError, Option.Option<SerializedMessage.SerializedMessage>>
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
