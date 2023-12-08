@@ -53,11 +53,7 @@ Added in v1.0.0
 
 ```ts
 export declare const SendResult_: Schema.Schema<
-  | { readonly _tag: "Left"; readonly left: unknown }
-  | {
-      readonly _tag: "Right"
-      readonly right: { readonly _tag: "None" } | { readonly _tag: "Some"; readonly value: unknown }
-    },
+  Schema.EitherFrom<unknown, Schema.OptionFrom<unknown>>,
   Either<unknown, Option<unknown>>
 >
 ```

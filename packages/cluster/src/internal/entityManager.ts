@@ -295,6 +295,7 @@ export function make<R, Req>(
                         RecipientBehaviourContext.RecipientBehaviourContext,
                         RecipientBehaviourContext.make({
                           entityId,
+                          recipientType: recipientType as any,
                           reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
                         })
                       ),

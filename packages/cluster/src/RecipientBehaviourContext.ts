@@ -5,6 +5,7 @@
 import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import * as internal from "./internal/recipientBehaviourContext.js"
+import type * as RecipientType from "./RecipientType.js"
 import type * as ReplyId from "./ReplyId.js"
 
 /**
@@ -27,6 +28,7 @@ export type RecipientBehaviourContextTypeId = typeof RecipientBehaviourContextTy
 export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
+  readonly recipientType: RecipientType.RecipientType<unknown>
   readonly reply: (replyId: ReplyId.ReplyId, reply: unknown) => Effect.Effect<never, never, void>
 }
 
