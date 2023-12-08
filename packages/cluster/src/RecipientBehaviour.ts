@@ -10,6 +10,7 @@ import type * as Scope from "effect/Scope"
 import * as internal from "./internal/recipientBehaviour.js"
 import type * as PoisonPill from "./PoisonPill.js"
 import type * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
+import type * as ReplyId from "./ReplyId.js"
 import type * as ShardingError from "./ShardingError.js"
 
 /**
@@ -23,7 +24,7 @@ export interface RecipientBehaviour<R, Msg> {
   ): Effect.Effect<
     R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
     never,
-    (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
+    (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, ReplyId.ReplyId>
   >
 }
 
@@ -41,7 +42,10 @@ export type EntityBehaviourOptions = {
  * @category utils
  */
 export const fromInMemoryQueue: <R, Msg>(
-  handler: (entityId: string, dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
+  handler: (
+    entityId: string,
+    dequeue: Queue.Dequeue<[Msg | PoisonPill.PoisonPill, ReplyId.ReplyId]>
+  ) => Effect.Effect<R, never, void>
 ) => RecipientBehaviour<R, Msg> = internal.fromInMemoryQueue
 
 /**
@@ -50,6 +54,6 @@ export const fromInMemoryQueue: <R, Msg>(
  */
 export const mapOffer: <Msg1, Msg>(
   f: (
-    offer: (message: Msg1) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
-  ) => (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
+    offer: (message: Msg1) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, ReplyId.ReplyId>
+  ) => (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, ReplyId.ReplyId>
 ) => <R>(base: RecipientBehaviour<R, Msg1>) => RecipientBehaviour<R, Msg> = internal.mapOffer

@@ -63,11 +63,6 @@ export * as RecipientType from "./RecipientType.js"
 /**
  * @since 1.0.0
  */
-export * as Replier from "./Replier.js"
-
-/**
- * @since 1.0.0
- */
 export * as ReplyId from "./ReplyId.js"
 
 /**

@@ -110,7 +110,7 @@ describe.concurrent("SampleTests", () => {
         RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
           pipe(
             PoisonPill.takeOrInterrupt(dequeue),
-            Effect.flatMap((msg) => Ref.set(entityId === "entity1" ? result1 : result2, msg))
+            Effect.flatMap(([msg]) => Ref.set(entityId === "entity1" ? result1 : result2, msg))
           )
         )
       ))
@@ -140,13 +140,13 @@ describe.concurrent("SampleTests", () => {
         RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
           pipe(
             PoisonPill.takeOrInterrupt(dequeue),
-            Effect.flatMap((msg) => msg.replier.reply(42))
+            Effect.flatMap(([msg]) => msg.replier.reply(42))
           )
         )
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
+      const msg = SampleMessage.make({ _tag: "SampleMessage" })
       const result = yield* _(messenger.send("entity1")(msg))
 
       expect(result).toEqual(42)
@@ -176,7 +176,7 @@ describe.concurrent("SampleTests", () => {
             Effect.flatMap(Ref.make(0), (ref) =>
               pipe(
                 PoisonPill.takeOrInterrupt(dequeue),
-                Effect.flatMap((msg) => {
+                Effect.flatMap(([msg]) => {
                   switch (msg._tag) {
                     case "BroadcastIncrement":
                       return Ref.update(ref, (_) => _ + 1)
@@ -194,7 +194,7 @@ describe.concurrent("SampleTests", () => {
       yield* _(broadcaster.broadcastDiscard("c1")({ _tag: "BroadcastIncrement" }))
       yield* _(Effect.sleep(Duration.seconds(2)))
 
-      const msg = yield* _(GetIncrement.makeEffect({ _tag: "GetIncrement" }))
+      const msg = GetIncrement.make({ _tag: "GetIncrement" })
       const c1 = yield* _(broadcaster.broadcast("c1")(msg))
 
       expect(HashMap.size(c1)).toBe(1) // Here we have just one pod, so there will be just one incrementer
@@ -220,7 +220,7 @@ describe.concurrent("SampleTests", () => {
         RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
           pipe(
             Queue.take(dequeue),
-            Effect.flatMap((msg) => {
+            Effect.flatMap(([msg]) => {
               if (PoisonPill.isPoisonPill(msg)) {
                 return pipe(
                   Effect.sync(() => {
@@ -311,7 +311,7 @@ describe.concurrent("SampleTests", () => {
         RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
           pipe(
             Queue.take(dequeue),
-            Effect.flatMap((msg) => {
+            Effect.flatMap(([msg]) => {
               if (PoisonPill.isPoisonPill(msg)) {
                 return pipe(
                   Deferred.succeed(shutdownReceived, true),
@@ -453,7 +453,7 @@ describe.concurrent("SampleTests", () => {
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleRequest.makeEffect({ _tag: "Request" }))
+      const msg = SampleRequest.make({ _tag: "Request" })
       const replyFiber = yield* _(
         messenger.send("entity1")(msg),
         Effect.fork

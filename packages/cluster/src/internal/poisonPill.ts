@@ -4,6 +4,7 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Queue from "effect/Queue"
 import type * as PoisonPill from "../PoisonPill.js"
+import type * as ReplyId from "../ReplyId.js"
 
 /** @internal */
 const PoisonPillSymbolKey = "@effect/cluster/PoisonPill"
@@ -61,10 +62,10 @@ export const schema: Schema.Schema<
  * @category schema
  */
 export function takeOrInterrupt<Req>(
-  dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-): Effect.Effect<never, never, Req> {
+  dequeue: Queue.Dequeue<[Req | PoisonPill.PoisonPill, ReplyId.ReplyId]>
+): Effect.Effect<never, never, [Req, ReplyId.ReplyId]> {
   return pipe(
     Queue.take(dequeue),
-    Effect.flatMap((msg) => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed(msg))
+    Effect.flatMap(([msg, replyId]) => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed([msg, replyId]))
   )
 }

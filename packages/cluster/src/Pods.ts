@@ -5,9 +5,9 @@ import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import type * as HashSet from "effect/HashSet"
 import type * as Layer from "effect/Layer"
-import type * as Option from "effect/Option"
 import * as internal from "./internal/pods.js"
 import type * as PodAddress from "./PodAddress.js"
+import type * as ReplyId from "./ReplyId.js"
 import type * as SerializedEnvelope from "./SerializedEnvelope.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
 import type * as ShardId from "./ShardId.js"
@@ -73,7 +73,22 @@ export interface Pods {
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<SerializedMessage.SerializedMessage>
+    ReplyId.ReplyId
+  >
+
+  /**
+   * Pulls the pod for a reply
+   * @since 1.0.0
+   */
+  readonly pullReply: (
+    pod: PodAddress.PodAddress,
+    entityTypeName: string,
+    entityId: string,
+    replyId: ReplyId.ReplyId
+  ) => Effect.Effect<
+    never,
+    ShardingError.ShardingError,
+    SerializedMessage.SerializedMessage
   >
 }
 

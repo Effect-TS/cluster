@@ -4,11 +4,15 @@ import { pipe } from "effect/Function"
 import * as Queue from "effect/Queue"
 import * as PoisonPill from "../PoisonPill.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
+import * as ReplyId from "../ReplyId.js"
 import type * as ShardingError from "../ShardingError.js"
 
 /** @internal */
 export function fromInMemoryQueue<R, Msg>(
-  handler: (entityId: string, dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
+  handler: (
+    entityId: string,
+    dequeue: Queue.Dequeue<[Msg | PoisonPill.PoisonPill, ReplyId.ReplyId]>
+  ) => Effect.Effect<R, never, void>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return (entityId) =>
     pipe(
@@ -16,10 +20,11 @@ export function fromInMemoryQueue<R, Msg>(
       Effect.flatMap((shutdownCompleted) =>
         pipe(
           Effect.acquireRelease(
-            Queue.unbounded<Msg | PoisonPill.PoisonPill>(),
+            Queue.unbounded<[Msg | PoisonPill.PoisonPill, ReplyId.ReplyId]>(),
             (queue) =>
               pipe(
-                Queue.offer(queue, PoisonPill.make),
+                ReplyId.makeEffect,
+                Effect.flatMap((replyId) => Queue.offer(queue, [PoisonPill.make, replyId])),
                 Effect.zipRight(
                   Effect.logDebug("PoisonPill sent. Waiting for exit of behaviour...")
                 ),
@@ -37,7 +42,12 @@ export function fromInMemoryQueue<R, Msg>(
               Effect.forkDaemon
             )
           ),
-          Effect.map((queue) => (message: Msg) => Queue.offer(queue, message)),
+          Effect.map((queue) => (message: Msg) =>
+            pipe(
+              ReplyId.makeEffect,
+              Effect.tap((replyId) => Queue.offer(queue, [message, replyId]))
+            )
+          ),
           Effect.annotateLogs("entityId", entityId)
         )
       )
@@ -47,8 +57,8 @@ export function fromInMemoryQueue<R, Msg>(
 /** @internal */
 export function mapOffer<Msg1, Msg>(
   f: (
-    offer: (message: Msg1) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
-  ) => (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
+    offer: (message: Msg1) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, ReplyId.ReplyId>
+  ) => (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, ReplyId.ReplyId>
 ) {
   return <R>(base: RecipientBehaviour.RecipientBehaviour<R, Msg1>): RecipientBehaviour.RecipientBehaviour<R, Msg> =>
   (entityId) =>

@@ -1,4 +1,3 @@
-import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
@@ -10,17 +9,16 @@ import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
 import * as RefSynchronized from "effect/SynchronizedRef"
-import type * as Message from "../Message.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import type * as RecipientType from "../RecipientType.js"
 import type * as ReplyId from "../ReplyId.js"
+import type * as SerializedMessage from "../SerializedMessage.js"
 import type * as ShardId from "../ShardId.js"
 import type * as Sharding from "../Sharding.js"
 import type * as ShardingConfig from "../ShardingConfig.js"
 import * as ShardingError from "../ShardingError.js"
 import * as EntityState from "./entityState.js"
-import * as ReplyChannel from "./replyChannel.js"
 
 /** @internal */
 const EntityManagerSymbolKey = "@effect/cluster/EntityManager"
@@ -43,17 +41,20 @@ export interface EntityManager<Req> {
   /** @internal */
   readonly send: <A extends Req>(
     entityId: string,
-    req: A,
-    replyId: Option.Option<ReplyId.ReplyId>
+    req: A
   ) => Effect.Effect<
     never,
     | ShardingError.ShardingErrorEntityNotManagedByThisPod
     | ShardingError.ShardingErrorPodUnavailable
     | ShardingError.ShardingErrorMessageQueue,
-    Option.Option<
-      Message.Success<A>
-    >
+    ReplyId.ReplyId
   >
+
+  /** @internal */
+  readonly pullReply: (
+    entityId: string,
+    replyId: ReplyId.ReplyId
+  ) => Effect.Effect<never, ShardingError.ShardingErrorPodUnavailable, SerializedMessage.SerializedMessage>
 
   /** @internal */
   readonly terminateEntitiesOnShards: (
@@ -83,43 +84,6 @@ export function make<R, Req>(
         >
       >(HashMap.empty())
     )
-
-    function initReply(
-      id: ReplyId.ReplyId,
-      replyChannel: ReplyChannel.ReplyChannel<any>,
-      replyChannels: EntityState.EntityState<Req>["replyChannels"]
-    ): Effect.Effect<never, never, void> {
-      return pipe(
-        replyChannels,
-        RefSynchronized.update(HashMap.set(id, replyChannel)),
-        Effect.zipLeft(
-          pipe(
-            replyChannel.await,
-            Effect.ensuring(RefSynchronized.update(replyChannels, HashMap.remove(id))),
-            Effect.fork
-          )
-        )
-      )
-    }
-
-    function sendReply<Reply>(
-      replyId: ReplyId.ReplyId,
-      reply: Reply,
-      replyChannels: EntityState.EntityState<Req>["replyChannels"]
-    ): Effect.Effect<never, never, void> {
-      return RefSynchronized.updateEffect(replyChannels, (repliers) =>
-        pipe(
-          Effect.suspend(() => {
-            const replyChannel = HashMap.get(repliers, replyId)
-
-            if (Option.isSome(replyChannel)) {
-              return (replyChannel.value as ReplyChannel.ReplyChannel<Reply>).reply(reply)
-            }
-            return Effect.unit
-          }),
-          Effect.as(pipe(repliers, HashMap.remove(replyId)))
-        ))
-    }
 
     function startExpirationFiber(entityId: string) {
       const maxIdleMillis = pipe(
@@ -181,16 +145,6 @@ export function make<R, Req>(
               // close the scope of the entity,
               Effect.zipRight(Effect.logDebug("Closing scope...")),
               Effect.ensuring(Scope.close(entityState.executionScope, Exit.unit)),
-              Effect.zipRight(Effect.logDebug("Closing replyChannels...")),
-              // fail all pending reply channels with PodUnavailable
-              Effect.ensuring(pipe(
-                RefSynchronized.get(entityState.replyChannels),
-                Effect.flatMap(Effect.forEach(([_, replyChannels]) =>
-                  replyChannels.fail(
-                    Cause.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
-                  )
-                ))
-              )),
               // remove the entry from the map
               Effect.zipRight(Effect.logDebug("Removing entityState from map...")),
               Effect.ensuring(RefSynchronized.update(entityStates, HashMap.remove(entityId))),
@@ -284,9 +238,6 @@ export function make<R, Req>(
                     const executionScope = yield* _(Scope.make())
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const cdt = yield* _(Clock.currentTimeMillis)
-                    const replyChannels = yield* _(
-                      RefSynchronized.make(HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>())
-                    )
 
                     const offer = yield* _(pipe(
                       behaviour_(entityId),
@@ -295,7 +246,7 @@ export function make<R, Req>(
                         RecipientBehaviourContext.RecipientBehaviourContext,
                         RecipientBehaviourContext.make({
                           entityId,
-                          reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
+                          recipientType: recipientType as any
                         })
                       ),
                       Effect.provide(env)
@@ -305,7 +256,6 @@ export function make<R, Req>(
                       offer,
                       expirationFiber,
                       executionScope,
-                      replyChannels,
                       terminationFiber: Option.none(),
                       lastReceivedAt: cdt
                     })
@@ -325,18 +275,23 @@ export function make<R, Req>(
         ))
     }
 
+    function pullReply(
+      entityId: string,
+      replyId: ReplyId.ReplyId
+    ) {
+      // TODO:
+      return Effect.die("LOL" + entityId + replyId)
+    }
+
     function send<A extends Req>(
       entityId: string,
-      req: A,
-      replyId: Option.Option<ReplyId.ReplyId>
+      req: A
     ): Effect.Effect<
       never,
       | ShardingError.ShardingErrorEntityNotManagedByThisPod
       | ShardingError.ShardingErrorPodUnavailable
       | ShardingError.ShardingErrorMessageQueue,
-      Option.Option<
-        Message.Success<A>
-      >
+      ReplyId.ReplyId
     > {
       return pipe(
         Effect.Do,
@@ -360,27 +315,9 @@ export function make<R, Req>(
               onNone: () =>
                 pipe(
                   Effect.sleep(Duration.millis(100)),
-                  Effect.flatMap(() => send(entityId, req, replyId))
+                  Effect.flatMap(() => send(entityId, req))
                 ),
-              onSome: (entityState) => {
-                return pipe(
-                  replyId,
-                  Option.match({
-                    onNone: () =>
-                      pipe(
-                        entityState.offer(req),
-                        Effect.as(Option.none())
-                      ),
-                    onSome: (replyId_) =>
-                      pipe(
-                        ReplyChannel.make<Message.Success<A>>(),
-                        Effect.tap((replyChannel) => initReply(replyId_, replyChannel, entityState.replyChannels)),
-                        Effect.zipLeft(entityState.offer(req)),
-                        Effect.flatMap((_) => _.output)
-                      )
-                  })
-                )
-              }
+              onSome: (entityState) => entityState.offer(req)
             })
           )
         )
@@ -452,6 +389,7 @@ export function make<R, Req>(
       [EntityManagerTypeId]: EntityManagerTypeId,
       recipientType,
       send,
+      pullReply,
       terminateAllEntities,
       terminateEntitiesOnShards
     }

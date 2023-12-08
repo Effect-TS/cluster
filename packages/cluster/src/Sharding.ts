@@ -14,6 +14,7 @@ import type * as PodAddress from "./PodAddress.js"
 import type * as RecipientBehaviour from "./RecipientBehaviour.js"
 import type * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
 import type * as RecipentType from "./RecipientType.js"
+import type * as ReplyId from "./ReplyId.js"
 import type * as SerializedEnvelope from "./SerializedEnvelope.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
 import type * as ShardId from "./ShardId.js"
@@ -66,8 +67,13 @@ export interface Sharding {
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<SerializedMessage.SerializedMessage>
+    ReplyId.ReplyId
   >
+  readonly pullLocalEntityManagerForReplyWithoutRetries: (
+    entityTypeName: string,
+    entityId: string,
+    replyId: ReplyId.ReplyId
+  ) => Effect.Effect<never, ShardingError.ShardingError, SerializedMessage.SerializedMessage>
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
 }
 

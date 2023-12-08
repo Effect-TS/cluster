@@ -3,6 +3,7 @@
  */
 import type * as Effect from "effect/Effect"
 import type * as Message from "./Message.js"
+import type * as ReplyId from "./ReplyId.js"
 import type * as ShardingError from "./ShardingError.js"
 
 /**
@@ -16,7 +17,7 @@ export interface Messenger<Msg> {
    * Send a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  sendDiscard(entityId: string): (msg: Msg) => Effect.Effect<never, ShardingError.ShardingError, void>
+  sendDiscard(entityId: string): (msg: Msg) => Effect.Effect<never, ShardingError.ShardingError, ReplyId.ReplyId>
 
   /**
    * Send a message and wait for a response of type `Res`

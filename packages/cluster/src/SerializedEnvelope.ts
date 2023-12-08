@@ -3,9 +3,7 @@
  */
 import type * as Schema from "@effect/schema/Schema"
 import type * as Data from "effect/Data"
-import type * as Option from "effect/Option"
 import * as internal from "./internal/serializedEnvelope.js"
-import type * as ReplyId from "./ReplyId.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
 
 /**
@@ -30,7 +28,6 @@ export interface SerializedEnvelope extends
     readonly entityId: string
     readonly entityType: string
     readonly body: SerializedMessage.SerializedMessage
-    readonly replyId: Option.Option<ReplyId.ReplyId>
   }>
 {}
 
@@ -43,8 +40,7 @@ export interface SerializedEnvelope extends
 export const make: (
   entityType: string,
   entityId: string,
-  body: SerializedMessage.SerializedMessage,
-  replyId: Option.Option<ReplyId.ReplyId>
+  body: SerializedMessage.SerializedMessage
 ) => SerializedEnvelope = internal.make
 
 /**
@@ -61,17 +57,13 @@ export const isSerializedEnvelope: (value: unknown) => value is SerializedEnvelo
  */
 export const schema: Schema.Schema<
   {
+    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
     readonly entityId: string
     readonly entityType: string
     readonly body: {
       readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
       readonly value: string
     }
-    readonly replyId: { readonly _tag: "None" } | {
-      readonly _tag: "Some"
-      readonly value: { readonly "@effect/cluster/ReplyId": "@effect/cluster/ReplyId"; readonly value: string }
-    }
-    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
   },
   SerializedEnvelope
 > = internal.schema

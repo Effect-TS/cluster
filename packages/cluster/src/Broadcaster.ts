@@ -6,6 +6,7 @@ import type * as Either from "effect/Either"
 import type * as HashMap from "effect/HashMap"
 import type * as Message from "./Message.js"
 import type * as PodAddress from "./PodAddress.js"
+import type * as ReplyId from "./ReplyId.js"
 import type * as ShardingError from "./ShardingError.js"
 
 /**
@@ -18,7 +19,15 @@ export interface Broadcaster<Msg> {
    * Broadcast a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  readonly broadcastDiscard: (topic: string) => (msg: Msg) => Effect.Effect<never, ShardingError.ShardingError, void>
+  readonly broadcastDiscard: (
+    topic: string
+  ) => (
+    msg: Msg
+  ) => Effect.Effect<
+    never,
+    ShardingError.ShardingError,
+    HashMap.HashMap<PodAddress.PodAddress, Either.Either<ShardingError.ShardingError, ReplyId.ReplyId>>
+  >
 
   /**
    * Broadcast a message and wait for a response from each consumer
