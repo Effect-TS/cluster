@@ -9,6 +9,7 @@ import type * as Scope from "effect/Scope"
 import type * as Stream from "effect/Stream"
 import type { Broadcaster } from "./Broadcaster.js"
 import * as internal from "./internal/sharding.js"
+import type * as Message from "./Message.js"
 import type * as MessageState from "./MessageState.js"
 import type { Messenger } from "./Messenger.js"
 import type * as PodAddress from "./PodAddress.js"
@@ -29,11 +30,11 @@ export interface Sharding {
   readonly getShardId: (entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<never, never, void>
   readonly unregister: Effect.Effect<never, never, void>
-  readonly messenger: <Msg>(
+  readonly messenger: <Msg extends Message.Message>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Messenger<Msg>
-  readonly broadcaster: <Msg>(
+  readonly broadcaster: <Msg extends Message.Message>(
     topicType: RecipentType.TopicType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Broadcaster<Msg>
@@ -43,14 +44,14 @@ export interface Sharding {
   readonly isShuttingDown: Effect.Effect<never, never, boolean>
 
   readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
-  readonly registerEntity: <Req, R>(
-    entityType: RecipentType.EntityType<Req>,
-    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  readonly registerEntity: <Msg extends Message.Message, R>(
+    entityType: RecipentType.EntityType<Msg>,
+    behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
-  readonly registerTopic: <Req, R>(
-    topicType: RecipentType.TopicType<Req>,
-    behaviour: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  readonly registerTopic: <Msg extends Message.Message, R>(
+    topicType: RecipentType.TopicType<Msg>,
+    behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
   readonly getShardingRegistrationEvents: Stream.Stream<
@@ -124,9 +125,9 @@ export const registerSingleton: <R>(
  * @since 1.0.0
  * @category utils
  */
-export const registerEntity: <Req, R>(
-  entityType: RecipentType.EntityType<Req>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+export const registerEntity: <Msg extends Message.Message, R>(
+  entityType: RecipentType.EntityType<Msg>,
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
 ) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =
   internal.registerEntity
@@ -139,9 +140,9 @@ export const registerEntity: <Req, R>(
  * @since 1.0.0
  * @category utils
  */
-export const registerTopic: <Req, R>(
-  topicType: RecipentType.TopicType<Req>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+export const registerTopic: <Msg extends Message.Message, R>(
+  topicType: RecipentType.TopicType<Msg>,
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
 ) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =
   internal.registerTopic
@@ -152,7 +153,7 @@ export const registerTopic: <Req, R>(
  * @since 1.0.0
  * @category utils
  */
-export const messenger: <Msg>(
+export const messenger: <Msg extends Message.Message>(
   entityType: RecipentType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Sharding, never, Messenger<Msg>> = internal.messenger
@@ -163,7 +164,7 @@ export const messenger: <Msg>(
  * @since 1.0.0
  * @category utils
  */
-export const broadcaster: <Msg>(
+export const broadcaster: <Msg extends Message.Message>(
   topicType: RecipentType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Sharding, never, Broadcaster<Msg>> = internal.broadcaster

@@ -79,9 +79,9 @@ export function registerSingleton<R>(
 /**
  * @internal
  */
-export function registerEntity<Req, R>(
-  entityType: RecipientType.EntityType<Req>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+export function registerEntity<Msg extends Message.Message, R>(
+  entityType: RecipientType.EntityType<Msg>,
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions
 ): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
   return Effect.flatMap(shardingTag, (_) => _.registerEntity(entityType, behavior, options))
@@ -90,9 +90,9 @@ export function registerEntity<Req, R>(
 /**
  * @internal
  */
-export function registerTopic<Req, R>(
-  topicType: RecipientType.TopicType<Req>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+export function registerTopic<Msg extends Message.Message, R>(
+  topicType: RecipientType.TopicType<Msg>,
+  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions
 ): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
   return Effect.flatMap(shardingTag, (_) => _.registerTopic(topicType, behavior, options))
@@ -101,7 +101,7 @@ export function registerTopic<Req, R>(
 /**
  * @internal
  */
-export function messenger<Msg>(
+export function messenger<Msg extends Message.Message>(
   entityType: RecipientType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding.Sharding, never, Messenger<Msg>> {
@@ -111,7 +111,7 @@ export function messenger<Msg>(
 /**
  * @internal
  */
-export function broadcaster<Msg>(
+export function broadcaster<Msg extends Message.Message>(
   topicType: RecipientType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding.Sharding, never, Broadcaster.Broadcaster<Msg>> {
@@ -136,7 +136,7 @@ function make(
   address: PodAddress.PodAddress,
   config: ShardingConfig.ShardingConfig,
   shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress.PodAddress>>,
-  entityManagers: Ref.Ref<HashMap.HashMap<string, EntityManager.EntityManager<unknown>>>,
+  entityManagers: Ref.Ref<HashMap.HashMap<string, EntityManager.EntityManager<any>>>,
   singletons: Synchronized.SynchronizedRef<
     List.List<SingletonEntry>
   >,
@@ -148,7 +148,7 @@ function make(
   serialization: Serialization.Serialization,
   eventsHub: PubSub.PubSub<ShardingRegistrationEvent.ShardingRegistrationEvent>
 ) {
-  function getEntityManagerByEntityTypeName<Req>(
+  function getEntityManagerByEntityTypeName<Msg extends Message.Message>(
     entityType: string
   ) {
     return pipe(
@@ -157,7 +157,7 @@ function make(
       Effect.flatMap((_) =>
         Effect.unified(Option.match(_, {
           onNone: () => Effect.fail(ShardingError.ShardingErrorEntityTypeNotRegistered(entityType, address)),
-          onSome: (entityManager) => Effect.succeed(entityManager as EntityManager.EntityManager<Req>)
+          onSome: (entityManager) => Effect.succeed(entityManager as EntityManager.EntityManager<Msg>)
         }))
       )
     )
@@ -174,11 +174,11 @@ function make(
     if (!MessageState.isMessageStateDone(state)) {
       return Effect.succeed(state)
     }
-    if (!Message.isMessage(request)) {
+    if (!Message.isMessageWithResult(request)) {
       return Effect.die(NotAMessageWithReplierDefect(request))
     }
     return pipe(
-      serialization.encode(request[Message.MessageTypeId].schema, state.response),
+      serialization.encode(Message.successSchema(request), state.response),
       Effect.map(MessageState.MessageStateDone)
     )
   }
@@ -190,12 +190,12 @@ function make(
     if (!MessageState.isMessageStateDone(state)) {
       return Effect.succeed(state)
     }
-    if (!Message.isMessage(request)) {
+    if (!Message.isMessageWithResult(request)) {
       return Effect.die(NotAMessageWithReplierDefect(request))
     }
     return pipe(
       serialization.decode(
-        request[Message.MessageTypeId].schema as Schema.Schema<unknown, Message.Success<Req>>,
+        Message.successSchema(request) as Schema.Schema<unknown, Message.Success<Req>>,
         state.response
       ),
       Effect.map(MessageState.MessageStateDone)
@@ -469,7 +469,7 @@ function make(
       : sendMessageToRemotePodWithoutRetries(pod, envelope)
   }
 
-  function sendToPodWithoutRetries<Msg>(
+  function sendToPodWithoutRetries<Msg extends Message.Message>(
     recipientType: RecipientType.RecipientType<Msg>,
     entityId: string,
     msg: Msg,
@@ -507,7 +507,7 @@ function make(
     }
   }
 
-  function messenger<Msg>(
+  function messenger<Msg extends Message.Message>(
     entityType: RecipientType.EntityType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Messenger<Msg> {
@@ -529,7 +529,7 @@ function make(
     }
 
     function send(entityId: string) {
-      return <A extends Msg & Message.Message<any>>(msg: A) => {
+      return <A extends Msg & Message.MessageWithResult<any>>(msg: A) => {
         return pipe(
           sendMessage(entityId, msg),
           Effect.flatMap((state) => {
@@ -578,7 +578,7 @@ function make(
     return { sendDiscard, send }
   }
 
-  function broadcaster<Msg>(
+  function broadcaster<Msg extends Message.Message>(
     topicType: RecipientType.TopicType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Broadcaster.Broadcaster<Msg> {
@@ -645,7 +645,7 @@ function make(
     }
 
     function broadcast(topic: string) {
-      return <A extends Msg & Message.Message<any>>(msg: A) => {
+      return <A extends Msg & Message.MessageWithResult<any>>(msg: A) => {
         return pipe(
           sendMessage(topic, msg),
           Effect.flatMap((results) =>
@@ -676,9 +676,9 @@ function make(
     return { broadcast, broadcastDiscard }
   }
 
-  function registerEntity<R, Req>(
-    entityType: RecipientType.EntityType<Req>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  function registerEntity<Msg extends Message.Message, R>(
+    entityType: RecipientType.EntityType<Msg>,
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
     return pipe(
@@ -688,9 +688,9 @@ function make(
     )
   }
 
-  function registerTopic<R, Req>(
-    topicType: RecipientType.TopicType<Req>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  function registerTopic<Msg extends Message.Message, R>(
+    topicType: RecipientType.TopicType<Msg>,
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
     return pipe(
@@ -706,9 +706,9 @@ function make(
     ShardingRegistrationEvent.ShardingRegistrationEvent
   > = Stream.fromPubSub(eventsHub)
 
-  function registerRecipient<R, Req>(
-    recipientType: RecipientType.RecipientType<Req>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Req>,
+  function registerRecipient<Msg extends Message.Message, R>(
+    recipientType: RecipientType.RecipientType<Msg>,
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) {
     return Effect.gen(function*($) {
@@ -764,7 +764,7 @@ export const live = Layer.scoped(
     const storage = yield* _(Storage.Storage)
     const serialization = yield* _(Serialization.Serialization)
     const shardsCache = yield* _(Ref.make(HashMap.empty<ShardId.ShardId, PodAddress.PodAddress>()))
-    const entityManagers = yield* _(Ref.make(HashMap.empty<string, EntityManager.EntityManager<unknown>>()))
+    const entityManagers = yield* _(Ref.make(HashMap.empty<string, EntityManager.EntityManager<any>>()))
     const shuttingDown = yield* _(Ref.make(false))
     const eventsHub = yield* _(PubSub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>())
     const singletons = yield* _(Synchronized.make<List.List<SingletonEntry>>(List.nil()))

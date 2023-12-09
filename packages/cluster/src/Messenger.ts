@@ -24,7 +24,7 @@ export interface Messenger<Msg> {
    */
   send(
     entityId: string
-  ): <A extends Msg & Message.Message<any>>(
+  ): <A extends Msg & Message.MessageWithResult<any>>(
     msg: A
   ) => Effect.Effect<never, ShardingError.ShardingError, Message.Success<A>>
 }

@@ -16,11 +16,6 @@ export * as Message from "./Message.js"
 /**
  * @since 1.0.0
  */
-export * as MessageHeader from "./MessageHeader.js"
-
-/**
- * @since 1.0.0
- */
 export * as MessageId from "./MessageId.js"
 
 /**

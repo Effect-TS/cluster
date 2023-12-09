@@ -2,23 +2,19 @@
  * @since 1.0.0
  */
 import type * as Schema from "@effect/schema/Schema"
+import type * as Serializable from "@effect/schema/Serializable"
 import type * as Effect from "effect/Effect"
+import type * as PrimaryKey from "effect/PrimaryKey"
 import type * as Types from "effect/Types"
 import * as internal from "./internal/message.js"
-import type * as MessageHeader from "./MessageHeader.js"
 import type * as MessageId from "./MessageId.js"
 
 /**
  * @since 1.0.0
- * @category symbols
+ * @category models
  */
-export const MessageTypeId: unique symbol = internal.MessageTypeId
-
-/**
- * @since 1.0.0
- * @category symbols
- */
-export type MessageTypeId = typeof MessageTypeId
+export interface Message extends PrimaryKey.PrimaryKey {
+}
 
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`
@@ -26,17 +22,8 @@ export type MessageTypeId = typeof MessageTypeId
  * @since 1.0.0
  * @category models
  */
-export interface Message<A> {
-  readonly [MessageTypeId]: MessageHeader.MessageHeader<A>
+export interface MessageWithResult<A> extends Message, Serializable.WithResult<unknown, never, unknown, A> {
 }
-
-/**
- * A message with an unknown type of reply
- *
- * @since 1.0.0
- * @category models
- */
-export type AnyMessage = Message<any>
 
 /**
  * A `MessageSchema<From, To, A>` is an augmented schema that provides utilities to build the Message<A> with a valid replier.
@@ -44,9 +31,9 @@ export type AnyMessage = Message<any>
  * @since 1.0.0
  * @category models
  */
-export interface MessageSchema<From, To, A> extends Schema.Schema<From, Types.Simplify<To & Message<A>>> {
-  make: (message: To, messageId: MessageId.MessageId) => Types.Simplify<To & Message<A>>
-  makeEffect: (message: To) => Effect.Effect<never, never, Types.Simplify<To & Message<A>>>
+export interface MessageSchema<From, To, A> extends Schema.Schema<From, Types.Simplify<To & MessageWithResult<A>>> {
+  make: (message: To, messageId: MessageId.MessageId) => Types.Simplify<To & MessageWithResult<A>>
+  makeEffect: (message: To) => Effect.Effect<never, never, Types.Simplify<To & MessageWithResult<A>>>
 }
 
 /**
@@ -55,13 +42,31 @@ export interface MessageSchema<From, To, A> extends Schema.Schema<From, Types.Si
  * @since 1.0.0
  * @category utils
  */
-export type Success<A> = A extends Message<infer X> ? X : never
+export type Success<A> = A extends MessageWithResult<infer X> ? X : never
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const isMessage: <R>(value: unknown) => value is Message<R> = internal.isMessage
+export const isMessageWithResult: <R>(value: unknown) => value is MessageWithResult<R> = internal.isMessageWithResult
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export const isMessage: (value: unknown) => value is Message = internal.isMessage
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export const messageId: (value: Message) => MessageId.MessageId = internal.messageId
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export const successSchema: <A>(message: MessageWithResult<A>) => Schema.Schema<unknown, A> = internal.successSchema
 
 /**
  * Creates both the schema and a constructor for a `Message<A>`
@@ -69,6 +74,7 @@ export const isMessage: <R>(value: unknown) => value is Message<R> = internal.is
  * @since 1.0.0
  * @category schema
  */
-export const schema: <RI, RA>(
+export const schemaWithResult: <RI, RA>(
   replySchema: Schema.Schema<RI, RA>
-) => <I extends object, A extends object>(item: Schema.Schema<I, A>) => MessageSchema<I, A, RA> = internal.schema
+) => <I extends object, A extends object>(item: Schema.Schema<I, A>) => MessageSchema<I, A, RA> =
+  internal.schemaWithResult

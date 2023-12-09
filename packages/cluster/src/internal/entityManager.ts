@@ -32,7 +32,7 @@ export const EntityManagerTypeId = Symbol.for(
 export type EntityManagerTypeId = typeof EntityManagerTypeId
 
 /** @internal */
-export interface EntityManager<Msg> {
+export interface EntityManager<Msg extends Message.Message> {
   readonly [EntityManagerTypeId]: EntityManagerTypeId
 
   /** @internal */
@@ -60,9 +60,9 @@ export interface EntityManager<Msg> {
 }
 
 /** @internal */
-export function make<R, Req>(
-  recipientType: RecipientType.RecipientType<Req>,
-  behaviour_: RecipientBehaviour.RecipientBehaviour<R, Req>,
+export function make<Msg extends Message.Message, R>(
+  recipientType: RecipientType.RecipientType<Msg>,
+  behaviour_: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   options: RecipientBehaviour.EntityBehaviourOptions = {}
@@ -74,7 +74,7 @@ export function make<R, Req>(
       RefSynchronized.make<
         HashMap.HashMap<
           string,
-          EntityState.EntityState<Req>
+          EntityState.EntityState<Msg>
         >
       >(HashMap.empty())
     )
@@ -188,7 +188,7 @@ export function make<R, Req>(
     ): Effect.Effect<
       never,
       ShardingError.ShardingErrorEntityNotManagedByThisPod,
-      Option.Option<EntityState.EntityState<Req>>
+      Option.Option<EntityState.EntityState<Msg>>
     > {
       return RefSynchronized.modifyEffect(entityStates, (map) =>
         pipe(
@@ -261,7 +261,7 @@ export function make<R, Req>(
         ))
     }
 
-    function sendAndGetState<A extends Req>(
+    function sendAndGetState<A extends Msg>(
       entityId: string,
       req: A
     ): Effect.Effect<
@@ -365,7 +365,7 @@ export function make<R, Req>(
       )
     }
 
-    const self: EntityManager<Req> = {
+    const self: EntityManager<Msg> = {
       [EntityManagerTypeId]: EntityManagerTypeId,
       recipientType,
       sendAndGetState,

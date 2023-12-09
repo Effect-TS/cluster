@@ -1,29 +1,42 @@
 import * as Schema from "@effect/schema/Schema"
+import * as Serializable from "@effect/schema/Serializable"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
+import * as PrimaryKey from "effect/PrimaryKey"
 import type * as Message from "../Message.js"
-import * as MessageHeader from "../MessageHeader.js"
 import * as MessageId from "../MessageId.js"
 
-/** @intenal */
-const MessageSymbolKey = "@effect/cluster/Message"
-
 /** @internal */
-export const MessageTypeId: Message.MessageTypeId = Symbol.for(MessageSymbolKey) as Message.MessageTypeId
-
-/** @internal */
-export function isMessage<R>(value: unknown): value is Message.Message<R> {
+export function isMessage(value: unknown): value is Message.Message {
   return (
     typeof value === "object" &&
     value !== null &&
-    MessageTypeId in value &&
-    MessageHeader.isMessageHeader(value[MessageTypeId])
+    PrimaryKey.symbol in value
   )
 }
 
 /** @internal */
-export function schema<RI, RA>(replySchema: Schema.Schema<RI, RA>) {
+export function messageId(value: Message.Message): MessageId.MessageId {
+  return MessageId.make(PrimaryKey.value(value))
+}
+
+/** @internal */
+export function isMessageWithResult<R>(value: unknown): value is Message.MessageWithResult<R> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Serializable.symbolResult in value
+  )
+}
+
+/** @internal */
+export function successSchema<A>(message: Message.MessageWithResult<A>): Schema.Schema<unknown, A> {
+  return Serializable.successSchema(message)
+}
+
+/** @internal */
+export function schemaWithResult<RI, RA>(replySchema: Schema.Schema<RI, RA>) {
   return function<I extends object, A extends object>(
     item: Schema.Schema<I, A>
   ): Message.MessageSchema<I, A, RA> {
@@ -36,10 +49,10 @@ export function schema<RI, RA>(replySchema: Schema.Schema<RI, RA>) {
       )
     )
 
-    const make = (arg: A, messageId: MessageId.MessageId): A & Message.Message<RA> =>
-      Data.struct({ ...arg, [MessageTypeId]: MessageHeader.make(messageId, replySchema) })
+    const make = (arg: A, messageId: MessageId.MessageId): A & Message.MessageWithResult<RA> =>
+      Data.struct({ ...arg, [PrimaryKey.symbol]: () => messageId.value })
 
-    const makeEffect = (arg: A): Effect.Effect<never, never, A & Message.Message<RA>> =>
+    const makeEffect = (arg: A): Effect.Effect<never, never, A & Message.MessageWithResult<RA>> =>
       pipe(
         MessageId.makeEffect,
         Effect.map((messageId) => make(arg, messageId))

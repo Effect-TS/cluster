@@ -26,7 +26,7 @@ export interface Broadcaster<Msg> {
    */
   readonly broadcast: (
     topic: string
-  ) => <A extends Msg & Message.Message<any>>(
+  ) => <A extends Msg & Message.MessageWithResult<any>>(
     msg: A
   ) => Effect.Effect<
     never,
