@@ -3,8 +3,8 @@ import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Queue from "effect/Queue"
+import type * as ReplyId from "../MessageId.js"
 import type * as PoisonPill from "../PoisonPill.js"
-import type * as ReplyId from "../ReplyId.js"
 
 /** @internal */
 const PoisonPillSymbolKey = "@effect/cluster/PoisonPill"

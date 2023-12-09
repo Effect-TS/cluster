@@ -1,5 +1,5 @@
 import type * as Effect from "effect/Effect"
-import type * as ReplyId from "./ReplyId.js"
+import type * as ReplyId from "./MessageId.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
 
 export interface ReplyStorage {

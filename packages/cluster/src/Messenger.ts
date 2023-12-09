@@ -3,7 +3,7 @@
  */
 import type * as Effect from "effect/Effect"
 import type * as Message from "./Message.js"
-import type * as ReplyId from "./ReplyId.js"
+import type * as ReplyId from "./MessageId.js"
 import type * as ShardingError from "./ShardingError.js"
 
 /**

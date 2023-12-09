@@ -6,7 +6,7 @@ import type * as Data from "effect/Data"
 import type * as Effect from "effect/Effect"
 import type * as Queue from "effect/Queue"
 import * as internal from "./internal/poisonPill.js"
-import type * as ReplyId from "./ReplyId.js"
+import type * as ReplyId from "./MessageId.js"
 
 /**
  * @since 1.0.0

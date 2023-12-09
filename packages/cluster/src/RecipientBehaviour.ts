@@ -11,7 +11,7 @@ import * as internal from "./internal/recipientBehaviour.js"
 import type * as Message from "./Message.js"
 import type * as PoisonPill from "./PoisonPill.js"
 import type * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
-import type * as ReplyId from "./ReplyId.js"
+import type * as ReplyId from "./MessageId.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
 import type * as ShardingError from "./ShardingError.js"
 

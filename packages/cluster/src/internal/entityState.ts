@@ -4,7 +4,7 @@ import type * as Fiber from "effect/Fiber"
 import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 import type * as Message from "../Message.js"
-import type * as ReplyId from "../ReplyId.js"
+import type * as ReplyId from "../MessageId.js"
 import type * as ShardingError from "../ShardingError.js"
 
 /** @internal */

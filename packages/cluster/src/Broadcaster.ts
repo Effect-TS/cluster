@@ -5,8 +5,8 @@ import type * as Effect from "effect/Effect"
 import type * as Either from "effect/Either"
 import type * as HashMap from "effect/HashMap"
 import type * as Message from "./Message.js"
+import type * as ReplyId from "./MessageId.js"
 import type * as PodAddress from "./PodAddress.js"
-import type * as ReplyId from "./ReplyId.js"
 import type * as ShardingError from "./ShardingError.js"
 
 /**

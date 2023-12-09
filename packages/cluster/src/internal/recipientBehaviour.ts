@@ -2,10 +2,10 @@ import { Deferred } from "effect"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Queue from "effect/Queue"
+import * as ReplyId from "../MessageId.js"
 import * as PoisonPill from "../PoisonPill.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
-import * as ReplyId from "../ReplyId.js"
 import type * as ShardingError from "../ShardingError.js"
 
 /** @internal */

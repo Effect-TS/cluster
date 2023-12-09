@@ -6,8 +6,8 @@ import type * as Schema from "@effect/schema/Schema"
 import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import * as internal from "./internal/recipientBehaviourContext.js"
+import type * as ReplyId from "./MessageId.js"
 import type * as RecipientType from "./RecipientType.js"
-import type * as ReplyId from "./ReplyId.js"
 import type * as ShardingError from "./ShardingError.js"
 
 /**
