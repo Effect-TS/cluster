@@ -1,6 +1,6 @@
 ---
 title: RecipientBehaviourContext.ts
-nav_order: 12
+nav_order: 15
 parent: "@effect/cluster"
 ---
 
@@ -67,7 +67,6 @@ The context where a RecipientBehaviour is running, knows the current entityId, e
 export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
-  readonly reply: (replyId: ReplyId.ReplyId, reply: unknown) => Effect.Effect<never, never, void>
 }
 ```
 

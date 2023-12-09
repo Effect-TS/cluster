@@ -44,7 +44,9 @@ export type EntityBehaviourOptions = {
  * @since 1.0.0
  * @category utils
  */
-export const fromFunctionEffect = internal.fromFunctionEffect
+export const fromFunctionEffect: <R, Msg>(
+  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
+) => RecipientBehaviour<R, Msg> = internal.fromFunctionEffect
 
 /**
  * @since 1.0.0

@@ -16,6 +16,9 @@ Added in v1.0.0
   - [From "./Broadcaster.js"](#from-broadcasterjs)
   - [From "./ManagerConfig.js"](#from-managerconfigjs)
   - [From "./Message.js"](#from-messagejs)
+  - [From "./MessageHeader.js"](#from-messageheaderjs)
+  - [From "./MessageId.js"](#from-messageidjs)
+  - [From "./MessageState.js"](#from-messagestatejs)
   - [From "./Messenger.js"](#from-messengerjs)
   - [From "./Pod.js"](#from-podjs)
   - [From "./PodAddress.js"](#from-podaddressjs)
@@ -25,8 +28,6 @@ Added in v1.0.0
   - [From "./RecipientBehaviour.js"](#from-recipientbehaviourjs)
   - [From "./RecipientBehaviourContext.js"](#from-recipientbehaviourcontextjs)
   - [From "./RecipientType.js"](#from-recipienttypejs)
-  - [From "./Replier.js"](#from-replierjs)
-  - [From "./ReplyId.js"](#from-replyidjs)
   - [From "./Serialization.js"](#from-serializationjs)
   - [From "./SerializedEnvelope.js"](#from-serializedenvelopejs)
   - [From "./SerializedMessage.js"](#from-serializedmessagejs)
@@ -83,6 +84,42 @@ Re-exports all named exports from the "./Message.js" module as `Message`.
 
 ```ts
 export * as Message from "./Message.js"
+```
+
+Added in v1.0.0
+
+## From "./MessageHeader.js"
+
+Re-exports all named exports from the "./MessageHeader.js" module as `MessageHeader`.
+
+**Signature**
+
+```ts
+export * as MessageHeader from "./MessageHeader.js"
+```
+
+Added in v1.0.0
+
+## From "./MessageId.js"
+
+Re-exports all named exports from the "./MessageId.js" module as `MessageId`.
+
+**Signature**
+
+```ts
+export * as MessageId from "./MessageId.js"
+```
+
+Added in v1.0.0
+
+## From "./MessageState.js"
+
+Re-exports all named exports from the "./MessageState.js" module as `MessageState`.
+
+**Signature**
+
+```ts
+export * as MessageState from "./MessageState.js"
 ```
 
 Added in v1.0.0
@@ -192,30 +229,6 @@ Re-exports all named exports from the "./RecipientType.js" module as `RecipientT
 
 ```ts
 export * as RecipientType from "./RecipientType.js"
-```
-
-Added in v1.0.0
-
-## From "./Replier.js"
-
-Re-exports all named exports from the "./Replier.js" module as `Replier`.
-
-**Signature**
-
-```ts
-export * as Replier from "./Replier.js"
-```
-
-Added in v1.0.0
-
-## From "./ReplyId.js"
-
-Re-exports all named exports from the "./ReplyId.js" module as `ReplyId`.
-
-**Signature**
-
-```ts
-export * as ReplyId from "./ReplyId.js"
 ```
 
 Added in v1.0.0
