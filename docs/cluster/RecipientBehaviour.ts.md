@@ -1,6 +1,6 @@
 ---
 title: RecipientBehaviour.ts
-nav_order: 11
+nav_order: 14
 parent: "@effect/cluster"
 ---
 
@@ -18,8 +18,8 @@ Added in v1.0.0
   - [RecipientBehaviour (interface)](#recipientbehaviour-interface)
 - [utils](#utils)
   - [EntityBehaviourOptions (type alias)](#entitybehaviouroptions-type-alias)
+  - [fromFunctionEffect](#fromfunctioneffect)
   - [fromInMemoryQueue](#frominmemoryqueue)
-  - [mapOffer](#mapoffer)
 
 ---
 
@@ -38,7 +38,9 @@ export interface RecipientBehaviour<R, Msg> {
   ): Effect.Effect<
     R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
     never,
-    (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
+    <A extends Msg>(
+      message: A
+    ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, MessageState.MessageState<Message.Success<A>>>
   >
 }
 ```
@@ -61,28 +63,30 @@ export type EntityBehaviourOptions = {
 
 Added in v1.0.0
 
+## fromFunctionEffect
+
+**Signature**
+
+```ts
+export declare const fromFunctionEffect: <R, Msg>(
+  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
+) => RecipientBehaviour<R, Msg>
+```
+
+Added in v1.0.0
+
 ## fromInMemoryQueue
 
 **Signature**
 
 ```ts
 export declare const fromInMemoryQueue: <R, Msg>(
-  handler: (entityId: string, dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
+  handler: (
+    entityId: string,
+    dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
+    reply: <A extends Msg>(msg: A, value: Message.Success<A>) => Effect.Effect<never, never, void>
+  ) => Effect.Effect<R, never, void>
 ) => RecipientBehaviour<R, Msg>
-```
-
-Added in v1.0.0
-
-## mapOffer
-
-**Signature**
-
-```ts
-export declare const mapOffer: <Msg1, Msg>(
-  f: (
-    offer: (message: Msg1) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
-  ) => (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
-) => <R>(base: RecipientBehaviour<R, Msg1>) => RecipientBehaviour<R, Msg>
 ```
 
 Added in v1.0.0

@@ -1,4 +1,3 @@
-import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
@@ -11,16 +10,15 @@ import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
 import * as RefSynchronized from "effect/SynchronizedRef"
 import type * as Message from "../Message.js"
+import type * as MessageState from "../MessageState.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import type * as RecipientType from "../RecipientType.js"
-import type * as ReplyId from "../ReplyId.js"
 import type * as ShardId from "../ShardId.js"
 import type * as Sharding from "../Sharding.js"
 import type * as ShardingConfig from "../ShardingConfig.js"
 import * as ShardingError from "../ShardingError.js"
 import * as EntityState from "./entityState.js"
-import * as ReplyChannel from "./replyChannel.js"
 
 /** @internal */
 const EntityManagerSymbolKey = "@effect/cluster/EntityManager"
@@ -34,25 +32,22 @@ export const EntityManagerTypeId = Symbol.for(
 export type EntityManagerTypeId = typeof EntityManagerTypeId
 
 /** @internal */
-export interface EntityManager<Req> {
+export interface EntityManager<Msg> {
   readonly [EntityManagerTypeId]: EntityManagerTypeId
 
   /** @internal */
-  readonly recipientType: RecipientType.RecipientType<Req>
+  readonly recipientType: RecipientType.RecipientType<Msg>
 
   /** @internal */
-  readonly send: <A extends Req>(
+  readonly sendAndGetState: <A extends Msg>(
     entityId: string,
-    req: A,
-    replyId: Option.Option<ReplyId.ReplyId>
+    req: A
   ) => Effect.Effect<
     never,
     | ShardingError.ShardingErrorEntityNotManagedByThisPod
     | ShardingError.ShardingErrorPodUnavailable
     | ShardingError.ShardingErrorMessageQueue,
-    Option.Option<
-      Message.Success<A>
-    >
+    MessageState.MessageState<Message.Success<A>>
   >
 
   /** @internal */
@@ -84,43 +79,6 @@ export function make<R, Req>(
       >(HashMap.empty())
     )
 
-    function initReply(
-      id: ReplyId.ReplyId,
-      replyChannel: ReplyChannel.ReplyChannel<any>,
-      replyChannels: EntityState.EntityState<Req>["replyChannels"]
-    ): Effect.Effect<never, never, void> {
-      return pipe(
-        replyChannels,
-        RefSynchronized.update(HashMap.set(id, replyChannel)),
-        Effect.zipLeft(
-          pipe(
-            replyChannel.await,
-            Effect.ensuring(RefSynchronized.update(replyChannels, HashMap.remove(id))),
-            Effect.fork
-          )
-        )
-      )
-    }
-
-    function sendReply<Reply>(
-      replyId: ReplyId.ReplyId,
-      reply: Reply,
-      replyChannels: EntityState.EntityState<Req>["replyChannels"]
-    ): Effect.Effect<never, never, void> {
-      return RefSynchronized.updateEffect(replyChannels, (repliers) =>
-        pipe(
-          Effect.suspend(() => {
-            const replyChannel = HashMap.get(repliers, replyId)
-
-            if (Option.isSome(replyChannel)) {
-              return (replyChannel.value as ReplyChannel.ReplyChannel<Reply>).reply(reply)
-            }
-            return Effect.unit
-          }),
-          Effect.as(pipe(repliers, HashMap.remove(replyId)))
-        ))
-    }
-
     function startExpirationFiber(entityId: string) {
       const maxIdleMillis = pipe(
         entityMaxIdle,
@@ -147,9 +105,6 @@ export function make<R, Req>(
 
       return pipe(
         sleep(maxIdleMillis),
-        Effect.zipLeft(
-          Effect.logDebug("Entity did not receive new messages, termination starting....")
-        ),
         Effect.zipRight(forkEntityTermination(entityId)),
         Effect.asUnit,
         Effect.interruptible,
@@ -175,29 +130,15 @@ export function make<R, Req>(
           // found it!
           onSome: (entityState) =>
             pipe(
-              Effect.logDebug("Termination started..."),
               // interrupt the expiration timer
-              Effect.ensuring(Fiber.interrupt(entityState.expirationFiber)),
+              Fiber.interrupt(entityState.expirationFiber),
               // close the scope of the entity,
-              Effect.zipRight(Effect.logDebug("Closing scope...")),
               Effect.ensuring(Scope.close(entityState.executionScope, Exit.unit)),
-              Effect.zipRight(Effect.logDebug("Closing replyChannels...")),
-              // fail all pending reply channels with PodUnavailable
-              Effect.ensuring(pipe(
-                RefSynchronized.get(entityState.replyChannels),
-                Effect.flatMap(Effect.forEach(([_, replyChannels]) =>
-                  replyChannels.fail(
-                    Cause.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
-                  )
-                ))
-              )),
               // remove the entry from the map
-              Effect.zipRight(Effect.logDebug("Removing entityState from map...")),
               Effect.ensuring(RefSynchronized.update(entityStates, HashMap.remove(entityId))),
               // log error if happens
               Effect.catchAllCause(Effect.logError),
               Effect.asUnit,
-              Effect.zipRight(Effect.logDebug("Terminated.")),
               Effect.annotateLogs("entityId", entityId),
               Effect.annotateLogs("recipientType", recipientType.name)
             )
@@ -284,28 +225,23 @@ export function make<R, Req>(
                     const executionScope = yield* _(Scope.make())
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const cdt = yield* _(Clock.currentTimeMillis)
-                    const replyChannels = yield* _(
-                      RefSynchronized.make(HashMap.empty<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>())
-                    )
 
-                    const offer = yield* _(pipe(
+                    const sendAndGetState = yield* _(pipe(
                       behaviour_(entityId),
                       Scope.extend(executionScope),
                       Effect.provideService(
                         RecipientBehaviourContext.RecipientBehaviourContext,
                         RecipientBehaviourContext.make({
-                          entityId,
-                          reply: (replyId, reply) => sendReply(replyId, reply, replyChannels)
+                          entityId
                         })
                       ),
                       Effect.provide(env)
                     ))
 
                     const entityState = EntityState.make({
-                      offer,
+                      sendAndGetState: sendAndGetState as any, // TODO
                       expirationFiber,
                       executionScope,
-                      replyChannels,
                       terminationFiber: Option.none(),
                       lastReceivedAt: cdt
                     })
@@ -325,18 +261,15 @@ export function make<R, Req>(
         ))
     }
 
-    function send<A extends Req>(
+    function sendAndGetState<A extends Req>(
       entityId: string,
-      req: A,
-      replyId: Option.Option<ReplyId.ReplyId>
+      req: A
     ): Effect.Effect<
       never,
       | ShardingError.ShardingErrorEntityNotManagedByThisPod
       | ShardingError.ShardingErrorPodUnavailable
       | ShardingError.ShardingErrorMessageQueue,
-      Option.Option<
-        Message.Success<A>
-      >
+      MessageState.MessageState<Message.Success<A>>
     > {
       return pipe(
         Effect.Do,
@@ -360,26 +293,10 @@ export function make<R, Req>(
               onNone: () =>
                 pipe(
                   Effect.sleep(Duration.millis(100)),
-                  Effect.flatMap(() => send(entityId, req, replyId))
+                  Effect.flatMap(() => sendAndGetState(entityId, req))
                 ),
               onSome: (entityState) => {
-                return pipe(
-                  replyId,
-                  Option.match({
-                    onNone: () =>
-                      pipe(
-                        entityState.offer(req),
-                        Effect.as(Option.none())
-                      ),
-                    onSome: (replyId_) =>
-                      pipe(
-                        ReplyChannel.make<Message.Success<A>>(),
-                        Effect.tap((replyChannel) => initReply(replyId_, replyChannel, entityState.replyChannels)),
-                        Effect.zipLeft(entityState.offer(req)),
-                        Effect.flatMap((_) => _.output)
-                      )
-                  })
-                )
+                return entityState.sendAndGetState(req)
               }
             })
           )
@@ -451,7 +368,7 @@ export function make<R, Req>(
     const self: EntityManager<Req> = {
       [EntityManagerTypeId]: EntityManagerTypeId,
       recipientType,
-      send,
+      sendAndGetState,
       terminateAllEntities,
       terminateEntitiesOnShards
     }

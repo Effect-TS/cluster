@@ -1,6 +1,6 @@
 ---
 title: Pods.ts
-nav_order: 8
+nav_order: 11
 parent: "@effect/cluster"
 ---
 
@@ -104,13 +104,13 @@ export interface Pods {
   readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, ShardingError.ShardingErrorPodUnavailable, void>
 
   /**
-   * Send a message to a pod and receive a reply
+   * Send a message to a pod and receive its message state
    * @since 1.0.0
    */
-  readonly sendMessage: (
+  readonly sendAndGetState: (
     pod: PodAddress.PodAddress,
     envelope: SerializedEnvelope.SerializedEnvelope
-  ) => Effect.Effect<never, ShardingError.ShardingError, Option.Option<SerializedMessage.SerializedMessage>>
+  ) => Effect.Effect<never, ShardingError.ShardingError, MessageState.MessageState<SerializedMessage.SerializedMessage>>
 }
 ```
 

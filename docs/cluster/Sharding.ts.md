@@ -1,6 +1,6 @@
 ---
 title: Sharding.ts
-nav_order: 20
+nav_order: 21
 parent: "@effect/cluster"
 ---
 
@@ -99,7 +99,7 @@ export interface Sharding {
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly sendMessageToLocalEntityManagerWithoutRetries: (
     msg: SerializedEnvelope.SerializedEnvelope
-  ) => Effect.Effect<never, ShardingError.ShardingError, Option.Option<SerializedMessage.SerializedMessage>>
+  ) => Effect.Effect<never, ShardingError.ShardingError, MessageState.MessageState<SerializedMessage.SerializedMessage>>
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
 }
 ```

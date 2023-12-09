@@ -1,7 +1,5 @@
 import * as Schema from "@effect/schema/Schema"
-import type { Option } from "effect"
 import * as Data from "effect/Data"
-import * as ReplyId from "../ReplyId.js"
 import type * as SerializedEnvelope from "../SerializedEnvelope.js"
 import * as SerializedMessage from "../SerializedMessage.js"
 
@@ -17,10 +15,9 @@ export const SerializedEnvelopeTypeId: SerializedEnvelope.SerializedEnvelopeType
 export function make(
   entityType: string,
   entityId: string,
-  body: SerializedMessage.SerializedMessage,
-  replyId: Option.Option<ReplyId.ReplyId>
+  body: SerializedMessage.SerializedMessage
 ): SerializedEnvelope.SerializedEnvelope {
-  return Data.struct({ [SerializedEnvelopeTypeId]: SerializedEnvelopeTypeId, entityType, entityId, body, replyId })
+  return Data.struct({ [SerializedEnvelopeTypeId]: SerializedEnvelopeTypeId, entityType, entityId, body })
 }
 
 /** @internal */
@@ -36,17 +33,13 @@ export function isSerializedEnvelope(value: unknown): value is SerializedEnvelop
 /** @internal */
 export const schema: Schema.Schema<
   {
+    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
     readonly entityId: string
     readonly entityType: string
     readonly body: {
       readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
       readonly value: string
     }
-    readonly replyId: { readonly _tag: "None" } | {
-      readonly _tag: "Some"
-      readonly value: { readonly "@effect/cluster/ReplyId": "@effect/cluster/ReplyId"; readonly value: string }
-    }
-    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
   },
   SerializedEnvelope.SerializedEnvelope
 > = Schema.data(
@@ -58,8 +51,7 @@ export const schema: Schema.Schema<
       ),
       entityId: Schema.string,
       entityType: Schema.string,
-      body: SerializedMessage.schema,
-      replyId: Schema.option(ReplyId.schema)
+      body: SerializedMessage.schema
     }),
     { [SerializedEnvelopeSymbolKey]: SerializedEnvelopeTypeId }
   )

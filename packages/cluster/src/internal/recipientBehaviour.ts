@@ -1,59 +1,95 @@
 import { Deferred } from "effect"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
+import * as HashMap from "effect/HashMap"
+import * as Option from "effect/Option"
 import * as Queue from "effect/Queue"
+import * as Ref from "effect/Ref"
+import * as Message from "../Message.js"
+import type * as MessageId from "../MessageId.js"
+import * as MessageState from "../MessageState.js"
 import * as PoisonPill from "../PoisonPill.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
-import type * as ShardingError from "../ShardingError.js"
 
-/** @internal */
-export function fromInMemoryQueue<R, Msg>(
-  handler: (entityId: string, dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>) => Effect.Effect<R, never, void>
+/** @internal  */
+export function fromFunctionEffect<R, Msg>(
+  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return (entityId) =>
     pipe(
-      Deferred.make<never, boolean>(),
-      Effect.flatMap((shutdownCompleted) =>
-        pipe(
-          Effect.acquireRelease(
-            Queue.unbounded<Msg | PoisonPill.PoisonPill>(),
-            (queue) =>
-              pipe(
-                Queue.offer(queue, PoisonPill.make),
-                Effect.zipRight(
-                  Effect.logDebug("PoisonPill sent. Waiting for exit of behaviour...")
-                ),
-                Effect.zipLeft(Deferred.await(shutdownCompleted)),
-                Effect.uninterruptible
-              )
-          ),
-          Effect.tap((queue) =>
-            pipe(
-              Effect.logDebug("Behaviour started."),
-              Effect.zipRight(handler(entityId, queue)),
-              Effect.ensuring(Deferred.succeed(shutdownCompleted, true)),
-              Effect.zipRight(Effect.logDebug("Behaviour exited.")),
-              Effect.annotateLogs("entityId", entityId),
-              Effect.forkDaemon
-            )
-          ),
-          Effect.map((queue) => (message: Msg) => Queue.offer(queue, message)),
-          Effect.annotateLogs("entityId", entityId)
-        )
-      )
+      Effect.context<R>(),
+      Effect.map((context) => (message: Msg) => pipe(handler(entityId, message), Effect.provide(context)))
     )
 }
 
 /** @internal */
-export function mapOffer<Msg1, Msg>(
-  f: (
-    offer: (message: Msg1) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
-  ) => (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
-) {
-  return <R>(base: RecipientBehaviour.RecipientBehaviour<R, Msg1>): RecipientBehaviour.RecipientBehaviour<R, Msg> =>
-  (entityId) =>
-    pipe(
-      base(entityId),
-      Effect.map((offer) => f(offer))
-    )
+export function fromInMemoryQueue<R, Msg>(
+  handler: (
+    entityId: string,
+    dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
+    reply: <A extends Msg>(msg: A, value: Message.Success<A>) => Effect.Effect<never, never, void>
+  ) => Effect.Effect<R, never, void>
+): RecipientBehaviour.RecipientBehaviour<R, Msg> {
+  return (entityId) =>
+    Effect.gen(function*(_) {
+      const messageStates = yield* _(Ref.make(HashMap.empty<MessageId.MessageId, MessageState.MessageState<any>>()))
+
+      function updateMessageState(message: Msg, state: MessageState.MessageState<any>) {
+        if (!Message.isMessage(message)) return Effect.succeed(state)
+        return pipe(Ref.update(messageStates, HashMap.set(message[Message.MessageTypeId].id, state)), Effect.as(state))
+      }
+
+      function getMessageState(message: Msg) {
+        if (!Message.isMessage(message)) return Effect.succeed(Option.none())
+        return pipe(
+          Ref.get(messageStates),
+          Effect.map(HashMap.get(message[Message.MessageTypeId].id))
+        )
+      }
+
+      function reply<A extends Msg>(message: A, reply: Message.Success<A>) {
+        return updateMessageState(message, MessageState.MessageStateDone(reply))
+      }
+
+      return yield* _(pipe(
+        Deferred.make<never, boolean>(),
+        Effect.flatMap((shutdownCompleted) =>
+          pipe(
+            Effect.acquireRelease(
+              Queue.unbounded<Msg | PoisonPill.PoisonPill>(),
+              (queue) =>
+                pipe(
+                  Queue.offer(queue, PoisonPill.make),
+                  Effect.zipLeft(Deferred.await(shutdownCompleted)),
+                  Effect.uninterruptible
+                )
+            ),
+            Effect.tap((queue) =>
+              pipe(
+                Effect.logDebug("Behaviour started."),
+                Effect.zipRight(handler(entityId, queue, reply)),
+                Effect.ensuring(Deferred.succeed(shutdownCompleted, true)),
+                Effect.zipRight(Effect.logDebug("Behaviour exited.")),
+                Effect.annotateLogs("entityId", entityId),
+                Effect.forkDaemon
+              )
+            ),
+            Effect.map((queue) => (message: Msg) => {
+              return pipe(
+                getMessageState(message),
+                Effect.flatMap(Option.match({
+                  onNone: () =>
+                    pipe(
+                      Queue.offer(queue, message),
+                      Effect.zipRight(updateMessageState(message, MessageState.MessageStateAcknowledged))
+                    ),
+                  onSome: (state) => Effect.succeed(state)
+                }))
+              )
+            }),
+            Effect.annotateLogs("entityId", entityId)
+          )
+        )
+      ))
+    })
 }

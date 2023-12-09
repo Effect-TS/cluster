@@ -1,6 +1,6 @@
 ---
 title: SerializedEnvelope.ts
-nav_order: 17
+nav_order: 18
 parent: "@effect/cluster"
 ---
 
@@ -38,8 +38,7 @@ Construct a new `SerializedEnvelope`
 export declare const make: (
   entityType: string,
   entityId: string,
-  body: SerializedMessage.SerializedMessage,
-  replyId: Option.Option<ReplyId.ReplyId>
+  body: SerializedMessage.SerializedMessage
 ) => SerializedEnvelope
 ```
 
@@ -58,7 +57,6 @@ export interface SerializedEnvelope
     readonly entityId: string
     readonly entityType: string
     readonly body: SerializedMessage.SerializedMessage
-    readonly replyId: Option.Option<ReplyId.ReplyId>
   }> {}
 ```
 
@@ -75,19 +73,13 @@ This is the schema for a value.
 ```ts
 export declare const schema: Schema.Schema<
   {
+    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
     readonly entityId: string
     readonly entityType: string
     readonly body: {
       readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
       readonly value: string
     }
-    readonly replyId:
-      | { readonly _tag: "None" }
-      | {
-          readonly _tag: "Some"
-          readonly value: { readonly "@effect/cluster/ReplyId": "@effect/cluster/ReplyId"; readonly value: string }
-        }
-    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
   },
   SerializedEnvelope
 >

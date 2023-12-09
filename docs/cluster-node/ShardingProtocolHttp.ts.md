@@ -52,14 +52,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const SendResult_: Schema.Schema<
-  | { readonly _tag: "Left"; readonly left: unknown }
-  | {
-      readonly _tag: "Right"
-      readonly right: { readonly _tag: "None" } | { readonly _tag: "Some"; readonly value: unknown }
-    },
-  Either<unknown, Option<unknown>>
->
+export declare const SendResult_: Schema.Schema<Schema.EitherFrom<unknown, unknown>, Either<unknown, unknown>>
 ```
 
 Added in v1.0.0

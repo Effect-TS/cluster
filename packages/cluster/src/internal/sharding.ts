@@ -20,13 +20,13 @@ import * as Stream from "effect/Stream"
 import * as Synchronized from "effect/SynchronizedRef"
 import type * as Broadcaster from "../Broadcaster.js"
 import * as Message from "../Message.js"
+import * as MessageState from "../MessageState.js"
 import type { Messenger } from "../Messenger.js"
 import * as PodAddress from "../PodAddress.js"
 import * as Pods from "../Pods.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import type * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import * as RecipientType from "../RecipientType.js"
-import type * as ReplyId from "../ReplyId.js"
 import * as Serialization from "../Serialization.js"
 import * as SerializedEnvelope from "../SerializedEnvelope.js"
 import type * as SerializedMessage from "../SerializedMessage.js"
@@ -38,7 +38,7 @@ import * as ShardingRegistrationEvent from "../ShardingRegistrationEvent.js"
 import * as ShardManagerClient from "../ShardManagerClient.js"
 import * as Storage from "../Storage.js"
 import * as EntityManager from "./entityManager.js"
-import { MessageReturnedNotingDefect, NotAMessageWithReplierDefect, showHashSet } from "./utils.js"
+import { NotAMessageWithReplierDefect, showHashSet } from "./utils.js"
 
 /**
  * @internal
@@ -163,42 +163,42 @@ function make(
     )
   }
 
-  function encodeReply<Req>(
+  function encodeMessageState<Req>(
     request: Req,
-    reply: Option.Option<Message.Success<Req>>
+    state: MessageState.MessageState<Message.Success<Req>>
   ): Effect.Effect<
     never,
     ShardingError.ShardingErrorSerialization,
-    Option.Option<SerializedMessage.SerializedMessage>
+    MessageState.MessageState<SerializedMessage.SerializedMessage>
   > {
-    if (Option.isNone(reply)) {
-      return Effect.succeed(Option.none())
+    if (!MessageState.isMessageStateDone(state)) {
+      return Effect.succeed(state)
     }
     if (!Message.isMessage(request)) {
       return Effect.die(NotAMessageWithReplierDefect(request))
     }
     return pipe(
-      serialization.encode(request.replier.schema, reply.value),
-      Effect.map(Option.some)
+      serialization.encode(request[Message.MessageTypeId].schema, state.response),
+      Effect.map(MessageState.MessageStateDone)
     )
   }
 
-  function decodeSerializedReply<Req>(
+  function decodeMessageState<Req>(
     request: Req,
-    body: Option.Option<SerializedMessage.SerializedMessage>
-  ): Effect.Effect<never, ShardingError.ShardingErrorSerialization, Option.Option<Message.Success<Req>>> {
-    if (Option.isNone(body)) {
-      return Effect.succeed(Option.none())
+    state: MessageState.MessageState<SerializedMessage.SerializedMessage>
+  ): Effect.Effect<never, ShardingError.ShardingErrorSerialization, MessageState.MessageState<Message.Success<Req>>> {
+    if (!MessageState.isMessageStateDone(state)) {
+      return Effect.succeed(state)
     }
     if (!Message.isMessage(request)) {
       return Effect.die(NotAMessageWithReplierDefect(request))
     }
     return pipe(
       serialization.decode(
-        request.replier.schema as Schema.Schema<unknown, Message.Success<Req>>,
-        body.value
+        request[Message.MessageTypeId].schema as Schema.Schema<unknown, Message.Success<Req>>,
+        state.response
       ),
-      Effect.map(Option.some)
+      Effect.map(MessageState.MessageStateDone)
     )
   }
 
@@ -426,15 +426,14 @@ function make(
   ): Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<SerializedMessage.SerializedMessage>
+    MessageState.MessageState<SerializedMessage.SerializedMessage>
   > {
     return Effect.gen(function*(_) {
       const entityManager = yield* _(getEntityManagerByEntityTypeName(envelope.entityType))
       const request = yield* _(serialization.decode(entityManager.recipientType.schema, envelope.body))
       return yield* _(
-        Effect.logDebug("Sending envelope to local entity manager"),
-        Effect.zipRight(entityManager.send(envelope.entityId, request, envelope.replyId)),
-        Effect.flatMap((_) => encodeReply(request, _))
+        entityManager.sendAndGetState(envelope.entityId, request),
+        Effect.flatMap((_) => encodeMessageState(request, _))
       )
     }).pipe(Effect.annotateLogs("envelope", envelope))
   }
@@ -445,13 +444,12 @@ function make(
   ): Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<SerializedMessage.SerializedMessage>
+    MessageState.MessageState<SerializedMessage.SerializedMessage>
   > {
     const errorHandling = (_: never) => Effect.die("Not handled yet")
 
     return pipe(
-      Effect.logDebug("Sending envelope to remote pod"),
-      Effect.zipRight(pods.sendMessage(pod, envelope)),
+      pods.sendAndGetState(pod, envelope),
       Effect.tapError(errorHandling),
       Effect.annotateLogs("pod", pod),
       Effect.annotateLogs("envelope", envelope)
@@ -464,7 +462,7 @@ function make(
   ): Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<SerializedMessage.SerializedMessage>
+    MessageState.MessageState<SerializedMessage.SerializedMessage>
   > {
     return equals(pod, address)
       ? sendMessageToLocalEntityManagerWithoutRetries(envelope)
@@ -475,12 +473,11 @@ function make(
     recipientType: RecipientType.RecipientType<Msg>,
     entityId: string,
     msg: Msg,
-    pod: PodAddress.PodAddress,
-    replyId: Option.Option<ReplyId.ReplyId>
+    pod: PodAddress.PodAddress
   ): Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<
+    MessageState.MessageState<
       Message.Success<Msg>
     >
   > {
@@ -490,10 +487,9 @@ function make(
         getEntityManagerByEntityTypeName<Msg>(recipientType.name),
         Effect.flatMap(
           (entityManager) =>
-            (entityManager).send(
+            (entityManager).sendAndGetState(
               entityId,
-              msg,
-              replyId
+              msg
             )
         )
       )
@@ -503,8 +499,8 @@ function make(
         serialization.encode(recipientType.schema, msg),
         Effect.flatMap((body) =>
           pipe(
-            sendMessageToPodWithoutRetries(pod, SerializedEnvelope.make(recipientType.name, entityId, body, replyId)),
-            Effect.flatMap((_) => decodeSerializedReply(msg, _))
+            sendMessageToPodWithoutRetries(pod, SerializedEnvelope.make(recipientType.name, entityId, body)),
+            Effect.flatMap((_) => decodeMessageState(msg, _))
           )
         )
       )
@@ -523,7 +519,7 @@ function make(
     function sendDiscard(entityId: string) {
       return (msg: Msg) =>
         pipe(
-          sendMessage(entityId, msg, Option.none()),
+          sendMessage(entityId, msg),
           Effect.timeoutFail({
             onTimeout: ShardingError.ShardingErrorSendTimeout,
             duration: timeout
@@ -535,11 +531,17 @@ function make(
     function send(entityId: string) {
       return <A extends Msg & Message.Message<any>>(msg: A) => {
         return pipe(
-          sendMessage(entityId, msg, Option.some(msg.replier.id)),
-          Effect.flatMap((_) => {
-            if (Option.isSome(_)) return Effect.succeed(_.value)
-            return Effect.die(MessageReturnedNotingDefect(entityId))
+          sendMessage(entityId, msg),
+          Effect.flatMap((state) => {
+            if (!MessageState.isMessageStateDone(state)) {
+              return Effect.fail(ShardingError.ShardingErrorMessageQueue("TODO"))
+            }
+            return Effect.succeed(state.response)
           }),
+          Effect.retry(pipe(
+            Schedule.fixed(100),
+            Schedule.whileInput((error: unknown) => ShardingError.isShardingErrorMessageQueue(error))
+          )),
           Effect.timeoutFail({
             onTimeout: ShardingError.ShardingErrorSendTimeout,
             duration: timeout
@@ -551,9 +553,8 @@ function make(
 
     function sendMessage<A extends Msg>(
       entityId: string,
-      msg: A,
-      replyId: Option.Option<ReplyId.ReplyId>
-    ): Effect.Effect<never, ShardingError.ShardingError, Option.Option<Message.Success<A>>> {
+      msg: A
+    ): Effect.Effect<never, ShardingError.ShardingError, MessageState.MessageState<Message.Success<A>>> {
       const shardId = getShardId(entityId)
 
       return pipe(
@@ -563,7 +564,7 @@ function make(
             ? Effect.succeed(pod.value)
             : Effect.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
         ),
-        Effect.flatMap((pod) => sendToPodWithoutRetries(entityType, entityId, msg, pod, replyId)),
+        Effect.flatMap((pod) => sendToPodWithoutRetries(entityType, entityId, msg, pod)),
         Effect.retry(pipe(
           Schedule.fixed(Duration.millis(100)),
           Schedule.whileInput((error: unknown) =>
@@ -588,14 +589,13 @@ function make(
 
     function sendMessage<A extends Msg>(
       topic: string,
-      body: A,
-      replyId: Option.Option<ReplyId.ReplyId>
+      body: A
     ): Effect.Effect<
       never,
       ShardingError.ShardingError,
       HashMap.HashMap<
         PodAddress.PodAddress,
-        Either.Either<ShardingError.ShardingError, Option.Option<Message.Success<A>>>
+        Either.Either<ShardingError.ShardingError, MessageState.MessageState<Message.Success<A>>>
       >
     > {
       return pipe(
@@ -609,8 +609,7 @@ function make(
                   topicType,
                   topic,
                   body,
-                  pod,
-                  replyId
+                  pod
                 ),
                 Effect.retry(pipe(
                   Schedule.fixed(Duration.millis(100)),
@@ -636,7 +635,7 @@ function make(
     function broadcastDiscard(topic: string) {
       return (msg: Msg) =>
         pipe(
-          sendMessage(topic, msg, Option.none()),
+          sendMessage(topic, msg),
           Effect.timeoutFail({
             onTimeout: ShardingError.ShardingErrorSendTimeout,
             duration: timeout
@@ -648,16 +647,22 @@ function make(
     function broadcast(topic: string) {
       return <A extends Msg & Message.Message<any>>(msg: A) => {
         return pipe(
-          sendMessage(topic, msg, Option.some(msg.replier.id)),
+          sendMessage(topic, msg),
           Effect.flatMap((results) =>
             pipe(
               Effect.forEach(results, ([pod, eitherResult]) =>
                 pipe(
                   eitherResult,
-                  Effect.flatMap((_) => {
-                    if (Option.isSome(_)) return Effect.succeed(_.value)
-                    return Effect.die(MessageReturnedNotingDefect(msg))
+                  Effect.flatMap((state) => {
+                    if (!MessageState.isMessageStateDone(state)) {
+                      return Effect.fail(ShardingError.ShardingErrorMessageQueue("TODO"))
+                    }
+                    return Effect.succeed(state.response)
                   }),
+                  Effect.retry(pipe(
+                    Schedule.fixed(100),
+                    Schedule.whileInput((error: unknown) => ShardingError.isShardingErrorMessageQueue(error))
+                  )),
                   Effect.either,
                   Effect.map((res) => [pod, res] as const)
                 ))

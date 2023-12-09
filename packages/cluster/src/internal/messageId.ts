@@ -2,27 +2,27 @@ import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
-import type * as ReplyId from "../ReplyId.js"
+import type * as MessageId from "../MessageId.js"
 
 /** @internal */
-const ReplyIdSymbolKey = "@effect/cluster/ReplyId"
+const MessageIdSymbolKey = "@effect/cluster/MessageId"
 
 /** @internal */
-export const ReplyIdTypeId: ReplyId.ReplyIdTypeId = Symbol.for(ReplyIdSymbolKey) as ReplyId.ReplyIdTypeId
+export const MessageIdTypeId: MessageId.MessageIdTypeId = Symbol.for(MessageIdSymbolKey) as MessageId.MessageIdTypeId
 
 /** @internal */
-export function isReplyId(value: unknown): value is ReplyId.ReplyId {
+export function isMessageId(value: unknown): value is MessageId.MessageId {
   return (
     typeof value === "object" &&
     value !== null &&
-    ReplyIdTypeId in value &&
-    value[ReplyIdTypeId] === ReplyIdTypeId
+    MessageIdTypeId in value &&
+    value[MessageIdTypeId] === MessageIdTypeId
   )
 }
 
 /** @internal */
-export function make(value: string): ReplyId.ReplyId {
-  return Data.struct({ [ReplyIdTypeId]: ReplyIdTypeId, value })
+export function make(value: string): MessageId.MessageId {
+  return Data.struct({ [MessageIdTypeId]: MessageIdTypeId, value })
 }
 
 /** @internal */
@@ -44,17 +44,17 @@ export const makeEffect = pipe(
 
 /** @internal */
 export const schema: Schema.Schema<
-  { readonly value: string; readonly "@effect/cluster/ReplyId": "@effect/cluster/ReplyId" },
-  ReplyId.ReplyId
+  { readonly value: string; readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId" },
+  MessageId.MessageId
 > = Schema.data(
   Schema.rename(
     Schema.struct({
-      [ReplyIdSymbolKey]: Schema.compose(
-        Schema.symbolFromString(Schema.literal(ReplyIdSymbolKey)),
-        Schema.uniqueSymbol(ReplyIdTypeId)
+      [MessageIdSymbolKey]: Schema.compose(
+        Schema.symbolFromString(Schema.literal(MessageIdSymbolKey)),
+        Schema.uniqueSymbol(MessageIdTypeId)
       ),
       value: Schema.string
     }),
-    { [ReplyIdSymbolKey]: ReplyIdTypeId }
+    { [MessageIdSymbolKey]: MessageIdTypeId }
   )
 )

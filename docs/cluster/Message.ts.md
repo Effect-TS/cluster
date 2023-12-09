@@ -13,10 +13,14 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [models](#models)
+  - [AnyMessage (type alias)](#anymessage-type-alias)
   - [Message (interface)](#message-interface)
   - [MessageSchema (interface)](#messageschema-interface)
 - [schema](#schema)
   - [schema](#schema-1)
+- [symbols](#symbols)
+  - [MessageTypeId](#messagetypeid)
+  - [MessageTypeId (type alias)](#messagetypeid-type-alias)
 - [utils](#utils)
   - [Success (type alias)](#success-type-alias)
   - [isMessage](#ismessage)
@@ -24,6 +28,18 @@ Added in v1.0.0
 ---
 
 # models
+
+## AnyMessage (type alias)
+
+A message with an unknown type of reply
+
+**Signature**
+
+```ts
+export type AnyMessage = Message<any>
+```
+
+Added in v1.0.0
 
 ## Message (interface)
 
@@ -33,7 +49,7 @@ A `Message<A>` is a request from a data source for a value of type `A`
 
 ```ts
 export interface Message<A> {
-  readonly replier: Replier.Replier<A>
+  readonly [MessageTypeId]: MessageHeader.MessageHeader<A>
 }
 ```
 
@@ -47,7 +63,7 @@ A `MessageSchema<From, To, A>` is an augmented schema that provides utilities to
 
 ```ts
 export interface MessageSchema<From, To, A> extends Schema.Schema<From, Types.Simplify<To & Message<A>>> {
-  make: (message: To, replyId: ReplyId.ReplyId) => Types.Simplify<To & Message<A>>
+  make: (message: To, messageId: MessageId.MessageId) => Types.Simplify<To & Message<A>>
   makeEffect: (message: To) => Effect.Effect<never, never, Types.Simplify<To & Message<A>>>
 }
 ```
@@ -66,6 +82,28 @@ Creates both the schema and a constructor for a `Message<A>`
 export declare const schema: <RI, RA>(
   replySchema: Schema.Schema<RI, RA>
 ) => <I extends object, A extends object>(item: Schema.Schema<I, A>) => MessageSchema<I, A, RA>
+```
+
+Added in v1.0.0
+
+# symbols
+
+## MessageTypeId
+
+**Signature**
+
+```ts
+export declare const MessageTypeId: typeof MessageTypeId
+```
+
+Added in v1.0.0
+
+## MessageTypeId (type alias)
+
+**Signature**
+
+```ts
+export type MessageTypeId = typeof MessageTypeId
 ```
 
 Added in v1.0.0

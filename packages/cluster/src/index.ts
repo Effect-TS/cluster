@@ -16,6 +16,21 @@ export * as Message from "./Message.js"
 /**
  * @since 1.0.0
  */
+export * as MessageHeader from "./MessageHeader.js"
+
+/**
+ * @since 1.0.0
+ */
+export * as MessageId from "./MessageId.js"
+
+/**
+ * @since 1.0.0
+ */
+export * as MessageState from "./MessageState.js"
+
+/**
+ * @since 1.0.0
+ */
 export * as Messenger from "./Messenger.js"
 
 /**
@@ -59,16 +74,6 @@ export * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
  * @since 1.0.0
  */
 export * as RecipientType from "./RecipientType.js"
-
-/**
- * @since 1.0.0
- */
-export * as Replier from "./Replier.js"
-
-/**
- * @since 1.0.0
- */
-export * as ReplyId from "./ReplyId.js"
 
 /**
  * @since 1.0.0

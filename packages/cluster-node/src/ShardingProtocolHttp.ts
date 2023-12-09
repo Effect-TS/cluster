@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import * as MessageState from "@effect/cluster/MessageState"
 import * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import * as SerializedMessage from "@effect/cluster/SerializedMessage"
 import * as ShardId from "@effect/cluster/ShardId"
@@ -37,7 +38,7 @@ export const Send_ = Schema.struct({
  */
 export const SendResult_ = Schema.either(
   ShardingError.schema,
-  Schema.option(SerializedMessage.schema)
+  MessageState.schema(SerializedMessage.schema)
 )
 
 /**
