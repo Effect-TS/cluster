@@ -239,7 +239,7 @@ export function make<R, Req>(
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const cdt = yield* _(Clock.currentTimeMillis)
 
-                    const offer = yield* _(pipe(
+                    const { offer, pullReply } = yield* _(pipe(
                       behaviour_(entityId),
                       Scope.extend(executionScope),
                       Effect.provideService(
@@ -254,6 +254,7 @@ export function make<R, Req>(
 
                     const entityState = EntityState.make({
                       offer,
+                      pullReply,
                       expirationFiber,
                       executionScope,
                       terminationFiber: Option.none(),

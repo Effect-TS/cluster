@@ -3,8 +3,11 @@
  */
 import type * as Schema from "@effect/schema/Schema"
 import type * as Serializable from "@effect/schema/Serializable"
+import type * as Effect from "effect/Effect"
 import type * as Types from "effect/Types"
 import * as internal from "./internal/message.js"
+import type * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
+import type * as ReplyId from "./ReplyId.js"
 
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`
@@ -13,6 +16,10 @@ import * as internal from "./internal/message.js"
  * @category models
  */
 export interface Message<A> extends Serializable.WithResult<unknown, never, unknown, A> {
+  reply: (
+    replyId: ReplyId.ReplyId,
+    value: A
+  ) => Effect.Effect<RecipientBehaviourContext.RecipientBehaviourContext, never, void>
 }
 
 /**

@@ -3,6 +3,7 @@ import type * as Effect from "effect/Effect"
 import type * as Fiber from "effect/Fiber"
 import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
+import type * as Message from "../Message.js"
 import type * as ReplyId from "../ReplyId.js"
 import type * as ShardingError from "../ShardingError.js"
 
@@ -22,6 +23,9 @@ export type EntityStateTypeId = typeof EntityStateTypeId
 export interface EntityState<Req> {
   readonly [EntityStateTypeId]: EntityStateTypeId
   readonly offer: (message: Req) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, ReplyId.ReplyId>
+  readonly pullReply: (
+    replyId: ReplyId.ReplyId
+  ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, Message.Success<Req>>
   readonly expirationFiber: Fiber.RuntimeFiber<never, void>
   readonly executionScope: Scope.CloseableScope
   readonly terminationFiber: Option.Option<Fiber.RuntimeFiber<never, void>>

@@ -8,9 +8,11 @@ import type * as Option from "effect/Option"
 import type * as Queue from "effect/Queue"
 import type * as Scope from "effect/Scope"
 import * as internal from "./internal/recipientBehaviour.js"
+import type * as Message from "./Message.js"
 import type * as PoisonPill from "./PoisonPill.js"
 import type * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
 import type * as ReplyId from "./ReplyId.js"
+import type * as SerializedMessage from "./SerializedMessage.js"
 import type * as ShardingError from "./ShardingError.js"
 
 /**
@@ -18,14 +20,19 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category models
  */
-export interface RecipientBehaviour<R, Msg> {
-  (
-    entityId: string
-  ): Effect.Effect<
+export interface RecipientBehaviour<R, Msg> extends
+  Effect.Effect<
     R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
     never,
-    (message: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, ReplyId.ReplyId>
+    RecipientBehaviourInstance<Msg>
   >
+{}
+
+export interface RecipientBehaviourInstance<Msg> {
+  offer: (msg: Msg) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, ReplyId.ReplyId>
+  pullReply: (
+    replyId: ReplyId.ReplyId
+  ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, Message.Success<Msg>>
 }
 
 /**

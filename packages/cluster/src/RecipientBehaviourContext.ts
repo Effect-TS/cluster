@@ -2,9 +2,13 @@
  * @since 1.0.0
  * This module provides the context that is given to a RecipientBehaviour
  */
+import type * as Schema from "@effect/schema/Schema"
 import type * as Context from "effect/Context"
+import type * as Effect from "effect/Effect"
 import * as internal from "./internal/recipientBehaviourContext.js"
 import type * as RecipientType from "./RecipientType.js"
+import type * as ReplyId from "./ReplyId.js"
+import type * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0
@@ -27,6 +31,11 @@ export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
   readonly recipientType: RecipientType.RecipientType<unknown>
+  readonly reply: <I, A>(
+    replyId: ReplyId.ReplyId,
+    schema: Schema.Schema<I, A>,
+    reply: A
+  ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
 }
 
 /**
