@@ -75,7 +75,7 @@ export const httpPods = Layer.effect(
       )
     }
 
-    function sendMessage(podAddress: PodAddress.PodAddress, envelope: SerializedEnvelope.SerializedEnvelope) {
+    function sendAndGetState(podAddress: PodAddress.PodAddress, envelope: SerializedEnvelope.SerializedEnvelope) {
       return Effect.gen(function*(_) {
         const request = yield* _(
           Http.request.post(
@@ -100,7 +100,7 @@ export const httpPods = Layer.effect(
       assignShards,
       unassignShards,
       ping,
-      sendMessage
+      sendAndGetState
     })
   })
 )

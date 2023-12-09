@@ -26,8 +26,7 @@ describe.concurrent("RecipientBehaviour", () => {
       Effect.provideService(
         RecipientBehaviourContext.RecipientBehaviourContext,
         RecipientBehaviourContext.make({
-          entityId: "entity1",
-          reply: (_, __) => Effect.unit
+          entityId: "entity1"
         })
       ),
       Scope.extend(scope)

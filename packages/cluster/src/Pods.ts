@@ -5,8 +5,8 @@ import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import type * as HashSet from "effect/HashSet"
 import type * as Layer from "effect/Layer"
-import type * as Option from "effect/Option"
 import * as internal from "./internal/pods.js"
+import type * as MessageState from "./MessageState.js"
 import type * as PodAddress from "./PodAddress.js"
 import type * as SerializedEnvelope from "./SerializedEnvelope.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
@@ -64,16 +64,16 @@ export interface Pods {
   readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, ShardingError.ShardingErrorPodUnavailable, void>
 
   /**
-   * Send a message to a pod and receive a reply
+   * Send a message to a pod and receive its message state
    * @since 1.0.0
    */
-  readonly sendMessage: (
+  readonly sendAndGetState: (
     pod: PodAddress.PodAddress,
     envelope: SerializedEnvelope.SerializedEnvelope
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<SerializedMessage.SerializedMessage>
+    MessageState.MessageState<SerializedMessage.SerializedMessage>
   >
 }
 

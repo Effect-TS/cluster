@@ -30,7 +30,7 @@ const liveSharding = pipe(
 const programLayer = Layer.scopedDiscard(pipe(
   Sharding.registerEntity(
     CounterEntity,
-    RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
+    RecipientBehaviour.fromInMemoryQueue((entityId, dequeue, reply) =>
       pipe(
         SubscriptionRef.make(0),
         Effect.flatMap((count) =>
@@ -46,7 +46,7 @@ const programLayer = Layer.scopedDiscard(pipe(
                   case "GetCurrent":
                     return pipe(
                       SubscriptionRef.get(count),
-                      Effect.flatMap(msg.replier.reply)
+                      Effect.flatMap((result) => reply(msg, result))
                     )
                 }
               }

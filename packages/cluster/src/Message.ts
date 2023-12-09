@@ -5,8 +5,20 @@ import type * as Schema from "@effect/schema/Schema"
 import type * as Effect from "effect/Effect"
 import type * as Types from "effect/Types"
 import * as internal from "./internal/message.js"
-import type * as Replier from "./Replier.js"
-import type * as ReplyId from "./ReplyId.js"
+import type * as MessageHeader from "./MessageHeader.js"
+import type * as MessageId from "./MessageId.js"
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export const MessageTypeId: unique symbol = internal.MessageTypeId
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type MessageTypeId = typeof MessageTypeId
 
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`
@@ -15,8 +27,16 @@ import type * as ReplyId from "./ReplyId.js"
  * @category models
  */
 export interface Message<A> {
-  readonly replier: Replier.Replier<A>
+  readonly [MessageTypeId]: MessageHeader.MessageHeader<A>
 }
+
+/**
+ * A message with an unknown type of reply
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export type AnyMessage = Message<any>
 
 /**
  * A `MessageSchema<From, To, A>` is an augmented schema that provides utilities to build the Message<A> with a valid replier.
@@ -25,7 +45,7 @@ export interface Message<A> {
  * @category models
  */
 export interface MessageSchema<From, To, A> extends Schema.Schema<From, Types.Simplify<To & Message<A>>> {
-  make: (message: To, replyId: ReplyId.ReplyId) => Types.Simplify<To & Message<A>>
+  make: (message: To, messageId: MessageId.MessageId) => Types.Simplify<To & Message<A>>
   makeEffect: (message: To) => Effect.Effect<never, never, Types.Simplify<To & Message<A>>>
 }
 

@@ -1,13 +1,11 @@
 import * as Data from "effect/Data"
 import type * as Effect from "effect/Effect"
 import type * as Fiber from "effect/Fiber"
-import type * as HashMap from "effect/HashMap"
 import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
-import type * as RefSynchronized from "effect/SynchronizedRef"
-import type * as ReplyId from "../ReplyId.js"
+import type * as Message from "../Message.js"
+import type * as MessageState from "../MessageState.js"
 import type * as ShardingError from "../ShardingError.js"
-import type * as ReplyChannel from "./replyChannel.js"
 
 /** @internal */
 const EntityStateSymbolKey = "@effect/cluster/EntityState"
@@ -22,12 +20,11 @@ export type EntityStateTypeId = typeof EntityStateTypeId
  * @since 1.0.0
  * @category models
  */
-export interface EntityState<Req> {
+export interface EntityState<Msg> {
   readonly [EntityStateTypeId]: EntityStateTypeId
-  readonly offer: (message: Req) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
-  readonly replyChannels: RefSynchronized.SynchronizedRef<
-    HashMap.HashMap<ReplyId.ReplyId, ReplyChannel.ReplyChannel<any>>
-  >
+  readonly sendAndGetState: <A extends Msg>(
+    message: Msg
+  ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, MessageState.MessageState<Message.Success<A>>>
   readonly expirationFiber: Fiber.RuntimeFiber<never, void>
   readonly executionScope: Scope.CloseableScope
   readonly terminationFiber: Option.Option<Fiber.RuntimeFiber<never, void>>

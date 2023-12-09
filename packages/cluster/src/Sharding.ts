@@ -9,6 +9,7 @@ import type * as Scope from "effect/Scope"
 import type * as Stream from "effect/Stream"
 import type { Broadcaster } from "./Broadcaster.js"
 import * as internal from "./internal/sharding.js"
+import type * as MessageState from "./MessageState.js"
 import type { Messenger } from "./Messenger.js"
 import type * as PodAddress from "./PodAddress.js"
 import type * as RecipientBehaviour from "./RecipientBehaviour.js"
@@ -66,7 +67,7 @@ export interface Sharding {
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    Option.Option<SerializedMessage.SerializedMessage>
+    MessageState.MessageState<SerializedMessage.SerializedMessage>
   >
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
 }
