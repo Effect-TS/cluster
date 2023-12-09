@@ -59,7 +59,8 @@ export function fromInMemoryQueue<Msg extends Message.Message, R>(
               Queue.unbounded<Msg | PoisonPill.PoisonPill>(),
               (queue) =>
                 pipe(
-                  Queue.offer(queue, PoisonPill.make),
+                  PoisonPill.make,
+                  Effect.flatMap((msg) => Queue.offer(queue, msg)),
                   Effect.zipLeft(Deferred.await(shutdownCompleted)),
                   Effect.uninterruptible
                 )

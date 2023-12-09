@@ -13,44 +13,29 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [models](#models)
-  - [AnyMessage (type alias)](#anymessage-type-alias)
   - [Message (interface)](#message-interface)
   - [MessageSchema (interface)](#messageschema-interface)
+  - [MessageWithResult (interface)](#messagewithresult-interface)
 - [schema](#schema)
-  - [schema](#schema-1)
-- [symbols](#symbols)
-  - [MessageTypeId](#messagetypeid)
-  - [MessageTypeId (type alias)](#messagetypeid-type-alias)
+  - [schemaWithResult](#schemawithresult)
 - [utils](#utils)
   - [Success (type alias)](#success-type-alias)
   - [isMessage](#ismessage)
+  - [isMessageWithResult](#ismessagewithresult)
+  - [makeEffect](#makeeffect)
+  - [messageId](#messageid)
+  - [successSchema](#successschema)
 
 ---
 
 # models
 
-## AnyMessage (type alias)
-
-A message with an unknown type of reply
-
-**Signature**
-
-```ts
-export type AnyMessage = Message<any>
-```
-
-Added in v1.0.0
-
 ## Message (interface)
 
-A `Message<A>` is a request from a data source for a value of type `A`
-
 **Signature**
 
 ```ts
-export interface Message<A> {
-  readonly [MessageTypeId]: MessageHeader.MessageHeader<A>
-}
+export interface Message extends PrimaryKey.PrimaryKey {}
 ```
 
 Added in v1.0.0
@@ -62,48 +47,38 @@ A `MessageSchema<From, To, A>` is an augmented schema that provides utilities to
 **Signature**
 
 ```ts
-export interface MessageSchema<From, To, A> extends Schema.Schema<From, Types.Simplify<To & Message<A>>> {
-  make: (message: To, messageId: MessageId.MessageId) => Types.Simplify<To & Message<A>>
-  makeEffect: (message: To) => Effect.Effect<never, never, Types.Simplify<To & Message<A>>>
+export interface MessageSchema<From, To, A> extends Schema.Schema<From, Types.Simplify<To & MessageWithResult<A>>> {
+  make: (message: To, messageId: MessageId.MessageId) => Types.Simplify<To & MessageWithResult<A>>
+  makeEffect: (message: To) => Effect.Effect<never, never, Types.Simplify<To & MessageWithResult<A>>>
 }
+```
+
+Added in v1.0.0
+
+## MessageWithResult (interface)
+
+A `Message<A>` is a request from a data source for a value of type `A`
+
+**Signature**
+
+```ts
+export interface MessageWithResult<A> extends Message, Serializable.WithResult<never, never, unknown, A> {}
 ```
 
 Added in v1.0.0
 
 # schema
 
-## schema
+## schemaWithResult
 
 Creates both the schema and a constructor for a `Message<A>`
 
 **Signature**
 
 ```ts
-export declare const schema: <RI, RA>(
+export declare const schemaWithResult: <RI, RA>(
   replySchema: Schema.Schema<RI, RA>
 ) => <I extends object, A extends object>(item: Schema.Schema<I, A>) => MessageSchema<I, A, RA>
-```
-
-Added in v1.0.0
-
-# symbols
-
-## MessageTypeId
-
-**Signature**
-
-```ts
-export declare const MessageTypeId: typeof MessageTypeId
-```
-
-Added in v1.0.0
-
-## MessageTypeId (type alias)
-
-**Signature**
-
-```ts
-export type MessageTypeId = typeof MessageTypeId
 ```
 
 Added in v1.0.0
@@ -117,7 +92,7 @@ Extracts the success type from a `Message<A>`.
 **Signature**
 
 ```ts
-export type Success<A> = A extends Message<infer X> ? X : never
+export type Success<A> = A extends MessageWithResult<infer X> ? X : never
 ```
 
 Added in v1.0.0
@@ -127,7 +102,47 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isMessage: <R>(value: unknown) => value is Message<R>
+export declare const isMessage: (value: unknown) => value is Message
+```
+
+Added in v1.0.0
+
+## isMessageWithResult
+
+**Signature**
+
+```ts
+export declare const isMessageWithResult: <R>(value: unknown) => value is MessageWithResult<R>
+```
+
+Added in v1.0.0
+
+## makeEffect
+
+**Signature**
+
+```ts
+export declare const makeEffect: typeof internal.makeEffect
+```
+
+Added in v1.0.0
+
+## messageId
+
+**Signature**
+
+```ts
+export declare const messageId: (value: Message) => MessageId.MessageId
+```
+
+Added in v1.0.0
+
+## successSchema
+
+**Signature**
+
+```ts
+export declare const successSchema: <A>(message: MessageWithResult<A>) => Schema.Schema<unknown, A>
 ```
 
 Added in v1.0.0

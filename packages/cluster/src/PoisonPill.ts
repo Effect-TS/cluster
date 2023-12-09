@@ -5,6 +5,7 @@ import type * as Data from "effect/Data"
 import type * as Effect from "effect/Effect"
 import type * as Queue from "effect/Queue"
 import * as internal from "./internal/poisonPill.js"
+import type * as Message from "./Message.js"
 
 /**
  * @since 1.0.0
@@ -25,7 +26,8 @@ export type PoisonPillTypeId = typeof PoisonPillTypeId
 export interface PoisonPill extends
   Data.Data<{
     [PoisonPillTypeId]: PoisonPillTypeId
-  }>
+  }>,
+  Message.Message
 {}
 
 /**
@@ -34,7 +36,7 @@ export interface PoisonPill extends
  * @since 1.0.0
  * @category constructors
  */
-export const make: PoisonPill = internal.make
+export const make: Effect.Effect<never, never, PoisonPill> = internal.make
 
 /**
  * @since 1.0.0
@@ -48,7 +50,11 @@ export const isPoisonPill: (value: unknown) => value is PoisonPill = internal.is
  * @since 1.0.0
  * @category schema
  */
-export const schema = internal.schema
+export const schema: Message.MessageSchema<
+  { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
+  PoisonPill,
+  never
+> = internal.schema
 
 /**
  * Attempts to take a message from the queue in the same way Queue.take does.

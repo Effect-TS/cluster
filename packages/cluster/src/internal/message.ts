@@ -8,6 +8,12 @@ import type * as Message from "../Message.js"
 import * as MessageId from "../MessageId.js"
 
 /** @internal */
+const MessageSymbolKey = "@effect/cluster/Message"
+
+/** @internal */
+export const MessageTypeId: Message.MessageTypeId = Symbol.for(MessageSymbolKey) as Message.MessageTypeId
+
+/** @internal */
 export function isMessage(value: unknown): value is Message.Message {
   return (
     typeof value === "object" &&
@@ -24,8 +30,7 @@ export function messageId(value: Message.Message): MessageId.MessageId {
 /** @internal */
 export function isMessageWithResult<R>(value: unknown): value is Message.MessageWithResult<R> {
   return (
-    typeof value === "object" &&
-    value !== null &&
+    isMessage(value) &&
     Serializable.symbolResult in value
   )
 }
@@ -40,17 +45,14 @@ export function schemaWithResult<RI, RA>(replySchema: Schema.Schema<RI, RA>) {
   return function<I extends object, A extends object>(
     item: Schema.Schema<I, A>
   ): Message.MessageSchema<I, A, RA> {
-    const result = pipe(
-      item,
-      Schema.extend(
-        Schema.rename(Schema.struct({ [MessageSymbolKey]: MessageHeader.schema(replySchema) }), {
-          [MessageSymbolKey]: MessageTypeId
-        })
-      )
-    )
+    const result = item // TODO:
 
     const make = (arg: A, messageId: MessageId.MessageId): A & Message.MessageWithResult<RA> =>
-      Data.struct({ ...arg, [PrimaryKey.symbol]: () => messageId.value })
+      Data.struct({
+        ...arg,
+        [PrimaryKey.symbol]: () => messageId.value,
+        [Serializable.symbolResult]: { Failure: Schema.never, Success: replySchema }
+      }) as any
 
     const makeEffect = (arg: A): Effect.Effect<never, never, A & Message.MessageWithResult<RA>> =>
       pipe(
@@ -60,4 +62,12 @@ export function schemaWithResult<RI, RA>(replySchema: Schema.Schema<RI, RA>) {
 
     return { ...result, make, makeEffect } as any
   }
+}
+
+/** @internal */
+export function makeEffect<A>(message: A): Effect.Effect<never, never, A & Message.Message> {
+  return pipe(
+    MessageId.makeEffect,
+    Effect.map((messageId) => ({ ...message, [PrimaryKey.symbol]: () => messageId.value }))
+  )
 }

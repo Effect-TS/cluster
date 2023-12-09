@@ -1,6 +1,6 @@
 ---
 title: ShardingErrorMessageQueue.ts
-nav_order: 26
+nav_order: 25
 parent: "@effect/cluster"
 ---
 

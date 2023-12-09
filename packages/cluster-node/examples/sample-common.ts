@@ -8,13 +8,21 @@ export const GetCurrent = Message.schemaWithResult(Schema.number)(
   })
 )
 
-const CounterMsg = Schema.union(
+const Increment = Message.schemaWithResult(Schema.any)(
   Schema.struct({
     _tag: Schema.literal("Increment")
-  }),
+  })
+)
+
+const Decrement = Message.schemaWithResult(Schema.any)(
   Schema.struct({
-    _tag: Schema.literal("Decrement")
-  }),
+    _tag: Schema.literal("Increment")
+  })
+)
+
+const CounterMsg = Schema.union(
+  Increment,
+  Decrement,
   GetCurrent
 )
 

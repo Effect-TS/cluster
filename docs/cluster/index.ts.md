@@ -16,7 +16,6 @@ Added in v1.0.0
   - [From "./Broadcaster.js"](#from-broadcasterjs)
   - [From "./ManagerConfig.js"](#from-managerconfigjs)
   - [From "./Message.js"](#from-messagejs)
-  - [From "./MessageHeader.js"](#from-messageheaderjs)
   - [From "./MessageId.js"](#from-messageidjs)
   - [From "./MessageState.js"](#from-messagestatejs)
   - [From "./Messenger.js"](#from-messengerjs)
@@ -84,18 +83,6 @@ Re-exports all named exports from the "./Message.js" module as `Message`.
 
 ```ts
 export * as Message from "./Message.js"
-```
-
-Added in v1.0.0
-
-## From "./MessageHeader.js"
-
-Re-exports all named exports from the "./MessageHeader.js" module as `MessageHeader`.
-
-**Signature**
-
-```ts
-export * as MessageHeader from "./MessageHeader.js"
 ```
 
 Added in v1.0.0

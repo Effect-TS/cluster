@@ -1,6 +1,6 @@
 ---
 title: SerializedEnvelope.ts
-nav_order: 18
+nav_order: 17
 parent: "@effect/cluster"
 ---
 

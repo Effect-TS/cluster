@@ -1,6 +1,6 @@
 ---
 title: RecipientBehaviour.ts
-nav_order: 14
+nav_order: 13
 parent: "@effect/cluster"
 ---
 
@@ -32,7 +32,7 @@ An alias to a RecipientBehaviour
 **Signature**
 
 ```ts
-export interface RecipientBehaviour<R, Msg> {
+export interface RecipientBehaviour<R, Msg extends Message.Message> {
   (
     entityId: string
   ): Effect.Effect<
@@ -68,7 +68,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fromFunctionEffect: <R, Msg>(
+export declare const fromFunctionEffect: <R, Msg extends Message.Message>(
   handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ) => RecipientBehaviour<R, Msg>
 ```
@@ -80,7 +80,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fromInMemoryQueue: <R, Msg>(
+export declare const fromInMemoryQueue: <R, Msg extends Message.Message>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,

@@ -1,6 +1,6 @@
 ---
 title: RecipientType.ts
-nav_order: 16
+nav_order: 15
 parent: "@effect/cluster"
 ---
 
@@ -31,7 +31,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function makeEntityType<I, Msg>(name: string, schema: Schema.Schema<I, Msg>): EntityType<Msg>
+export declare function makeEntityType<I, Msg extends Message.Message>(
+  name: string,
+  schema: Schema.Schema<I, Msg>
+): EntityType<Msg>
 ```
 
 Added in v1.0.0
@@ -41,7 +44,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function makeTopicType<I, Msg>(name: string, schema: Schema.Schema<I, Msg>): TopicType<Msg>
+export declare function makeTopicType<I, Msg extends Message.Message>(
+  name: string,
+  schema: Schema.Schema<I, Msg>
+): TopicType<Msg>
 ```
 
 Added in v1.0.0
@@ -53,7 +59,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface EntityType<Msg> {
+export interface EntityType<Msg extends Message.Message> {
   readonly _tag: "EntityType"
   readonly name: string
   readonly schema: Schema.Schema<unknown, Msg>
@@ -69,7 +75,7 @@ An abstract type to extend for each type of entity or topic
 **Signature**
 
 ```ts
-export type RecipientType<Msg> = EntityType<Msg> | TopicType<Msg>
+export type RecipientType<Msg extends Message.Message> = EntityType<Msg> | TopicType<Msg>
 ```
 
 Added in v1.0.0
@@ -79,7 +85,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface TopicType<Msg> {
+export interface TopicType<Msg extends Message.Message> {
   readonly _tag: "TopicType"
   readonly name: string
   readonly schema: Schema.Schema<unknown, Msg>

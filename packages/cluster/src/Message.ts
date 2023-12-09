@@ -11,6 +11,18 @@ import type * as MessageId from "./MessageId.js"
 
 /**
  * @since 1.0.0
+ * @category symbols
+ */
+export const MessageTypeId: unique symbol = internal.MessageTypeId
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type MessageTypeId = typeof MessageTypeId
+
+/**
+ * @since 1.0.0
  * @category models
  */
 export interface Message extends PrimaryKey.PrimaryKey {
@@ -22,7 +34,7 @@ export interface Message extends PrimaryKey.PrimaryKey {
  * @since 1.0.0
  * @category models
  */
-export interface MessageWithResult<A> extends Message, Serializable.WithResult<unknown, never, unknown, A> {
+export interface MessageWithResult<A> extends Message, Serializable.WithResult<never, never, unknown, A> {
 }
 
 /**
@@ -31,7 +43,9 @@ export interface MessageWithResult<A> extends Message, Serializable.WithResult<u
  * @since 1.0.0
  * @category models
  */
-export interface MessageSchema<From, To, A> extends Schema.Schema<From, Types.Simplify<To & MessageWithResult<A>>> {
+export interface MessageSchema<From, To, A>
+  extends Schema.Schema<From & { "@effect/cluster/Message": string }, Types.Simplify<To & MessageWithResult<A>>>
+{
   make: (message: To, messageId: MessageId.MessageId) => Types.Simplify<To & MessageWithResult<A>>
   makeEffect: (message: To) => Effect.Effect<never, never, Types.Simplify<To & MessageWithResult<A>>>
 }
@@ -78,3 +92,9 @@ export const schemaWithResult: <RI, RA>(
   replySchema: Schema.Schema<RI, RA>
 ) => <I extends object, A extends object>(item: Schema.Schema<I, A>) => MessageSchema<I, A, RA> =
   internal.schemaWithResult
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export const makeEffect = internal.makeEffect
