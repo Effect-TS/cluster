@@ -74,7 +74,6 @@ export function schemaWithResult<RI, RA>(success: Schema.Schema<RI, RA>) {
             return ParseResult.map(
               Parser.parse(base)(u, options),
               (u) => {
-                console.log("decoding and attaching!", u)
                 return makeWithResult(u.payload, u.id, success, u.headers)
               }
             )
@@ -122,7 +121,6 @@ export function makeWithResult<Payload, I, A>(
   success: Schema.Schema<I, A>,
   headers: Record<string, string> = {}
 ): Message.MessageWithResult<Payload, A> {
-  console.log("makeWithResult", payload)
   return Object.assign(make(payload, messageId, headers), {
     [Serializable.symbolResult]: { Failure: Schema.never, Success: success as any }
   })

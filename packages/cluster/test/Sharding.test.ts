@@ -134,7 +134,7 @@ describe.concurrent("SampleTests", () => {
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
-  it.only("Succefully delivers a message with a reply to an entity", () => {
+  it("Succefully delivers a message with a reply to an entity", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
       const SampleMessage = Message.schemaWithResult(Schema.number)(Schema.struct({
