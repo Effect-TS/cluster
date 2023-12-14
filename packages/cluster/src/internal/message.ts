@@ -1,9 +1,8 @@
+import { Parser, ParseResult } from "@effect/schema"
 import * as Schema from "@effect/schema/Schema"
 import * as Serializable from "@effect/schema/Serializable"
-import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
-import * as PrimaryKey from "effect/PrimaryKey"
 import type * as Message from "../Message.js"
 import * as MessageId from "../MessageId.js"
 
@@ -14,21 +13,39 @@ const MessageSymbolKey = "@effect/cluster/Message"
 export const MessageTypeId: Message.MessageTypeId = Symbol.for(MessageSymbolKey) as Message.MessageTypeId
 
 /** @internal */
-export function isMessage(value: unknown): value is Message.Message {
+export function isMessage(value: unknown): value is Message.Message<unknown> {
   return (
     typeof value === "object" &&
     value !== null &&
-    PrimaryKey.symbol in value
+    "id" in value &&
+    MessageId.isMessageId(value.id)
   )
 }
 
 /** @internal */
-export function messageId(value: Message.Message): MessageId.MessageId {
-  return MessageId.make(PrimaryKey.value(value))
+export function messageId<Payload>(value: Message.Message<Payload>): MessageId.MessageId {
+  return value.id
 }
 
 /** @internal */
-export function isMessageWithResult<R>(value: unknown): value is Message.MessageWithResult<R> {
+export function schema<I, A>(
+  payload: Schema.Schema<I, A>
+): Message.MessageSchema<I, A> {
+  const result = Schema.struct({
+    id: MessageId.schema,
+    headers: Schema.record(Schema.string, Schema.string),
+    payload
+  })
+
+  return {
+    ...result,
+    make: (arg: A, messageId: MessageId.MessageId): Message.Message<A> => make(arg, messageId),
+    makeEffect: (value: A): Effect.Effect<never, never, Message.Message<A>> => makeEffect(value)
+  }
+}
+
+/** @internal */
+export function isMessageWithResult(value: unknown): value is Message.MessageWithResult<unknown, unknown> {
   return (
     isMessage(value) &&
     Serializable.symbolResult in value
@@ -36,38 +53,89 @@ export function isMessageWithResult<R>(value: unknown): value is Message.Message
 }
 
 /** @internal */
-export function successSchema<A>(message: Message.MessageWithResult<A>): Schema.Schema<unknown, A> {
+export function successSchema<Payload, Result>(
+  message: Message.MessageWithResult<Payload, Result>
+): Schema.Schema<unknown, Result> {
   return Serializable.successSchema(message)
 }
 
 /** @internal */
-export function schemaWithResult<RI, RA>(replySchema: Schema.Schema<RI, RA>) {
-  return function<I extends object, A extends object>(
-    item: Schema.Schema<I, A>
-  ): Message.MessageSchema<I, A, RA> {
-    const result = item // TODO:
+export function schemaWithResult<RI, RA>(success: Schema.Schema<RI, RA>) {
+  return function<I, A>(
+    payload: Schema.Schema<I, A>
+  ): Message.MessageWithResultSchema<I, A, RA> {
+    const result = Schema.declare(
+      [],
+      schema(payload),
+      (isDecoding) => {
+        const base = schema(payload)
+        return (u, options) => {
+          if (isDecoding) {
+            return ParseResult.map(
+              Parser.parse(base)(u, options),
+              (u) => {
+                console.log("decoding and attaching!", u)
+                return makeWithResult(u.payload, u.id, success, u.headers)
+              }
+            )
+          } else {
+            return Parser.encode(base)(u, options)
+          }
+        }
+      }
+    )
 
-    const make = (arg: A, messageId: MessageId.MessageId): A & Message.MessageWithResult<RA> =>
-      Data.struct({
-        ...arg,
-        [PrimaryKey.symbol]: () => messageId.value,
-        [Serializable.symbolResult]: { Failure: Schema.never, Success: replySchema }
-      }) as any
+    const make = (arg: A, messageId: MessageId.MessageId): Message.MessageWithResult<A, RA> =>
+      makeWithResult(arg, messageId, result)
 
-    const makeEffect = (arg: A): Effect.Effect<never, never, A & Message.MessageWithResult<RA>> =>
-      pipe(
-        MessageId.makeEffect,
-        Effect.map((messageId) => make(arg, messageId))
-      )
+    const makeEffect = (value: A): Effect.Effect<never, never, Message.MessageWithResult<A, RA>> =>
+      makeWithResultEffect(value, result)
 
-    return { ...result, make, makeEffect } as any
+    return { ...result, make, makeEffect }
   }
 }
 
 /** @internal */
-export function makeEffect<A>(message: A): Effect.Effect<never, never, A & Message.Message> {
+export function make<Payload>(
+  payload: Payload,
+  id: MessageId.MessageId,
+  headers: Record<string, string> = {}
+): Message.Message<Payload> {
+  return ({ payload, id, headers })
+}
+
+/** @internal */
+export function makeEffect<Payload>(
+  message: Payload,
+  headers: Record<string, string> = {}
+): Effect.Effect<never, never, Message.Message<Payload>> {
   return pipe(
     MessageId.makeEffect,
-    Effect.map((messageId) => ({ ...message, [PrimaryKey.symbol]: () => messageId.value }))
+    Effect.map((messageId) => make(message, messageId, headers))
+  )
+}
+
+/** @internal */
+export function makeWithResult<Payload, I, A>(
+  payload: Payload,
+  messageId: MessageId.MessageId,
+  success: Schema.Schema<I, A>,
+  headers: Record<string, string> = {}
+): Message.MessageWithResult<Payload, A> {
+  console.log("makeWithResult", payload)
+  return Object.assign(make(payload, messageId, headers), {
+    [Serializable.symbolResult]: { Failure: Schema.never, Success: success as any }
+  })
+}
+
+/** @internal */
+export function makeWithResultEffect<Payload, I, A>(
+  payload: Payload,
+  success: Schema.Schema<I, A>,
+  headers: Record<string, string> = {}
+): Effect.Effect<never, never, Message.MessageWithResult<Payload, A>> {
+  return pipe(
+    MessageId.makeEffect,
+    Effect.map((messageId) => makeWithResult(payload, messageId, success, headers))
   )
 }

@@ -35,16 +35,10 @@ interface SampleService {
 
 const SampleService = Tag<SampleService>()
 
-const SampleMessage = Message.schemaWithResult(Schema.never)(
-  Schema.struct({
-    value: Schema.number
-  })
-)
+const SampleMessage = Message.schema(Schema.number)
 
 const SampleMessageWithResult = Message.schemaWithResult(Schema.number)(
-  Schema.struct({
-    value: Schema.number
-  })
+  Schema.number
 )
 
 const SampleEntity = RecipientType.makeEntityType("Sample", Schema.union(SampleMessage, SampleMessageWithResult))
@@ -67,7 +61,7 @@ describe.concurrent("SampleTests", () => {
   )
 
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
-    pipe(fa, Effect.provide(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
+    pipe(fa, Effect.provide(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Debug))
 
   it("Succefully delivers a message", () => {
     return Effect.gen(function*(_) {
@@ -84,7 +78,7 @@ describe.concurrent("SampleTests", () => {
       )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleMessage.makeEffect({ value: 42 }))
+      const msg = yield* _(SampleMessage.makeEffect(42))
       yield* _(messenger.sendDiscard("entity1")(msg))
 
       expect(yield* _(Ref.get(received))).toBe(true)
@@ -96,7 +90,7 @@ describe.concurrent("SampleTests", () => {
       yield* _(Sharding.registerScoped)
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleMessage.makeEffect({ value: 42 }))
+      const msg = yield* _(SampleMessage.makeEffect(42))
       const exit = yield* _(messenger.sendDiscard("entity1")(msg).pipe(Effect.exit))
 
       expect(Exit.isFailure(exit)).toBe(true)
@@ -121,7 +115,7 @@ describe.concurrent("SampleTests", () => {
         SampleEntity,
         RecipientBehaviour.fromFunctionEffect((entityId, msg) =>
           pipe(
-            Ref.set(entityId === "entity1" ? result1 : result2, msg.value),
+            Ref.set(entityId === "entity1" ? result1 : result2, msg.payload),
             Effect.as(MessageState.MessageStateAcknowledged)
           )
         )
@@ -129,10 +123,10 @@ describe.concurrent("SampleTests", () => {
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 
-      const msg1 = yield* _(SampleMessage.makeEffect({ value: 1 }))
+      const msg1 = yield* _(SampleMessage.makeEffect(1))
       yield* _(messenger.sendDiscard("entity1")(msg1))
 
-      const msg2 = yield* _(SampleMessage.makeEffect({ value: 2 }))
+      const msg2 = yield* _(SampleMessage.makeEffect(2))
       yield* _(messenger.sendDiscard("entity2")(msg2))
 
       expect(yield* _(Ref.get(result1))).toBe(1)
@@ -140,7 +134,7 @@ describe.concurrent("SampleTests", () => {
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
-  it("Succefully delivers a message with a reply to an entity", () => {
+  it.only("Succefully delivers a message with a reply to an entity", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
       const SampleMessage = Message.schemaWithResult(Schema.number)(Schema.struct({
@@ -171,7 +165,7 @@ describe.concurrent("SampleTests", () => {
         _tag: Schema.literal("GetIncrement")
       }))
 
-      const BroadcastIncrement = Message.schemaWithResult(Schema.never)(
+      const BroadcastIncrement = Message.schema(
         Schema.struct({
           _tag: Schema.literal("BroadcastIncrement")
         })
@@ -189,8 +183,8 @@ describe.concurrent("SampleTests", () => {
       yield* _(
         Sharding.registerTopic(
           SampleTopic,
-          RecipientBehaviour.fromFunctionEffect((entityId, msg) => {
-            switch (msg._tag) {
+          RecipientBehaviour.fromFunctionEffect((entityId, { payload }) => {
+            switch (payload._tag) {
               case "BroadcastIncrement":
                 return pipe(Ref.update(ref, (_) => _ + 1), Effect.as(MessageState.MessageStateAcknowledged))
               case "GetIncrement":
@@ -245,7 +239,7 @@ describe.concurrent("SampleTests", () => {
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 
-      const msg1 = yield* _(SampleMessage.makeEffect({ value: 1 }))
+      const msg1 = yield* _(SampleMessage.makeEffect(1))
       yield* _(messenger.sendDiscard("entity1")(msg1))
       yield* _(Deferred.await(entityStarted))
     }).pipe(withTestEnv, Effect.runPromise).then(() => expect(entityInterrupted).toBe(true))
@@ -286,7 +280,7 @@ describe.concurrent("SampleTests", () => {
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 
-      const msg1 = yield* _(SampleMessage.makeEffect({ value: 1 }))
+      const msg1 = yield* _(SampleMessage.makeEffect(1))
       yield* _(messenger.sendDiscard("entity1")(msg1))
 
       yield* _(Deferred.await(entityStarted))
@@ -332,7 +326,7 @@ describe.concurrent("SampleTests", () => {
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 
-      const msg1 = yield* _(SampleMessage.makeEffect({ value: 1 }))
+      const msg1 = yield* _(SampleMessage.makeEffect(1))
       yield* _(messenger.sendDiscard("entity1")(msg1))
 
       yield* _(Deferred.await(entityStarted))
@@ -439,7 +433,7 @@ describe.concurrent("SampleTests", () => {
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 
-      const msg = yield* _(SampleMessageWithResult.makeEffect({ value: 1 }))
+      const msg = yield* _(SampleMessageWithResult.makeEffect(1))
       const replyFiber = yield* _(
         messenger.send("entity1")(msg),
         Effect.fork

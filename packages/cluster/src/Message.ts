@@ -4,7 +4,6 @@
 import type * as Schema from "@effect/schema/Schema"
 import type * as Serializable from "@effect/schema/Serializable"
 import type * as Effect from "effect/Effect"
-import type * as PrimaryKey from "effect/PrimaryKey"
 import type * as Types from "effect/Types"
 import * as internal from "./internal/message.js"
 import type * as MessageId from "./MessageId.js"
@@ -25,7 +24,34 @@ export type MessageTypeId = typeof MessageTypeId
  * @since 1.0.0
  * @category models
  */
-export interface Message extends PrimaryKey.PrimaryKey {
+export interface Message<Payload> {
+  id: MessageId.MessageId
+  headers: Record<string, string>
+  payload: Payload
+}
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface AnyMessage extends Message<any> {}
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface MessageSchema<From, To> extends
+  Schema.Schema<
+    {
+      readonly id: { readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId"; readonly value: string }
+      readonly headers: { readonly [x: string]: string }
+      readonly payload: From
+    },
+    Message<To>
+  >
+{
+  make: (message: To, messageId: MessageId.MessageId) => Message<To>
+  makeEffect: (message: To) => Effect.Effect<never, never, Message<To>>
 }
 
 /**
@@ -34,8 +60,16 @@ export interface Message extends PrimaryKey.PrimaryKey {
  * @since 1.0.0
  * @category models
  */
-export interface MessageWithResult<A> extends Message, Serializable.WithResult<never, never, unknown, A> {
+export interface MessageWithResult<Payload, Result>
+  extends Message<Payload>, Serializable.WithResult<never, never, unknown, Result>
+{
 }
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface AnyMessageWithResult extends MessageWithResult<any, any> {}
 
 /**
  * A `MessageSchema<From, To, A>` is an augmented schema that provides utilities to build the Message<A> with a valid replier.
@@ -43,58 +77,78 @@ export interface MessageWithResult<A> extends Message, Serializable.WithResult<n
  * @since 1.0.0
  * @category models
  */
-export interface MessageSchema<From, To, A>
-  extends Schema.Schema<From & { "@effect/cluster/Message": string }, Types.Simplify<To & MessageWithResult<A>>>
+export interface MessageWithResultSchema<From, To, Result> extends
+  Schema.Schema<
+    Types.Simplify<
+      From & {
+        readonly "@effect/cluster/Message": {
+          readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId"
+          readonly value: string
+        }
+      }
+    >,
+    MessageWithResult<To, Result>
+  >
 {
-  make: (message: To, messageId: MessageId.MessageId) => Types.Simplify<To & MessageWithResult<A>>
-  makeEffect: (message: To) => Effect.Effect<never, never, Types.Simplify<To & MessageWithResult<A>>>
+  make: (message: To, messageId: MessageId.MessageId) => MessageWithResult<To, Result>
+  makeEffect: (message: To) => Effect.Effect<never, never, MessageWithResult<To, Result>>
 }
 
 /**
- * Extracts the success type from a `Message<A>`.
+ * Extracts the success type from a `MessageWithResult<A, S>`.
  *
  * @since 1.0.0
  * @category utils
  */
-export type Success<A> = A extends MessageWithResult<infer X> ? X : never
+export type Success<S> = S extends MessageWithResult<any, infer X> ? X : never
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const isMessageWithResult: <R>(value: unknown) => value is MessageWithResult<R> = internal.isMessageWithResult
+export const isMessageWithResult: (value: unknown) => value is MessageWithResult<unknown, unknown> =
+  internal.isMessageWithResult
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const isMessage: (value: unknown) => value is Message = internal.isMessage
+export const isMessage: (value: unknown) => value is Message<unknown> = internal.isMessage
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const messageId: (value: Message) => MessageId.MessageId = internal.messageId
+export const messageId: <Payload>(value: Message<Payload>) => MessageId.MessageId = internal.messageId
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const successSchema: <A>(message: MessageWithResult<A>) => Schema.Schema<unknown, A> = internal.successSchema
+export const successSchema: <Payload, Result>(
+  message: MessageWithResult<Payload, Result>
+) => Schema.Schema<unknown, Result> = internal.successSchema
 
 /**
- * Creates both the schema and a constructor for a `Message<A>`
+ * Creates both the schema and a constructor for a `MessageWithResult<A>`
  *
  * @since 1.0.0
  * @category schema
  */
 export const schemaWithResult: <RI, RA>(
-  replySchema: Schema.Schema<RI, RA>
-) => <I extends object, A extends object>(item: Schema.Schema<I, A>) => MessageSchema<I, A, RA> =
-  internal.schemaWithResult
+  success: Schema.Schema<RI, RA>
+) => <I, A>(payload: Schema.Schema<I, A>) => MessageWithResultSchema<I, A, RA> = internal.schemaWithResult
 
 /**
  * @since 1.0.0
  * @category utils
  */
 export const makeEffect = internal.makeEffect
+
+/**
+ * Creates both the schema and a constructor for a `Message`
+ *
+ * @since 1.0.0
+ * @category schema
+ */
+export const schema: <I, A>(payload: Schema.Schema<I, A>) => MessageSchema<I, A> = internal.schema

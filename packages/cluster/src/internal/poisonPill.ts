@@ -30,10 +30,11 @@ export const make: Effect.Effect<never, never, PoisonPill.PoisonPill> = Message.
  */
 export function isPoisonPill(value: unknown): value is PoisonPill.PoisonPill {
   return (
-    typeof value === "object" &&
-    value !== null &&
-    PoisonPillTypeId in value &&
-    value[PoisonPillTypeId] === PoisonPillTypeId
+    Message.isMessage(value) &&
+    typeof value.payload === "object" &&
+    value.payload !== null &&
+    PoisonPillTypeId in value.payload &&
+    value.payload[PoisonPillTypeId] === PoisonPillTypeId
   )
 }
 
@@ -45,9 +46,8 @@ export function isPoisonPill(value: unknown): value is PoisonPill.PoisonPill {
  */
 export const schema: Message.MessageSchema<
   { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
-  PoisonPill.PoisonPill,
-  never
-> = Message.schemaWithResult(Schema.never)(Schema.data(Schema.rename(
+  Data.Data<{ readonly [PoisonPill.PoisonPillTypeId]: typeof PoisonPill.PoisonPillTypeId }>
+> = Message.schema(Schema.data(Schema.rename(
   Schema.struct({
     [PoisonPillSymbolKey]: Schema.compose(
       Schema.symbolFromString(Schema.literal(PoisonPillSymbolKey)),

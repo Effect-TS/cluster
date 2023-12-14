@@ -13,7 +13,7 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category models
  */
-export interface Broadcaster<Msg> {
+export interface Broadcaster<Msg extends Message.AnyMessage> {
   /**
    * Broadcast a message without waiting for a response (fire and forget)
    * @since 1.0.0
@@ -26,7 +26,7 @@ export interface Broadcaster<Msg> {
    */
   readonly broadcast: (
     topic: string
-  ) => <A extends Msg & Message.MessageWithResult<any>>(
+  ) => <A extends Msg & Message.AnyMessageWithResult>(
     msg: A
   ) => Effect.Effect<
     never,

@@ -12,7 +12,7 @@ import * as PoisonPill from "../PoisonPill.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 
 /** @internal  */
-export function fromFunctionEffect<Msg extends Message.Message, R>(
+export function fromFunctionEffect<Msg extends Message.AnyMessage, R>(
   handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return (entityId) =>
@@ -23,7 +23,7 @@ export function fromFunctionEffect<Msg extends Message.Message, R>(
 }
 
 /** @internal */
-export function fromInMemoryQueue<Msg extends Message.Message, R>(
+export function fromInMemoryQueue<Msg extends Message.AnyMessage, R>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,

@@ -38,7 +38,7 @@ const programLayer = Layer.scopedDiscard(pipe(
             PoisonPill.takeOrInterrupt(dequeue),
             Effect.flatMap(
               (msg) => {
-                switch (msg._tag) {
+                switch (msg.payload._tag) {
                   case "Increment":
                     return SubscriptionRef.update(count, (a) => a + 1)
                   case "Decrement":

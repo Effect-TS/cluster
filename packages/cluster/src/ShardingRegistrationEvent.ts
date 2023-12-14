@@ -8,7 +8,7 @@ import type * as RecipientType from "./RecipientType.js"
  * @since 1.0.0
  * @category models
  */
-interface EntityRegistered<Msg extends Message.Message> {
+interface EntityRegistered<Msg extends Message.AnyMessage> {
   _tag: "EntityRegistered"
   entityType: RecipientType.EntityType<Msg>
 }
@@ -17,7 +17,7 @@ interface EntityRegistered<Msg extends Message.Message> {
  * @since 1.0.0
  * @category constructors
  */
-export function EntityRegistered<Msg extends Message.Message>(
+export function EntityRegistered<Msg extends Message.AnyMessage>(
   entityType: RecipientType.EntityType<Msg>
 ): ShardingRegistrationEvent {
   return ({ _tag: "EntityRegistered", entityType })
@@ -44,7 +44,7 @@ export function SingletonRegistered(name: string): ShardingRegistrationEvent {
  * @since 1.0.0
  * @category models
  */
-interface TopicRegistered<Msg extends Message.Message> {
+interface TopicRegistered<Msg extends Message.AnyMessage> {
   _tag: "TopicRegistered"
   topicType: RecipientType.TopicType<Msg>
 }
@@ -53,7 +53,7 @@ interface TopicRegistered<Msg extends Message.Message> {
  * @since 1.0.0
  * @category constructors
  */
-export function TopicRegistered<Msg extends Message.Message>(
+export function TopicRegistered<Msg extends Message.AnyMessage>(
   topicType: RecipientType.TopicType<Msg>
 ): ShardingRegistrationEvent {
   return ({ _tag: "TopicRegistered", topicType })

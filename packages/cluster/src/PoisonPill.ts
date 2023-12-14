@@ -24,10 +24,13 @@ export type PoisonPillTypeId = typeof PoisonPillTypeId
  * @category models
  */
 export interface PoisonPill extends
-  Data.Data<{
-    [PoisonPillTypeId]: PoisonPillTypeId
-  }>,
-  Message.Message
+  Message.Message<
+    Data.Data<
+      {
+        [PoisonPillTypeId]: PoisonPillTypeId
+      }
+    >
+  >
 {}
 
 /**
@@ -52,8 +55,7 @@ export const isPoisonPill: (value: unknown) => value is PoisonPill = internal.is
  */
 export const schema: Message.MessageSchema<
   { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
-  PoisonPill,
-  never
+  Data.Data<{ readonly [PoisonPillTypeId]: typeof PoisonPillTypeId }>
 > = internal.schema
 
 /**

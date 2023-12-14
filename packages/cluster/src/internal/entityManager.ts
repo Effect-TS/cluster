@@ -32,7 +32,7 @@ export const EntityManagerTypeId = Symbol.for(
 export type EntityManagerTypeId = typeof EntityManagerTypeId
 
 /** @internal */
-export interface EntityManager<Msg extends Message.Message> {
+export interface EntityManager<Msg extends Message.AnyMessage> {
   readonly [EntityManagerTypeId]: EntityManagerTypeId
 
   /** @internal */
@@ -60,7 +60,7 @@ export interface EntityManager<Msg extends Message.Message> {
 }
 
 /** @internal */
-export function make<Msg extends Message.Message, R>(
+export function make<Msg extends Message.AnyMessage, R>(
   recipientType: RecipientType.RecipientType<Msg>,
   behaviour_: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   sharding: Sharding.Sharding,
