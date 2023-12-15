@@ -53,7 +53,6 @@ describe.concurrent("SampleTests", () => {
     Layer.provide(ShardManagerClient.local),
     Layer.provide(
       ShardingConfig.withDefaults({
-        simulateRemotePods: true,
         entityTerminationTimeout: Duration.millis(4000),
         sendTimeout: Duration.millis(1000)
       })
@@ -72,7 +71,7 @@ describe.concurrent("SampleTests", () => {
         Sharding.registerEntity(
           SampleEntity,
           RecipientBehaviour.fromFunctionEffect(() =>
-            pipe(Ref.set(received, true), Effect.as(MessageState.MessageStateAcknowledged))
+            pipe(Ref.set(received, true), Effect.as(MessageState.Acknowledged))
           )
         )
       )
@@ -116,7 +115,7 @@ describe.concurrent("SampleTests", () => {
         RecipientBehaviour.fromFunctionEffect((entityId, msg) =>
           pipe(
             Ref.set(entityId === "entity1" ? result1 : result2, msg.payload),
-            Effect.as(MessageState.MessageStateAcknowledged)
+            Effect.as(MessageState.Acknowledged)
           )
         )
       ))
@@ -147,7 +146,7 @@ describe.concurrent("SampleTests", () => {
 
       yield* _(Sharding.registerEntity(
         SampleEntity,
-        RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.MessageStateDone(42)))
+        RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Processed(Option.some(42))))
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
@@ -186,9 +185,9 @@ describe.concurrent("SampleTests", () => {
           RecipientBehaviour.fromFunctionEffect((entityId, { payload }) => {
             switch (payload._tag) {
               case "BroadcastIncrement":
-                return pipe(Ref.update(ref, (_) => _ + 1), Effect.as(MessageState.MessageStateAcknowledged))
+                return pipe(Ref.update(ref, (_) => _ + 1), Effect.as(MessageState.Acknowledged))
               case "GetIncrement":
-                return pipe(Ref.get(ref), Effect.map(MessageState.MessageStateDone))
+                return pipe(Ref.get(ref), Effect.map((_) => MessageState.Processed(Option.some(_))))
             }
           })
         )

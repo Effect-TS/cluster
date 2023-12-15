@@ -48,7 +48,7 @@ export function fromInMemoryQueue<Msg extends Message.AnyMessage, R>(
       }
 
       function reply<A extends Msg>(message: A, reply: Message.Success<A>) {
-        return updateMessageState(message, MessageState.MessageStateDone(reply))
+        return updateMessageState(message, MessageState.Processed(Option.some(reply)))
       }
 
       return yield* _(pipe(
@@ -82,7 +82,7 @@ export function fromInMemoryQueue<Msg extends Message.AnyMessage, R>(
                   onNone: () =>
                     pipe(
                       Queue.offer(queue, message),
-                      Effect.zipRight(updateMessageState(message, MessageState.MessageStateAcknowledged))
+                      Effect.zipRight(updateMessageState(message, MessageState.Acknowledged))
                     ),
                   onSome: (state) => Effect.succeed(state)
                 }))

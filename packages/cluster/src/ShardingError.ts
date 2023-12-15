@@ -5,6 +5,7 @@ import * as Schema from "@effect/schema/Schema"
 import { ShardingErrorEntityNotManagedByThisPodSchema } from "./ShardingErrorEntityNotManagedByThisPod.js"
 import { ShardingErrorEntityTypeNotRegisteredSchema } from "./ShardingErrorEntityTypeNotRegistered.js"
 import { ShardingErrorMessageQueueSchema } from "./ShardingErrorMessageQueue.js"
+import { ShardingErrorNoResultInProcessedMessageStateSchema } from "./ShardingErrorNoResultInMessageProcessedState.js"
 import { ShardingErrorPodNoLongerRegisteredSchema } from "./ShardingErrorPodNoLongerRegistered.js"
 import { ShardingErrorPodUnavailableSchema } from "./ShardingErrorPodUnavailable.js"
 import { ShardingErrorSendTimeoutSchema } from "./ShardingErrorSendTimeout.js"
@@ -47,6 +48,11 @@ export * from "./ShardingErrorSerialization.js"
 
 /**
  * @since 1.0.0
+ */
+export * from "./ShardingErrorNoResultInMessageProcessedState.js"
+
+/**
+ * @since 1.0.0
  * @category schema
  */
 export const schema = Schema.union(
@@ -56,7 +62,8 @@ export const schema = Schema.union(
   ShardingErrorMessageQueueSchema,
   ShardingErrorPodNoLongerRegisteredSchema,
   ShardingErrorPodUnavailableSchema,
-  ShardingErrorSendTimeoutSchema
+  ShardingErrorSendTimeoutSchema,
+  ShardingErrorNoResultInProcessedMessageStateSchema
 )
 
 /**
