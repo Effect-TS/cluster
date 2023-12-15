@@ -25,8 +25,7 @@ export const defaults = Layer.succeed(shardingConfigTag, {
   entityTerminationTimeout: Duration.seconds(3),
   sendTimeout: Duration.seconds(5),
   refreshAssignmentsRetryInterval: Duration.seconds(5),
-  unhealthyPodReportInterval: Duration.seconds(5),
-  simulateRemotePods: false
+  unhealthyPodReportInterval: Duration.seconds(5)
 })
 
 /** @internal */
@@ -42,7 +41,6 @@ export function withDefaults(customs: Partial<ShardingConfig.ShardingConfig>) {
     sendTimeout: Duration.seconds(5),
     refreshAssignmentsRetryInterval: Duration.seconds(5),
     unhealthyPodReportInterval: Duration.seconds(5),
-    simulateRemotePods: false,
     ...customs
   })
 }

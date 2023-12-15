@@ -32,7 +32,8 @@ describe.concurrent("RecipientBehaviour", () => {
       Effect.provideService(
         RecipientBehaviourContext.RecipientBehaviourContext,
         RecipientBehaviourContext.make({
-          entityId: "entity1"
+          entityId: "entity1",
+          forkShutdown: Effect.unit
         })
       ),
       Scope.extend(scope)

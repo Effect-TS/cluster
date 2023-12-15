@@ -30,7 +30,6 @@ export type ShardingConfigTypeId = typeof ShardingConfigTypeId
  * @param sendTimeout timeout when calling sendMessage
  * @param refreshAssignmentsRetryInterval retry interval in case of failure getting shard assignments from storage
  * @param unhealthyPodReportInterval interval to report unhealthy pods to the Shard Manager (this exists to prevent calling the Shard Manager for each failed message)
- * @param simulateRemotePods disable optimizations when sending a message to an entity hosted on the local shards (this will force serialization of all messages)
  * @since 1.0.0
  * @category models
  */
@@ -45,7 +44,6 @@ export interface ShardingConfig {
   readonly sendTimeout: Duration.Duration
   readonly refreshAssignmentsRetryInterval: Duration.Duration
   readonly unhealthyPodReportInterval: Duration.Duration
-  readonly simulateRemotePods: boolean
 }
 
 /**

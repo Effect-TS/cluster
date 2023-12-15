@@ -3,6 +3,7 @@
  * This module provides the context that is given to a RecipientBehaviour
  */
 import type * as Context from "effect/Context"
+import type * as Effect from "effect/Effect"
 import * as internal from "./internal/recipientBehaviourContext.js"
 
 /**
@@ -25,6 +26,7 @@ export type RecipientBehaviourContextTypeId = typeof RecipientBehaviourContextTy
 export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
+  readonly forkShutdown: Effect.Effect<never, never, void>
 }
 
 /**

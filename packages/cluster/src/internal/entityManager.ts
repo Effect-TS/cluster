@@ -225,6 +225,7 @@ export function make<Msg extends Message.AnyMessage, R>(
                     const executionScope = yield* _(Scope.make())
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const cdt = yield* _(Clock.currentTimeMillis)
+                    const forkShutdown = pipe(forkEntityTermination(entityId), Effect.asUnit)
 
                     const sendAndGetState = yield* _(pipe(
                       behaviour_(entityId),
@@ -232,7 +233,8 @@ export function make<Msg extends Message.AnyMessage, R>(
                       Effect.provideService(
                         RecipientBehaviourContext.RecipientBehaviourContext,
                         RecipientBehaviourContext.make({
-                          entityId
+                          entityId,
+                          forkShutdown
                         })
                       ),
                       Effect.provide(env)
