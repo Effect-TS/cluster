@@ -3,6 +3,7 @@ import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Queue from "effect/Queue"
+import * as Message from "../Message.js"
 import type * as PoisonPill from "../PoisonPill.js"
 
 /** @internal */
@@ -19,7 +20,9 @@ export const PoisonPillTypeId: PoisonPill.PoisonPillTypeId = Symbol.for(
  * @since 1.0.0
  * @category constructors
  */
-export const make: PoisonPill.PoisonPill = Data.struct({ [PoisonPillTypeId]: PoisonPillTypeId })
+export const make: Effect.Effect<never, never, PoisonPill.PoisonPill> = Message.makeEffect(
+  Data.struct({ [PoisonPillTypeId]: PoisonPillTypeId })
+)
 
 /**
  * @since 1.0.0
@@ -27,10 +30,11 @@ export const make: PoisonPill.PoisonPill = Data.struct({ [PoisonPillTypeId]: Poi
  */
 export function isPoisonPill(value: unknown): value is PoisonPill.PoisonPill {
   return (
-    typeof value === "object" &&
-    value !== null &&
-    PoisonPillTypeId in value &&
-    value[PoisonPillTypeId] === PoisonPillTypeId
+    Message.isMessage(value) &&
+    typeof value.payload === "object" &&
+    value.payload !== null &&
+    PoisonPillTypeId in value.payload &&
+    value.payload[PoisonPillTypeId] === PoisonPillTypeId
   )
 }
 
@@ -40,10 +44,10 @@ export function isPoisonPill(value: unknown): value is PoisonPill.PoisonPill {
  * @since 1.0.0
  * @category schema
  */
-export const schema: Schema.Schema<
+export const schema: Message.MessageSchema<
   { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
-  PoisonPill.PoisonPill
-> = Schema.data(Schema.rename(
+  Data.Data<{ readonly [PoisonPill.PoisonPillTypeId]: typeof PoisonPill.PoisonPillTypeId }>
+> = Message.schema(Schema.data(Schema.rename(
   Schema.struct({
     [PoisonPillSymbolKey]: Schema.compose(
       Schema.symbolFromString(Schema.literal(PoisonPillSymbolKey)),
@@ -51,7 +55,7 @@ export const schema: Schema.Schema<
     )
   }),
   { [PoisonPillSymbolKey]: PoisonPillTypeId }
-))
+)))
 
 /**
  * Attempts to take a message from the queue in the same way Queue.take does.

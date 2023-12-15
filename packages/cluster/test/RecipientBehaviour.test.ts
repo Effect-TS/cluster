@@ -1,6 +1,8 @@
+import * as Message from "@effect/cluster/Message"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as RecipientBehaviourContext from "@effect/cluster/RecipientBehaviourContext"
+import * as Schema from "@effect/schema/Schema"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
@@ -12,15 +14,19 @@ import * as Queue from "effect/Queue"
 import * as Scope from "effect/Scope"
 import { describe, expect, it } from "vitest"
 
-interface Sample {
-  _tag: "sample"
-}
+const Sample = Message.schemaWithResult(Schema.never)(
+  Schema.struct({})
+)
+type Sample = Schema.Schema.To<typeof Sample>
 
 describe.concurrent("RecipientBehaviour", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
     pipe(fa, Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
 
-  const makeTestActor = <R, A>(fa: RecipientBehaviour.RecipientBehaviour<R, A>, scope: Scope.Scope) =>
+  const makeTestActor = <R, Msg extends Message.AnyMessage>(
+    fa: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    scope: Scope.Scope
+  ) =>
     pipe(
       fa("test"),
       Effect.provideService(
@@ -46,7 +52,8 @@ describe.concurrent("RecipientBehaviour", () => {
 
       const scope = yield* _(Scope.make())
       const offer = yield* _(makeTestActor(behaviour, scope))
-      yield* _(offer({ _tag: "sample" }))
+      const msg = yield* _(Sample.makeEffect({}))
+      yield* _(offer(msg))
       yield* _(Scope.close(scope, Exit.interrupt(FiberId.none)))
 
       expect(yield* _(Deferred.await(received))).toBe(true)
@@ -75,7 +82,8 @@ describe.concurrent("RecipientBehaviour", () => {
 
       const scope = yield* _(Scope.make())
       const offer = yield* _(makeTestActor(behaviour, scope))
-      yield* _(offer({ _tag: "sample" }))
+      const msg = yield* _(Sample.makeEffect({}))
+      yield* _(offer(msg))
       yield* _(Deferred.await(started))
       yield* _(Scope.close(scope, Exit.interrupt(FiberId.none)))
     }).pipe(withTestEnv, Effect.runPromise).then(() => expect(interrupted).toBe(true))

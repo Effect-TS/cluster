@@ -10,7 +10,7 @@ import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
-import { CounterEntity, GetCurrent } from "./sample-common.js"
+import { CounterEntity, GetCurrent, Increment } from "./sample-common.js"
 
 const liveSharding = pipe(
   Sharding.live,
@@ -25,8 +25,10 @@ const liveSharding = pipe(
 const program = pipe(
   Effect.Do,
   Effect.bind("messenger", () => Sharding.messenger(CounterEntity)),
-  Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
-  Effect.tap((_) => _.messenger.sendDiscard("entity1")({ _tag: "Increment" })),
+  Effect.bind("msg1", (_) => Increment.makeEffect({ _tag: "Increment" })),
+  Effect.tap((_) => _.messenger.sendDiscard("entity1")(_.msg1)),
+  Effect.bind("msg2", (_) => Increment.makeEffect({ _tag: "Increment" })),
+  Effect.tap((_) => _.messenger.sendDiscard("entity1")(_.msg2)),
   Effect.bind("msg", () => GetCurrent.makeEffect({ _tag: "GetCurrent" })),
   Effect.flatMap((_) => _.messenger.send("entity1")(_.msg)),
   Effect.tap((_) => Effect.log("Current count is " + _)),

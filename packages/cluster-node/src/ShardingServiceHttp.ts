@@ -21,11 +21,11 @@ const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
  * @since 1.0.0
  * @category layers
  */
-export const shardingServiceHttp = Layer.scopedDiscard(
+export const shardingServiceHttp = Layer.unwrapEffect(
   Effect.gen(function*(_) {
     const sharding = yield* _(Sharding.Tag)
 
-    return yield* _(Http.router.empty.pipe(
+    return (Http.router.empty.pipe(
       Http.router.post(
         "/assign-shards",
         Effect.gen(function*(_) {

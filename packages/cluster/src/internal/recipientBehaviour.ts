@@ -12,7 +12,7 @@ import * as PoisonPill from "../PoisonPill.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 
 /** @internal  */
-export function fromFunctionEffect<R, Msg>(
+export function fromFunctionEffect<Msg extends Message.AnyMessage, R>(
   handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return (entityId) =>
@@ -23,7 +23,7 @@ export function fromFunctionEffect<R, Msg>(
 }
 
 /** @internal */
-export function fromInMemoryQueue<R, Msg>(
+export function fromInMemoryQueue<Msg extends Message.AnyMessage, R>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
@@ -35,15 +35,15 @@ export function fromInMemoryQueue<R, Msg>(
       const messageStates = yield* _(Ref.make(HashMap.empty<MessageId.MessageId, MessageState.MessageState<any>>()))
 
       function updateMessageState(message: Msg, state: MessageState.MessageState<any>) {
-        if (!Message.isMessage(message)) return Effect.succeed(state)
-        return pipe(Ref.update(messageStates, HashMap.set(message[Message.MessageTypeId].id, state)), Effect.as(state))
+        if (!Message.isMessageWithResult(message)) return Effect.succeed(state)
+        return pipe(Ref.update(messageStates, HashMap.set(Message.messageId(message), state)), Effect.as(state))
       }
 
       function getMessageState(message: Msg) {
-        if (!Message.isMessage(message)) return Effect.succeed(Option.none())
+        if (!Message.isMessageWithResult(message)) return Effect.succeed(Option.none())
         return pipe(
           Ref.get(messageStates),
-          Effect.map(HashMap.get(message[Message.MessageTypeId].id))
+          Effect.map(HashMap.get(Message.messageId(message)))
         )
       }
 
@@ -59,7 +59,8 @@ export function fromInMemoryQueue<R, Msg>(
               Queue.unbounded<Msg | PoisonPill.PoisonPill>(),
               (queue) =>
                 pipe(
-                  Queue.offer(queue, PoisonPill.make),
+                  PoisonPill.make,
+                  Effect.flatMap((msg) => Queue.offer(queue, msg)),
                   Effect.zipLeft(Deferred.await(shutdownCompleted)),
                   Effect.uninterruptible
                 )

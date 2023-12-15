@@ -19,11 +19,11 @@ const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
  * @since 1.0.0
  * @category layers
  */
-export const shardManagerHttp = Layer.scopedDiscard(
+export const shardManagerHttp = Layer.unwrapEffect(
   Effect.gen(function*(_) {
     const shardManager = yield* _(ShardManager.ShardManager)
 
-    return yield* _(Http.router.empty.pipe(
+    return (Http.router.empty.pipe(
       Http.router.post(
         "/register",
         Effect.gen(function*(_) {
