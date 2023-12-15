@@ -64,31 +64,34 @@ export function schemaWithResult<RI, RA>(success: Schema.Schema<RI, RA>) {
   return function<I, A>(
     payload: Schema.Schema<I, A>
   ): Message.MessageWithResultSchema<I, A, RA> {
-    const result = Schema.declare(
-      [],
-      schema(payload),
-      (isDecoding) => {
-        const base = schema(payload)
-        return (u, options) => {
-          if (isDecoding) {
-            return ParseResult.map(
-              Parser.parse(base)(u, options),
-              (u) => {
-                return makeWithResult(u.payload, u.id, success, u.headers)
-              }
-            )
-          } else {
-            return Parser.encode(base)(u, options)
+    const result = pipe(
+      Schema.declare(
+        [],
+        schema(payload),
+        (isDecoding) => {
+          const base = schema(payload)
+          return (u, options) => {
+            if (isDecoding) {
+              return ParseResult.map(
+                Parser.parse(base)(u, options),
+                (u) => {
+                  return makeWithResult(u.payload, u.id, success, u.headers)
+                }
+              )
+            } else {
+              return Parser.encode(base)(u, options)
+            }
           }
         }
-      }
+      ),
+      Schema.identifier("MessageWithResult")
     )
 
     const make = (arg: A, messageId: MessageId.MessageId): Message.MessageWithResult<A, RA> =>
-      makeWithResult(arg, messageId, result)
+      makeWithResult(arg, messageId, success)
 
     const makeEffect = (value: A): Effect.Effect<never, never, Message.MessageWithResult<A, RA>> =>
-      makeWithResultEffect(value, result)
+      makeWithResultEffect(value, success)
 
     return { ...result, make, makeEffect }
   }

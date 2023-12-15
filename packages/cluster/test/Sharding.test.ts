@@ -61,7 +61,7 @@ describe.concurrent("SampleTests", () => {
   )
 
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
-    pipe(fa, Effect.provide(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Debug))
+    pipe(fa, Effect.provide(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
 
   it("Succefully delivers a message", () => {
     return Effect.gen(function*(_) {

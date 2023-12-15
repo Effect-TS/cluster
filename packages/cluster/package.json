@@ -17,13 +17,16 @@
   "sideEffects": false,
   "effect": {
     "generateIndex": {
-      "exclude": ["utils.ts"]
+      "exclude": [
+        "utils.ts"
+      ]
     },
     "generateExports": {
-      "exclude": ["utils.ts"]
+      "exclude": [
+        "utils.ts"
+      ]
     }
   },
-
   "scripts": {
     "build": "pnpm build-prepare && pnpm build-esm && pnpm build-cjs && pnpm build-annotate && build-utils pack-v2",
     "build-prepare": "build-utils prepare-v2",
@@ -32,12 +35,12 @@
     "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
   "peerDependencies": {
-    "@effect/schema": "^0.52.0",
-    "effect": "2.0.0-next.59"
+    "@effect/schema": "^0.53.3",
+    "effect": "2.0.0-next.60"
   },
   "devDependencies": {
-    "@effect/schema": "^0.52.0",
+    "@effect/schema": "^0.53.3",
     "@types/path-browserify": "^1.0.1",
-    "effect": "2.0.0-next.59"
+    "effect": "2.0.0-next.60"
   }
 }
