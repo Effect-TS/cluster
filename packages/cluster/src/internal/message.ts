@@ -53,9 +53,9 @@ export function isMessageWithResult(value: unknown): value is Message.MessageWit
 }
 
 /** @internal */
-export function successSchema<Payload, Result>(
-  message: Message.MessageWithResult<Payload, Result>
-): Schema.Schema<unknown, Result> {
+export function successSchema<A extends Message.AnyMessageWithResult>(
+  message: A
+): Schema.Schema<unknown, Message.Success<A>> {
   return Serializable.successSchema(message)
 }
 

@@ -125,9 +125,8 @@ export const messageId: <Payload>(value: Message<Payload>) => MessageId.MessageI
  * @since 1.0.0
  * @category utils
  */
-export const successSchema: <Payload, Result>(
-  message: MessageWithResult<Payload, Result>
-) => Schema.Schema<unknown, Result> = internal.successSchema
+export const successSchema: <A extends AnyMessageWithResult>(message: A) => Schema.Schema<unknown, Success<A>> =
+  internal.successSchema
 
 /**
  * Creates both the schema and a constructor for a `MessageWithResult<A>`
