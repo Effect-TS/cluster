@@ -19,7 +19,7 @@ const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
  * @since 1.0.0
  * @category layers
  */
-export const shardManagerHttp = Layer.unwrapEffect(
+export const shardManagerHttp = Layer.scopedDiscard(
   Effect.gen(function*(_) {
     const shardManager = yield* _(ShardManager.ShardManager)
 
