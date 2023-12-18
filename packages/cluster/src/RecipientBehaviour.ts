@@ -19,7 +19,7 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category models
  */
-export interface RecipientBehaviour<R, Msg extends Message.AnyMessage> extends
+export interface RecipientBehaviour<R, Msg extends Message.Any> extends
   Effect.Effect<
     R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
     never,
@@ -42,7 +42,7 @@ export type EntityBehaviourOptions = {
  * @since 1.0.0
  * @category utils
  */
-export const fromFunctionEffect: <R, Msg extends Message.AnyMessage>(
+export const fromFunctionEffect: <R, Msg extends Message.Any>(
   handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ) => RecipientBehaviour<R, Msg> = internal.fromFunctionEffect
 
@@ -50,7 +50,7 @@ export const fromFunctionEffect: <R, Msg extends Message.AnyMessage>(
  * @since 1.0.0
  * @category utils
  */
-export const fromInMemoryQueue: <R, Msg extends Message.AnyMessage>(
+export const fromInMemoryQueue: <R, Msg extends Message.Any>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,

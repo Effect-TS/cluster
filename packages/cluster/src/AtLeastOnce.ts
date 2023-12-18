@@ -16,7 +16,7 @@ export interface AtLeastOnceStorage {
   /**
    * Stores a message into the storage, eventually returning the already existing message state as result in the storage
    */
-  upsertMessageToBeProcessed<Msg extends Message.AnyMessage>(
+  upsertMessageToBeProcessed<Msg extends Message.Any>(
     recipientType: RecipientType.RecipientType<Msg>,
     entityId: string,
     message: Msg
@@ -29,7 +29,7 @@ export interface AtLeastOnceStorage {
   /**
    * Stores the message state to be used as result for this message
    */
-  saveProcessedMessageState<Msg extends Message.AnyMessage>(
+  saveProcessedMessageState<Msg extends Message.Any>(
     recipientType: RecipientType.RecipientType<Msg>,
     entityId: string,
     message: Msg,
@@ -39,7 +39,7 @@ export interface AtLeastOnceStorage {
 
 const AtLeastOnceStorageTag = Context.Tag<AtLeastOnceStorage>()
 
-export function make<Msg extends Message.AnyMessage>(recipientType: RecipientType.RecipientType<Msg>) {
+export function make<Msg extends Message.Any>(recipientType: RecipientType.RecipientType<Msg>) {
   return <R>(
     fa: RecipientBehaviour.RecipientBehaviour<R, Msg>
   ): RecipientBehaviour.RecipientBehaviour<R | AtLeastOnceStorage, Msg> =>

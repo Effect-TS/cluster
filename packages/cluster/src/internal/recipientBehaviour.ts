@@ -13,7 +13,7 @@ import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 
 /** @internal  */
-export function fromFunctionEffect<Msg extends Message.AnyMessage, R>(
+export function fromFunctionEffect<Msg extends Message.Any, R>(
   handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
@@ -29,7 +29,7 @@ export function fromFunctionEffect<Msg extends Message.AnyMessage, R>(
 }
 
 /** @internal */
-export function fromInMemoryQueue<Msg extends Message.AnyMessage, R>(
+export function fromInMemoryQueue<Msg extends Message.Any, R>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,

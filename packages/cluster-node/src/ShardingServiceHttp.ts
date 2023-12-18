@@ -21,7 +21,11 @@ const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
  * @since 1.0.0
  * @category layers
  */
-export const shardingServiceHttp = Layer.unwrapEffect(
+export const shardingServiceHttp: Layer.Layer<
+  ShardingConfig.ShardingConfig | Sharding.Sharding,
+  Http.error.ServeError,
+  never
+> = Layer.unwrapEffect(
   Effect.gen(function*(_) {
     const sharding = yield* _(Sharding.Tag)
 

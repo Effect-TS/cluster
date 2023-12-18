@@ -22,7 +22,7 @@ function asHttpUrl(pod: PodAddress.PodAddress): string {
  * @since 1.0.0
  * @category layers
  */
-export const httpPods = Layer.effect(
+export const httpPods: Layer.Layer<Http.client.Client.Default, never, Pods.Pods> = Layer.effect(
   Pods.Pods,
   Effect.gen(function*(_) {
     const client = yield* _(Http.client.Client, Effect.map(Http.client.filterStatusOk))

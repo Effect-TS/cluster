@@ -34,7 +34,7 @@ export interface Message<Payload> {
  * @since 1.0.0
  * @category models
  */
-export interface AnyMessage extends Message<any> {}
+export interface Any extends Message<any> {}
 
 /**
  * @since 1.0.0
@@ -69,7 +69,7 @@ export interface MessageWithResult<Payload, Result>
  * @since 1.0.0
  * @category models
  */
-export interface AnyMessageWithResult extends MessageWithResult<any, any> {}
+export interface AnyWithResult extends MessageWithResult<any, any> {}
 
 /**
  * A `MessageSchema<From, To, A>` is an augmented schema that provides utilities to build the Message<A> with a valid replier.
@@ -125,7 +125,7 @@ export const messageId: <Payload>(value: Message<Payload>) => MessageId.MessageI
  * @since 1.0.0
  * @category utils
  */
-export const successSchema: <A extends AnyMessageWithResult>(message: A) => Schema.Schema<unknown, Success<A>> =
+export const successSchema: <A extends AnyWithResult>(message: A) => Schema.Schema<unknown, Success<A>> =
   internal.successSchema
 
 /**

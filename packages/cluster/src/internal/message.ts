@@ -53,7 +53,7 @@ export function isMessageWithResult(value: unknown): value is Message.MessageWit
 }
 
 /** @internal */
-export function successSchema<A extends Message.AnyMessageWithResult>(
+export function successSchema<A extends Message.AnyWithResult>(
   message: A
 ): Schema.Schema<unknown, Message.Success<A>> {
   return Serializable.successSchema(message)

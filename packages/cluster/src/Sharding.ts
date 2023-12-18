@@ -30,11 +30,11 @@ export interface Sharding {
   readonly getShardId: (entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<never, never, void>
   readonly unregister: Effect.Effect<never, never, void>
-  readonly messenger: <Msg extends Message.AnyMessage>(
+  readonly messenger: <Msg extends Message.Any>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Messenger<Msg>
-  readonly broadcaster: <Msg extends Message.AnyMessage>(
+  readonly broadcaster: <Msg extends Message.Any>(
     topicType: RecipentType.TopicType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Broadcaster<Msg>
@@ -44,12 +44,12 @@ export interface Sharding {
   readonly isShuttingDown: Effect.Effect<never, never, boolean>
 
   readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
-  readonly registerEntity: <Msg extends Message.AnyMessage, R>(
+  readonly registerEntity: <Msg extends Message.Any, R>(
     entityType: RecipentType.EntityType<Msg>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
-  readonly registerTopic: <Msg extends Message.AnyMessage, R>(
+  readonly registerTopic: <Msg extends Message.Any, R>(
     topicType: RecipentType.TopicType<Msg>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
@@ -125,7 +125,7 @@ export const registerSingleton: <R>(
  * @since 1.0.0
  * @category utils
  */
-export const registerEntity: <Msg extends Message.AnyMessage, R>(
+export const registerEntity: <Msg extends Message.Any, R>(
   entityType: RecipentType.EntityType<Msg>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
@@ -140,7 +140,7 @@ export const registerEntity: <Msg extends Message.AnyMessage, R>(
  * @since 1.0.0
  * @category utils
  */
-export const registerTopic: <Msg extends Message.AnyMessage, R>(
+export const registerTopic: <Msg extends Message.Any, R>(
   topicType: RecipentType.TopicType<Msg>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
@@ -153,7 +153,7 @@ export const registerTopic: <Msg extends Message.AnyMessage, R>(
  * @since 1.0.0
  * @category utils
  */
-export const messenger: <Msg extends Message.AnyMessage>(
+export const messenger: <Msg extends Message.Any>(
   entityType: RecipentType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Sharding, never, Messenger<Msg>> = internal.messenger
@@ -164,7 +164,7 @@ export const messenger: <Msg extends Message.AnyMessage>(
  * @since 1.0.0
  * @category utils
  */
-export const broadcaster: <Msg extends Message.AnyMessage>(
+export const broadcaster: <Msg extends Message.Any>(
   topicType: RecipentType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Sharding, never, Broadcaster<Msg>> = internal.broadcaster

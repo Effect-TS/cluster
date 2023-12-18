@@ -23,7 +23,7 @@ describe.concurrent("RecipientBehaviour", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
     pipe(fa, Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
 
-  const makeTestActor = <R, Msg extends Message.AnyMessage>(
+  const makeTestActor = <R, Msg extends Message.Any>(
     fa: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     scope: Scope.Scope
   ) =>
