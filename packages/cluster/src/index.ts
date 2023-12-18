@@ -1,4 +1,9 @@
 /**
+ * Stores a message into the storage, eventually returning the already existing message state as result in the storage
+ */
+export * as AtLeastOnce from "./AtLeastOnce.js"
+
+/**
  * @since 1.0.0
  */
 export * as Broadcaster from "./Broadcaster.js"

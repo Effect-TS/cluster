@@ -19,17 +19,15 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category models
  */
-export interface RecipientBehaviour<R, Msg extends Message.AnyMessage> {
-  (
-    entityId: string
-  ): Effect.Effect<
+export interface RecipientBehaviour<R, Msg extends Message.AnyMessage> extends
+  Effect.Effect<
     R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
     never,
     <A extends Msg>(
       message: A
     ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, MessageState.MessageState<Message.Success<A>>>
   >
-}
+{}
 
 /**
  * An utility that process a message at a time, or interrupts on PoisonPill

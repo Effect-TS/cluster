@@ -62,7 +62,7 @@ export interface EntityManager<Msg extends Message.AnyMessage> {
 /** @internal */
 export function make<Msg extends Message.AnyMessage, R>(
   recipientType: RecipientType.RecipientType<Msg>,
-  behaviour_: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+  recipientBehaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   options: RecipientBehaviour.EntityBehaviourOptions = {}
@@ -228,7 +228,7 @@ export function make<Msg extends Message.AnyMessage, R>(
                     const forkShutdown = pipe(forkEntityTermination(entityId), Effect.asUnit)
 
                     const sendAndGetState = yield* _(pipe(
-                      behaviour_(entityId),
+                      recipientBehaviour,
                       Scope.extend(executionScope),
                       Effect.provideService(
                         RecipientBehaviourContext.RecipientBehaviourContext,

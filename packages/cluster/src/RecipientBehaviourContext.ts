@@ -45,3 +45,17 @@ export const RecipientBehaviourContext: Context.Tag<RecipientBehaviourContext, R
 export const make: (
   args: Omit<RecipientBehaviourContext, typeof RecipientBehaviourContextTypeId>
 ) => RecipientBehaviourContext = internal.make
+
+/**
+ * Gets the current entityId
+ * @since 1.0.0
+ * @category utils
+ */
+export const entityId: Effect.Effect<RecipientBehaviourContext, never, string> = internal.entityId
+
+/**
+ * Forks the shutdown of the current recipient
+ * @since 1.0.0
+ * @category utils
+ */
+export const forkShutdown: Effect.Effect<RecipientBehaviourContext, never, void> = internal.forkShutdown

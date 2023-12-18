@@ -28,7 +28,7 @@ describe.concurrent("RecipientBehaviour", () => {
     scope: Scope.Scope
   ) =>
     pipe(
-      fa("test"),
+      fa,
       Effect.provideService(
         RecipientBehaviourContext.RecipientBehaviourContext,
         RecipientBehaviourContext.make({

@@ -24,7 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const shardManagerHttp: Layer.Layer<unknown, unknown, unknown>
+export declare const shardManagerHttp: Layer.Layer<unknown, unknown, never>
 ```
 
 Added in v1.0.0
