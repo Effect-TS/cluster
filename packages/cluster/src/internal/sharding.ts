@@ -125,6 +125,26 @@ export const getPods: Effect.Effect<Sharding.Sharding, never, HashSet.HashSet<Po
   (_) => _.getPods
 )
 
+/**
+ * @internal
+ */
+export const sendMessageToLocalEntityManagerWithoutRetries: (
+  msg: SerializedEnvelope.SerializedEnvelope
+) => Effect.Effect<
+  Sharding.Sharding,
+  ShardingError.ShardingError,
+  MessageState.MessageState<SerializedMessage.SerializedMessage>
+> = (msg) => Effect.flatMap(shardingTag, (_) => _.sendMessageToLocalEntityManagerWithoutRetries(msg))
+
+/**
+ * @internal
+ */
+export const getAssignedShardIds: Effect.Effect<
+  Sharding.Sharding,
+  never,
+  HashSet.HashSet<ShardId.ShardId>
+> = Effect.flatMap(shardingTag, (_) => _.getAssignedShardIds)
+
 type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
 
 /**
@@ -336,6 +356,12 @@ function make(
   const getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>> = pipe(
     Ref.get(shardAssignments),
     Effect.map((_) => HashSet.fromIterable(HashMap.values(_)))
+  )
+
+  const getAssignedShardIds: Effect.Effect<never, never, HashSet.HashSet<ShardId.ShardId>> = pipe(
+    Ref.get(shardAssignments),
+    Effect.map(HashMap.filter((_) => equals(_, address))),
+    Effect.map(HashMap.keySet)
   )
 
   function updateAssignments(
@@ -706,6 +732,7 @@ function make(
     unassign,
     getShardingRegistrationEvents,
     getPods,
+    getAssignedShardIds,
     refreshAssignments,
     sendMessageToLocalEntityManagerWithoutRetries
   }

@@ -27,6 +27,7 @@ import type * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
  * @category models
  */
 export interface Sharding {
+  /** @internal */
   readonly getShardId: (entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<never, never, void>
   readonly unregister: Effect.Effect<never, never, void>
@@ -60,6 +61,7 @@ export interface Sharding {
     ShardingRegistrationEvent.ShardingRegistrationEvent
   >
   readonly registerSingleton: <R>(name: string, run: Effect.Effect<R, never, void>) => Effect.Effect<R, never, void>
+  /** @internal */
   readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>
   readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
@@ -71,6 +73,7 @@ export interface Sharding {
     MessageState.MessageState<SerializedMessage.SerializedMessage>
   >
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
+  readonly getAssignedShardIds: Effect.Effect<never, never, HashSet.HashSet<ShardId.ShardId>>
 }
 
 /**
@@ -175,3 +178,24 @@ export const broadcaster: <Msg extends Message.Any>(
  * @category utils
  */
 export const getPods: Effect.Effect<Sharding, never, HashSet.HashSet<PodAddress.PodAddress>> = internal.getPods
+
+/**
+ * Sends a raw message to the local entity manager
+ * @since 1.0.0
+ * @category utils
+ */
+export const sendMessageToLocalEntityManagerWithoutRetries: (
+  msg: SerializedEnvelope.SerializedEnvelope
+) => Effect.Effect<
+  Sharding,
+  ShardingError.ShardingError,
+  MessageState.MessageState<SerializedMessage.SerializedMessage>
+> = internal.sendMessageToLocalEntityManagerWithoutRetries
+
+/**
+ * Gets the list of shardIds assigned to the current Pod
+ * @since 1.0.0
+ * @category utils
+ */
+export const getAssignedShardIds: Effect.Effect<Sharding, never, HashSet.HashSet<ShardId.ShardId>> =
+  internal.getAssignedShardIds
