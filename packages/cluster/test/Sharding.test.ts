@@ -391,7 +391,7 @@ describe.concurrent("SampleTests", () => {
   //           RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
   //             pipe(PoisonPill.takeOrInterrupt(dequeue), Effect.zipRight(Ref.set(received, true)))
   //           ),
-  //           RecipientBehaviour.mapOffer(() => () => Effect.fail(ShardingError.ShardingErrorMessageQueue("ERROR!")))
+  //           RecipientBehaviour.mapOffer(() => () => Effect.fail(ShardingError.ShardingErrorWhileOfferingMessage("ERROR!")))
   //         )
   //       )
   //     )
@@ -399,7 +399,7 @@ describe.concurrent("SampleTests", () => {
   //     const messenger = yield* _(Sharding.messenger(SampleEntity))
   //     yield* _(
   //       messenger.sendDiscard("entity1")(1),
-  //       Effect.catchTag(ShardingError.ShardingErrorMessageQueueTag, () => Ref.set(failed, true))
+  //       Effect.catchTag(ShardingError.ShardingErrorWhileOfferingMessageTag, () => Ref.set(failed, true))
   //     )
 
   //     expect(yield* _(Ref.get(failed))).toBe(true)

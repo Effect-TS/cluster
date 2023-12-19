@@ -38,7 +38,7 @@ Added in v1.0.0
   - [From "./ShardingError.js"](#from-shardingerrorjs)
   - [From "./ShardingErrorEntityNotManagedByThisPod.js"](#from-shardingerrorentitynotmanagedbythispodjs)
   - [From "./ShardingErrorEntityTypeNotRegistered.js"](#from-shardingerrorentitytypenotregisteredjs)
-  - [From "./ShardingErrorMessageQueue.js"](#from-shardingerrormessagequeuejs)
+  - [From "./ShardingErrorWhileOfferingMessage.js"](#from-ShardingErrorWhileOfferingMessagejs)
   - [From "./ShardingErrorNoResultInMessageProcessedState.js"](#from-shardingerrornoresultinmessageprocessedstatejs)
   - [From "./ShardingErrorPodNoLongerRegistered.js"](#from-shardingerrorpodnolongerregisteredjs)
   - [From "./ShardingErrorPodUnavailable.js"](#from-shardingerrorpodunavailablejs)
@@ -59,7 +59,7 @@ Re-exports all named exports from the "./Broadcaster.js" module as `Broadcaster`
 **Signature**
 
 ```ts
-export * as Broadcaster from "./Broadcaster.js"
+export * as Broadcaster from "./Broadcaster.js";
 ```
 
 Added in v1.0.0
@@ -71,7 +71,7 @@ Re-exports all named exports from the "./ManagerConfig.js" module as `ManagerCon
 **Signature**
 
 ```ts
-export * as ManagerConfig from "./ManagerConfig.js"
+export * as ManagerConfig from "./ManagerConfig.js";
 ```
 
 Added in v1.0.0
@@ -83,7 +83,7 @@ Re-exports all named exports from the "./Message.js" module as `Message`.
 **Signature**
 
 ```ts
-export * as Message from "./Message.js"
+export * as Message from "./Message.js";
 ```
 
 Added in v1.0.0
@@ -95,7 +95,7 @@ Re-exports all named exports from the "./MessageId.js" module as `MessageId`.
 **Signature**
 
 ```ts
-export * as MessageId from "./MessageId.js"
+export * as MessageId from "./MessageId.js";
 ```
 
 Added in v1.0.0
@@ -107,7 +107,7 @@ Re-exports all named exports from the "./MessageState.js" module as `MessageStat
 **Signature**
 
 ```ts
-export * as MessageState from "./MessageState.js"
+export * as MessageState from "./MessageState.js";
 ```
 
 Added in v1.0.0
@@ -119,7 +119,7 @@ Re-exports all named exports from the "./Messenger.js" module as `Messenger`.
 **Signature**
 
 ```ts
-export * as Messenger from "./Messenger.js"
+export * as Messenger from "./Messenger.js";
 ```
 
 Added in v1.0.0
@@ -131,7 +131,7 @@ Re-exports all named exports from the "./Pod.js" module as `Pod`.
 **Signature**
 
 ```ts
-export * as Pod from "./Pod.js"
+export * as Pod from "./Pod.js";
 ```
 
 Added in v1.0.0
@@ -143,7 +143,7 @@ Re-exports all named exports from the "./PodAddress.js" module as `PodAddress`.
 **Signature**
 
 ```ts
-export * as PodAddress from "./PodAddress.js"
+export * as PodAddress from "./PodAddress.js";
 ```
 
 Added in v1.0.0
@@ -155,7 +155,7 @@ Re-exports all named exports from the "./Pods.js" module as `Pods`.
 **Signature**
 
 ```ts
-export * as Pods from "./Pods.js"
+export * as Pods from "./Pods.js";
 ```
 
 Added in v1.0.0
@@ -167,7 +167,7 @@ Re-exports all named exports from the "./PodsHealth.js" module as `PodsHealth`.
 **Signature**
 
 ```ts
-export * as PodsHealth from "./PodsHealth.js"
+export * as PodsHealth from "./PodsHealth.js";
 ```
 
 Added in v1.0.0
@@ -179,7 +179,7 @@ Re-exports all named exports from the "./PoisonPill.js" module as `PoisonPill`.
 **Signature**
 
 ```ts
-export * as PoisonPill from "./PoisonPill.js"
+export * as PoisonPill from "./PoisonPill.js";
 ```
 
 Added in v1.0.0
@@ -191,7 +191,7 @@ A module that provides utilities to build basic behaviours
 **Signature**
 
 ```ts
-export * as RecipientBehaviour from "./RecipientBehaviour.js"
+export * as RecipientBehaviour from "./RecipientBehaviour.js";
 ```
 
 Added in v1.0.0
@@ -203,7 +203,7 @@ Re-exports all named exports from the "./RecipientBehaviourContext.js" module as
 **Signature**
 
 ```ts
-export * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
+export * as RecipientBehaviourContext from "./RecipientBehaviourContext.js";
 ```
 
 Added in v1.0.0
@@ -216,7 +216,7 @@ Re-exports all named exports from the "./RecipientType.js" module as `RecipientT
 **Signature**
 
 ```ts
-export * as RecipientType from "./RecipientType.js"
+export * as RecipientType from "./RecipientType.js";
 ```
 
 Added in v1.0.0
@@ -228,7 +228,7 @@ Re-exports all named exports from the "./Serialization.js" module as `Serializat
 **Signature**
 
 ```ts
-export * as Serialization from "./Serialization.js"
+export * as Serialization from "./Serialization.js";
 ```
 
 Added in v1.0.0
@@ -240,7 +240,7 @@ Re-exports all named exports from the "./SerializedEnvelope.js" module as `Seria
 **Signature**
 
 ```ts
-export * as SerializedEnvelope from "./SerializedEnvelope.js"
+export * as SerializedEnvelope from "./SerializedEnvelope.js";
 ```
 
 Added in v1.0.0
@@ -252,7 +252,7 @@ Re-exports all named exports from the "./SerializedMessage.js" module as `Serial
 **Signature**
 
 ```ts
-export * as SerializedMessage from "./SerializedMessage.js"
+export * as SerializedMessage from "./SerializedMessage.js";
 ```
 
 Added in v1.0.0
@@ -264,7 +264,7 @@ Re-exports all named exports from the "./ShardId.js" module as `ShardId`.
 **Signature**
 
 ```ts
-export * as ShardId from "./ShardId.js"
+export * as ShardId from "./ShardId.js";
 ```
 
 Added in v1.0.0
@@ -276,7 +276,7 @@ Re-exports all named exports from the "./ShardManager.js" module as `ShardManage
 **Signature**
 
 ```ts
-export * as ShardManager from "./ShardManager.js"
+export * as ShardManager from "./ShardManager.js";
 ```
 
 Added in v1.0.0
@@ -288,7 +288,7 @@ Re-exports all named exports from the "./ShardManagerClient.js" module as `Shard
 **Signature**
 
 ```ts
-export * as ShardManagerClient from "./ShardManagerClient.js"
+export * as ShardManagerClient from "./ShardManagerClient.js";
 ```
 
 Added in v1.0.0
@@ -300,7 +300,7 @@ Re-exports all named exports from the "./Sharding.js" module as `Sharding`.
 **Signature**
 
 ```ts
-export * as Sharding from "./Sharding.js"
+export * as Sharding from "./Sharding.js";
 ```
 
 Added in v1.0.0
@@ -312,7 +312,7 @@ Re-exports all named exports from the "./ShardingConfig.js" module as `ShardingC
 **Signature**
 
 ```ts
-export * as ShardingConfig from "./ShardingConfig.js"
+export * as ShardingConfig from "./ShardingConfig.js";
 ```
 
 Added in v1.0.0
@@ -324,7 +324,7 @@ Re-exports all named exports from the "./ShardingError.js" module as `ShardingEr
 **Signature**
 
 ```ts
-export * as ShardingError from "./ShardingError.js"
+export * as ShardingError from "./ShardingError.js";
 ```
 
 Added in v1.0.0
@@ -336,7 +336,7 @@ Re-exports all named exports from the "./ShardingErrorEntityNotManagedByThisPod.
 **Signature**
 
 ```ts
-export * as ShardingErrorEntityNotManagedByThisPod from "./ShardingErrorEntityNotManagedByThisPod.js"
+export * as ShardingErrorEntityNotManagedByThisPod from "./ShardingErrorEntityNotManagedByThisPod.js";
 ```
 
 Added in v1.0.0
@@ -348,19 +348,19 @@ Re-exports all named exports from the "./ShardingErrorEntityTypeNotRegistered.js
 **Signature**
 
 ```ts
-export * as ShardingErrorEntityTypeNotRegistered from "./ShardingErrorEntityTypeNotRegistered.js"
+export * as ShardingErrorEntityTypeNotRegistered from "./ShardingErrorEntityTypeNotRegistered.js";
 ```
 
 Added in v1.0.0
 
-## From "./ShardingErrorMessageQueue.js"
+## From "./ShardingErrorWhileOfferingMessage.js"
 
-Re-exports all named exports from the "./ShardingErrorMessageQueue.js" module as `ShardingErrorMessageQueue`.
+Re-exports all named exports from the "./ShardingErrorWhileOfferingMessage.js" module as `ShardingErrorWhileOfferingMessage`.
 
 **Signature**
 
 ```ts
-export * as ShardingErrorMessageQueue from "./ShardingErrorMessageQueue.js"
+export * as ShardingErrorWhileOfferingMessage from "./ShardingErrorWhileOfferingMessage.js";
 ```
 
 Added in v1.0.0
@@ -372,7 +372,7 @@ Re-exports all named exports from the "./ShardingErrorNoResultInMessageProcessed
 **Signature**
 
 ```ts
-export * as ShardingErrorNoResultInMessageProcessedState from "./ShardingErrorNoResultInMessageProcessedState.js"
+export * as ShardingErrorNoResultInMessageProcessedState from "./ShardingErrorNoResultInMessageProcessedState.js";
 ```
 
 Added in v1.0.0
@@ -384,7 +384,7 @@ Re-exports all named exports from the "./ShardingErrorPodNoLongerRegistered.js" 
 **Signature**
 
 ```ts
-export * as ShardingErrorPodNoLongerRegistered from "./ShardingErrorPodNoLongerRegistered.js"
+export * as ShardingErrorPodNoLongerRegistered from "./ShardingErrorPodNoLongerRegistered.js";
 ```
 
 Added in v1.0.0
@@ -396,7 +396,7 @@ Re-exports all named exports from the "./ShardingErrorPodUnavailable.js" module 
 **Signature**
 
 ```ts
-export * as ShardingErrorPodUnavailable from "./ShardingErrorPodUnavailable.js"
+export * as ShardingErrorPodUnavailable from "./ShardingErrorPodUnavailable.js";
 ```
 
 Added in v1.0.0
@@ -408,7 +408,7 @@ Re-exports all named exports from the "./ShardingErrorSendTimeout.js" module as 
 **Signature**
 
 ```ts
-export * as ShardingErrorSendTimeout from "./ShardingErrorSendTimeout.js"
+export * as ShardingErrorSendTimeout from "./ShardingErrorSendTimeout.js";
 ```
 
 Added in v1.0.0
@@ -420,7 +420,7 @@ Re-exports all named exports from the "./ShardingErrorSerialization.js" module a
 **Signature**
 
 ```ts
-export * as ShardingErrorSerialization from "./ShardingErrorSerialization.js"
+export * as ShardingErrorSerialization from "./ShardingErrorSerialization.js";
 ```
 
 Added in v1.0.0
@@ -432,7 +432,7 @@ Re-exports all named exports from the "./ShardingEvent.js" module as `ShardingEv
 **Signature**
 
 ```ts
-export * as ShardingEvent from "./ShardingEvent.js"
+export * as ShardingEvent from "./ShardingEvent.js";
 ```
 
 Added in v1.0.0
@@ -444,7 +444,7 @@ Re-exports all named exports from the "./ShardingRegistrationEvent.js" module as
 **Signature**
 
 ```ts
-export * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
+export * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js";
 ```
 
 Added in v1.0.0
@@ -456,7 +456,7 @@ Re-exports all named exports from the "./Storage.js" module as `Storage`.
 **Signature**
 
 ```ts
-export * as Storage from "./Storage.js"
+export * as Storage from "./Storage.js";
 ```
 
 Added in v1.0.0

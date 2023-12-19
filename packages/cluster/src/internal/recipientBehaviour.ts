@@ -41,12 +41,12 @@ export function fromInMemoryQueue<Msg extends Message.Any, R>(
     const messageStates = yield* _(Ref.make(HashMap.empty<MessageId.MessageId, MessageState.MessageState<any>>()))
 
     function updateMessageState(message: Msg, state: MessageState.MessageState<any>) {
-      if (!Message.isMessageWithResult(message)) return Effect.succeed(state)
+      if (!Message.isMessage(message)) return Effect.succeed(state)
       return pipe(Ref.update(messageStates, HashMap.set(Message.messageId(message), state)), Effect.as(state))
     }
 
     function getMessageState(message: Msg) {
-      if (!Message.isMessageWithResult(message)) return Effect.succeed(Option.none())
+      if (!Message.isMessage(message)) return Effect.succeed(Option.none())
       return pipe(
         Ref.get(messageStates),
         Effect.map(HashMap.get(Message.messageId(message)))

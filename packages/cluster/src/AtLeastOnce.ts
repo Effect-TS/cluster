@@ -16,25 +16,25 @@ export interface AtLeastOnceStorage {
   /**
    * Stores a message into the storage, eventually returning the already existing message state as result in the storage
    */
-  upsertMessageToBeProcessed<Msg extends Message.Any>(
+  upsert<Msg extends Message.Any>(
     recipientType: RecipientType.RecipientType<Msg>,
     entityId: string,
     message: Msg
   ): Effect.Effect<
     never,
-    ShardingError.ShardingErrorMessageQueue,
+    ShardingError.ShardingErrorWhileOfferingMessage,
     Option.Option<MessageState.MessageState<Message.Success<Msg>>>
   >
 
   /**
    * Stores the message state to be used as result for this message
    */
-  saveProcessedMessageState<Msg extends Message.Any>(
+  saveState<Msg extends Message.Any>(
     recipientType: RecipientType.RecipientType<Msg>,
     entityId: string,
     message: Msg,
     messageState: MessageState.MessageState<Message.Success<Msg>>
-  ): Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, void>
+  ): Effect.Effect<never, ShardingError.ShardingErrorWhileOfferingMessage, void>
 }
 
 const AtLeastOnceStorageTag = Context.Tag<AtLeastOnceStorage>()
@@ -51,14 +51,12 @@ export function make<Msg extends Message.Any>(recipientType: RecipientType.Recip
             fa,
             Effect.map((offer) => <A extends Msg>(message: A) =>
               pipe(
-                storage.upsertMessageToBeProcessed(recipientType, entityId, message),
+                storage.upsert(recipientType, entityId, message),
                 Effect.flatMap(Option.match({
                   onNone: () =>
                     pipe(
                       offer(message),
-                      Effect.tap((messageState) =>
-                        storage.saveProcessedMessageState(recipientType, entityId, message, messageState)
-                      )
+                      Effect.tap((messageState) => storage.saveState(recipientType, entityId, message, messageState))
                     ),
                   onSome: Effect.succeed
                 }))

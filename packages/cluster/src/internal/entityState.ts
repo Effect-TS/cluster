@@ -24,7 +24,11 @@ export interface EntityState<Msg extends Message.Any> {
   readonly [EntityStateTypeId]: EntityStateTypeId
   readonly sendAndGetState: <A extends Msg>(
     message: Msg
-  ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, MessageState.MessageState<Message.Success<A>>>
+  ) => Effect.Effect<
+    never,
+    ShardingError.ShardingErrorWhileOfferingMessage,
+    MessageState.MessageState<Message.Success<A>>
+  >
   readonly expirationFiber: Fiber.RuntimeFiber<never, void>
   readonly executionScope: Scope.CloseableScope
   readonly terminationFiber: Option.Option<Fiber.RuntimeFiber<never, void>>

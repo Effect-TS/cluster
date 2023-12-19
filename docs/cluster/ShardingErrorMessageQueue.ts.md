@@ -1,10 +1,10 @@
 ---
-title: ShardingErrorMessageQueue.ts
+title: ShardingErrorWhileOfferingMessage.ts
 nav_order: 25
 parent: "@effect/cluster"
 ---
 
-## ShardingErrorMessageQueue overview
+## ShardingErrorWhileOfferingMessage overview
 
 Added in v1.0.0
 
@@ -13,77 +13,85 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructors](#constructors)
-  - [ShardingErrorMessageQueue](#shardingerrormessagequeue)
+  - [ShardingErrorWhileOfferingMessage](#ShardingErrorWhileOfferingMessage)
 - [models](#models)
-  - [ShardingErrorMessageQueue (interface)](#shardingerrormessagequeue-interface)
+  - [ShardingErrorWhileOfferingMessage (interface)](#ShardingErrorWhileOfferingMessage-interface)
 - [schema](#schema)
-  - [ShardingErrorMessageQueueSchema](#shardingerrormessagequeueschema)
+  - [ShardingErrorWhileOfferingMessageSchema](#ShardingErrorWhileOfferingMessageschema)
 - [symbols](#symbols)
-  - [ShardingErrorMessageQueueTag](#shardingerrormessagequeuetag)
+  - [ShardingErrorWhileOfferingMessageTag](#ShardingErrorWhileOfferingMessagetag)
 - [utils](#utils)
-  - [isShardingErrorMessageQueue](#isshardingerrormessagequeue)
+  - [isShardingErrorWhileOfferingMessage](#isShardingErrorWhileOfferingMessage)
 
 ---
 
 # constructors
 
-## ShardingErrorMessageQueue
+## ShardingErrorWhileOfferingMessage
 
 **Signature**
 
 ```ts
-export declare function ShardingErrorMessageQueue(error: string): ShardingErrorMessageQueue
+export declare function ShardingErrorWhileOfferingMessage(
+  error: string
+): ShardingErrorWhileOfferingMessage;
 ```
 
 Added in v1.0.0
 
 # models
 
-## ShardingErrorMessageQueue (interface)
+## ShardingErrorWhileOfferingMessage (interface)
 
 **Signature**
 
 ```ts
-export interface ShardingErrorMessageQueue extends Schema.Schema.To<typeof ShardingErrorMessageQueueSchema_> {}
+export interface ShardingErrorWhileOfferingMessage
+  extends Schema.Schema.To<typeof ShardingErrorWhileOfferingMessageSchema_> {}
 ```
 
 Added in v1.0.0
 
 # schema
 
-## ShardingErrorMessageQueueSchema
+## ShardingErrorWhileOfferingMessageSchema
 
 **Signature**
 
 ```ts
-export declare const ShardingErrorMessageQueueSchema: Schema.Schema<
-  { readonly _tag: "./ShardingErrorMessageQueue"; readonly error: string },
-  ShardingErrorMessageQueue
->
+export declare const ShardingErrorWhileOfferingMessageSchema: Schema.Schema<
+  {
+    readonly _tag: "./ShardingErrorWhileOfferingMessage";
+    readonly error: string;
+  },
+  ShardingErrorWhileOfferingMessage
+>;
 ```
 
 Added in v1.0.0
 
 # symbols
 
-## ShardingErrorMessageQueueTag
+## ShardingErrorWhileOfferingMessageTag
 
 **Signature**
 
 ```ts
-export declare const ShardingErrorMessageQueueTag: "./ShardingErrorMessageQueue"
+export declare const ShardingErrorWhileOfferingMessageTag: "./ShardingErrorWhileOfferingMessage";
 ```
 
 Added in v1.0.0
 
 # utils
 
-## isShardingErrorMessageQueue
+## isShardingErrorWhileOfferingMessage
 
 **Signature**
 
 ```ts
-export declare function isShardingErrorMessageQueue(value: unknown): value is ShardingErrorMessageQueue
+export declare function isShardingErrorWhileOfferingMessage(
+  value: unknown
+): value is ShardingErrorWhileOfferingMessage;
 ```
 
 Added in v1.0.0

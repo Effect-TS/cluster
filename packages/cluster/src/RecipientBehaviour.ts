@@ -25,7 +25,11 @@ export interface RecipientBehaviour<R, Msg extends Message.Any> extends
     never,
     <A extends Msg>(
       message: A
-    ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, MessageState.MessageState<Message.Success<A>>>
+    ) => Effect.Effect<
+      never,
+      ShardingError.ShardingErrorWhileOfferingMessage,
+      MessageState.MessageState<Message.Success<A>>
+    >
   >
 {}
 

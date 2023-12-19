@@ -15,7 +15,7 @@ Added in v1.0.0
 - [exports](#exports)
   - [From "./ShardingErrorEntityNotManagedByThisPod.js"](#from-shardingerrorentitynotmanagedbythispodjs)
   - [From "./ShardingErrorEntityTypeNotRegistered.js"](#from-shardingerrorentitytypenotregisteredjs)
-  - [From "./ShardingErrorMessageQueue.js"](#from-shardingerrormessagequeuejs)
+  - [From "./ShardingErrorWhileOfferingMessage.js"](#from-ShardingErrorWhileOfferingMessagejs)
   - [From "./ShardingErrorNoResultInMessageProcessedState.js"](#from-shardingerrornoresultinmessageprocessedstatejs)
   - [From "./ShardingErrorPodNoLongerRegistered.js"](#from-shardingerrorpodnolongerregisteredjs)
   - [From "./ShardingErrorPodUnavailable.js"](#from-shardingerrorpodunavailablejs)
@@ -37,7 +37,7 @@ Re-exports all named exports from the "./ShardingErrorEntityNotManagedByThisPod.
 **Signature**
 
 ```ts
-export * from "./ShardingErrorEntityNotManagedByThisPod.js"
+export * from "./ShardingErrorEntityNotManagedByThisPod.js";
 ```
 
 Added in v1.0.0
@@ -49,19 +49,19 @@ Re-exports all named exports from the "./ShardingErrorEntityTypeNotRegistered.js
 **Signature**
 
 ```ts
-export * from "./ShardingErrorEntityTypeNotRegistered.js"
+export * from "./ShardingErrorEntityTypeNotRegistered.js";
 ```
 
 Added in v1.0.0
 
-## From "./ShardingErrorMessageQueue.js"
+## From "./ShardingErrorWhileOfferingMessage.js"
 
-Re-exports all named exports from the "./ShardingErrorMessageQueue.js" module.
+Re-exports all named exports from the "./ShardingErrorWhileOfferingMessage.js" module.
 
 **Signature**
 
 ```ts
-export * from "./ShardingErrorMessageQueue.js"
+export * from "./ShardingErrorWhileOfferingMessage.js";
 ```
 
 Added in v1.0.0
@@ -73,7 +73,7 @@ Re-exports all named exports from the "./ShardingErrorNoResultInMessageProcessed
 **Signature**
 
 ```ts
-export * from "./ShardingErrorNoResultInMessageProcessedState.js"
+export * from "./ShardingErrorNoResultInMessageProcessedState.js";
 ```
 
 Added in v1.0.0
@@ -85,7 +85,7 @@ Re-exports all named exports from the "./ShardingErrorPodNoLongerRegistered.js" 
 **Signature**
 
 ```ts
-export * from "./ShardingErrorPodNoLongerRegistered.js"
+export * from "./ShardingErrorPodNoLongerRegistered.js";
 ```
 
 Added in v1.0.0
@@ -97,7 +97,7 @@ Re-exports all named exports from the "./ShardingErrorPodUnavailable.js" module.
 **Signature**
 
 ```ts
-export * from "./ShardingErrorPodUnavailable.js"
+export * from "./ShardingErrorPodUnavailable.js";
 ```
 
 Added in v1.0.0
@@ -109,7 +109,7 @@ Re-exports all named exports from the "./ShardingErrorSendTimeout.js" module.
 **Signature**
 
 ```ts
-export * from "./ShardingErrorSendTimeout.js"
+export * from "./ShardingErrorSendTimeout.js";
 ```
 
 Added in v1.0.0
@@ -121,7 +121,7 @@ Re-exports all named exports from the "./ShardingErrorSerialization.js" module.
 **Signature**
 
 ```ts
-export * from "./ShardingErrorSerialization.js"
+export * from "./ShardingErrorSerialization.js";
 ```
 
 Added in v1.0.0
@@ -133,7 +133,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type ShardingError = Schema.Schema.To<typeof schema>
+export type ShardingError = Schema.Schema.To<typeof schema>;
 ```
 
 Added in v1.0.0
@@ -149,42 +149,48 @@ export declare const schema: Schema.Schema<
   | { readonly _tag: "./ShardingErrorSerialization"; readonly error: string }
   | { readonly _tag: "./ShardingErrorSendTimeout" }
   | {
-      readonly _tag: "./ShardingErrorPodUnavailable"
+      readonly _tag: "./ShardingErrorPodUnavailable";
       readonly pod: {
-        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-        readonly host: string
-        readonly port: number
-      }
+        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress";
+        readonly host: string;
+        readonly port: number;
+      };
     }
   | {
-      readonly _tag: "./ShardingErrorPodNoLongerRegistered"
+      readonly _tag: "./ShardingErrorPodNoLongerRegistered";
       readonly podAddress: {
-        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-        readonly host: string
-        readonly port: number
-      }
+        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress";
+        readonly host: string;
+        readonly port: number;
+      };
     }
   | { readonly _tag: "./ShardingErrorNoResultInProcessedMessageState" }
-  | { readonly _tag: "./ShardingErrorMessageQueue"; readonly error: string }
   | {
-      readonly _tag: "./ShardingErrorEntityTypeNotRegistered"
-      readonly podAddress: {
-        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-        readonly host: string
-        readonly port: number
-      }
-      readonly entityType: string
+      readonly _tag: "./ShardingErrorWhileOfferingMessage";
+      readonly error: string;
     }
-  | { readonly _tag: "./ShardingErrorEntityNotManagedByThisPod"; readonly entityId: string },
+  | {
+      readonly _tag: "./ShardingErrorEntityTypeNotRegistered";
+      readonly podAddress: {
+        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress";
+        readonly host: string;
+        readonly port: number;
+      };
+      readonly entityType: string;
+    }
+  | {
+      readonly _tag: "./ShardingErrorEntityNotManagedByThisPod";
+      readonly entityId: string;
+    },
   | ShardingErrorSerialization
   | ShardingErrorSendTimeout
   | ShardingErrorPodUnavailable
   | ShardingErrorPodNoLongerRegistered
   | ShardingErrorNoResultInProcessedMessageState
-  | ShardingErrorMessageQueue
+  | ShardingErrorWhileOfferingMessage
   | ShardingErrorEntityTypeNotRegistered
   | ShardingErrorEntityNotManagedByThisPod
->
+>;
 ```
 
 Added in v1.0.0

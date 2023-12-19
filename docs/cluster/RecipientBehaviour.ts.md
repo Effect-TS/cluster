@@ -40,8 +40,12 @@ export interface RecipientBehaviour<R, Msg extends Message.AnyMessage> {
     never,
     <A extends Msg>(
       message: A
-    ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, MessageState.MessageState<Message.Success<A>>>
-  >
+    ) => Effect.Effect<
+      never,
+      ShardingError.ShardingErrorWhileOfferingMessage,
+      MessageState.MessageState<Message.Success<A>>
+    >
+  >;
 }
 ```
 
@@ -57,8 +61,8 @@ An utility that process a message at a time, or interrupts on PoisonPill
 
 ```ts
 export type EntityBehaviourOptions = {
-  entityMaxIdleTime?: Option.Option<Duration.Duration>
-}
+  entityMaxIdleTime?: Option.Option<Duration.Duration>;
+};
 ```
 
 Added in v1.0.0
@@ -69,8 +73,11 @@ Added in v1.0.0
 
 ```ts
 export declare const fromFunctionEffect: <R, Msg extends Message.AnyMessage>(
-  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
-) => RecipientBehaviour<R, Msg>
+  handler: (
+    entityId: string,
+    message: Msg
+  ) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
+) => RecipientBehaviour<R, Msg>;
 ```
 
 Added in v1.0.0
@@ -84,9 +91,12 @@ export declare const fromInMemoryQueue: <R, Msg extends Message.AnyMessage>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-    reply: <A extends Msg>(msg: A, value: Message.Success<A>) => Effect.Effect<never, never, void>
+    reply: <A extends Msg>(
+      msg: A,
+      value: Message.Success<A>
+    ) => Effect.Effect<never, never, void>
   ) => Effect.Effect<R, never, void>
-) => RecipientBehaviour<R, Msg>
+) => RecipientBehaviour<R, Msg>;
 ```
 
 Added in v1.0.0
