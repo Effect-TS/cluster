@@ -4,17 +4,38 @@
 import * as AtLeastOnceStorage from "@effect/cluster/AtLeastOnceStorage"
 import * as Message from "@effect/cluster/Message"
 import * as Serialization from "@effect/cluster/Serialization"
-import * as MySql from "@sqlfx/mysql"
+import * as Pg from "@sqlfx/pg"
+import type * as PgError from "@sqlfx/pg/Error"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Stream from "effect/Stream"
 
-export const atLeastOnceStorageMssql = Layer.effect(
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export const atLeastOnceStoragePostgres: Layer.Layer<
+  Serialization.Serialization | Pg.PgClient,
+  PgError.SqlError,
+  AtLeastOnceStorage.AtLeastOnceStorage
+> = Layer.effect(
   AtLeastOnceStorage.Tag,
   Effect.gen(function*(_) {
-    const sql = yield* _(MySql.tag)
+    const sql = yield* _(Pg.tag)
     const serialization = yield* _(Serialization.Serialization)
+
+    yield* _(sql`
+    CREATE TABLE IF NOT EXISTS public.message_ack
+    (
+        recipient_type character varying(255) COLLATE pg_catalog."default" NOT NULL,
+        entity_id character varying(255) COLLATE pg_catalog."default" NOT NULL,
+        message_id character varying(255) COLLATE pg_catalog."default" NOT NULL,
+        shard_id integer DEFAULT 0,
+        body text COLLATE pg_catalog."default",
+        CONSTRAINT message_ack_pkey PRIMARY KEY (recipient_type, entity_id, message_id)
+    )
+    `)
 
     return AtLeastOnceStorage.make({
       upsert: (recipientType, shardId, entityId, message) =>

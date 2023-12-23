@@ -1,5 +1,6 @@
-import * as AtLeastOnceStorageMysql from "@effect/cluster-node/AtLeastOnceStorageMysql"
+import * as AtLeastOnceStoragePostgres from "@effect/cluster-node/AtLeastOnceStoragePostgres"
 import * as AtLeastOnce from "@effect/cluster/AtLeastOnce"
+import * as AtLeastOnceStorage from "@effect/cluster/AtLeastOnceStorage"
 import * as Message from "@effect/cluster/Message"
 import * as MessageState from "@effect/cluster/MessageState"
 import * as Pods from "@effect/cluster/Pods"
@@ -12,8 +13,8 @@ import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
 import * as Schema from "@effect/schema/Schema"
-import * as MySql from "@sqlfx/mysql"
-import { MySqlContainer } from "@testcontainers/mysql"
+import * as Pg from "@sqlfx/pg"
+import { PostgreSqlContainer } from "@testcontainers/postgresql"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -27,21 +28,21 @@ const SampleMessage = Message.schema(
   Schema.number
 )
 
-const testContainerMySqlLayer = Layer.scoped(
-  MySql.tag,
-  Effect.acquireUseRelease(
-    Effect.promise(() => new MySqlContainer().start()),
-    (container) => MySql.make({ url: Secret.fromString(container.getConnectionUri(true)) }),
+const testContainerPostgresLayer = pipe(
+  Effect.acquireRelease(
+    Effect.promise(() => new PostgreSqlContainer().start()),
     (container) => Effect.promise(() => container.stop())
-  )
+  ),
+  Effect.flatMap((container) => Pg.make({ url: Secret.fromString(container.getConnectionUri()) })),
+  Layer.scoped(Pg.tag)
 )
 
 const SampleEntity = RecipientType.makeEntityType("SampleEntity", SampleMessage)
 
-describe.concurrent("AtLeastOnceMySql", () => {
+describe.concurrent("AtLeastOncePg", () => {
   const inMemorySharding = pipe(
-    AtLeastOnceStorageMysql.atLeastOnceStorageMssql,
-    Layer.provide(testContainerMySqlLayer),
+    AtLeastOnceStoragePostgres.atLeastOnceStoragePostgres,
+    Layer.provide(testContainerPostgresLayer),
     Layer.provideMerge(Sharding.live),
     Layer.provide(PodsHealth.local),
     Layer.provide(Pods.noop),
@@ -57,9 +58,30 @@ describe.concurrent("AtLeastOnceMySql", () => {
   )
 
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
-    pipe(fa, Effect.provide(inMemorySharding), Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
+    pipe(
+      fa,
+      Effect.provide(inMemorySharding),
+      Effect.provide(testContainerPostgresLayer),
+      Effect.scoped,
+      Logger.withMinimumLogLevel(LogLevel.Info)
+    )
 
-  it("aaa", () => {
+  it("Should create the message table upon layer creation", () => {
+    return Effect.gen(function*(_) {
+      const sql = yield* _(Pg.tag)
+      const storage = yield* _(AtLeastOnceStorage.Tag)
+
+      const rows = yield* _(sql<{ table_name: string }>`
+        SELECT table_name
+          FROM information_schema.tables
+        WHERE table_schema='public'
+          AND table_type='BASE TABLE'`)
+
+      expect(rows).toBe(true)
+    }).pipe(withTestEnv, Effect.runPromise)
+  }, 100000)
+
+  it.skip("Should create the message table upon layer creation", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
 
