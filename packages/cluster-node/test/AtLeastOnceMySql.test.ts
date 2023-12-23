@@ -1,6 +1,5 @@
-import * as AtLeastOnceStoragePostgres from "@effect/cluster-node/AtLeastOnceStoragePostgres"
+import * as AtLeastOnceStorageMySql from "@effect/cluster-node/AtLeastOnceStorageMySql"
 import * as AtLeastOnce from "@effect/cluster/AtLeastOnce"
-import * as AtLeastOnceStorage from "@effect/cluster/AtLeastOnceStorage"
 import * as Message from "@effect/cluster/Message"
 import * as MessageState from "@effect/cluster/MessageState"
 import * as Pods from "@effect/cluster/Pods"
@@ -13,8 +12,8 @@ import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
 import * as Schema from "@effect/schema/Schema"
-import * as Pg from "@sqlfx/pg"
-import { PostgreSqlContainer } from "@testcontainers/postgresql"
+import * as MySql from "@sqlfx/mysql"
+import { MySqlContainer } from "@testcontainers/mysql"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -30,18 +29,22 @@ const SampleMessage = Message.schema(
 
 const testContainerPostgresLayer = pipe(
   Effect.acquireRelease(
-    Effect.promise(() => new PostgreSqlContainer().start()),
+    Effect.promise(() => new MySqlContainer().start()),
     (container) => Effect.promise(() => container.stop())
   ),
-  Effect.flatMap((container) => Pg.make({ url: Secret.fromString(container.getConnectionUri()) })),
-  Layer.scoped(Pg.tag)
+  Effect.flatMap((container) =>
+    MySql.make({
+      url: Secret.fromString(container.getConnectionUri().replace("mysql:", "mariadb:"))
+    })
+  ),
+  Layer.scoped(MySql.tag)
 )
 
 const SampleEntity = RecipientType.makeEntityType("SampleEntity", SampleMessage)
 
-describe.concurrent("AtLeastOncePg", () => {
+describe.concurrent("AtLeastOnceMySql", () => {
   const inMemorySharding = pipe(
-    AtLeastOnceStoragePostgres.atLeastOnceStoragePostgres,
+    AtLeastOnceStorageMySql.atLeastOnceStorageMySql,
     Layer.provide(testContainerPostgresLayer),
     Layer.provideMerge(Sharding.live),
     Layer.provide(PodsHealth.local),
@@ -68,8 +71,7 @@ describe.concurrent("AtLeastOncePg", () => {
 
   it("Should create the message table upon layer creation", () => {
     return Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-      const storage = yield* _(AtLeastOnceStorage.Tag)
+      const sql = yield* _(MySql.tag)
 
       const rows = yield* _(sql<{ table_name: string }>`
         SELECT table_name

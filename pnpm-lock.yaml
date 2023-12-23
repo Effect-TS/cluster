@@ -113,9 +113,15 @@ importers:
 
   packages/cluster-node:
     dependencies:
+      '@sqlfx/mysql':
+        specifier: ^0.36.0
+        version: 0.36.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
       '@sqlfx/pg':
         specifier: 0.37.0
         version: 0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
+      '@testcontainers/mysql':
+        specifier: ^10.4.0
+        version: 10.4.0
       '@testcontainers/postgresql':
         specifier: ^10.4.0
         version: 10.4.0
@@ -1225,6 +1231,18 @@ packages:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
 
+  /@sqlfx/mysql@0.36.0(@effect/schema@0.56.0)(effect@2.0.0-next.62):
+    resolution: {integrity: sha512-HaOhOHXxbM1bRkeufn4vyd6t/7XCCgvw5dXvIufboMoImxPod8q2NRoR4/yIpUpz3oPFeCPFGfCovxg3ThtO0g==}
+    peerDependencies:
+      effect: 2.0.0-next.62
+    dependencies:
+      '@sqlfx/sql': 0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
+      effect: 2.0.0-next.62
+      mariadb: 3.2.3
+    transitivePeerDependencies:
+      - '@effect/schema'
+    dev: false
+
   /@sqlfx/pg@0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62):
     resolution: {integrity: sha512-mn6TBEf67mqwdy8veegj2hmhgaoj0thR6mGA+qZmBZfT/D1y3mMHmCtVAf6r2e4mLy2ofzfMuDiBsGwqpT5sqw==}
     peerDependencies:
@@ -1245,6 +1263,15 @@ packages:
     dependencies:
       '@effect/schema': 0.56.0(effect@2.0.0-next.62)(fast-check@3.13.2)
       effect: 2.0.0-next.62
+    dev: false
+
+  /@testcontainers/mysql@10.4.0:
+    resolution: {integrity: sha512-VItbiIItIWgRKUdhRYCTp9DBUa+svgcb6hD6AHuTc++7aQoTzGVxrcTJu4fn9x8e3g84W24ljqzuGLAdKzN1SQ==}
+    dependencies:
+      testcontainers: 10.4.0
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
     dev: false
 
   /@testcontainers/postgresql@10.4.0:
@@ -1289,6 +1316,10 @@ packages:
       '@types/node': 20.9.0
     dev: false
 
+  /@types/geojson@7946.0.13:
+    resolution: {integrity: sha512-bmrNrgKMOhM3WsafmbGmC+6dsF2Z308vLFsQ3a/bT8X8Sv5clVYpPars/UPq+sAaJP+5OoLAYgwbkS5QEJdLUQ==}
+    dev: false
+
   /@types/is-ci@3.0.0:
     resolution: {integrity: sha512-Q0Op0hdWbYd1iahB+IFNQcWXFq4O0Q5MwQP7uN0souuQ4rPg1vEYcnIOfr1gY+M+6rc8FGoRaBO1mOOvL29sEQ==}
     dependencies:
@@ -1326,6 +1357,10 @@ packages:
   /@types/node@12.20.55:
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
     dev: true
+
+  /@types/node@17.0.45:
+    resolution: {integrity: sha512-w+tIMs3rq2afQdsPJlODhoUEKzFP1ayaoyl1CcnwtIlsVe7K7bA1NGm4s3PraqTLlXnbIN84zuBlxBWo1u9BLw==}
+    dev: false
 
   /@types/node@18.19.3:
     resolution: {integrity: sha512-k5fggr14DwAytoA/t8rPrIz++lXK7/DqckthCmoZOKNsEbJkId4Z//BqgApXBUGrGddrigYa1oqheo/7YmW4rg==}
@@ -2453,6 +2488,11 @@ packages:
       has-property-descriptors: 1.0.0
       object-keys: 1.1.1
     dev: true
+
+  /denque@2.1.0:
+    resolution: {integrity: sha512-HVQE3AAb/pxF8fQAoiqpvg9i3evqug3hoiwakOyZAwJm+6vZehbkYXZ0l4JxS+I3QxM97v5aaRNhj8v5oBhekw==}
+    engines: {node: '>=0.10'}
+    dev: false
 
   /dependency-tree@9.0.0:
     resolution: {integrity: sha512-osYHZJ1fBSon3lNLw70amAXsQ+RGzXsPvk9HbBgTLbp/bQBmpH5mOmsUvqXU+YEWVU0ZLewsmzOET/8jWswjDQ==}
@@ -3667,6 +3707,13 @@ packages:
       safer-buffer: 2.1.2
     dev: true
 
+  /iconv-lite@0.6.3:
+    resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      safer-buffer: 2.1.2
+    dev: false
+
   /ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
@@ -4289,7 +4336,6 @@ packages:
   /lru-cache@10.0.1:
     resolution: {integrity: sha512-IJ4uwUTi2qCccrioU6g9g/5rvvVl13bsdczUUcqbciD9iLr095yj8DQKdObriEvuNSx325N1rV1O0sJFszx75g==}
     engines: {node: 14 || >=16.14}
-    dev: true
 
   /lru-cache@4.1.5:
     resolution: {integrity: sha512-sWZlbEP2OsHNkXrMl5GYk/jKk70MBng6UU4YI/qGDYbgf6YbP4EvmqISbXCoJiRKs+1bSpFHVgQxvJ17F2li5g==}
@@ -4379,6 +4425,17 @@ packages:
     resolution: {integrity: sha512-hdN1wVrZbb29eBGiGjJbeP8JbKjq1urkHJ/LIP/NY48MZ1QVXUsQBV1G1zvYFHn1XE06cwjBsOI2K3Ulnj1YXQ==}
     engines: {node: '>=8'}
     dev: true
+
+  /mariadb@3.2.3:
+    resolution: {integrity: sha512-Hyc1ehdUJwzvvzcLU2juZS528wJ6oE8pUlpgY0BAOdpKWcdN1motuugi5lC3jkpCkFpyNknHG7Yg66KASl3aPg==}
+    engines: {node: '>= 12'}
+    dependencies:
+      '@types/geojson': 7946.0.13
+      '@types/node': 17.0.45
+      denque: 2.1.0
+      iconv-lite: 0.6.3
+      lru-cache: 10.0.1
+    dev: false
 
   /markdown-link@0.1.1:
     resolution: {integrity: sha512-TurLymbyLyo+kAUUAV9ggR9EPcDjP/ctlv9QAFiqUH7c+t6FlsbivPo9OKTU8xdOx9oNd2drW/Fi5RRElQbUqA==}
