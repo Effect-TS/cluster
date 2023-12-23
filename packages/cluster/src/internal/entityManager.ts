@@ -326,29 +326,31 @@ export function make<Msg extends Message.Any, R>(
           (entityId) =>
             pipe(
               forkEntityTermination(entityId),
-              Effect.flatMap(Option.match({
-                onNone: () => Effect.unit,
-                onSome: (terminationFiber) =>
-                  pipe(
-                    Fiber.await(terminationFiber),
-                    Effect.timeout(config.entityTerminationTimeout),
-                    Effect.flatMap(Option.match({
-                      onNone: () =>
-                        Effect.logError(
-                          `Entity ${
-                            recipientType.name + "#" + entityId
-                          } termination is taking more than expected entityTerminationTimeout (${
-                            Duration.toMillis(config.entityTerminationTimeout)
-                          }ms).`
-                        ),
-                      onSome: () =>
-                        Effect.logDebug(
-                          `Entity ${recipientType.name + "#" + entityId} cleaned up.`
-                        )
-                    })),
-                    Effect.asUnit
-                  )
-              }))
+              Effect.flatMap((_) =>
+                Option.match(_, {
+                  onNone: () => Effect.unit,
+                  onSome: (terminationFiber) =>
+                    pipe(
+                      Fiber.await(terminationFiber),
+                      Effect.timeout(config.entityTerminationTimeout),
+                      Effect.match({
+                        onFailure: () =>
+                          Effect.logError(
+                            `Entity ${
+                              recipientType.name + "#" + entityId
+                            } termination is taking more than expected entityTerminationTimeout (${
+                              Duration.toMillis(config.entityTerminationTimeout)
+                            }ms).`
+                          ),
+                        onSuccess: () =>
+                          Effect.logDebug(
+                            `Entity ${recipientType.name + "#" + entityId} cleaned up.`
+                          )
+                      }),
+                      Effect.asUnit
+                    )
+                })
+              )
             ),
           { concurrency: "inherit" }
         ),

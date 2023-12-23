@@ -36,7 +36,7 @@ export const schema: Schema.Schema<{
 }, Pod.Pod> = Schema.data(Schema.rename(
   Schema.struct({
     [PodSymbolKey]: Schema.compose(
-      Schema.symbolFromString(Schema.literal(PodSymbolKey)),
+      Schema.compose(Schema.literal(PodSymbolKey), Schema.symbol),
       Schema.uniqueSymbol(PodTypeId)
     ),
     address: PodAddress.schema,

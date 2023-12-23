@@ -38,7 +38,7 @@ export const schema: Schema.Schema<
   Schema.rename(
     Schema.struct({
       [PodAddressSymbolKey]: Schema.compose(
-        Schema.symbolFromString(Schema.literal(PodAddressSymbolKey)),
+        Schema.compose(Schema.literal(PodAddressSymbolKey), Schema.symbol),
         Schema.uniqueSymbol(PodAddressTypeId)
       ),
       host: Schema.string,

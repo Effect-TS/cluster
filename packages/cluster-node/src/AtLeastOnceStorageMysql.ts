@@ -1,18 +1,19 @@
+/**
+ * @since 1.0.0
+ */
 import * as AtLeastOnceStorage from "@effect/cluster/AtLeastOnceStorage"
 import * as Message from "@effect/cluster/Message"
 import * as Serialization from "@effect/cluster/Serialization"
-import * as MsSql from "@sqlfx/mssql"
-import * as Config from "effect/Config"
+import * as MySql from "@sqlfx/mysql"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
-import * as Secret from "effect/Secret"
 import * as Stream from "effect/Stream"
 
 export const atLeastOnceStorageMssql = Layer.effect(
   AtLeastOnceStorage.Tag,
   Effect.gen(function*(_) {
-    const sql = yield* _(MsSql.tag)
+    const sql = yield* _(MySql.tag)
     const serialization = yield* _(Serialization.Serialization)
 
     return AtLeastOnceStorage.make({
@@ -36,11 +37,5 @@ export const atLeastOnceStorageMssql = Layer.effect(
       markAsProcessed: () => Effect.unit,
       sweepPending: () => Stream.empty
     })
-  }).pipe(Effect.provide(MsSql.makeLayer({
-    server: Config.succeed("localhost"),
-    domain: Config.succeed("localhost\\sql2017"),
-    database: Config.succeed("cluster"),
-    username: Config.succeed("sa"),
-    password: Config.succeed(Secret.fromString(""))
-  })))
+  })
 )

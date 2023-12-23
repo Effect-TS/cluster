@@ -50,7 +50,7 @@ export const schema: Message.MessageSchema<
 > = Message.schema(Schema.data(Schema.rename(
   Schema.struct({
     [PoisonPillSymbolKey]: Schema.compose(
-      Schema.symbolFromString(Schema.literal(PoisonPillSymbolKey)),
+      Schema.compose(Schema.literal(PoisonPillSymbolKey), Schema.symbol),
       Schema.uniqueSymbol(PoisonPillTypeId)
     )
   }),
