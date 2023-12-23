@@ -5,6 +5,9 @@
 import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import * as internal from "./internal/recipientBehaviourContext.js"
+import type * as Message from "./Message.js"
+import type * as RecipientType from "./RecipientType.js"
+import type * as ShardId from "./ShardId.js"
 
 /**
  * @since 1.0.0
@@ -26,6 +29,8 @@ export type RecipientBehaviourContextTypeId = typeof RecipientBehaviourContextTy
 export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
+  readonly shardId: ShardId.ShardId
+  readonly recipientType: RecipientType.RecipientType<Message.Any>
   readonly forkShutdown: Effect.Effect<never, never, void>
 }
 
@@ -52,6 +57,21 @@ export const make: (
  * @category utils
  */
 export const entityId: Effect.Effect<RecipientBehaviourContext, never, string> = internal.entityId
+
+/**
+ * Gets the current shardId
+ * @since 1.0.0
+ * @category utils
+ */
+export const shardId: Effect.Effect<RecipientBehaviourContext, never, ShardId.ShardId> = internal.shardId
+
+/**
+ * Gets the current shardId
+ * @since 1.0.0
+ * @category utils
+ */
+export const recipientType: Effect.Effect<RecipientBehaviourContext, never, RecipientType.RecipientType<Message.Any>> =
+  internal.recipientType
 
 /**
  * Forks the shutdown of the current recipient

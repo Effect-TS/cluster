@@ -25,48 +25,45 @@ export const shardingServiceHttp: Layer.Layer<
   ShardingConfig.ShardingConfig | Sharding.Sharding,
   Http.error.ServeError,
   never
-> = Layer.unwrapEffect(
-  Effect.gen(function*(_) {
-    const sharding = yield* _(Sharding.Tag)
-
-    return (Http.router.empty.pipe(
-      Http.router.post(
-        "/assign-shards",
-        Effect.gen(function*(_) {
-          const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.AssignShard_))
-          yield* _(sharding.assign(HashSet.fromIterable(body.shards)))
-          return yield* _(Http.response.json(true))
+> = (Http.router.empty.pipe(
+  Http.router.post(
+    "/assign-shards",
+    Effect.gen(function*(_) {
+      const sharding = yield* _(Sharding.Tag)
+      const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.AssignShard_))
+      yield* _(sharding.assign(HashSet.fromIterable(body.shards)))
+      return yield* _(Http.response.json(true))
+    })
+  ),
+  Http.router.post(
+    "/unassign-shards",
+    Effect.gen(function*(_) {
+      const sharding = yield* _(Sharding.Tag)
+      const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.UnassignShards_))
+      yield* _(sharding.unassign(HashSet.fromIterable(body.shards)))
+      return yield* _(Http.response.json(true))
+    })
+  ),
+  Http.router.get(
+    "/ping",
+    Effect.gen(function*(_) {
+      return yield* _(Http.response.json(true))
+    })
+  ),
+  Http.router.post(
+    "/send-message",
+    Effect.gen(function*(_) {
+      const sharding = yield* _(Sharding.Tag)
+      const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.Send_))
+      const result = yield* _(
+        sharding.sendMessageToLocalEntityManagerWithoutRetries(body.message),
+        Effect.match({
+          onFailure: Either.left,
+          onSuccess: Either.right
         })
-      ),
-      Http.router.post(
-        "/unassign-shards",
-        Effect.gen(function*(_) {
-          const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.UnassignShards_))
-          yield* _(sharding.unassign(HashSet.fromIterable(body.shards)))
-          return yield* _(Http.response.json(true))
-        })
-      ),
-      Http.router.get(
-        "/ping",
-        Effect.gen(function*(_) {
-          return yield* _(Http.response.json(true))
-        })
-      ),
-      Http.router.post(
-        "/send-message",
-        Effect.gen(function*(_) {
-          const body = yield* _(Http.request.schemaBodyJson(ShardingProtocolHttp.Send_))
-          const result = yield* _(
-            sharding.sendMessageToLocalEntityManagerWithoutRetries(body.message),
-            Effect.match({
-              onFailure: Either.left,
-              onSuccess: Either.right
-            })
-          )
-          return yield* _(Http.response.schemaJson(ShardingProtocolHttp.SendResult_)(result))
-        })
-      ),
-      Http.server.serve(Http.middleware.logger)
-    ))
-  })
-).pipe(Layer.provide(internalServer))
+      )
+      return yield* _(Http.response.schemaJson(ShardingProtocolHttp.SendResult_)(result))
+    })
+  ),
+  Http.server.serve(Http.middleware.logger)
+)).pipe(Layer.provide(internalServer))

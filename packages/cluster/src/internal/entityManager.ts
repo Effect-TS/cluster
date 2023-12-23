@@ -226,6 +226,7 @@ export function make<Msg extends Message.Any, R>(
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const cdt = yield* _(Clock.currentTimeMillis)
                     const forkShutdown = pipe(forkEntityTermination(entityId), Effect.asUnit)
+                    const shardId = sharding.getShardId(entityId)
 
                     const sendAndGetState = yield* _(pipe(
                       recipientBehaviour,
@@ -234,6 +235,8 @@ export function make<Msg extends Message.Any, R>(
                         RecipientBehaviourContext.RecipientBehaviourContext,
                         RecipientBehaviourContext.make({
                           entityId,
+                          shardId,
+                          recipientType: recipientType as any,
                           forkShutdown
                         })
                       ),
