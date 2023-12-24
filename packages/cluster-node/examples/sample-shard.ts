@@ -1,9 +1,7 @@
-import * as AtLeastOnceStorageMssql from "@effect/cluster-node/AtLeastOnceStorageMssql"
 import * as PodsHttp from "@effect/cluster-node/PodsHttp"
 import * as ShardingServiceHttp from "@effect/cluster-node/ShardingServiceHttp"
 import * as ShardManagerClientHttp from "@effect/cluster-node/ShardManagerClientHttp"
 import * as StorageFile from "@effect/cluster-node/StorageFile"
-import * as AtLeastOnce from "@effect/cluster/AtLeastOnce"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as Serialization from "@effect/cluster/Serialization"
@@ -11,7 +9,6 @@ import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as NodeClient from "@effect/platform-node/Http/NodeClient"
 import { runMain } from "@effect/platform-node/Runtime"
-import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
@@ -22,9 +19,7 @@ import * as SubscriptionRef from "effect/SubscriptionRef"
 import { CounterEntity } from "./sample-common.js"
 
 const liveSharding = pipe(
-  Layer.scopedDiscard(AtLeastOnce.runPendingMessageSweeperScoped(Duration.millis(10000))),
-  Layer.provideMerge(AtLeastOnceStorageMssql.atLeastOnceStorageMssql),
-  Layer.provideMerge(Sharding.live),
+  Sharding.live,
   Layer.provide(StorageFile.storageFile),
   Layer.provide(PodsHttp.httpPods),
   Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
@@ -35,7 +30,7 @@ const liveSharding = pipe(
 const programLayer = Layer.scopedDiscard(pipe(
   Sharding.registerEntity(
     CounterEntity,
-    AtLeastOnce.atLeastOnceRecipientBehaviour(RecipientBehaviour.fromInMemoryQueue((entityId, dequeue, reply) =>
+    RecipientBehaviour.fromInMemoryQueue((entityId, dequeue, reply) =>
       pipe(
         SubscriptionRef.make(0),
         Effect.flatMap((count) =>
@@ -63,7 +58,7 @@ const programLayer = Layer.scopedDiscard(pipe(
           )
         )
       )
-    ))
+    )
   ),
   Effect.zipRight(Sharding.registerScoped)
 ))
