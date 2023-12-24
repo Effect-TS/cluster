@@ -6,6 +6,7 @@ import type * as Duration from "effect/Duration"
 import type * as Effect from "effect/Effect"
 import type * as Option from "effect/Option"
 import type * as Queue from "effect/Queue"
+import type * as Ref from "effect/Ref"
 import type * as Scope from "effect/Scope"
 import * as internal from "./internal/recipientBehaviour.js"
 import type * as Message from "./Message.js"
@@ -19,17 +20,19 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category models
  */
-export interface RecipientBehaviour<R, Msg extends Message.AnyMessage> {
-  (
-    entityId: string
-  ): Effect.Effect<
+export interface RecipientBehaviour<R, Msg extends Message.Any> extends
+  Effect.Effect<
     R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
     never,
     <A extends Msg>(
       message: A
-    ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, MessageState.MessageState<Message.Success<A>>>
+    ) => Effect.Effect<
+      never,
+      ShardingError.ShardingErrorWhileOfferingMessage,
+      MessageState.MessageState<Message.Success<A>>
+    >
   >
-}
+{}
 
 /**
  * An utility that process a message at a time, or interrupts on PoisonPill
@@ -44,7 +47,7 @@ export type EntityBehaviourOptions = {
  * @since 1.0.0
  * @category utils
  */
-export const fromFunctionEffect: <R, Msg extends Message.AnyMessage>(
+export const fromFunctionEffect: <R, Msg extends Message.Any>(
   handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ) => RecipientBehaviour<R, Msg> = internal.fromFunctionEffect
 
@@ -52,10 +55,23 @@ export const fromFunctionEffect: <R, Msg extends Message.AnyMessage>(
  * @since 1.0.0
  * @category utils
  */
-export const fromInMemoryQueue: <R, Msg extends Message.AnyMessage>(
+export const fromFunctionEffectStateful: <R, S, R2, Msg extends Message.Any>(
+  initialState: (entityId: string) => Effect.Effect<R, never, S>,
+  handler: (
+    entityId: string,
+    message: Msg,
+    stateRef: Ref.Ref<S>
+  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.Success<Msg>>>
+) => RecipientBehaviour<R | R2, Msg> = internal.fromFunctionEffectStateful
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export const fromInMemoryQueue: <R, Msg extends Message.Any>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-    reply: <A extends Msg>(msg: A, value: Message.Success<A>) => Effect.Effect<never, never, void>
+    processed: <A extends Msg>(msg: A, value: Option.Option<Message.Success<A>>) => Effect.Effect<never, never, void>
   ) => Effect.Effect<R, never, void>
 ) => RecipientBehaviour<R, Msg> = internal.fromInMemoryQueue

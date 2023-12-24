@@ -1,6 +1,6 @@
 ---
 title: RecipientBehaviourContext.ts
-nav_order: 14
+nav_order: 16
 parent: "@effect/cluster"
 ---
 
@@ -22,6 +22,11 @@ This module provides the context that is given to a RecipientBehaviour
 - [symbols](#symbols)
   - [RecipientBehaviourContextTypeId](#recipientbehaviourcontexttypeid)
   - [RecipientBehaviourContextTypeId (type alias)](#recipientbehaviourcontexttypeid-type-alias)
+- [utils](#utils)
+  - [entityId](#entityid)
+  - [forkShutdown](#forkshutdown)
+  - [recipientType](#recipienttype)
+  - [shardId](#shardid)
 
 ---
 
@@ -67,6 +72,8 @@ The context where a RecipientBehaviour is running, knows the current entityId, e
 export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
+  readonly shardId: ShardId.ShardId
+  readonly recipientType: RecipientType.RecipientType<Message.Any>
   readonly forkShutdown: Effect.Effect<never, never, void>
 }
 ```
@@ -91,6 +98,60 @@ Added in v1.0.0
 
 ```ts
 export type RecipientBehaviourContextTypeId = typeof RecipientBehaviourContextTypeId
+```
+
+Added in v1.0.0
+
+# utils
+
+## entityId
+
+Gets the current entityId
+
+**Signature**
+
+```ts
+export declare const entityId: Effect.Effect<RecipientBehaviourContext, never, string>
+```
+
+Added in v1.0.0
+
+## forkShutdown
+
+Forks the shutdown of the current recipient
+
+**Signature**
+
+```ts
+export declare const forkShutdown: Effect.Effect<RecipientBehaviourContext, never, void>
+```
+
+Added in v1.0.0
+
+## recipientType
+
+Gets the current shardId
+
+**Signature**
+
+```ts
+export declare const recipientType: Effect.Effect<
+  RecipientBehaviourContext,
+  never,
+  RecipientType.RecipientType<Message.Any>
+>
+```
+
+Added in v1.0.0
+
+## shardId
+
+Gets the current shardId
+
+**Signature**
+
+```ts
+export declare const shardId: Effect.Effect<RecipientBehaviourContext, never, ShardId.ShardId>
 ```
 
 Added in v1.0.0

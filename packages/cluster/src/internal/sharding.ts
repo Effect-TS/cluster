@@ -78,7 +78,7 @@ export function registerSingleton<R>(
 /**
  * @internal
  */
-export function registerEntity<Msg extends Message.AnyMessage, R>(
+export function registerEntity<Msg extends Message.Any, R>(
   entityType: RecipientType.EntityType<Msg>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions
@@ -89,7 +89,7 @@ export function registerEntity<Msg extends Message.AnyMessage, R>(
 /**
  * @internal
  */
-export function registerTopic<Msg extends Message.AnyMessage, R>(
+export function registerTopic<Msg extends Message.Any, R>(
   topicType: RecipientType.TopicType<Msg>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions
@@ -100,7 +100,7 @@ export function registerTopic<Msg extends Message.AnyMessage, R>(
 /**
  * @internal
  */
-export function messenger<Msg extends Message.AnyMessage>(
+export function messenger<Msg extends Message.Any>(
   entityType: RecipientType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding.Sharding, never, Messenger<Msg>> {
@@ -110,7 +110,7 @@ export function messenger<Msg extends Message.AnyMessage>(
 /**
  * @internal
  */
-export function broadcaster<Msg extends Message.AnyMessage>(
+export function broadcaster<Msg extends Message.Any>(
   topicType: RecipientType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding.Sharding, never, Broadcaster.Broadcaster<Msg>> {
@@ -124,6 +124,26 @@ export const getPods: Effect.Effect<Sharding.Sharding, never, HashSet.HashSet<Po
   shardingTag,
   (_) => _.getPods
 )
+
+/**
+ * @internal
+ */
+export const sendMessageToLocalEntityManagerWithoutRetries: (
+  msg: SerializedEnvelope.SerializedEnvelope
+) => Effect.Effect<
+  Sharding.Sharding,
+  ShardingError.ShardingError,
+  MessageState.MessageState<SerializedMessage.SerializedMessage>
+> = (msg) => Effect.flatMap(shardingTag, (_) => _.sendMessageToLocalEntityManagerWithoutRetries(msg))
+
+/**
+ * @internal
+ */
+export const getAssignedShardIds: Effect.Effect<
+  Sharding.Sharding,
+  never,
+  HashSet.HashSet<ShardId.ShardId>
+> = Effect.flatMap(shardingTag, (_) => _.getAssignedShardIds)
 
 type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
 
@@ -147,7 +167,7 @@ function make(
   serialization: Serialization.Serialization,
   eventsHub: PubSub.PubSub<ShardingRegistrationEvent.ShardingRegistrationEvent>
 ) {
-  function getEntityManagerByEntityTypeName<Msg extends Message.AnyMessage>(
+  function getEntityManagerByEntityTypeName<Msg extends Message.Any>(
     entityType: string
   ) {
     return pipe(
@@ -338,6 +358,12 @@ function make(
     Effect.map((_) => HashSet.fromIterable(HashMap.values(_)))
   )
 
+  const getAssignedShardIds: Effect.Effect<never, never, HashSet.HashSet<ShardId.ShardId>> = pipe(
+    Ref.get(shardAssignments),
+    Effect.map(HashMap.filter((_) => equals(_, address))),
+    Effect.map(HashMap.keySet)
+  )
+
   function updateAssignments(
     assignmentsOpt: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>,
     fromShardManager: boolean
@@ -437,7 +463,7 @@ function make(
       : sendMessageToRemotePodWithoutRetries(pod, envelope)
   }
 
-  function messenger<Msg extends Message.AnyMessage>(
+  function messenger<Msg extends Message.Any>(
     entityType: RecipientType.EntityType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Messenger<Msg> {
@@ -458,8 +484,16 @@ function make(
         )
     }
 
+    function unsafeSendDiscard(entityId: string) {
+      return (msg: Message.Payload<Msg>) =>
+        pipe(
+          Message.makeEffect(msg),
+          Effect.flatMap((_) => sendDiscard(entityId)(_ as any))
+        )
+    }
+
     function send(entityId: string) {
-      return <A extends Msg & Message.AnyMessageWithResult>(msg: A) => {
+      return <A extends Msg & Message.AnyWithResult>(msg: A) => {
         return pipe(
           sendMessage(entityId, msg),
           Effect.flatMap((state) =>
@@ -524,10 +558,10 @@ function make(
         ))
     }
 
-    return { sendDiscard, send }
+    return { sendDiscard, unsafeSendDiscard, send }
   }
 
-  function broadcaster<Msg extends Message.AnyMessage>(
+  function broadcaster<Msg extends Message.Any>(
     topicType: RecipientType.TopicType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Broadcaster.Broadcaster<Msg> {
@@ -593,7 +627,7 @@ function make(
     }
 
     function broadcast(topic: string) {
-      return <A extends Msg & Message.AnyMessageWithResult>(msg: A) => {
+      return <A extends Msg & Message.AnyWithResult>(msg: A) => {
         return pipe(
           sendMessage(topic, msg),
           Effect.flatMap((results) =>
@@ -636,7 +670,7 @@ function make(
     return { broadcast, broadcastDiscard }
   }
 
-  function registerEntity<Msg extends Message.AnyMessage, R>(
+  function registerEntity<Msg extends Message.Any, R>(
     entityType: RecipientType.EntityType<Msg>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
@@ -648,7 +682,7 @@ function make(
     )
   }
 
-  function registerTopic<Msg extends Message.AnyMessage, R>(
+  function registerTopic<Msg extends Message.Any, R>(
     topicType: RecipientType.TopicType<Msg>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
@@ -666,7 +700,7 @@ function make(
     ShardingRegistrationEvent.ShardingRegistrationEvent
   > = Stream.fromPubSub(eventsHub)
 
-  function registerRecipient<Msg extends Message.AnyMessage, R>(
+  function registerRecipient<Msg extends Message.Any, R>(
     recipientType: RecipientType.RecipientType<Msg>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
@@ -706,6 +740,7 @@ function make(
     unassign,
     getShardingRegistrationEvents,
     getPods,
+    getAssignedShardIds,
     refreshAssignments,
     sendMessageToLocalEntityManagerWithoutRetries
   }

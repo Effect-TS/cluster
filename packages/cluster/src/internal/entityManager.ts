@@ -32,7 +32,7 @@ export const EntityManagerTypeId = Symbol.for(
 export type EntityManagerTypeId = typeof EntityManagerTypeId
 
 /** @internal */
-export interface EntityManager<Msg extends Message.AnyMessage> {
+export interface EntityManager<Msg extends Message.Any> {
   readonly [EntityManagerTypeId]: EntityManagerTypeId
 
   /** @internal */
@@ -46,7 +46,7 @@ export interface EntityManager<Msg extends Message.AnyMessage> {
     never,
     | ShardingError.ShardingErrorEntityNotManagedByThisPod
     | ShardingError.ShardingErrorPodUnavailable
-    | ShardingError.ShardingErrorMessageQueue,
+    | ShardingError.ShardingErrorWhileOfferingMessage,
     MessageState.MessageState<Message.Success<A>>
   >
 
@@ -60,9 +60,9 @@ export interface EntityManager<Msg extends Message.AnyMessage> {
 }
 
 /** @internal */
-export function make<Msg extends Message.AnyMessage, R>(
+export function make<Msg extends Message.Any, R>(
   recipientType: RecipientType.RecipientType<Msg>,
-  behaviour_: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+  recipientBehaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   options: RecipientBehaviour.EntityBehaviourOptions = {}
@@ -226,14 +226,17 @@ export function make<Msg extends Message.AnyMessage, R>(
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const cdt = yield* _(Clock.currentTimeMillis)
                     const forkShutdown = pipe(forkEntityTermination(entityId), Effect.asUnit)
+                    const shardId = sharding.getShardId(entityId)
 
                     const sendAndGetState = yield* _(pipe(
-                      behaviour_(entityId),
+                      recipientBehaviour,
                       Scope.extend(executionScope),
                       Effect.provideService(
                         RecipientBehaviourContext.RecipientBehaviourContext,
                         RecipientBehaviourContext.make({
                           entityId,
+                          shardId,
+                          recipientType: recipientType as any,
                           forkShutdown
                         })
                       ),
@@ -270,7 +273,7 @@ export function make<Msg extends Message.AnyMessage, R>(
       never,
       | ShardingError.ShardingErrorEntityNotManagedByThisPod
       | ShardingError.ShardingErrorPodUnavailable
-      | ShardingError.ShardingErrorMessageQueue,
+      | ShardingError.ShardingErrorWhileOfferingMessage,
       MessageState.MessageState<Message.Success<A>>
     > {
       return pipe(
@@ -323,29 +326,31 @@ export function make<Msg extends Message.AnyMessage, R>(
           (entityId) =>
             pipe(
               forkEntityTermination(entityId),
-              Effect.flatMap(Option.match({
-                onNone: () => Effect.unit,
-                onSome: (terminationFiber) =>
-                  pipe(
-                    Fiber.await(terminationFiber),
-                    Effect.timeout(config.entityTerminationTimeout),
-                    Effect.flatMap(Option.match({
-                      onNone: () =>
-                        Effect.logError(
-                          `Entity ${
-                            recipientType.name + "#" + entityId
-                          } termination is taking more than expected entityTerminationTimeout (${
-                            Duration.toMillis(config.entityTerminationTimeout)
-                          }ms).`
-                        ),
-                      onSome: () =>
-                        Effect.logDebug(
-                          `Entity ${recipientType.name + "#" + entityId} cleaned up.`
-                        )
-                    })),
-                    Effect.asUnit
-                  )
-              }))
+              Effect.flatMap((_) =>
+                Option.match(_, {
+                  onNone: () => Effect.unit,
+                  onSome: (terminationFiber) =>
+                    pipe(
+                      Fiber.await(terminationFiber),
+                      Effect.timeout(config.entityTerminationTimeout),
+                      Effect.match({
+                        onFailure: () =>
+                          Effect.logError(
+                            `Entity ${
+                              recipientType.name + "#" + entityId
+                            } termination is taking more than expected entityTerminationTimeout (${
+                              Duration.toMillis(config.entityTerminationTimeout)
+                            }ms).`
+                          ),
+                        onSuccess: () =>
+                          Effect.logDebug(
+                            `Entity ${recipientType.name + "#" + entityId} cleaned up.`
+                          )
+                      }),
+                      Effect.asUnit
+                    )
+                })
+              )
             ),
           { concurrency: "inherit" }
         ),

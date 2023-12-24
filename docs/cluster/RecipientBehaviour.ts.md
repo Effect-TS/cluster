@@ -1,6 +1,6 @@
 ---
 title: RecipientBehaviour.ts
-nav_order: 13
+nav_order: 15
 parent: "@effect/cluster"
 ---
 
@@ -32,17 +32,18 @@ An alias to a RecipientBehaviour
 **Signature**
 
 ```ts
-export interface RecipientBehaviour<R, Msg extends Message.AnyMessage> {
-  (
-    entityId: string
-  ): Effect.Effect<
+export interface RecipientBehaviour<R, Msg extends Message.Any>
+  extends Effect.Effect<
     R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
     never,
     <A extends Msg>(
       message: A
-    ) => Effect.Effect<never, ShardingError.ShardingErrorMessageQueue, MessageState.MessageState<Message.Success<A>>>
-  >
-}
+    ) => Effect.Effect<
+      never,
+      ShardingError.ShardingErrorWhileOfferingMessage,
+      MessageState.MessageState<Message.Success<A>>
+    >
+  > {}
 ```
 
 Added in v1.0.0
@@ -68,7 +69,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fromFunctionEffect: <R, Msg extends Message.AnyMessage>(
+export declare const fromFunctionEffect: <R, Msg extends Message.Any>(
   handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ) => RecipientBehaviour<R, Msg>
 ```
@@ -80,11 +81,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fromInMemoryQueue: <R, Msg extends Message.AnyMessage>(
+export declare const fromInMemoryQueue: <R, Msg extends Message.Any>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-    reply: <A extends Msg>(msg: A, value: Message.Success<A>) => Effect.Effect<never, never, void>
+    processed: <A extends Msg>(msg: A, value: Option.Option<Message.Success<A>>) => Effect.Effect<never, never, void>
   ) => Effect.Effect<R, never, void>
 ) => RecipientBehaviour<R, Msg>
 ```

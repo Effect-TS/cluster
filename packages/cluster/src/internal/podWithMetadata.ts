@@ -93,7 +93,7 @@ export const schema: Schema.Schema<
 > = Schema.data(Schema.rename(
   Schema.struct({
     [PodWithMetadataSymbolKey]: Schema.compose(
-      Schema.symbolFromString(Schema.literal(PodWithMetadataSymbolKey)),
+      Schema.compose(Schema.literal(PodWithMetadataSymbolKey), Schema.symbol),
       Schema.uniqueSymbol(PodWithMetadataTypeId)
     ),
     pod: Pod.schema,

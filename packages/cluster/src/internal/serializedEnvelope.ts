@@ -46,7 +46,7 @@ export const schema: Schema.Schema<
   Schema.rename(
     Schema.struct({
       [SerializedEnvelopeSymbolKey]: Schema.compose(
-        Schema.symbolFromString(Schema.literal(SerializedEnvelopeSymbolKey)),
+        Schema.compose(Schema.literal(SerializedEnvelopeSymbolKey), Schema.symbol),
         Schema.uniqueSymbol(SerializedEnvelopeTypeId)
       ),
       entityId: Schema.string,

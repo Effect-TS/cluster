@@ -221,7 +221,6 @@ function make(
             pipe(
               podApi.ping(pod),
               Effect.timeout(config.pingTimeout),
-              Effect.flatMap(Option.match({ onNone: () => Effect.fail(1), onSome: () => Effect.succeed(2) })),
               Effect.match({
                 onFailure: () => Chunk.fromIterable([pod]),
                 onSuccess: () => Chunk.empty<PodAddress.PodAddress>()

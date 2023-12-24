@@ -1,6 +1,6 @@
 ---
 title: Messenger.ts
-nav_order: 7
+nav_order: 9
 parent: "@effect/cluster"
 ---
 
@@ -26,7 +26,7 @@ An interface to communicate with a remote entity
 **Signature**
 
 ```ts
-export interface Messenger<Msg extends Message.AnyMessage> {
+export interface Messenger<Msg extends Message.Any> {
   /**
    * Send a message without waiting for a response (fire and forget)
    * @since 1.0.0
@@ -39,7 +39,7 @@ export interface Messenger<Msg extends Message.AnyMessage> {
    */
   send(
     entityId: string
-  ): <A extends Msg & Message.AnyMessageWithResult>(
+  ): <A extends Msg & Message.AnyWithResult>(
     msg: A
   ) => Effect.Effect<never, ShardingError.ShardingError, Message.Success<A>>
 }

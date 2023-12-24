@@ -1,6 +1,6 @@
 ---
 title: ShardingProtocolHttp.ts
-nav_order: 3
+nav_order: 4
 parent: "@effect/cluster-node"
 ---
 
@@ -30,8 +30,13 @@ Added in v1.0.0
 
 ```ts
 export declare const AssignShard_: Schema.Schema<
-  { readonly shards: readonly unknown[] },
-  { readonly shards: readonly unknown[] }
+  {
+    readonly shards: ReadonlyArray<{
+      readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
+      readonly value: number
+    }>
+  },
+  { readonly shards: ReadonlyArray<ShardId.ShardId> }
 >
 ```
 
@@ -62,7 +67,20 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Send_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }>
+export declare const Send_: Schema.Schema<
+  {
+    readonly message: {
+      readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
+      readonly entityId: string
+      readonly entityType: string
+      readonly body: {
+        readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
+        readonly value: string
+      }
+    }
+  },
+  { readonly message: SerializedEnvelope.SerializedEnvelope }
+>
 ```
 
 Added in v1.0.0
@@ -73,8 +91,13 @@ Added in v1.0.0
 
 ```ts
 export declare const UnassignShards_: Schema.Schema<
-  { readonly shards: readonly unknown[] },
-  { readonly shards: readonly unknown[] }
+  {
+    readonly shards: ReadonlyArray<{
+      readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
+      readonly value: number
+    }>
+  },
+  { readonly shards: ReadonlyArray<ShardId.ShardId> }
 >
 ```
 
@@ -88,8 +111,34 @@ This is the schema for the protocol.
 
 ```ts
 export declare const schema: Schema.Schema<
-  { readonly shards: readonly unknown[] } | { readonly shards: readonly unknown[] } | { [x: string]: any } | {},
-  { readonly shards: readonly unknown[] } | { readonly shards: readonly unknown[] } | { [x: string]: any } | {}
+  | {
+      readonly shards: readonly {
+        readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
+        readonly value: number
+      }[]
+    }
+  | {
+      readonly shards: readonly {
+        readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
+        readonly value: number
+      }[]
+    }
+  | {
+      readonly message: {
+        readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
+        readonly entityId: string
+        readonly entityType: string
+        readonly body: {
+          readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
+          readonly value: string
+        }
+      }
+    }
+  | {},
+  | { readonly shards: readonly ShardId.ShardId[] }
+  | { readonly shards: readonly ShardId.ShardId[] }
+  | { readonly message: SerializedEnvelope.SerializedEnvelope }
+  | {}
 >
 ```
 

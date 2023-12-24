@@ -1,6 +1,6 @@
 ---
 title: Broadcaster.ts
-nav_order: 1
+nav_order: 3
 parent: "@effect/cluster"
 ---
 
@@ -26,7 +26,7 @@ An interface to communicate with a remote broadcast receiver
 **Signature**
 
 ```ts
-export interface Broadcaster<Msg extends Message.AnyMessage> {
+export interface Broadcaster<Msg extends Message.Any> {
   /**
    * Broadcast a message without waiting for a response (fire and forget)
    * @since 1.0.0
@@ -39,7 +39,7 @@ export interface Broadcaster<Msg extends Message.AnyMessage> {
    */
   readonly broadcast: (
     topic: string
-  ) => <A extends Msg & Message.AnyMessageWithResult>(
+  ) => <A extends Msg & Message.AnyWithResult>(
     msg: A
   ) => Effect.Effect<
     never,

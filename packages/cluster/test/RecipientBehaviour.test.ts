@@ -2,6 +2,8 @@ import * as Message from "@effect/cluster/Message"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as RecipientBehaviourContext from "@effect/cluster/RecipientBehaviourContext"
+import * as RecipientType from "@effect/cluster/RecipientType"
+import * as ShardId from "@effect/cluster/ShardId"
 import * as Schema from "@effect/schema/Schema"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
@@ -14,7 +16,7 @@ import * as Queue from "effect/Queue"
 import * as Scope from "effect/Scope"
 import { describe, expect, it } from "vitest"
 
-const Sample = Message.schemaWithResult(Schema.never)(
+const Sample = Message.schema(
   Schema.struct({})
 )
 type Sample = Schema.Schema.To<typeof Sample>
@@ -23,17 +25,19 @@ describe.concurrent("RecipientBehaviour", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
     pipe(fa, Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
 
-  const makeTestActor = <R, Msg extends Message.AnyMessage>(
+  const makeTestActor = <R, Msg extends Message.Any>(
     fa: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     scope: Scope.Scope
   ) =>
     pipe(
-      fa("test"),
+      fa,
       Effect.provideService(
         RecipientBehaviourContext.RecipientBehaviourContext,
         RecipientBehaviourContext.make({
           entityId: "entity1",
-          forkShutdown: Effect.unit
+          forkShutdown: Effect.unit,
+          shardId: ShardId.make(1),
+          recipientType: RecipientType.makeEntityType("Sample", Sample) as any
         })
       ),
       Scope.extend(scope)

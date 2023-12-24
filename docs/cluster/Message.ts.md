@@ -1,6 +1,6 @@
 ---
 title: Message.ts
-nav_order: 4
+nav_order: 6
 parent: "@effect/cluster"
 ---
 
@@ -13,8 +13,8 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [models](#models)
-  - [AnyMessage (interface)](#anymessage-interface)
-  - [AnyMessageWithResult (interface)](#anymessagewithresult-interface)
+  - [Any (interface)](#any-interface)
+  - [AnyWithResult (interface)](#anywithresult-interface)
   - [Message (interface)](#message-interface)
   - [MessageSchema (interface)](#messageschema-interface)
   - [MessageWithResult (interface)](#messagewithresult-interface)
@@ -37,22 +37,22 @@ Added in v1.0.0
 
 # models
 
-## AnyMessage (interface)
+## Any (interface)
 
 **Signature**
 
 ```ts
-export interface AnyMessage extends Message<any> {}
+export interface Any extends Message<any> {}
 ```
 
 Added in v1.0.0
 
-## AnyMessageWithResult (interface)
+## AnyWithResult (interface)
 
 **Signature**
 
 ```ts
-export interface AnyMessageWithResult extends MessageWithResult<any, any> {}
+export interface AnyWithResult extends MessageWithResult<any, any> {}
 ```
 
 Added in v1.0.0
@@ -241,9 +241,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const successSchema: <Payload, Result>(
-  message: MessageWithResult<Payload, Result>
-) => Schema.Schema<unknown, Result>
+export declare const successSchema: <A extends AnyWithResult>(message: A) => Schema.Schema<unknown, Success<A>>
 ```
 
 Added in v1.0.0

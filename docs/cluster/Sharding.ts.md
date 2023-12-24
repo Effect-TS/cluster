@@ -1,6 +1,6 @@
 ---
 title: Sharding.ts
-nav_order: 20
+nav_order: 22
 parent: "@effect/cluster"
 ---
 
@@ -20,6 +20,7 @@ Added in v1.0.0
   - [Sharding (interface)](#sharding-interface)
 - [utils](#utils)
   - [broadcaster](#broadcaster)
+  - [getAssignedShardIds](#getassignedshardids)
   - [getPods](#getpods)
   - [messenger](#messenger)
   - [register](#register)
@@ -27,6 +28,7 @@ Added in v1.0.0
   - [registerScoped](#registerscoped)
   - [registerSingleton](#registersingleton)
   - [registerTopic](#registertopic)
+  - [sendMessageToLocalEntityManagerWithoutRetries](#sendmessagetolocalentitymanagerwithoutretries)
   - [unregister](#unregister)
 
 ---
@@ -63,14 +65,15 @@ Added in v1.0.0
 
 ```ts
 export interface Sharding {
+  /** @internal */
   readonly getShardId: (entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<never, never, void>
   readonly unregister: Effect.Effect<never, never, void>
-  readonly messenger: <Msg extends Message.AnyMessage>(
+  readonly messenger: <Msg extends Message.Any>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Messenger<Msg>
-  readonly broadcaster: <Msg extends Message.AnyMessage>(
+  readonly broadcaster: <Msg extends Message.Any>(
     topicType: RecipentType.TopicType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Broadcaster<Msg>
@@ -78,12 +81,12 @@ export interface Sharding {
   readonly isShuttingDown: Effect.Effect<never, never, boolean>
 
   readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
-  readonly registerEntity: <Msg extends Message.AnyMessage, R>(
+  readonly registerEntity: <Msg extends Message.Any, R>(
     entityType: RecipentType.EntityType<Msg>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
-  readonly registerTopic: <Msg extends Message.AnyMessage, R>(
+  readonly registerTopic: <Msg extends Message.Any, R>(
     topicType: RecipentType.TopicType<Msg>,
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
@@ -94,6 +97,7 @@ export interface Sharding {
     ShardingRegistrationEvent.ShardingRegistrationEvent
   >
   readonly registerSingleton: <R>(name: string, run: Effect.Effect<R, never, void>) => Effect.Effect<R, never, void>
+  /** @internal */
   readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>
   readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
@@ -101,6 +105,7 @@ export interface Sharding {
     msg: SerializedEnvelope.SerializedEnvelope
   ) => Effect.Effect<never, ShardingError.ShardingError, MessageState.MessageState<SerializedMessage.SerializedMessage>>
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
+  readonly getAssignedShardIds: Effect.Effect<never, never, HashSet.HashSet<ShardId.ShardId>>
 }
 ```
 
@@ -116,10 +121,22 @@ You can provide a custom send timeout to override the one globally defined.
 **Signature**
 
 ```ts
-export declare const broadcaster: <Msg extends Message.AnyMessage>(
+export declare const broadcaster: <Msg extends Message.Any>(
   topicType: RecipentType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Sharding, never, Broadcaster<Msg>>
+```
+
+Added in v1.0.0
+
+## getAssignedShardIds
+
+Gets the list of shardIds assigned to the current Pod
+
+**Signature**
+
+```ts
+export declare const getAssignedShardIds: Effect.Effect<Sharding, never, HashSet.HashSet<ShardId.ShardId>>
 ```
 
 Added in v1.0.0
@@ -144,7 +161,7 @@ You can provide a custom send timeout to override the one globally defined.
 **Signature**
 
 ```ts
-export declare const messenger: <Msg extends Message.AnyMessage>(
+export declare const messenger: <Msg extends Message.Any>(
   entityType: RecipentType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Sharding, never, Messenger<Msg>>
@@ -174,7 +191,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare const registerEntity: <Msg extends Message.AnyMessage, R>(
+export declare const registerEntity: <Msg extends Message.Any, R>(
   entityType: RecipentType.EntityType<Msg>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
@@ -221,11 +238,29 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare const registerTopic: <Msg extends Message.AnyMessage, R>(
+export declare const registerTopic: <Msg extends Message.Any, R>(
   topicType: RecipentType.TopicType<Msg>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
 ) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
+```
+
+Added in v1.0.0
+
+## sendMessageToLocalEntityManagerWithoutRetries
+
+Sends a raw message to the local entity manager
+
+**Signature**
+
+```ts
+export declare const sendMessageToLocalEntityManagerWithoutRetries: (
+  msg: SerializedEnvelope.SerializedEnvelope
+) => Effect.Effect<
+  Sharding,
+  ShardingError.ShardingError,
+  MessageState.MessageState<SerializedMessage.SerializedMessage>
+>
 ```
 
 Added in v1.0.0

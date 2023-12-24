@@ -10,7 +10,7 @@ import * as ShardId from "./ShardId.js"
  * @since 1.0.0
  * @category models
  */
-export interface EntityType<Msg extends Message.AnyMessage> {
+export interface EntityType<Msg extends Message.Any> {
   readonly _tag: "EntityType"
   readonly name: string
   readonly schema: Schema.Schema<unknown, Msg>
@@ -20,7 +20,7 @@ export interface EntityType<Msg extends Message.AnyMessage> {
  * @since 1.0.0
  * @category models
  */
-export interface TopicType<Msg extends Message.AnyMessage> {
+export interface TopicType<Msg extends Message.Any> {
   readonly _tag: "TopicType"
   readonly name: string
   readonly schema: Schema.Schema<unknown, Msg>
@@ -31,13 +31,13 @@ export interface TopicType<Msg extends Message.AnyMessage> {
  * @since 1.0.0
  * @category models
  */
-export type RecipientType<Msg extends Message.AnyMessage> = EntityType<Msg> | TopicType<Msg>
+export type RecipientType<Msg extends Message.Any> = EntityType<Msg> | TopicType<Msg>
 
 /**
  * @since 1.0.0
  * @category constructors
  */
-export function makeEntityType<I, Msg extends Message.AnyMessage>(
+export function makeEntityType<I, Msg extends Message.Any>(
   name: string,
   schema: Schema.Schema<I, Msg>
 ): EntityType<Msg> {
@@ -48,7 +48,7 @@ export function makeEntityType<I, Msg extends Message.AnyMessage>(
  * @since 1.0.0
  * @category constructors
  */
-export function makeTopicType<I, Msg extends Message.AnyMessage>(
+export function makeTopicType<I, Msg extends Message.Any>(
   name: string,
   schema: Schema.Schema<I, Msg>
 ): TopicType<Msg> {

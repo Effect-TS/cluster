@@ -50,7 +50,7 @@ export const schema: Schema.Schema<
   Schema.rename(
     Schema.struct({
       [MessageIdSymbolKey]: Schema.compose(
-        Schema.symbolFromString(Schema.literal(MessageIdSymbolKey)),
+        Schema.compose(Schema.literal(MessageIdSymbolKey), Schema.symbol),
         Schema.uniqueSymbol(MessageIdTypeId)
       ),
       value: Schema.string

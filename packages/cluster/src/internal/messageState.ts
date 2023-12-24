@@ -89,7 +89,7 @@ export function schema<I, A>(
     Schema.rename(
       Schema.struct({
         [MessageStateSymbolKey]: Schema.compose(
-          Schema.symbolFromString(Schema.literal(MessageStateSymbolKey)),
+          Schema.compose(Schema.literal(MessageStateSymbolKey), Schema.symbol),
           Schema.uniqueSymbol(MessageStateTypeId)
         ),
         _tag: Schema.literal("@effect/cluster/MessageState/Acknowledged")
@@ -99,7 +99,7 @@ export function schema<I, A>(
     Schema.rename(
       Schema.struct({
         [MessageStateSymbolKey]: Schema.compose(
-          Schema.symbolFromString(Schema.literal(MessageStateSymbolKey)),
+          Schema.compose(Schema.literal(MessageStateSymbolKey), Schema.symbol),
           Schema.uniqueSymbol(MessageStateTypeId)
         ),
         _tag: Schema.literal("@effect/cluster/MessageState/Processed"),

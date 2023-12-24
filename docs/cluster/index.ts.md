@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 2
+nav_order: 4
 parent: "@effect/cluster"
 ---
 
@@ -13,6 +13,8 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
+  - [From "./AtLeastOnce.js"](#from-atleastoncejs)
+  - [From "./AtLeastOnceStorage.js"](#from-atleastoncestoragejs)
   - [From "./Broadcaster.js"](#from-broadcasterjs)
   - [From "./ManagerConfig.js"](#from-managerconfigjs)
   - [From "./Message.js"](#from-messagejs)
@@ -38,12 +40,12 @@ Added in v1.0.0
   - [From "./ShardingError.js"](#from-shardingerrorjs)
   - [From "./ShardingErrorEntityNotManagedByThisPod.js"](#from-shardingerrorentitynotmanagedbythispodjs)
   - [From "./ShardingErrorEntityTypeNotRegistered.js"](#from-shardingerrorentitytypenotregisteredjs)
-  - [From "./ShardingErrorMessageQueue.js"](#from-shardingerrormessagequeuejs)
   - [From "./ShardingErrorNoResultInMessageProcessedState.js"](#from-shardingerrornoresultinmessageprocessedstatejs)
   - [From "./ShardingErrorPodNoLongerRegistered.js"](#from-shardingerrorpodnolongerregisteredjs)
   - [From "./ShardingErrorPodUnavailable.js"](#from-shardingerrorpodunavailablejs)
   - [From "./ShardingErrorSendTimeout.js"](#from-shardingerrorsendtimeoutjs)
   - [From "./ShardingErrorSerialization.js"](#from-shardingerrorserializationjs)
+  - [From "./ShardingErrorWhileOfferingMessage.js"](#from-shardingerrorwhileofferingmessagejs)
   - [From "./ShardingEvent.js"](#from-shardingeventjs)
   - [From "./ShardingRegistrationEvent.js"](#from-shardingregistrationeventjs)
   - [From "./Storage.js"](#from-storagejs)
@@ -51,6 +53,30 @@ Added in v1.0.0
 ---
 
 # exports
+
+## From "./AtLeastOnce.js"
+
+Re-exports all named exports from the "./AtLeastOnce.js" module as `AtLeastOnce`.
+
+**Signature**
+
+```ts
+export * as AtLeastOnce from "./AtLeastOnce.js"
+```
+
+Added in v1.0.0
+
+## From "./AtLeastOnceStorage.js"
+
+Re-exports all named exports from the "./AtLeastOnceStorage.js" module as `AtLeastOnceStorage`.
+
+**Signature**
+
+```ts
+export * as AtLeastOnceStorage from "./AtLeastOnceStorage.js"
+```
+
+Added in v1.0.0
 
 ## From "./Broadcaster.js"
 
@@ -353,18 +379,6 @@ export * as ShardingErrorEntityTypeNotRegistered from "./ShardingErrorEntityType
 
 Added in v1.0.0
 
-## From "./ShardingErrorMessageQueue.js"
-
-Re-exports all named exports from the "./ShardingErrorMessageQueue.js" module as `ShardingErrorMessageQueue`.
-
-**Signature**
-
-```ts
-export * as ShardingErrorMessageQueue from "./ShardingErrorMessageQueue.js"
-```
-
-Added in v1.0.0
-
 ## From "./ShardingErrorNoResultInMessageProcessedState.js"
 
 Re-exports all named exports from the "./ShardingErrorNoResultInMessageProcessedState.js" module as `ShardingErrorNoResultInMessageProcessedState`.
@@ -421,6 +435,18 @@ Re-exports all named exports from the "./ShardingErrorSerialization.js" module a
 
 ```ts
 export * as ShardingErrorSerialization from "./ShardingErrorSerialization.js"
+```
+
+Added in v1.0.0
+
+## From "./ShardingErrorWhileOfferingMessage.js"
+
+Re-exports all named exports from the "./ShardingErrorWhileOfferingMessage.js" module as `ShardingErrorWhileOfferingMessage`.
+
+**Signature**
+
+```ts
+export * as ShardingErrorWhileOfferingMessage from "./ShardingErrorWhileOfferingMessage.js"
 ```
 
 Added in v1.0.0

@@ -33,7 +33,7 @@ export const schema: Schema.Schema<
   Schema.rename(
     Schema.struct({
       [SerializedMessageSymbolKey]: Schema.compose(
-        Schema.symbolFromString(Schema.literal(SerializedMessageSymbolKey)),
+        Schema.compose(Schema.literal(SerializedMessageSymbolKey), Schema.symbol),
         Schema.uniqueSymbol(SerializedMessageTypeId)
       ),
       value: Schema.string
