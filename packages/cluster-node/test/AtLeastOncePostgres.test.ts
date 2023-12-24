@@ -1,4 +1,4 @@
-import * as AtLeastOnceStorageMySql from "@effect/cluster-node/AtLeastOnceStorageMySql"
+import * as AtLeastOnceStoragePostgres from "@effect/cluster-node/AtLeastOnceStoragePostgres"
 import * as AtLeastOnce from "@effect/cluster/AtLeastOnce"
 import * as Message from "@effect/cluster/Message"
 import * as MessageState from "@effect/cluster/MessageState"
@@ -12,8 +12,8 @@ import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
 import * as Schema from "@effect/schema/Schema"
-import * as MySql from "@sqlfx/mysql"
-import { MySqlContainer } from "@testcontainers/mysql"
+import * as Postgres from "@sqlfx/pg"
+import { PostgreSqlContainer } from "@testcontainers/postgresql"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -29,24 +29,19 @@ const SampleMessage = Message.schema(
 
 const testContainerPostgresLayer = pipe(
   Effect.acquireRelease(
-    Effect.promise(() => new MySqlContainer().start()),
+    Effect.promise(() => new PostgreSqlContainer().start()),
     (container) => Effect.promise(() => container.stop())
   ),
-  Effect.flatMap((container) =>
-    MySql.make({
-      url: Secret.fromString(container.getConnectionUri().replace("mysql:", "mariadb:"))
-    })
-  ),
-  Layer.scoped(MySql.tag)
+  Effect.flatMap((container) => Postgres.make({ url: (Secret.fromString(container.getConnectionUri())) })),
+  Layer.scoped(Postgres.tag)
 )
 
 const SampleEntity = RecipientType.makeEntityType("SampleEntity", SampleMessage)
 
-describe.concurrent("AtLeastOnceMySql", () => {
+describe.concurrent("AtLeastOncePostgres", () => {
   const inMemorySharding = pipe(
-    AtLeastOnceStorageMySql.atLeastOnceStorageMySql,
-    Layer.provide(testContainerPostgresLayer),
-    Layer.provideMerge(Sharding.live),
+    Sharding.live,
+    Layer.merge(AtLeastOnceStoragePostgres.atLeastOnceStoragePostgres),
     Layer.provide(PodsHealth.local),
     Layer.provide(Pods.noop),
     Layer.provide(Storage.memory),
@@ -71,19 +66,19 @@ describe.concurrent("AtLeastOnceMySql", () => {
 
   it("Should create the message table upon layer creation", () => {
     return Effect.gen(function*(_) {
-      const sql = yield* _(MySql.tag)
+      const sql = yield* _(Postgres.tag)
 
       const rows = yield* _(sql<{ table_name: string }>`
         SELECT table_name
-          FROM information_schema.tables
+          FROM test.information_schema.tables
         WHERE table_schema='public'
           AND table_type='BASE TABLE'`)
 
-      expect(rows).toBe(true)
+      expect(rows).toEqual([{ table_name: "message_ack" }])
     }).pipe(withTestEnv, Effect.runPromise)
-  }, 100000)
+  })
 
-  it.skip("Should create the message table upon layer creation", () => {
+  it("Should store the message in the table upon send", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
 
@@ -101,7 +96,10 @@ describe.concurrent("AtLeastOnceMySql", () => {
       const msg = yield* _(SampleMessage.makeEffect(42))
       yield* _(messenger.sendDiscard("entity1")(msg))
 
-      expect(true).toBe(true)
+      const sql = yield* _(Postgres.tag)
+      const rows = yield* _(sql<{ table_name: string }>`SELECT * FROM message_ack`)
+
+      expect(rows.length).toBe(1)
     }).pipe(withTestEnv, Effect.runPromise)
-  }, 100000)
+  })
 })
