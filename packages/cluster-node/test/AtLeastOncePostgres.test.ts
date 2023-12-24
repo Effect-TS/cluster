@@ -20,6 +20,7 @@ import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
+import * as Option from "effect/Option"
 import * as Secret from "effect/Secret"
 import { describe, expect, it } from "vitest"
 
@@ -97,7 +98,57 @@ describe.concurrent("AtLeastOncePostgres", () => {
       yield* _(messenger.sendDiscard("entity1")(msg))
 
       const sql = yield* _(Postgres.tag)
-      const rows = yield* _(sql<{ table_name: string }>`SELECT * FROM message_ack`)
+      const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack`)
+
+      expect(rows.length).toBe(1)
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
+
+  it("Should mark as processed if message state is processed", () => {
+    return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
+
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity,
+          pipe(
+            RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Processed(Option.none()))),
+            AtLeastOnce.atLeastOnceRecipientBehaviour
+          )
+        )
+      )
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      const msg = yield* _(SampleMessage.makeEffect(42))
+      yield* _(messenger.sendDiscard("entity1")(msg))
+
+      const sql = yield* _(Postgres.tag)
+      const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack WHERE processed = TRUE`)
+
+      expect(rows.length).toBe(1)
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
+
+  it("Should not mark as processed if message state is acknowledged", () => {
+    return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
+
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity,
+          pipe(
+            RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Acknowledged)),
+            AtLeastOnce.atLeastOnceRecipientBehaviour
+          )
+        )
+      )
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      const msg = yield* _(SampleMessage.makeEffect(42))
+      yield* _(messenger.sendDiscard("entity1")(msg))
+
+      const sql = yield* _(Postgres.tag)
+      const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack WHERE processed = FALSE`)
 
       expect(rows.length).toBe(1)
     }).pipe(withTestEnv, Effect.runPromise)
