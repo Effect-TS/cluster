@@ -13,7 +13,7 @@ import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 
 /** @internal  */
-export function fromFunctionEffect<Msg extends Message.Any, R>(
+export function fromFunctionEffect<R, Msg extends Message.Any>(
   handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
@@ -29,11 +29,11 @@ export function fromFunctionEffect<Msg extends Message.Any, R>(
 }
 
 /** @internal */
-export function fromInMemoryQueue<Msg extends Message.Any, R>(
+export function fromInMemoryQueue<R, Msg extends Message.Any>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-    reply: <A extends Msg>(msg: A, value: Message.Success<A>) => Effect.Effect<never, never, void>
+    processed: <A extends Msg>(msg: A, value: Option.Option<Message.Success<A>>) => Effect.Effect<never, never, void>
   ) => Effect.Effect<R, never, void>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return Effect.gen(function*(_) {
@@ -41,20 +41,18 @@ export function fromInMemoryQueue<Msg extends Message.Any, R>(
     const messageStates = yield* _(Ref.make(HashMap.empty<MessageId.MessageId, MessageState.MessageState<any>>()))
 
     function updateMessageState(message: Msg, state: MessageState.MessageState<any>) {
-      if (!Message.isMessage(message)) return Effect.succeed(state)
       return pipe(Ref.update(messageStates, HashMap.set(Message.messageId(message), state)), Effect.as(state))
     }
 
     function getMessageState(message: Msg) {
-      if (!Message.isMessage(message)) return Effect.succeed(Option.none())
       return pipe(
         Ref.get(messageStates),
         Effect.map(HashMap.get(Message.messageId(message)))
       )
     }
 
-    function reply<A extends Msg>(message: A, reply: Message.Success<A>) {
-      return updateMessageState(message, MessageState.Processed(Option.some(reply)))
+    function reply<A extends Msg>(message: A, reply: Option.Option<Message.Success<A>>) {
+      return updateMessageState(message, MessageState.Processed(reply))
     }
 
     return yield* _(pipe(

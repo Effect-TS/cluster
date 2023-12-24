@@ -16,7 +16,7 @@ import * as Queue from "effect/Queue"
 import * as Scope from "effect/Scope"
 import { describe, expect, it } from "vitest"
 
-const Sample = Message.schemaWithResult(Schema.never)(
+const Sample = Message.schema(
   Schema.struct({})
 )
 type Sample = Schema.Schema.To<typeof Sample>

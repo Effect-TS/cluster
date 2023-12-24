@@ -61,19 +61,21 @@ export const atLeastOnceStoragePostgres: Layer.Layer<
       markAsProcessed: (recipientType, shardId, entityId, message) =>
         pipe(
           sql`UPDATE message_ack SET processed = TRUE WHERE
-                recipient_name = ${sql(recipientType.name)}
-                AND entity_id = ${sql(entityId)}
-                AND message_id = ${sql(Message.messageId(message).value)}`,
+                recipient_name = ${(recipientType.name)}
+                AND entity_id = ${(entityId)}
+                AND message_id = ${(Message.messageId(message).value)}`,
           Effect.catchAllCause(Effect.logError)
         ),
-      sweepPending: () =>
+      sweepPending: (shardIds) =>
         pipe(
           sql<{
             recipient_name: string
             entity_id: string
             message_id: string
             message_body: string
-          }>`SELECT * FROM message_ack WHERE processed = FALSE`.stream,
+          }>`SELECT * FROM message_ack WHERE processed = FALSE AND shard_id IN ${
+            sql(Array.from(shardIds).map((_) => _.value))
+          }`.stream,
           Stream.orDie,
           Stream.map((_) =>
             SerializedEnvelope.make(_.recipient_name, _.entity_id, SerializedMessage.make(_.message_body))

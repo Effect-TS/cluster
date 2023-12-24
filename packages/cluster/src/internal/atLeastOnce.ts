@@ -27,7 +27,7 @@ export function runPendingMessageSweeperScoped(
         )
       ),
       Effect.delay(interval),
-      Effect.ignoreLogged,
+      Effect.catchAllCause(Effect.logError),
       Effect.forever,
       Effect.forkScoped,
       Effect.asUnit
