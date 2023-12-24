@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-export * as AtLeastOnceStorageMysql from "./AtLeastOnceStorageMysql.js"
+export * as AtLeastOnceStorageMysql from "./AtLeastOnceStorageMySql.js"
 
 /**
  * @since 1.0.0
