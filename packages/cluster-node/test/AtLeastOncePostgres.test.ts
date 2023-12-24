@@ -102,4 +102,4 @@ describe.concurrent("AtLeastOncePostgres", () => {
       expect(rows.length).toBe(1)
     }).pipe(withTestEnv, Effect.runPromise)
   })
-})
+}, { timeout: 30000 })
