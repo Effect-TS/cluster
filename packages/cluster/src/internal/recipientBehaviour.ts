@@ -28,6 +28,33 @@ export function fromFunctionEffect<R, Msg extends Message.Any>(
     ))
 }
 
+/** @internal  */
+export function fromFunctionEffectStateful<R, S, R2, Msg extends Message.Any>(
+  initialState: (entityId: string) => Effect.Effect<R, never, S>,
+  handler: (
+    entityId: string,
+    message: Msg,
+    stateRef: Ref.Ref<S>
+  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.Success<Msg>>>
+): RecipientBehaviour.RecipientBehaviour<R | R2, Msg> {
+  return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
+    pipe(
+      initialState(entityId),
+      Effect.flatMap(Ref.make),
+      Effect.flatMap((stateRef) =>
+        pipe(
+          Effect.context<R2>(),
+          Effect.map((context) => (message: Msg) =>
+            pipe(
+              handler(entityId, message, stateRef),
+              Effect.provide(context)
+            )
+          )
+        )
+      )
+    ))
+}
+
 /** @internal */
 export function fromInMemoryQueue<R, Msg extends Message.Any>(
   handler: (

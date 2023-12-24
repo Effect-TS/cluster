@@ -1,6 +1,6 @@
 ---
 title: AtLeastOnceStoragePostgres.ts
-nav_order: 2
+nav_order: 1
 parent: "@effect/cluster-node"
 ---
 

@@ -103,6 +103,14 @@ export interface MessageWithResultSchema<From, To, Result> extends
 export type Success<S> = S extends MessageWithResult<any, infer X> ? X : never
 
 /**
+ * Extracts the payload type from a `Message<A>`.
+ *
+ * @since 1.0.0
+ * @category utils
+ */
+export type Payload<S> = S extends Message<infer X> ? X : never
+
+/**
  * @since 1.0.0
  * @category utils
  */

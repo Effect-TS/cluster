@@ -5,15 +5,26 @@ import * as Serialization from "@effect/cluster/Serialization"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as NodeClient from "@effect/platform-node/Http/NodeClient"
+import { runMain } from "@effect/platform-node/Runtime"
 import * as Effect from "effect/Effect"
-import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
-import { CounterEntity, GetCurrent, Increment } from "./sample-common.js"
+import { CounterEntity, GetCurrent } from "./sample-common.js"
 
-const liveSharding = pipe(
-  Sharding.live,
+const liveLayer = Effect.gen(function*(_) {
+  const messenger = yield* _(Sharding.messenger(CounterEntity))
+
+  yield* _(messenger.unsafeSendDiscard("entity1")({ _tag: "Increment" }))
+  yield* _(messenger.unsafeSendDiscard("entity1")({ _tag: "Increment" }))
+
+  const message = yield* _(GetCurrent.makeEffect({ _tag: "GetCurrent" }))
+  const result = yield* _(messenger.send("entity1")(message))
+
+  yield* _(Effect.logInfo("Current count is " + result))
+}).pipe(
+  Layer.effectDiscard,
+  Layer.provide(Sharding.live),
   Layer.provide(StorageFile.storageFile),
   Layer.provide(PodsHttp.httpPods),
   Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
@@ -22,21 +33,8 @@ const liveSharding = pipe(
   Layer.provide(NodeClient.layer)
 )
 
-const program = pipe(
-  Effect.Do,
-  Effect.bind("messenger", () => Sharding.messenger(CounterEntity)),
-  Effect.bind("msg1", (_) => Increment.makeEffect({ _tag: "Increment" })),
-  Effect.tap((_) => _.messenger.sendDiscard("entity1")(_.msg1)),
-  Effect.bind("msg2", (_) => Increment.makeEffect({ _tag: "Increment" })),
-  Effect.tap((_) => _.messenger.sendDiscard("entity1")(_.msg2)),
-  Effect.bind("msg", () => GetCurrent.makeEffect({ _tag: "GetCurrent" })),
-  Effect.flatMap((_) => _.messenger.send("entity1")(_.msg)),
-  Effect.tap((_) => Effect.log("Current count is " + _)),
-  Effect.zipRight(Effect.never),
-  Effect.scoped,
-  Effect.catchAllCause(Effect.logError),
+Layer.launch(liveLayer).pipe(
   Logger.withMinimumLogLevel(LogLevel.All),
-  Effect.provide(liveSharding)
+  Effect.tapErrorCause(Effect.logError),
+  runMain
 )
-
-Effect.runFork(program)

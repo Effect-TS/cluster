@@ -1,11 +1,6 @@
 /**
  * @since 1.0.0
  */
-export * as AtLeastOnceStorageMySql from "./AtLeastOnceStorageMySql.js"
-
-/**
- * @since 1.0.0
- */
 export * as AtLeastOnceStoragePostgres from "./AtLeastOnceStoragePostgres.js"
 
 /**

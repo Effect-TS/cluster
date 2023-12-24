@@ -484,6 +484,14 @@ function make(
         )
     }
 
+    function unsafeSendDiscard(entityId: string) {
+      return (msg: Message.Payload<Msg>) =>
+        pipe(
+          Message.makeEffect(msg),
+          Effect.flatMap((_) => sendDiscard(entityId)(_ as any))
+        )
+    }
+
     function send(entityId: string) {
       return <A extends Msg & Message.AnyWithResult>(msg: A) => {
         return pipe(
@@ -550,7 +558,7 @@ function make(
         ))
     }
 
-    return { sendDiscard, send }
+    return { sendDiscard, unsafeSendDiscard, send }
   }
 
   function broadcaster<Msg extends Message.Any>(

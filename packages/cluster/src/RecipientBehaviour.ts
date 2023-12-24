@@ -6,6 +6,7 @@ import type * as Duration from "effect/Duration"
 import type * as Effect from "effect/Effect"
 import type * as Option from "effect/Option"
 import type * as Queue from "effect/Queue"
+import type * as Ref from "effect/Ref"
 import type * as Scope from "effect/Scope"
 import * as internal from "./internal/recipientBehaviour.js"
 import type * as Message from "./Message.js"
@@ -49,6 +50,19 @@ export type EntityBehaviourOptions = {
 export const fromFunctionEffect: <R, Msg extends Message.Any>(
   handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
 ) => RecipientBehaviour<R, Msg> = internal.fromFunctionEffect
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export const fromFunctionEffectStateful: <R, S, R2, Msg extends Message.Any>(
+  initialState: (entityId: string) => Effect.Effect<R, never, S>,
+  handler: (
+    entityId: string,
+    message: Msg,
+    stateRef: Ref.Ref<S>
+  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.Success<Msg>>>
+) => RecipientBehaviour<R | R2, Msg> = internal.fromFunctionEffectStateful
 
 /**
  * @since 1.0.0

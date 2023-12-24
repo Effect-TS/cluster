@@ -85,7 +85,7 @@ export declare const fromInMemoryQueue: <R, Msg extends Message.Any>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-    reply: <A extends Msg>(msg: A, value: Message.Success<A>) => Effect.Effect<never, never, void>
+    processed: <A extends Msg>(msg: A, value: Option.Option<Message.Success<A>>) => Effect.Effect<never, never, void>
   ) => Effect.Effect<R, never, void>
 ) => RecipientBehaviour<R, Msg>
 ```
