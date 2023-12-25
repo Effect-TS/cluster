@@ -66,7 +66,7 @@ export interface Sharding {
   readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly sendMessageToLocalEntityManagerWithoutRetries: (
-    msg: SerializedEnvelope.SerializedEnvelope
+    message: SerializedEnvelope.SerializedEnvelope
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
@@ -185,7 +185,7 @@ export const getPods: Effect.Effect<Sharding, never, HashSet.HashSet<PodAddress.
  * @category utils
  */
 export const sendMessageToLocalEntityManagerWithoutRetries: (
-  msg: SerializedEnvelope.SerializedEnvelope
+  message: SerializedEnvelope.SerializedEnvelope
 ) => Effect.Effect<
   Sharding,
   ShardingError.ShardingError,
