@@ -129,12 +129,12 @@ export const getPods: Effect.Effect<Sharding.Sharding, never, HashSet.HashSet<Po
  * @internal
  */
 export const sendMessageToLocalEntityManagerWithoutRetries: (
-  msg: SerializedEnvelope.SerializedEnvelope
+  message: SerializedEnvelope.SerializedEnvelope
 ) => Effect.Effect<
   Sharding.Sharding,
   ShardingError.ShardingError,
   MessageState.MessageState<SerializedMessage.SerializedMessage>
-> = (msg) => Effect.flatMap(shardingTag, (_) => _.sendMessageToLocalEntityManagerWithoutRetries(msg))
+> = (message) => Effect.flatMap(shardingTag, (_) => _.sendMessageToLocalEntityManagerWithoutRetries(message))
 
 /**
  * @internal
@@ -473,9 +473,9 @@ function make(
     )
 
     function sendDiscard(entityId: string) {
-      return (msg: Msg) =>
+      return (message: Msg) =>
         pipe(
-          sendMessage(entityId, msg),
+          sendMessage(entityId, message),
           Effect.timeoutFail({
             onTimeout: ShardingError.ShardingErrorSendTimeout,
             duration: timeout
@@ -485,19 +485,19 @@ function make(
     }
 
     function unsafeSendDiscard(entityId: string) {
-      return (msg: Message.Payload<Msg>) =>
+      return (payload: Message.Payload<Msg>) =>
         pipe(
-          Message.makeEffect(msg),
+          Message.makeEffect(payload),
           Effect.flatMap((_) => sendDiscard(entityId)(_ as any))
         )
     }
 
     function send(entityId: string) {
-      return <A extends Msg & Message.AnyWithResult>(msg: A) => {
+      return <A extends Msg & Message.AnyWithResult>(message: A) => {
         return pipe(
-          sendMessage(entityId, msg),
+          sendMessage(entityId, message),
           Effect.flatMap((state) =>
-            MessageState.mapEffect(state, (body) => serialization.decode(Message.successSchema(msg), body))
+            MessageState.mapEffect(state, (body) => serialization.decode(Message.successSchema(message), body))
           ),
           Effect.flatMap((state) =>
             pipe(
@@ -529,7 +529,7 @@ function make(
 
     function sendMessage<A extends Msg>(
       entityId: string,
-      msg: A
+      message: A
     ): Effect.Effect<
       never,
       ShardingError.ShardingError,
@@ -537,7 +537,7 @@ function make(
     > {
       const shardId = getShardId(entityId)
 
-      return Effect.flatMap(serialization.encode(entityType.schema, msg), (body) =>
+      return Effect.flatMap(serialization.encode(entityType.schema, message), (body) =>
         pipe(
           getPodAddressForShardId(shardId),
           Effect.flatMap((pod) =>
@@ -571,8 +571,8 @@ function make(
     )
 
     function sendMessage<A extends Msg>(
-      topic: string,
-      body: A
+      topicId: string,
+      message: A
     ): Effect.Effect<
       never,
       ShardingError.ShardingError,
@@ -581,7 +581,7 @@ function make(
         Either.Either<ShardingError.ShardingError, MessageState.MessageState<SerializedMessage.SerializedMessage>>
       >
     > {
-      return Effect.flatMap(serialization.encode(topicType.schema, body), (body) =>
+      return Effect.flatMap(serialization.encode(topicType.schema, message), (body) =>
         pipe(
           getPods,
           Effect.flatMap((pods) =>
@@ -591,7 +591,7 @@ function make(
                 pipe(
                   sendMessageToPodWithoutRetries(
                     pod,
-                    SerializedEnvelope.make(topicType.name, topic, body)
+                    SerializedEnvelope.make(topicType.name, topicId, body)
                   ),
                   Effect.retry(pipe(
                     Schedule.fixed(Duration.millis(100)),
@@ -614,10 +614,10 @@ function make(
         ))
     }
 
-    function broadcastDiscard(topic: string) {
-      return (msg: Msg) =>
+    function broadcastDiscard(topicId: string) {
+      return (message: Msg) =>
         pipe(
-          sendMessage(topic, msg),
+          sendMessage(topicId, message),
           Effect.timeoutFail({
             onTimeout: ShardingError.ShardingErrorSendTimeout,
             duration: timeout
@@ -626,17 +626,17 @@ function make(
         )
     }
 
-    function broadcast(topic: string) {
-      return <A extends Msg & Message.AnyWithResult>(msg: A) => {
+    function broadcast(topicId: string) {
+      return <A extends Msg & Message.AnyWithResult>(message: A) => {
         return pipe(
-          sendMessage(topic, msg),
+          sendMessage(topicId, message),
           Effect.flatMap((results) =>
             pipe(
               Effect.forEach(results, ([pod, eitherResult]) =>
                 pipe(
                   eitherResult,
                   Effect.flatMap((state) =>
-                    MessageState.mapEffect(state, (body) => serialization.decode(Message.successSchema(msg), body))
+                    MessageState.mapEffect(state, (body) => serialization.decode(Message.successSchema(message), body))
                   ),
                   Effect.flatMap((state) =>
                     pipe(
