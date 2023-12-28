@@ -425,7 +425,7 @@ function make(
             (body: any) =>
               !Message.isMessageWithResult(request)
                 ? Effect.die(NotAMessageWithReplierDefect(request))
-                : serialization.encode(Message.successSchema(request), body)
+                : serialization.encode(Message.exitSchema(request), body)
           )
         )
       )
@@ -497,7 +497,7 @@ function make(
         return pipe(
           sendMessage(entityId, message),
           Effect.flatMap((state) =>
-            MessageState.mapEffect(state, (body) => serialization.decode(Message.successSchema(message), body))
+            MessageState.mapEffect(state, (body) => serialization.decode(Message.exitSchema(message), body))
           ),
           Effect.flatMap((state) =>
             pipe(
@@ -522,6 +522,7 @@ function make(
             onTimeout: ShardingError.ShardingErrorSendTimeout,
             duration: timeout
           }),
+          Effect.flatMap((_) => _),
           Effect.interruptible
         )
       }
@@ -636,7 +637,7 @@ function make(
                 pipe(
                   eitherResult,
                   Effect.flatMap((state) =>
-                    MessageState.mapEffect(state, (body) => serialization.decode(Message.successSchema(message), body))
+                    MessageState.mapEffect(state, (body) => serialization.decode(Message.exitSchema(message), body))
                   ),
                   Effect.flatMap((state) =>
                     pipe(
@@ -657,6 +658,7 @@ function make(
                       ShardingError.isShardingErrorNoResultInProcessedMessageState(error)
                     )
                   )),
+                  Effect.flatMap((_) => _),
                   Effect.either,
                   Effect.map((res) => [pod, res] as const)
                 ))

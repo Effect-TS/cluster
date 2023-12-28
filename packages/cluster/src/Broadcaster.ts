@@ -33,6 +33,9 @@ export interface Broadcaster<Msg extends Message.Any> {
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    HashMap.HashMap<PodAddress.PodAddress, Either.Either<ShardingError.ShardingError, Message.Success<A>>>
+    HashMap.HashMap<
+      PodAddress.PodAddress,
+      Either.Either<ShardingError.ShardingError | Message.Failure<A>, Message.Success<A>>
+    >
   >
 }

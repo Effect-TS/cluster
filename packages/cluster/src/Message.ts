@@ -4,6 +4,7 @@
 import type * as Schema from "@effect/schema/Schema"
 import type * as Serializable from "@effect/schema/Serializable"
 import type * as Effect from "effect/Effect"
+import type * as Exit_ from "effect/Exit"
 import type * as Types from "effect/Types"
 import * as internal from "./internal/message.js"
 import type * as MessageId from "./MessageId.js"
@@ -60,8 +61,8 @@ export interface MessageSchema<From, To> extends
  * @since 1.0.0
  * @category models
  */
-export interface MessageWithResult<Payload, Result>
-  extends Message<Payload>, Serializable.WithResult<never, never, unknown, Result>
+export interface MessageWithResult<Payload, Failure, Success>
+  extends Message<Payload>, Serializable.WithResult<unknown, Failure, unknown, Success>
 {
 }
 
@@ -69,7 +70,7 @@ export interface MessageWithResult<Payload, Result>
  * @since 1.0.0
  * @category models
  */
-export interface AnyWithResult extends MessageWithResult<any, any> {}
+export type AnyWithResult = MessageWithResult<any, never, any> | MessageWithResult<any, any, any>
 
 /**
  * A `MessageSchema<From, To, A>` is an augmented schema that provides utilities to build the Message<A> with a valid replier.
@@ -77,7 +78,7 @@ export interface AnyWithResult extends MessageWithResult<any, any> {}
  * @since 1.0.0
  * @category models
  */
-export interface MessageWithResultSchema<From, To, Result> extends
+export interface MessageWithResultSchema<From, To, Failure, Success> extends
   Schema.Schema<
     Types.Simplify<
       From & {
@@ -87,11 +88,11 @@ export interface MessageWithResultSchema<From, To, Result> extends
         }
       }
     >,
-    MessageWithResult<To, Result>
+    MessageWithResult<To, Failure, Success>
   >
 {
-  make: (message: To, messageId: MessageId.MessageId) => MessageWithResult<To, Result>
-  makeEffect: (message: To) => Effect.Effect<never, never, MessageWithResult<To, Result>>
+  make: (message: To, messageId: MessageId.MessageId) => MessageWithResult<To, Failure, Success>
+  makeEffect: (message: To) => Effect.Effect<never, never, MessageWithResult<To, Failure, Success>>
 }
 
 /**
@@ -100,7 +101,15 @@ export interface MessageWithResultSchema<From, To, Result> extends
  * @since 1.0.0
  * @category utils
  */
-export type Success<S> = S extends MessageWithResult<any, infer X> ? X : never
+export type Success<S> = S extends MessageWithResult<any, any, infer X> ? X : never
+
+/**
+ * Extracts the success type from a `MessageWithResult<A, S>`.
+ *
+ * @since 1.0.0
+ * @category utils
+ */
+export type Failure<S> = S extends MessageWithResult<any, infer X, any> ? X : never
 
 /**
  * Extracts the payload type from a `Message<A>`.
@@ -111,10 +120,18 @@ export type Success<S> = S extends MessageWithResult<any, infer X> ? X : never
 export type Payload<S> = S extends Message<infer X> ? X : never
 
 /**
+ * Extracts the success type from a `MessageWithResult<A, S>`.
+ *
  * @since 1.0.0
  * @category utils
  */
-export const isMessageWithResult: (value: unknown) => value is MessageWithResult<unknown, unknown> =
+export type Exit<S> = S extends MessageWithResult<any, infer E, infer A> ? Exit_.Exit<E, A> : never
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export const isMessageWithResult: (value: unknown) => value is MessageWithResult<unknown, unknown, unknown> =
   internal.isMessageWithResult
 
 /**
@@ -133,8 +150,7 @@ export const messageId: <Payload>(value: Message<Payload>) => MessageId.MessageI
  * @since 1.0.0
  * @category utils
  */
-export const successSchema: <A extends AnyWithResult>(message: A) => Schema.Schema<unknown, Success<A>> =
-  internal.successSchema
+export const exitSchema: <A extends AnyWithResult>(message: A) => Schema.Schema<unknown, Exit<A>> = internal.exitSchema
 
 /**
  * Creates both the schema and a constructor for a `MessageWithResult<A>`
@@ -142,9 +158,10 @@ export const successSchema: <A extends AnyWithResult>(message: A) => Schema.Sche
  * @since 1.0.0
  * @category schema
  */
-export const schemaWithResult: <RI, RA>(
+export const schemaWithResult: <REI, RE, RI, RA>(
+  failure: Schema.Schema<REI, RE>,
   success: Schema.Schema<RI, RA>
-) => <I, A>(payload: Schema.Schema<I, A>) => MessageWithResultSchema<I, A, RA> = internal.schemaWithResult
+) => <I, A>(payload: Schema.Schema<I, A>) => MessageWithResultSchema<I, A, RE, RA> = internal.schemaWithResult
 
 /**
  * @since 1.0.0

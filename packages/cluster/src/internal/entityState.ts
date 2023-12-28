@@ -27,7 +27,7 @@ export interface EntityState<Msg extends Message.Any> {
   ) => Effect.Effect<
     never,
     ShardingError.ShardingErrorWhileOfferingMessage,
-    MessageState.MessageState<Message.Success<A>>
+    MessageState.MessageState<Message.Exit<A>>
   >
   readonly expirationFiber: Fiber.RuntimeFiber<never, void>
   readonly executionScope: Scope.CloseableScope

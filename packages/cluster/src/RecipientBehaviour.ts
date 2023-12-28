@@ -29,7 +29,7 @@ export interface RecipientBehaviour<R, Msg extends Message.Any> extends
     ) => Effect.Effect<
       never,
       ShardingError.ShardingErrorWhileOfferingMessage,
-      MessageState.MessageState<Message.Success<A>>
+      MessageState.MessageState<Message.Exit<A>>
     >
   >
 {}
@@ -48,7 +48,7 @@ export type EntityBehaviourOptions = {
  * @category utils
  */
 export const fromFunctionEffect: <R, Msg extends Message.Any>(
-  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
+  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Exit<Msg>>>
 ) => RecipientBehaviour<R, Msg> = internal.fromFunctionEffect
 
 /**
@@ -61,7 +61,7 @@ export const fromFunctionEffectStateful: <R, S, R2, Msg extends Message.Any>(
     entityId: string,
     message: Msg,
     stateRef: Ref.Ref<S>
-  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.Success<Msg>>>
+  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.Exit<Msg>>>
 ) => RecipientBehaviour<R | R2, Msg> = internal.fromFunctionEffectStateful
 
 /**
@@ -74,7 +74,7 @@ export const fromInMemoryQueue: <R, Msg extends Message.Any>(
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
     processed: <A extends Msg>(
       message: A,
-      value: Option.Option<Message.Success<A>>
+      value: Option.Option<Message.Exit<A>>
     ) => Effect.Effect<never, never, void>
   ) => Effect.Effect<R, never, void>
 ) => RecipientBehaviour<R, Msg> = internal.fromInMemoryQueue
