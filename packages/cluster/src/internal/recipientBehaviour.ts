@@ -14,7 +14,7 @@ import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 
 /** @internal  */
 export function fromFunctionEffect<R, Msg extends Message.Any>(
-  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
+  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Exit<Msg>>>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
     pipe(
@@ -35,7 +35,7 @@ export function fromFunctionEffectStateful<R, S, R2, Msg extends Message.Any>(
     entityId: string,
     message: Msg,
     stateRef: Ref.Ref<S>
-  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.Success<Msg>>>
+  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.Exit<Msg>>>
 ): RecipientBehaviour.RecipientBehaviour<R | R2, Msg> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
     pipe(
@@ -62,7 +62,7 @@ export function fromInMemoryQueue<R, Msg extends Message.Any>(
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
     processed: <A extends Msg>(
       message: A,
-      value: Option.Option<Message.Success<A>>
+      value: Option.Option<Message.Exit<A>>
     ) => Effect.Effect<never, never, void>
   ) => Effect.Effect<R, never, void>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
@@ -81,7 +81,7 @@ export function fromInMemoryQueue<R, Msg extends Message.Any>(
       )
     }
 
-    function reply<A extends Msg>(message: A, reply: Option.Option<Message.Success<A>>) {
+    function reply<A extends Msg>(message: A, reply: Option.Option<Message.Exit<A>>) {
       return updateMessageState(message, MessageState.Processed(reply))
     }
 

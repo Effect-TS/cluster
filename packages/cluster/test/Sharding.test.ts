@@ -37,7 +37,7 @@ const SampleService = Tag<SampleService>()
 
 const SampleMessage = Message.schema(Schema.number)
 
-const SampleMessageWithResult = Message.schemaWithResult(Schema.number)(
+const SampleMessageWithResult = Message.schemaWithResult(Schema.never, Schema.number)(
   Schema.number
 )
 
@@ -136,7 +136,7 @@ describe.concurrent("SampleTests", () => {
   it("Succefully delivers a message with a reply to an entity", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const SampleMessage = Message.schemaWithResult(Schema.number)(Schema.struct({
+      const SampleMessage = Message.schemaWithResult(Schema.never, Schema.number)(Schema.struct({
         _tag: Schema.literal("SampleMessage")
       }))
 
@@ -146,7 +146,9 @@ describe.concurrent("SampleTests", () => {
 
       yield* _(Sharding.registerEntity(
         SampleEntity,
-        RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Processed(Option.some(42))))
+        RecipientBehaviour.fromFunctionEffect(() =>
+          Effect.succeed(MessageState.Processed(Option.some(Exit.succeed(42))))
+        )
       ))
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
@@ -157,10 +159,36 @@ describe.concurrent("SampleTests", () => {
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
+  it("Succefully delivers a message with a failure reply to an entity", () => {
+    return Effect.gen(function*(_) {
+      yield* _(Sharding.registerScoped)
+      const SampleMessage = Message.schemaWithResult(Schema.string, Schema.number)(Schema.struct({
+        _tag: Schema.literal("SampleMessage")
+      }))
+
+      const SampleProtocol = Schema.union(SampleMessage)
+
+      const SampleEntity = RecipientType.makeEntityType("Sample", SampleProtocol)
+
+      yield* _(Sharding.registerEntity(
+        SampleEntity,
+        RecipientBehaviour.fromFunctionEffect(() =>
+          Effect.succeed(MessageState.Processed(Option.some(Exit.fail("custom-error"))))
+        )
+      ))
+
+      const messenger = yield* _(Sharding.messenger(SampleEntity))
+      const msg = yield* _(SampleMessage.makeEffect({ _tag: "SampleMessage" }))
+      const result = yield* _(messenger.send("entity1")(msg), Effect.exit)
+
+      expect(result).toEqual(Exit.fail("custom-error"))
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
+
   it("Succefully broadcasts a message", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const GetIncrement = Message.schemaWithResult(Schema.number)(Schema.struct({
+      const GetIncrement = Message.schemaWithResult(Schema.never, Schema.number)(Schema.struct({
         _tag: Schema.literal("GetIncrement")
       }))
 
@@ -187,7 +215,7 @@ describe.concurrent("SampleTests", () => {
               case "BroadcastIncrement":
                 return pipe(Ref.update(ref, (_) => _ + 1), Effect.as(MessageState.Acknowledged))
               case "GetIncrement":
-                return pipe(Ref.get(ref), Effect.map((_) => MessageState.Processed(Option.some(_))))
+                return pipe(Ref.get(ref), Effect.map((_) => MessageState.Processed(Option.some(Exit.succeed(_)))))
             }
           })
         )

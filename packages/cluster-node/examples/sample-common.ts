@@ -2,7 +2,7 @@ import * as Message from "@effect/cluster/Message"
 import * as RecipientType from "@effect/cluster/RecipientType"
 import * as Schema from "@effect/schema/Schema"
 
-export const GetCurrent = Message.schemaWithResult(Schema.number)(
+export const GetCurrent = Message.schemaWithResult(Schema.never, Schema.number)(
   Schema.struct({
     _tag: Schema.literal("GetCurrent")
   })

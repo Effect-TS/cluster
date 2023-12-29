@@ -47,7 +47,7 @@ export interface EntityManager<Msg extends Message.Any> {
     | ShardingError.ShardingErrorEntityNotManagedByThisPod
     | ShardingError.ShardingErrorPodUnavailable
     | ShardingError.ShardingErrorWhileOfferingMessage,
-    MessageState.MessageState<Message.Success<A>>
+    MessageState.MessageState<Message.Exit<A>>
   >
 
   /** @internal */
@@ -274,7 +274,7 @@ export function make<Msg extends Message.Any, R>(
       | ShardingError.ShardingErrorEntityNotManagedByThisPod
       | ShardingError.ShardingErrorPodUnavailable
       | ShardingError.ShardingErrorWhileOfferingMessage,
-      MessageState.MessageState<Message.Success<A>>
+      MessageState.MessageState<Message.Exit<A>>
     > {
       return pipe(
         Effect.Do,

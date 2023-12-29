@@ -37,5 +37,5 @@ export interface Messenger<Msg extends Message.Any> {
     entityId: string
   ): <A extends Msg & Message.AnyWithResult>(
     message: A
-  ) => Effect.Effect<never, ShardingError.ShardingError, Message.Success<A>>
+  ) => Effect.Effect<never, ShardingError.ShardingError | Message.Failure<A>, Message.Success<A>>
 }
