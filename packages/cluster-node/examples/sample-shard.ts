@@ -35,7 +35,11 @@ const liveLayer = Sharding.registerEntity(
           case "Decrement":
             return pipe(Ref.update(stateRef, (count) => count - 1), Effect.as(MessageState.Processed(Option.none())))
           case "GetCurrent":
-            return pipe(Ref.get(stateRef), Effect.map((count) => MessageState.Processed(Option.some(count))))
+            return pipe(
+              Ref.get(stateRef),
+              Effect.exit,
+              Effect.map((result) => MessageState.Processed(Option.some(result)))
+            )
         }
       }
     )
