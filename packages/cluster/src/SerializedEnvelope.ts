@@ -32,6 +32,23 @@ export interface SerializedEnvelope extends
 {}
 
 /**
+ * @since 1.0.0
+ * @category models
+ */
+export namespace SerializedEnvelope {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export interface From {
+    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
+    readonly entityId: string
+    readonly entityType: string
+    readonly body: SerializedMessage.SerializedMessage.From
+  }
+}
+
+/**
  * Construct a new `SerializedEnvelope`
  *
  * @since 1.0.0
@@ -56,14 +73,6 @@ export const isSerializedEnvelope: (value: unknown) => value is SerializedEnvelo
  * @category schema
  */
 export const schema: Schema.Schema<
-  {
-    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
-    readonly entityId: string
-    readonly entityType: string
-    readonly body: {
-      readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
-      readonly value: string
-    }
-  },
+  SerializedEnvelope.From,
   SerializedEnvelope
 > = internal.schema

@@ -28,11 +28,7 @@ export const AssignShard_: Schema.Schema<
  * @category schema
  */
 export const UnassignShards_: Schema.Schema<
-  {
-    readonly shards: ReadonlyArray<
-      { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number }
-    >
-  },
+  { readonly shards: ReadonlyArray<ShardId.ShardId.From> },
   { readonly shards: ReadonlyArray<ShardId.ShardId> }
 > = Schema.struct({
   shards: Schema.array(ShardId.schema)
@@ -43,17 +39,7 @@ export const UnassignShards_: Schema.Schema<
  * @category schema
  */
 export const Send_: Schema.Schema<
-  {
-    readonly message: {
-      readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
-      readonly entityId: string
-      readonly entityType: string
-      readonly body: {
-        readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
-        readonly value: string
-      }
-    }
-  },
+  { readonly message: SerializedEnvelope.SerializedEnvelope.From },
   { readonly message: SerializedEnvelope.SerializedEnvelope }
 > = Schema.struct({
   message: SerializedEnvelope.schema

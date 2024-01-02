@@ -31,6 +31,21 @@ export interface MessageId extends
 
 /**
  * @since 1.0.0
+ * @category models
+ */
+export namespace MessageId {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export interface From {
+    readonly value: string
+    readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId"
+  }
+}
+
+/**
+ * @since 1.0.0
  * @category utils
  */
 export const isMessageId: (value: unknown) => value is MessageId = internal.isMessageId
@@ -58,6 +73,6 @@ export const makeEffect: Effect.Effect<never, never, MessageId> = internal.makeE
  * @category schema
  */
 export const schema: Schema.Schema<
-  { readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId"; readonly value: string },
+  MessageId.From,
   MessageId
 > = internal.schema

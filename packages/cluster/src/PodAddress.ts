@@ -31,6 +31,22 @@ export interface PodAddress extends
 
 /**
  * @since 1.0.0
+ * @category models
+ */
+export namespace PodAddress {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export interface From {
+    readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
+    readonly host: string
+    readonly port: number
+  }
+}
+
+/**
+ * @since 1.0.0
  * @category constructors
  */
 export const make: (host: string, port: number) => PodAddress = internal.make
@@ -51,6 +67,6 @@ export const show: (podAddress: PodAddress) => string = internal.show
  * @category schema
  */
 export const schema: Schema.Schema<
-  { readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"; readonly host: string; readonly port: number },
+  PodAddress.From,
   PodAddress
 > = internal.schema

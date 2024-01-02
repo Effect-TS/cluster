@@ -149,30 +149,12 @@ export declare const schema: Schema.Schema<
   | { readonly _tag: "./ShardingErrorWhileOfferingMessage"; readonly error: string }
   | { readonly _tag: "./ShardingErrorSerialization"; readonly error: string }
   | { readonly _tag: "./ShardingErrorSendTimeout" }
-  | {
-      readonly _tag: "./ShardingErrorPodUnavailable"
-      readonly pod: {
-        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-        readonly host: string
-        readonly port: number
-      }
-    }
-  | {
-      readonly _tag: "./ShardingErrorPodNoLongerRegistered"
-      readonly podAddress: {
-        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-        readonly host: string
-        readonly port: number
-      }
-    }
+  | { readonly _tag: "./ShardingErrorPodUnavailable"; readonly pod: PodAddress.From }
+  | { readonly _tag: "./ShardingErrorPodNoLongerRegistered"; readonly podAddress: PodAddress.From }
   | { readonly _tag: "./ShardingErrorNoResultInProcessedMessageState" }
   | {
       readonly _tag: "./ShardingErrorEntityTypeNotRegistered"
-      readonly podAddress: {
-        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-        readonly host: string
-        readonly port: number
-      }
+      readonly podAddress: PodAddress.From
       readonly entityType: string
     }
   | { readonly _tag: "./ShardingErrorEntityNotManagedByThisPod"; readonly entityId: string },

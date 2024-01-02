@@ -102,7 +102,7 @@ export interface Sharding {
   readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
   readonly sendMessageToLocalEntityManagerWithoutRetries: (
-    msg: SerializedEnvelope.SerializedEnvelope
+    message: SerializedEnvelope.SerializedEnvelope
   ) => Effect.Effect<never, ShardingError.ShardingError, MessageState.MessageState<SerializedMessage.SerializedMessage>>
   readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
   readonly getAssignedShardIds: Effect.Effect<never, never, HashSet.HashSet<ShardId.ShardId>>
@@ -255,7 +255,7 @@ Sends a raw message to the local entity manager
 
 ```ts
 export declare const sendMessageToLocalEntityManagerWithoutRetries: (
-  msg: SerializedEnvelope.SerializedEnvelope
+  message: SerializedEnvelope.SerializedEnvelope
 ) => Effect.Effect<
   Sharding,
   ShardingError.ShardingError,

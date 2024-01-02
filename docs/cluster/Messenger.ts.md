@@ -31,7 +31,18 @@ export interface Messenger<Msg extends Message.Any> {
    * Send a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  sendDiscard(entityId: string): (msg: Msg) => Effect.Effect<never, ShardingError.ShardingError, void>
+  sendDiscard(entityId: string): (message: Msg) => Effect.Effect<never, ShardingError.ShardingError, void>
+
+  /**
+   * Builds and sends a message without waiting for a response (fire and forget)
+   * NOTE: This variant is considered unsafe since it creates the messageId before sending the message.
+   * This means that if the message is sent, received remotely, but acknowledgmenent fails to be sent back
+   * before the configured sendTimeout, if the effect is re-executed you'll end up sending multiple times the same Message.
+   * @since 1.0.0
+   */
+  unsafeSendDiscard(
+    entityId: string
+  ): (message: Message.Payload<Msg>) => Effect.Effect<never, ShardingError.ShardingError, void>
 
   /**
    * Send a message and wait for a response of type `Res`
@@ -40,8 +51,8 @@ export interface Messenger<Msg extends Message.Any> {
   send(
     entityId: string
   ): <A extends Msg & Message.AnyWithResult>(
-    msg: A
-  ) => Effect.Effect<never, ShardingError.ShardingError, Message.Success<A>>
+    message: A
+  ) => Effect.Effect<never, ShardingError.ShardingError | Message.Failure<A>, Message.Success<A>>
 }
 ```
 

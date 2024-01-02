@@ -5,7 +5,6 @@ import type * as Schema from "@effect/schema/Schema"
 import type * as Serializable from "@effect/schema/Serializable"
 import type * as Effect from "effect/Effect"
 import type * as Exit_ from "effect/Exit"
-import type * as Types from "effect/Types"
 import * as internal from "./internal/message.js"
 import type * as MessageId from "./MessageId.js"
 
@@ -35,6 +34,22 @@ export interface Message<Payload> {
  * @since 1.0.0
  * @category models
  */
+export namespace Message {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export interface From<Payload> {
+    readonly id: MessageId.MessageId.From
+    readonly headers: Record<string, string>
+    readonly payload: Payload
+  }
+}
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface Any extends Message<any> {}
 
 /**
@@ -43,11 +58,7 @@ export interface Any extends Message<any> {}
  */
 export interface MessageSchema<From, To> extends
   Schema.Schema<
-    {
-      readonly id: { readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId"; readonly value: string }
-      readonly headers: { readonly [x: string]: string }
-      readonly payload: From
-    },
+    Message.From<From>,
     Message<To>
   >
 {
@@ -70,6 +81,18 @@ export interface MessageWithResult<Payload, Failure, Success>
  * @since 1.0.0
  * @category models
  */
+export namespace MessageWithResult {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export interface From<Payload> extends Message.From<Payload> {}
+}
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export type AnyWithResult = MessageWithResult<any, never, any> | MessageWithResult<any, any, any>
 
 /**
@@ -80,14 +103,7 @@ export type AnyWithResult = MessageWithResult<any, never, any> | MessageWithResu
  */
 export interface MessageWithResultSchema<From, To, Failure, Success> extends
   Schema.Schema<
-    Types.Simplify<
-      From & {
-        readonly "@effect/cluster/Message": {
-          readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId"
-          readonly value: string
-        }
-      }
-    >,
+    MessageWithResult.From<From>,
     MessageWithResult<To, Failure, Success>
   >
 {

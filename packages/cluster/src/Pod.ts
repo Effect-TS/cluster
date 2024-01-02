@@ -32,6 +32,22 @@ export interface Pod extends
 
 /**
  * @since 1.0.0
+ * @category models
+ */
+export namespace Pod {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export interface From {
+    readonly address: PodAddress.PodAddress.From
+    readonly version: string
+    readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
+  }
+}
+
+/**
+ * @since 1.0.0
  * @category utils
  */
 export const isPod: (value: unknown) => value is Pod = internal.isPod
@@ -47,14 +63,6 @@ export const make: (address: PodAddress.PodAddress, version: string) => Pod = in
  * @category schema
  */
 export const schema: Schema.Schema<
-  {
-    readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
-    readonly address: {
-      readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-      readonly host: string
-      readonly port: number
-    }
-    readonly version: string
-  },
+  Pod.From,
   Pod
 > = internal.schema

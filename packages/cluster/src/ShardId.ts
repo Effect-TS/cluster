@@ -27,6 +27,20 @@ export interface ShardId extends
     readonly value: number
   }>
 {}
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export namespace ShardId {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export interface From {
+    readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
+    readonly value: number
+  }
+}
 
 /**
  * @since 1.0.0
@@ -44,6 +58,6 @@ export const show = internal.show
  * @category schema
  */
 export const schema: Schema.Schema<
-  { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number },
+  ShardId.From,
   ShardId
 > = internal.schema

@@ -71,14 +71,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorPodNoLongerRegisteredSchema: Schema.Schema<
-  {
-    readonly _tag: "./ShardingErrorPodNoLongerRegistered"
-    readonly podAddress: {
-      readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-      readonly host: string
-      readonly port: number
-    }
-  },
+  { readonly _tag: "./ShardingErrorPodNoLongerRegistered"; readonly podAddress: PodAddress.PodAddress.From },
   ShardingErrorPodNoLongerRegistered
 >
 ```

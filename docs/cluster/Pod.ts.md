@@ -16,6 +16,8 @@ Added in v1.0.0
   - [make](#make)
 - [models](#models)
   - [Pod (interface)](#pod-interface)
+  - [Pod (namespace)](#pod-namespace)
+    - [From (interface)](#from-interface)
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
@@ -55,6 +57,24 @@ export interface Pod
 
 Added in v1.0.0
 
+## Pod (namespace)
+
+Added in v1.0.0
+
+### From (interface)
+
+**Signature**
+
+```ts
+export interface From {
+  readonly address: PodAddress.PodAddress.From
+  readonly version: string
+  readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
+}
+```
+
+Added in v1.0.0
+
 # schema
 
 ## schema
@@ -62,18 +82,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<
-  {
-    readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
-    readonly address: {
-      readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-      readonly host: string
-      readonly port: number
-    }
-    readonly version: string
-  },
-  Pod
->
+export declare const schema: Schema.Schema<Pod.From, Pod>
 ```
 
 Added in v1.0.0

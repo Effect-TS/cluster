@@ -75,14 +75,7 @@ export function mapEffect<A, B, R, E>(
 export function schema<I, A>(
   result: Schema.Schema<I, A>
 ): Schema.Schema<
-  {
-    readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
-    readonly _tag: "@effect/cluster/MessageState/Acknowledged"
-  } | {
-    readonly result: Schema.OptionFrom<I>
-    readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
-    readonly _tag: "@effect/cluster/MessageState/Processed"
-  },
+  MessageState.MessageState.From<I>,
   MessageState.MessageState<A>
 > {
   return Schema.union(

@@ -1,6 +1,3 @@
-/**
- * @since 1.0.0
- */
 import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -13,6 +10,7 @@ import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import * as Sharding from "../Sharding.js"
 
+/** @internal */
 export function runPendingMessageSweeperScoped(
   interval: Duration.Duration
 ): Effect.Effect<AtLeastOnceStorage.AtLeastOnceStorage | Sharding.Sharding | Scope.Scope, never, void> {
@@ -34,6 +32,7 @@ export function runPendingMessageSweeperScoped(
     ))
 }
 
+/** @internal */
 export function atLeastOnceRecipientBehaviour<R, Msg extends Message.Any>(
   fa: RecipientBehaviour.RecipientBehaviour<R, Msg>
 ): RecipientBehaviour.RecipientBehaviour<R | AtLeastOnceStorage.AtLeastOnceStorage, Msg> {

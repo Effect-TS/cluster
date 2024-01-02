@@ -49,6 +49,25 @@ export type MessageState<A> = MessageStateAcknowledged | MessageStateProcessed<A
 
 /**
  * @since 1.0.0
+ * @category models
+ */
+export namespace MessageState {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export type From<I> = {
+    readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
+    readonly _tag: "@effect/cluster/MessageState/Acknowledged"
+  } | {
+    readonly result: Schema.OptionFrom<I>
+    readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
+    readonly _tag: "@effect/cluster/MessageState/Processed"
+  }
+}
+
+/**
+ * @since 1.0.0
  * @category utils
  */
 export const isMessageState = internal.isMessageState
@@ -87,13 +106,6 @@ export const mapEffect: <A, B, R, E>(
 export const schema: <I, A>(
   result: Schema.Schema<I, A>
 ) => Schema.Schema<
-  {
-    readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
-    readonly _tag: "@effect/cluster/MessageState/Acknowledged"
-  } | {
-    readonly result: Schema.OptionFrom<I>
-    readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
-    readonly _tag: "@effect/cluster/MessageState/Processed"
-  },
+  MessageState.From<I>,
   MessageState<A>
 > = internal.schema
