@@ -74,11 +74,7 @@ Added in v1.0.0
 export declare const ShardingErrorEntityTypeNotRegisteredSchema: Schema.Schema<
   {
     readonly _tag: "./ShardingErrorEntityTypeNotRegistered"
-    readonly podAddress: {
-      readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-      readonly host: string
-      readonly port: number
-    }
+    readonly podAddress: PodAddress.PodAddress.From
     readonly entityType: string
   },
   ShardingErrorEntityTypeNotRegistered

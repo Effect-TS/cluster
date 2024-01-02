@@ -16,6 +16,8 @@ Added in v1.0.0
   - [make](#make)
 - [models](#models)
   - [SerializedEnvelope (interface)](#serializedenvelope-interface)
+  - [SerializedEnvelope (namespace)](#serializedenvelope-namespace)
+    - [From (interface)](#from-interface)
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
@@ -62,6 +64,25 @@ export interface SerializedEnvelope
 
 Added in v1.0.0
 
+## SerializedEnvelope (namespace)
+
+Added in v1.0.0
+
+### From (interface)
+
+**Signature**
+
+```ts
+export interface From {
+  readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
+  readonly entityId: string
+  readonly entityType: string
+  readonly body: SerializedMessage.SerializedMessage.From
+}
+```
+
+Added in v1.0.0
+
 # schema
 
 ## schema
@@ -71,18 +92,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<
-  {
-    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
-    readonly entityId: string
-    readonly entityType: string
-    readonly body: {
-      readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
-      readonly value: string
-    }
-  },
-  SerializedEnvelope
->
+export declare const schema: Schema.Schema<SerializedEnvelope.From, SerializedEnvelope>
 ```
 
 Added in v1.0.0

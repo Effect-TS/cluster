@@ -38,7 +38,10 @@ export namespace MessageId {
    * @since 1.0.0
    * @category models
    */
-  export interface From extends Schema.Schema.From<typeof internal.schema> {}
+  export interface From {
+    readonly value: string
+    readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId"
+  }
 }
 
 /**

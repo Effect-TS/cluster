@@ -16,6 +16,8 @@ Added in v1.0.0
   - [make](#make)
 - [models](#models)
   - [ShardId (interface)](#shardid-interface)
+  - [ShardId (namespace)](#shardid-namespace)
+    - [From (interface)](#from-interface)
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
@@ -52,6 +54,23 @@ export interface ShardId
 
 Added in v1.0.0
 
+## ShardId (namespace)
+
+Added in v1.0.0
+
+### From (interface)
+
+**Signature**
+
+```ts
+export interface From {
+  readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
+  readonly value: number
+}
+```
+
+Added in v1.0.0
+
 # schema
 
 ## schema
@@ -61,10 +80,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<
-  { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number },
-  ShardId
->
+export declare const schema: Schema.Schema<ShardId.From, ShardId>
 ```
 
 Added in v1.0.0

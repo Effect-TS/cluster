@@ -17,6 +17,8 @@ Added in v1.0.0
   - [makeEffect](#makeeffect)
 - [models](#models)
   - [MessageId (interface)](#messageid-interface)
+  - [MessageId (namespace)](#messageid-namespace)
+    - [From (interface)](#from-interface)
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
@@ -69,6 +71,23 @@ export interface MessageId
 
 Added in v1.0.0
 
+## MessageId (namespace)
+
+Added in v1.0.0
+
+### From (interface)
+
+**Signature**
+
+```ts
+export interface From {
+  readonly value: string
+  readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId"
+}
+```
+
+Added in v1.0.0
+
 # schema
 
 ## schema
@@ -78,10 +97,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<
-  { readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId"; readonly value: string },
-  MessageId
->
+export declare const schema: Schema.Schema<MessageId.From, MessageId>
 ```
 
 Added in v1.0.0

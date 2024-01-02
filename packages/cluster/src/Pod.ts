@@ -39,7 +39,11 @@ export namespace Pod {
    * @since 1.0.0
    * @category models
    */
-  export interface From extends Schema.Schema.From<typeof internal.schema> {}
+  export interface From {
+    readonly address: PodAddress.PodAddress.From
+    readonly version: string
+    readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
+  }
 }
 
 /**

@@ -40,7 +40,12 @@ export namespace SerializedEnvelope {
    * @since 1.0.0
    * @category models
    */
-  export interface From extends Schema.Schema.From<typeof internal.schema> {}
+  export interface From {
+    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
+    readonly entityId: string
+    readonly entityType: string
+    readonly body: SerializedMessage.SerializedMessage.From
+  }
 }
 
 /**

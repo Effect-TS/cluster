@@ -16,6 +16,8 @@ Added in v1.0.0
   - [make](#make)
 - [models](#models)
   - [SerializedMessage (interface)](#serializedmessage-interface)
+  - [SerializedMessage (namespace)](#serializedmessage-namespace)
+    - [From (interface)](#from-interface)
 - [schema](#schema)
   - [schema](#schema-1)
 - [symbols](#symbols)
@@ -56,6 +58,23 @@ export interface SerializedMessage
 
 Added in v1.0.0
 
+## SerializedMessage (namespace)
+
+Added in v1.0.0
+
+### From (interface)
+
+**Signature**
+
+```ts
+export interface From {
+  readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
+  readonly value: string
+}
+```
+
+Added in v1.0.0
+
 # schema
 
 ## schema
@@ -65,10 +84,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<
-  { readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"; readonly value: string },
-  SerializedMessage
->
+export declare const schema: Schema.Schema<SerializedMessage.From, SerializedMessage>
 ```
 
 Added in v1.0.0

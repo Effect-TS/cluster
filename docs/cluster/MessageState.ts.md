@@ -17,6 +17,8 @@ Added in v1.0.0
   - [Processed](#processed)
 - [models](#models)
   - [MessageState (type alias)](#messagestate-type-alias)
+  - [MessageState (namespace)](#messagestate-namespace)
+    - [From (type alias)](#from-type-alias)
   - [MessageStateAcknowledged (interface)](#messagestateacknowledged-interface)
   - [MessageStateProcessed (interface)](#messagestateprocessed-interface)
 - [schema](#schema)
@@ -65,6 +67,29 @@ export type MessageState<A> = MessageStateAcknowledged | MessageStateProcessed<A
 
 Added in v1.0.0
 
+## MessageState (namespace)
+
+Added in v1.0.0
+
+### From (type alias)
+
+**Signature**
+
+```ts
+export type From<I> =
+  | {
+      readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
+      readonly _tag: "@effect/cluster/MessageState/Acknowledged"
+    }
+  | {
+      readonly result: Schema.OptionFrom<I>
+      readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
+      readonly _tag: "@effect/cluster/MessageState/Processed"
+    }
+```
+
+Added in v1.0.0
+
 ## MessageStateAcknowledged (interface)
 
 A message state given to just acknowledged messages
@@ -103,20 +128,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const schema: <I, A>(
-  result: Schema.Schema<I, A>
-) => Schema.Schema<
-  | {
-      readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
-      readonly _tag: "@effect/cluster/MessageState/Acknowledged"
-    }
-  | {
-      readonly result: Schema.OptionFrom<I>
-      readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
-      readonly _tag: "@effect/cluster/MessageState/Processed"
-    },
-  MessageState<A>
->
+export declare const schema: <I, A>(result: Schema.Schema<I, A>) => Schema.Schema<MessageState.From<I>, MessageState<A>>
 ```
 
 Added in v1.0.0

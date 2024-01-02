@@ -19,6 +19,7 @@ Added in v1.0.0
 - [utils](#utils)
   - [EntityBehaviourOptions (type alias)](#entitybehaviouroptions-type-alias)
   - [fromFunctionEffect](#fromfunctioneffect)
+  - [fromFunctionEffectStateful](#fromfunctioneffectstateful)
   - [fromInMemoryQueue](#frominmemoryqueue)
 
 ---
@@ -41,7 +42,7 @@ export interface RecipientBehaviour<R, Msg extends Message.Any>
     ) => Effect.Effect<
       never,
       ShardingError.ShardingErrorWhileOfferingMessage,
-      MessageState.MessageState<Message.Success<A>>
+      MessageState.MessageState<Message.Exit<A>>
     >
   > {}
 ```
@@ -70,8 +71,25 @@ Added in v1.0.0
 
 ```ts
 export declare const fromFunctionEffect: <R, Msg extends Message.Any>(
-  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Success<Msg>>>
+  handler: (entityId: string, message: Msg) => Effect.Effect<R, never, MessageState.MessageState<Message.Exit<Msg>>>
 ) => RecipientBehaviour<R, Msg>
+```
+
+Added in v1.0.0
+
+## fromFunctionEffectStateful
+
+**Signature**
+
+```ts
+export declare const fromFunctionEffectStateful: <R, S, R2, Msg extends Message.Any>(
+  initialState: (entityId: string) => Effect.Effect<R, never, S>,
+  handler: (
+    entityId: string,
+    message: Msg,
+    stateRef: Ref.Ref<S>
+  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.Exit<Msg>>>
+) => RecipientBehaviour<R | R2, Msg>
 ```
 
 Added in v1.0.0
@@ -85,7 +103,7 @@ export declare const fromInMemoryQueue: <R, Msg extends Message.Any>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-    processed: <A extends Msg>(msg: A, value: Option.Option<Message.Success<A>>) => Effect.Effect<never, never, void>
+    processed: <A extends Msg>(message: A, value: Option.Option<Message.Exit<A>>) => Effect.Effect<never, never, void>
   ) => Effect.Effect<R, never, void>
 ) => RecipientBehaviour<R, Msg>
 ```

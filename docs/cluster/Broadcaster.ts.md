@@ -31,20 +31,25 @@ export interface Broadcaster<Msg extends Message.Any> {
    * Broadcast a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  readonly broadcastDiscard: (topic: string) => (msg: Msg) => Effect.Effect<never, ShardingError.ShardingError, void>
+  readonly broadcastDiscard: (
+    topicId: string
+  ) => (message: Msg) => Effect.Effect<never, ShardingError.ShardingError, void>
 
   /**
    * Broadcast a message and wait for a response from each consumer
    * @since 1.0.0
    */
   readonly broadcast: (
-    topic: string
+    topicId: string
   ) => <A extends Msg & Message.AnyWithResult>(
-    msg: A
+    message: A
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
-    HashMap.HashMap<PodAddress.PodAddress, Either.Either<ShardingError.ShardingError, Message.Success<A>>>
+    HashMap.HashMap<
+      PodAddress.PodAddress,
+      Either.Either<ShardingError.ShardingError | Message.Failure<A>, Message.Success<A>>
+    >
   >
 }
 ```
