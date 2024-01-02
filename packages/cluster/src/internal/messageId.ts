@@ -45,7 +45,7 @@ export const makeEffect = pipe(
 /** @internal */
 export const schema: Schema.Schema<
   { readonly value: string; readonly "@effect/cluster/MessageId": "@effect/cluster/MessageId" },
-  MessageId.MessageId
+  Data.Data<{ readonly value: string; readonly [MessageId.MessageIdTypeId]: typeof MessageId.MessageIdTypeId }>
 > = Schema.data(
   Schema.rename(
     Schema.struct({

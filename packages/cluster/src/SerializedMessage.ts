@@ -29,6 +29,18 @@ export interface SerializedMessage extends
 {}
 
 /**
+ * @since 1.0.0
+ * @category models
+ */
+export namespace SerializedMessage {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export interface From extends Schema.Schema.From<typeof internal.schema> {}
+}
+
+/**
  * Construct a new `SerializedMessage` from its internal string value.
  *
  * @since 1.0.0
@@ -49,6 +61,6 @@ export const isSerializedMessage: (value: unknown) => value is SerializedMessage
  * @category schema
  */
 export const schema: Schema.Schema<
-  { readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"; readonly value: string },
+  SerializedMessage.From,
   SerializedMessage
 > = internal.schema
