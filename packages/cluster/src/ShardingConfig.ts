@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import type * as ConfigError from "effect/ConfigError"
 import type * as Context from "effect/Context"
 import type * as Duration from "effect/Duration"
 import type * as Layer from "effect/Layer"
@@ -64,3 +65,9 @@ export const defaults: Layer.Layer<never, never, ShardingConfig> = internal.defa
  */
 export const withDefaults: (customs: Partial<ShardingConfig>) => Layer.Layer<never, never, ShardingConfig> =
   internal.withDefaults
+
+/**
+ * @since 1.0.0
+ * @category layers
+ */
+export const fromConfig: Layer.Layer<never, ConfigError.ConfigError, ShardingConfig> = internal.fromConfig
