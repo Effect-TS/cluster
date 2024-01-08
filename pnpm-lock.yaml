@@ -146,6 +146,41 @@ importers:
         version: 4.6.2
     publishDirectory: dist
 
+  packages/cluster-workflow:
+    dependencies:
+      '@sqlfx/mysql':
+        specifier: ^0.36.0
+        version: 0.36.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
+      '@sqlfx/pg':
+        specifier: 0.37.0
+        version: 0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
+      '@testcontainers/mysql':
+        specifier: ^10.4.0
+        version: 10.4.0
+      '@testcontainers/postgresql':
+        specifier: ^10.4.0
+        version: 10.4.0
+    devDependencies:
+      '@effect/platform-node':
+        specifier: ^0.39.0
+        version: 0.39.0(@effect/platform@0.39.0)(effect@2.0.0-next.62)
+      '@effect/schema':
+        specifier: ^0.56.0
+        version: 0.56.0(effect@2.0.0-next.62)(fast-check@3.13.2)
+      '@types/node':
+        specifier: ^20.9.0
+        version: 20.9.0
+      '@types/path-browserify':
+        specifier: ^1.0.1
+        version: 1.0.2
+      effect:
+        specifier: 2.0.0-next.62
+        version: 2.0.0-next.62
+      tsx:
+        specifier: ^4.6.2
+        version: 4.6.2
+    publishDirectory: dist
+
 packages:
 
   /@aashutoshrathi/word-wrap@1.2.6:

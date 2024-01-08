@@ -6,6 +6,9 @@
     },
     {
       "path": "packages/cluster-node"
+    },
+    {
+      "path": "packages/cluster-workflow"
     }
   ]
 }

@@ -50,6 +50,12 @@
       ],
       "@effect/cluster-node/*": [
         "./packages/cluster-node/src/*.js"
+      ],
+      "@effect/cluster-workflow/test/*": [
+        "./packages/cluster-workflow/test/*.js"
+      ],
+      "@effect/cluster-workflow/*": [
+        "./packages/cluster-workflow/src/*.js"
       ]
     },
     "plugins": [
