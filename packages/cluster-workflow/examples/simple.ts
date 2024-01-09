@@ -1,28 +1,50 @@
-import * as Workflow from "@effect/cluster-workflow/Workflow"
+import * as Activity from "@effect/cluster-workflow/Activity"
+import * as ActivityJournalMssql from "@effect/cluster-workflow/ActivityJournalMssql"
+import { runMain } from "@effect/platform-node/Runtime"
 import * as Schema from "@effect/schema/Schema"
+import * as Mssql from "@sqlfx/mssql"
+import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
-import * as Stream from "effect/Stream"
+import * as Logger from "effect/Logger"
+import * as LogLevel from "effect/LogLevel"
+import * as Secret from "effect/Secret"
 
 class TemporaryFailure extends Schema.TaggedClass<TemporaryFailure>()("TemporaryFailure", {}) {
 }
 
 const getAmountDue = (orderId: string) =>
   pipe(
-    Effect.sync(() => Math.round(Math.random() * 100) / 2),
-    Workflow.step("get-amount-due-" + orderId, Schema.never, Schema.number)
+    Effect.sync(() => Math.round(Math.random() * 100) / 100),
+    Activity.make("get-amount-due-" + orderId, Schema.never, Schema.number)
   )
 
-const processPayment = (billingAddress: string, amountDue: number) =>
+const processPayment = (billingId: string, amountDue: number) =>
   pipe(
-    Effect.flatMap(Workflow.currentAttempt, (currentAttempt) =>
-      currentAttempt === 0 ? Effect.fail(new TemporaryFailure({})) : Effect.unit),
-    Workflow.step("process-payment", Schema.never, Schema.void)
+    Effect.flatMap(Activity.currentAttempt, (currentAttempt) =>
+      currentAttempt === 0 ? Effect.die(new TemporaryFailure()) : pipe(
+        Effect.logDebug("Processed payment of " + amountDue + " to " + billingId + "...")
+      )),
+    Activity.make("process-payment-" + billingId, Schema.never, Schema.void)
   )
 
-function processPaymentWorkflow(orderId: string) {
+function processPaymentWorkflow(orderId: string, billingId: string) {
   return Effect.gen(function*(_) {
     const amount = yield* _(getAmountDue(orderId))
-    yield* _()
+    yield* _(processPayment(billingId, amount))
   })
 }
+
+const main = pipe(
+  processPaymentWorkflow("order-1", "payment-1"),
+  Effect.provide(ActivityJournalMssql.activityJournalMssql),
+  Effect.provide(Mssql.makeLayer({
+    server: Config.succeed("localhost"),
+    username: Config.succeed("sa"),
+    password: Config.succeed(Secret.fromString("Zuffellat0")),
+    database: Config.succeed("cluster")
+  })),
+  Logger.withMinimumLogLevel(LogLevel.All)
+)
+
+runMain(main)
