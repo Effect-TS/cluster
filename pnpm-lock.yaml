@@ -101,24 +101,24 @@ importers:
   packages/cluster:
     devDependencies:
       '@effect/schema':
-        specifier: ^0.56.0
-        version: 0.56.0(effect@2.0.0-next.62)(fast-check@3.13.2)
+        specifier: ^0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.13.2)
       '@types/path-browserify':
         specifier: ^1.0.1
         version: 1.0.2
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: 2.0.3
+        version: 2.0.3
     publishDirectory: dist
 
   packages/cluster-node:
     dependencies:
       '@sqlfx/mysql':
-        specifier: ^0.36.0
-        version: 0.36.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
+        specifier: ^0.38.1
+        version: 0.38.1(@effect/schema@0.59.1)(effect@2.0.3)
       '@sqlfx/pg':
-        specifier: 0.37.0
-        version: 0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
+        specifier: 0.39.1
+        version: 0.39.1(@effect/schema@0.59.1)(effect@2.0.3)
       '@testcontainers/mysql':
         specifier: ^10.4.0
         version: 10.4.0
@@ -127,11 +127,11 @@ importers:
         version: 10.4.0
     devDependencies:
       '@effect/platform-node':
-        specifier: ^0.39.0
-        version: 0.39.0(@effect/platform@0.39.0)(effect@2.0.0-next.62)
+        specifier: ^0.41.0
+        version: 0.41.0(@effect/platform@0.41.0)(effect@2.0.3)
       '@effect/schema':
-        specifier: ^0.56.0
-        version: 0.56.0(effect@2.0.0-next.62)(fast-check@3.13.2)
+        specifier: ^0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.13.2)
       '@types/node':
         specifier: ^20.9.0
         version: 20.9.0
@@ -139,8 +139,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.2
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: 2.0.3
+        version: 2.0.3
       tsx:
         specifier: ^4.6.2
         version: 4.6.2
@@ -149,14 +149,14 @@ importers:
   packages/cluster-workflow:
     dependencies:
       '@sqlfx/mssql':
-        specifier: 0.36.0
-        version: 0.36.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
+        specifier: 0.37.1
+        version: 0.37.1(@effect/schema@0.59.1)(effect@2.0.3)
       '@sqlfx/mysql':
-        specifier: ^0.36.0
-        version: 0.36.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
+        specifier: ^0.38.1
+        version: 0.38.1(@effect/schema@0.59.1)(effect@2.0.3)
       '@sqlfx/pg':
-        specifier: 0.37.0
-        version: 0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
+        specifier: 0.39.1
+        version: 0.39.1(@effect/schema@0.59.1)(effect@2.0.3)
       '@testcontainers/mysql':
         specifier: ^10.4.0
         version: 10.4.0
@@ -165,11 +165,11 @@ importers:
         version: 10.4.0
     devDependencies:
       '@effect/platform-node':
-        specifier: ^0.39.0
-        version: 0.39.0(@effect/platform@0.39.0)(effect@2.0.0-next.62)
+        specifier: ^0.41.0
+        version: 0.41.0(@effect/platform@0.41.0)(effect@2.0.3)
       '@effect/schema':
-        specifier: ^0.56.0
-        version: 0.56.0(effect@2.0.0-next.62)(fast-check@3.13.2)
+        specifier: ^0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.13.2)
       '@types/node':
         specifier: ^20.9.0
         version: 20.9.0
@@ -177,8 +177,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.2
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: 2.0.3
+        version: 2.0.3
       tsx:
         specifier: ^4.6.2
         version: 4.6.2
@@ -994,14 +994,14 @@ packages:
       - '@effect/schema'
     dev: true
 
-  /@effect/platform-node@0.39.0(@effect/platform@0.39.0)(effect@2.0.0-next.62):
-    resolution: {integrity: sha512-5ZggtTpdXntLpv1aWfEc6xIHVKCuRfv71v584ZrTr996uAdyPgwV4YLSt09wMmZpG7lBeu8w9A+twvEAPLzJrQ==}
+  /@effect/platform-node@0.41.0(@effect/platform@0.41.0)(effect@2.0.3):
+    resolution: {integrity: sha512-sZDL2bHG5uW0cpOD1qyZ8UvadjLcRHIbRNaSRnM59FTIhhHtESA6mFJtOethv3q/ubfR2EZgQnFR35Zm8rFWSA==}
     peerDependencies:
-      '@effect/platform': ^0.39.0
-      effect: 2.0.0-next.62
+      '@effect/platform': ^0.41.0
+      effect: ^2.0.3
     dependencies:
-      '@effect/platform': 0.39.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
-      effect: 2.0.0-next.62
+      '@effect/platform': 0.41.0(@effect/schema@0.59.1)(effect@2.0.3)
+      effect: 2.0.3
       mime: 3.0.0
       multipasta: 0.1.21
     dev: true
@@ -1018,14 +1018,14 @@ packages:
       path-browserify: 1.0.1
     dev: true
 
-  /@effect/platform@0.39.0(@effect/schema@0.56.0)(effect@2.0.0-next.62):
-    resolution: {integrity: sha512-bwvIVdyWAMv42Wi6/EIP8GJagPGEFU8tlkPycH5KcyZWmyi48ai3X1PbVqGdh2A18MsAyTOsVdfBI+bhnCS0Jw==}
+  /@effect/platform@0.41.0(@effect/schema@0.59.1)(effect@2.0.3):
+    resolution: {integrity: sha512-iR5sFcFubZRLTsvZiL6gOlIvD/FPFq47t2D+ju8bxfO7I5ZwapoogHWSGOU1PrhvRZNplPxJiUK18miNVi0ZFg==}
     peerDependencies:
-      '@effect/schema': ^0.56.0
-      effect: 2.0.0-next.62
+      '@effect/schema': ^0.59.1
+      effect: ^2.0.3
     dependencies:
-      '@effect/schema': 0.56.0(effect@2.0.0-next.62)(fast-check@3.13.2)
-      effect: 2.0.0-next.62
+      '@effect/schema': 0.59.1(effect@2.0.3)(fast-check@3.13.2)
+      effect: 2.0.3
       find-my-way-ts: 0.1.1
       multipasta: 0.1.21
       path-browserify: 1.0.1
@@ -1041,13 +1041,13 @@ packages:
       fast-check: 3.13.2
     dev: true
 
-  /@effect/schema@0.56.0(effect@2.0.0-next.62)(fast-check@3.13.2):
-    resolution: {integrity: sha512-qVR6T9+Lbv2cAhtIAysYvHpRm8iJuMjhp++q0ZMl3ACyQM4v9mvzEg1hQxF0GpAAHS7MTagVDDXN6WCNPEK4oA==}
+  /@effect/schema@0.59.1(effect@2.0.3)(fast-check@3.13.2):
+    resolution: {integrity: sha512-dighL1fSjOLNupETYaN4hvUo9zxvdi4w+lgJ9lHKYFZapaFxR2f8ZKB2WunsSGnF5mCyWLDS3GMtfLeqz2I2ug==}
     peerDependencies:
-      effect: 2.0.0-next.62
+      effect: ^2.0.3
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.0.0-next.62
+      effect: 2.0.3
       fast-check: 3.13.2
 
   /@esbuild/android-arm64@0.18.20:
@@ -1432,61 +1432,51 @@ packages:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
 
-  /@sqlfx/mssql@0.36.0(@effect/schema@0.56.0)(effect@2.0.0-next.62):
-    resolution: {integrity: sha512-nkNGpCRs5XucL2M22uk8cBM/VTjq3k8TRDQUspjI0+hF5fjRIVhoIMoTCI3TWKdaagYjvxtEeM010UxnsSnMEQ==}
+  /@sqlfx/mssql@0.37.1(@effect/schema@0.59.1)(effect@2.0.3):
+    resolution: {integrity: sha512-n4iiXslvLr/K29agbU95TkHMj+zm9/Hz7oabRaXRQ2KQkr9OhMI9oL1Q5aHwcam+SV5oSOjZ6gJqBbuGzpXExA==}
     peerDependencies:
       effect: ^2.0.0
     dependencies:
-      '@sqlfx/sql': 0.38.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
-      effect: 2.0.0-next.62
+      '@sqlfx/sql': 0.39.1(@effect/schema@0.59.1)(effect@2.0.3)
+      effect: 2.0.3
       tedious: 16.6.1
     transitivePeerDependencies:
       - '@effect/schema'
       - supports-color
     dev: false
 
-  /@sqlfx/mysql@0.36.0(@effect/schema@0.56.0)(effect@2.0.0-next.62):
-    resolution: {integrity: sha512-HaOhOHXxbM1bRkeufn4vyd6t/7XCCgvw5dXvIufboMoImxPod8q2NRoR4/yIpUpz3oPFeCPFGfCovxg3ThtO0g==}
+  /@sqlfx/mysql@0.38.1(@effect/schema@0.59.1)(effect@2.0.3):
+    resolution: {integrity: sha512-X+/BuwLeYmZx7yqT8ENlLCRJVCgcCLjjbUS2GsWalNQu9vW+GsWlb+jncINDsOPNiUvEyzoCaC6tR19X6XYH2g==}
     peerDependencies:
-      effect: 2.0.0-next.62
+      effect: ^2.0.0
     dependencies:
-      '@sqlfx/sql': 0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
-      effect: 2.0.0-next.62
+      '@sqlfx/sql': 0.39.1(@effect/schema@0.59.1)(effect@2.0.3)
+      effect: 2.0.3
       mariadb: 3.2.3
     transitivePeerDependencies:
       - '@effect/schema'
     dev: false
 
-  /@sqlfx/pg@0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62):
-    resolution: {integrity: sha512-mn6TBEf67mqwdy8veegj2hmhgaoj0thR6mGA+qZmBZfT/D1y3mMHmCtVAf6r2e4mLy2ofzfMuDiBsGwqpT5sqw==}
+  /@sqlfx/pg@0.39.1(@effect/schema@0.59.1)(effect@2.0.3):
+    resolution: {integrity: sha512-pAdwmZtX9DT7iFB2tFP1RQHOylriawTfCnPTBQJDeU9wIWqDFgpYWTfTej3Pw1lDzFElJ5vh/JquPi+tqpu05A==}
     peerDependencies:
-      effect: 2.0.0-next.62
+      effect: ^2.0.0
     dependencies:
-      '@sqlfx/sql': 0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62)
-      effect: 2.0.0-next.62
+      '@sqlfx/sql': 0.39.1(@effect/schema@0.59.1)(effect@2.0.3)
+      effect: 2.0.3
       postgres: 3.4.2
     transitivePeerDependencies:
       - '@effect/schema'
     dev: false
 
-  /@sqlfx/sql@0.37.0(@effect/schema@0.56.0)(effect@2.0.0-next.62):
-    resolution: {integrity: sha512-N0waozvDS+npVQgnWlnHJl307MKnbu9QoL2zQEwRWqoGmqsW3GsWhyu6cX/tFLKlOFMqovq+5YkKtqLutKJnHQ==}
+  /@sqlfx/sql@0.39.1(@effect/schema@0.59.1)(effect@2.0.3):
+    resolution: {integrity: sha512-Ij2oO30FZGS//dVAYNF/ro7m8XdSdO3CUa6Q9zLceqvt3ZjJu+jEkPxJpQhljR0MMoaREIjOdrAKMEMQB5XLig==}
     peerDependencies:
-      '@effect/schema': ^0.56.0
-      effect: 2.0.0-next.62
-    dependencies:
-      '@effect/schema': 0.56.0(effect@2.0.0-next.62)(fast-check@3.13.2)
-      effect: 2.0.0-next.62
-    dev: false
-
-  /@sqlfx/sql@0.38.0(@effect/schema@0.56.0)(effect@2.0.0-next.62):
-    resolution: {integrity: sha512-fXW4jWXDg3BOUiZv9B1qoqnwcTJR6P58YRteNqAOjh9W1tGhtehO69970B57hrU0N2tOP+VdlXyvPRVSl5aZkg==}
-    peerDependencies:
-      '@effect/schema': ^0.56.0
+      '@effect/schema': ^0.59.0
       effect: ^2.0.0
     dependencies:
-      '@effect/schema': 0.56.0(effect@2.0.0-next.62)(fast-check@3.13.2)
-      effect: 2.0.0-next.62
+      '@effect/schema': 0.59.1(effect@2.0.3)(fast-check@3.13.2)
+      effect: 2.0.3
     dev: false
 
   /@testcontainers/mysql@10.4.0:
@@ -3039,8 +3029,8 @@ packages:
     resolution: {integrity: sha512-qROhKMxlm6fpa90YRfWSgKeelDfhaDq2igPK+pIKupGehiCnZH4vd2qrY71HVZ10qZgXxh0VXpGyDQxJC+EQqw==}
     dev: true
 
-  /effect@2.0.0-next.62:
-    resolution: {integrity: sha512-fJhLzf5oouL4WZP314ZJgZz5Bel7OHTY+YFxO06sW1mSvqJz0s28y7jDHr5zhtTNM1YRvzbeLYUYfNaJYKqx1A==}
+  /effect@2.0.3:
+    resolution: {integrity: sha512-I/XvcbHypegNFWCr/arbfIR6pA+8JpSqv9wS4xOrgXypQMRj8H3wRorTcUiPmcQ0e6Ko67CdI2XZpjx7z0Ev/A==}
 
   /electron-to-chromium@1.4.502:
     resolution: {integrity: sha512-xqeGw3Gr6o3uyHy/yKjdnDQHY2RQvXcGC2cfHjccK1IGkH6cX1WQBN8EeC/YpwPhGkBaikDTecJ8+ssxSVRQlw==}

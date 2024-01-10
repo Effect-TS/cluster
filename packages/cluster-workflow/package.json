@@ -24,21 +24,21 @@
     "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
   "peerDependencies": {
-    "@effect/platform-node": "^0.39.0",
-    "@effect/schema": "^0.56.0",
-    "effect": "2.0.0-next.62",
-    "@sqlfx/pg": "0.37.0",
-    "@sqlfx/mysql": "^0.36.0",
-    "@sqlfx/mssql": "0.36.0",
+    "@effect/platform-node": "^0.41.0",
+    "@effect/schema": "^0.59.1",
+    "effect": "2.0.3",
+    "@sqlfx/pg": "0.39.1",
+    "@sqlfx/mysql": "^0.38.1",
+    "@sqlfx/mssql": "0.37.1",
     "@testcontainers/postgresql": "^10.4.0",
     "@testcontainers/mysql": "^10.4.0"
   },
   "devDependencies": {
-    "@effect/platform-node": "^0.39.0",
-    "@effect/schema": "^0.56.0",
+    "@effect/platform-node": "^0.41.0",
+    "@effect/schema": "^0.59.1",
     "@types/node": "^20.9.0",
     "@types/path-browserify": "^1.0.1",
-    "effect": "2.0.0-next.62",
+    "effect": "2.0.3",
     "tsx": "^4.6.2"
   }
 }
