@@ -1,77 +1,44 @@
-import * as ActivityEvent from "@effect/cluster-workflow/ActivityEvent"
-import * as ActivityState from "@effect/cluster-workflow/ActivityState"
-import * as Schema from "@effect/schema/Schema"
+import type * as ActivityEvent from "@effect/cluster-workflow/ActivityEvent"
+import type * as Schema from "@effect/schema/Schema"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
-import type * as Exit from "effect/Exit"
-import { pipe } from "effect/Function"
 import * as Stream from "effect/Stream"
 
+/**
+ * NOTE:
+ * - Persistence should be retried forever and be treated as unfailable
+ * - ParseError/SerializeError should be treated as an ActivityError defect
+ */
+
 export interface ActivityJournal {
-  readJournal(
-    persistenceId: string
-  ): Stream.Stream<never, never, ActivityEvent.ActivityEvent>
-  persistJournal(
+  readJournal<IE, E, IA, A>(
     persistenceId: string,
-    event: ActivityEvent.ActivityEvent
+    failure: Schema.Schema<IE, E>,
+    success: Schema.Schema<IA, A>
+  ): Stream.Stream<never, never, ActivityEvent.ActivityEvent<E, A>>
+  persistJournal<IE, E, IA, A>(
+    persistenceId: string,
+    failure: Schema.Schema<IE, E>,
+    success: Schema.Schema<IA, A>,
+    event: ActivityEvent.ActivityEvent<E, A>
   ): Effect.Effect<never, never, void>
 }
 
 export const ActivityJournal = Context.Tag<ActivityJournal>()
 
-export function appendActivityAttempt(persistenceId: string, sequence: number) {
-  return Effect.flatMap(
-    ActivityJournal,
-    (journal) => journal.persistJournal(persistenceId, new ActivityEvent.ActivityAttempted({ sequence }))
-  )
+export function persistJournal<IE, E, IA, A>(
+  persistenceId: string,
+  failure: Schema.Schema<IE, E>,
+  success: Schema.Schema<IA, A>,
+  event: ActivityEvent.ActivityEvent<E, A>
+) {
+  return Effect.flatMap(ActivityJournal, (journal) => journal.persistJournal(persistenceId, failure, success, event))
 }
 
-export function appendActivityCompleted<I, E, A>(
+export function readJournal<IE, E, IA, A>(
   persistenceId: string,
-  sequence: number,
-  schema: Schema.Schema<I, Exit.Exit<E, A>>,
-  value: Exit.Exit<E, A>
+  failure: Schema.Schema<IE, E>,
+  success: Schema.Schema<IA, A>
 ) {
-  return Effect.flatMap(
-    ActivityJournal,
-    (journal) =>
-      pipe(
-        Schema.encode(Schema.parseJson(schema))(value),
-        Effect.flatMap((result) =>
-          journal.persistJournal(persistenceId, new ActivityEvent.ActivityCompleted({ sequence, result }))
-        )
-      )
-  )
-}
-
-export function readState<I, E, A>(
-  persistenceId: string,
-  schema: Schema.Schema<I, Exit.Exit<E, A>>
-) {
-  return Effect.flatMap(ActivityJournal, (journal) =>
-    pipe(
-      journal.readJournal(persistenceId),
-      Stream.runFoldEffect(ActivityState.initialState<E, A>(), (state, event) => {
-        return ActivityEvent.match({
-          onAttempted: ({ sequence }) =>
-            Effect.succeed(
-              new ActivityState.ActivityStatePending({
-                lastSequence: sequence,
-                currentAttempt: state.currentAttempt + 1
-              })
-            ),
-          onCompleted: ({ result, sequence }) =>
-            pipe(
-              Schema.decode(Schema.parseJson(schema))(result),
-              Effect.map((exit) =>
-                new ActivityState.ActivityStateCompleted({
-                  lastSequence: sequence,
-                  currentAttempt: state.currentAttempt,
-                  exit
-                })
-              )
-            )
-        })(event)
-      })
-    ))
+  return Stream.flatMap(ActivityJournal, (journal) => journal.readJournal(persistenceId, failure, success))
 }

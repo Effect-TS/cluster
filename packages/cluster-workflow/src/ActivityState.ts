@@ -1,5 +1,7 @@
+import * as ActivityEvent from "@effect/cluster-workflow/ActivityEvent"
 import * as Data from "effect/Data"
 import type * as Exit from "effect/Exit"
+import { pipe } from "effect/Function"
 
 export class ActivityStatePending
   extends Data.TaggedClass("ActivityStatePending")<{ lastSequence: number; currentAttempt: number }>
@@ -31,4 +33,27 @@ export function match<E, A, B, C = B>(fns: {
         return fns.onCompleted(fa)
     }
   }
+}
+
+export function foldActivityEvent<E, A>(
+  state: ActivityState<E, A>,
+  event: ActivityEvent.ActivityEvent<E, A>
+): ActivityState<E, A> {
+  return pipe(
+    event,
+    ActivityEvent.match({
+      onAttempted: ({ sequence }) => (
+        new ActivityStatePending({
+          lastSequence: sequence,
+          currentAttempt: state.currentAttempt + 1
+        })
+      ),
+      onCompleted: ({ exit, sequence }) =>
+        new ActivityStateCompleted({
+          lastSequence: sequence,
+          currentAttempt: state.currentAttempt,
+          exit
+        })
+    })
+  )
 }
