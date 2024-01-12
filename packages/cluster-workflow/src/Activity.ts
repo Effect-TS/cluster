@@ -21,19 +21,26 @@ function executeAttemptPath<IE, E, IA, A>(
   return <R>(
     execute: Effect.Effect<R, E, A>,
     state: ActivityState.ActivityState<E | ActivityError.ActivityError, A>
-  ) =>
-    pipe(
-      Effect.logDebug("Attempt #" + state.currentAttempt + " of " + activityId + "..."),
-      Effect.zipRight(persistEventIntoJournal(
+  ): Effect.Effect<
+    Exclude<R, ActivityContext.ActivityContext> | ActivityJournal.ActivityJournal | WorkflowContext.WorkflowContext,
+    E,
+    A
+  > => {
+    const executeAttempt = pipe(
+      execute,
+      Effect.catchAllDefect((defect) => Effect.die(String(defect))),
+      Effect.provideService(ActivityContext.ActivityContext, { currentAttempt: state.currentAttempt, activityId }),
+      WorkflowContext.forkEffectInExecutionScope,
+      Effect.flatMap((_) => _.await)
+    )
+
+    return pipe(
+      persistEventIntoJournal(
         ActivityEvent.ActivityAttempted(
           state.lastSequence + 1
         )
-      )),
-      Effect.zipRight(pipe(
-        execute,
-        WorkflowContext.forkEffectInExecutionScope
-      )),
-      Effect.flatMap((_) => _.await),
+      ),
+      Effect.zipRight(executeAttempt),
       Effect.tap((exit) =>
         persistEventIntoJournal(
           ActivityEvent.ActivityCompleted(
@@ -42,8 +49,9 @@ function executeAttemptPath<IE, E, IA, A>(
           )
         )
       ),
-      Effect.provideService(ActivityContext.ActivityContext, { activityId, currentAttempt: state.currentAttempt })
+      Effect.flatten
     )
+  }
 }
 
 function resumeFromStoragePath(
@@ -79,7 +87,6 @@ export function make<IE, E, IA, A>(
           Effect.unified
         )
       ),
-      WorkflowContext.withOuterScheduler,
       Effect.catchAllDefect((defect) => Effect.fail(new ActivityError.ActivityError({ error: String(defect) })))
     )
   }

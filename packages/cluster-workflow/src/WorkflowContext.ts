@@ -1,10 +1,10 @@
 import { Effect } from "effect"
 import * as Context from "effect/Context"
-import type * as Scheduler from "effect/Scheduler"
 import type * as Scope from "effect/Scope"
 
 export interface WorkflowContext {
-  outerScheduler: Scheduler.Scheduler
+  crash: Effect.Effect<never, never, void>
+  restore: <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, E, A>
   executionScope: Scope.Scope
 }
 
@@ -14,10 +14,5 @@ export function make(args: WorkflowContext): WorkflowContext {
   return args
 }
 
-export function withOuterScheduler<R, E, A>(effect: Effect.Effect<R, E, A>) {
-  return Effect.flatMap(WorkflowContext, (_) => Effect.withScheduler(effect, _.outerScheduler))
-}
-
-export function forkEffectInExecutionScope<R, E, A>(effect: Effect.Effect<R, E, A>) {
-  return Effect.flatMap(WorkflowContext, (_) => Effect.forkIn(effect, _.executionScope))
-}
+export const forkEffectInExecutionScope = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
+  Effect.flatMap(WorkflowContext, (_) => Effect.forkIn(fa, _.executionScope))
