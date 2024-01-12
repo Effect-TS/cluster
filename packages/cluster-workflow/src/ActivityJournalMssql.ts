@@ -10,9 +10,15 @@ import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Stream from "effect/Stream"
 
-function persistJournal(activityId: string, event: ActivityEvent.ActivityEvent, sql: Mssql.MssqlClient) {
+function persistJournal<IE, E, IA, A>(
+  activityId: string,
+  failure: Schema.Schema<IE, E>,
+  success: Schema.Schema<IA, A>,
+  event: ActivityEvent.ActivityEvent<E, A>,
+  sql: Mssql.MssqlClient
+): Effect.Effect<never, never, void> {
   return pipe(
-    Schema.encode(Schema.parseJson(ActivityEvent.schema))(event),
+    Schema.encode(Schema.parseJson(ActivityEvent.schema(failure, success)))(event),
     Effect.flatMap((event_json) =>
       sql`INSERT INTO activity_journal ${
         sql.insert({
@@ -26,17 +32,24 @@ function persistJournal(activityId: string, event: ActivityEvent.ActivityEvent, 
   )
 }
 
-function readJournal(activityId: string, sql: Mssql.MssqlClient) {
+function readJournal<IE, E, IA, A>(
+  activityId: string,
+  failure: Schema.Schema<IE, E>,
+  success: Schema.Schema<IA, A>,
+  sql: Mssql.MssqlClient
+): Stream.Stream<never, never, ActivityEvent.ActivityEvent<E, A>> {
   return pipe(
     sql<
       { event_json: string }
     >`SELECT event_json FROM activity_journal WHERE activity_id = ${(activityId)} ORDER BY sequence ASC`,
     Effect.flatMap((result) =>
-      Schema.decode(Schema.array(Schema.parseJson(ActivityEvent.schema)))(result.map((_) => _.event_json))
+      Schema.decode(Schema.array(Schema.parseJson(ActivityEvent.schema(failure, success))))(
+        result.map((_) => _.event_json)
+      )
     ),
-    Effect.orDie,
     Effect.map(Stream.fromIterable),
-    Stream.unwrap
+    Stream.unwrap,
+    Stream.orDie
   )
 }
 
@@ -45,8 +58,8 @@ export const activityJournalMssql = Layer.effect(
   Effect.gen(function*(_) {
     const sql = yield* _(Mssql.tag)
     return ({
-      persistJournal: (activityId, event) => persistJournal(activityId, event, sql),
-      readJournal: (activityId) => readJournal(activityId, sql)
+      persistJournal: (activityId, failure, success, event) => persistJournal(activityId, failure, success, event, sql),
+      readJournal: (activityId, failure, success) => readJournal(activityId, failure, success, sql)
     })
   })
 )

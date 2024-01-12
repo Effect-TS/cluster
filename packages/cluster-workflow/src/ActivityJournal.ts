@@ -12,12 +12,12 @@ import * as Stream from "effect/Stream"
 
 export interface ActivityJournal {
   readJournal<IE, E, IA, A>(
-    persistenceId: string,
+    activityId: string,
     failure: Schema.Schema<IE, E>,
     success: Schema.Schema<IA, A>
   ): Stream.Stream<never, never, ActivityEvent.ActivityEvent<E, A>>
   persistJournal<IE, E, IA, A>(
-    persistenceId: string,
+    activityId: string,
     failure: Schema.Schema<IE, E>,
     success: Schema.Schema<IA, A>,
     event: ActivityEvent.ActivityEvent<E, A>
@@ -27,18 +27,18 @@ export interface ActivityJournal {
 export const ActivityJournal = Context.Tag<ActivityJournal>()
 
 export function persistJournal<IE, E, IA, A>(
-  persistenceId: string,
+  activityId: string,
   failure: Schema.Schema<IE, E>,
   success: Schema.Schema<IA, A>,
   event: ActivityEvent.ActivityEvent<E, A>
 ) {
-  return Effect.flatMap(ActivityJournal, (journal) => journal.persistJournal(persistenceId, failure, success, event))
+  return Effect.flatMap(ActivityJournal, (journal) => journal.persistJournal(activityId, failure, success, event))
 }
 
 export function readJournal<IE, E, IA, A>(
-  persistenceId: string,
+  activityId: string,
   failure: Schema.Schema<IE, E>,
   success: Schema.Schema<IA, A>
 ) {
-  return Stream.flatMap(ActivityJournal, (journal) => journal.readJournal(persistenceId, failure, success))
+  return Stream.flatMap(ActivityJournal, (journal) => journal.readJournal(activityId, failure, success))
 }

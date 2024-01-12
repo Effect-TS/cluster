@@ -21,17 +21,15 @@ export function initialState<E, A>(): ActivityState<E, A> {
   return new ActivityStatePending({ lastSequence: 0, currentAttempt: 0 })
 }
 
-export function match<E, A, B, C = B>(fns: {
+export function match<E, A, B, C = B>(fa: ActivityState<E, A>, fns: {
   onPending: (a: ActivityStatePending) => B
   onCompleted: (a: ActivityStateCompleted<E, A>) => C
 }) {
-  return (fa: ActivityState<E, A>) => {
-    switch (fa._tag) {
-      case "ActivityStatePending":
-        return fns.onPending(fa)
-      case "ActivityStateCompleted":
-        return fns.onCompleted(fa)
-    }
+  switch (fa._tag) {
+    case "ActivityStatePending":
+      return fns.onPending(fa)
+    case "ActivityStateCompleted":
+      return fns.onCompleted(fa)
   }
 }
 
