@@ -16,3 +16,6 @@ export function make(args: WorkflowContext): WorkflowContext {
 
 export const forkEffectInExecutionScope = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
   Effect.flatMap(WorkflowContext, (_) => Effect.forkIn(fa, _.executionScope))
+
+export const restore = <R, E, A>(effect: Effect.Effect<R, E, A>) =>
+  Effect.flatMap(WorkflowContext, (_) => _.restore(effect))

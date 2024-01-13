@@ -7,8 +7,8 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import { describe, expect, it } from "vitest"
 
-describe.concurrent("Workflow", () => {
-  const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) => pipe(fa, Logger.withMinimumLogLevel(LogLevel.Debug))
+describe.concurrent("CrashableRuntime", () => {
+  const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) => pipe(fa, Logger.withMinimumLogLevel(LogLevel.Info))
 
   it("Should run as expected if not crashed", () => {
     return Effect.gen(function*(_) {
@@ -25,7 +25,7 @@ describe.concurrent("Workflow", () => {
   it("Should fail with CrashableRuntimeCrashed", () => {
     return Effect.gen(function*(_) {
       const runtime = yield* _(CrashableRuntime.make)
-      const valueRef = yield* _(Ref.make<null | CrashableRuntime.CrashableRuntimeCrashed>(null))
+      const valueRef = yield* _(Ref.make<null | CrashableRuntime.CrashableRuntimeCrashedError>(null))
 
       yield* _(
         runtime.run(() => runtime.crash),
@@ -34,7 +34,7 @@ describe.concurrent("Workflow", () => {
 
       const value = yield* _(Ref.get(valueRef))
 
-      expect(value).toEqual(new CrashableRuntime.CrashableRuntimeCrashed())
+      expect(value).toEqual(new CrashableRuntime.CrashableRuntimeCrashedError())
     }).pipe(withTestEnv, Effect.runPromise)
   })
 

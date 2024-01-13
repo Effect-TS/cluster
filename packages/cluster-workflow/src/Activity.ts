@@ -87,7 +87,8 @@ export function make<IE, E, IA, A>(
           Effect.unified
         )
       ),
-      Effect.catchAllDefect((defect) => Effect.fail(new ActivityError.ActivityError({ error: String(defect) })))
+      Effect.catchAllDefect((defect) => Effect.fail(new ActivityError.ActivityError({ error: String(defect) }))),
+      WorkflowContext.restore
     )
   }
 }

@@ -6,7 +6,14 @@ import * as FiberRef from "effect/FiberRef"
 import { pipe } from "effect/Function"
 import type * as Scheduler from "effect/Scheduler"
 
-export class CrashableRuntimeCrashed extends Data.TaggedClass("@effect/cluster-workflow/CrashableRuntimeCrashed")<{}> {}
+export class CrashableRuntimeCrashedError
+  extends Data.TaggedClass("@effect/cluster-workflow/CrashableRuntimeCrashedError")<{}>
+{}
+
+export function isCrashableRuntimeCrashedError(value: unknown): value is CrashableRuntimeCrashedError {
+  return typeof value === "object" && value !== null && "_tag" in value &&
+    value._tag === "@effect/cluster-workflow/CrashableRuntimeCrashedError"
+}
 
 export class CrashableRuntimeScheduler implements Scheduler.Scheduler {
   crashed: boolean = false
@@ -31,14 +38,14 @@ export interface CrashableRuntime {
   crash: Effect.Effect<never, never, void>
   run: <R, E, A>(
     fn: (restore: <R2, E2, A2>(fa: Effect.Effect<R2, E2, A2>) => Effect.Effect<R2, E2, A2>) => Effect.Effect<R, E, A>
-  ) => Effect.Effect<R, E | CrashableRuntimeCrashed, A>
+  ) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
 }
 
 export const make = pipe(
   FiberRef.get(FiberRef.currentScheduler),
   Effect.flatMap((baseScheduler) =>
     pipe(
-      Deferred.make<CrashableRuntimeCrashed, never>(),
+      Deferred.make<CrashableRuntimeCrashedError, never>(),
       Effect.map((latch) => {
         const crashableScheduler = new CrashableRuntimeScheduler(baseScheduler)
         const restore = <R, E, A>(fa: Effect.Effect<R, E, A>) => pipe(fa, Effect.withScheduler(baseScheduler))
@@ -46,7 +53,7 @@ export const make = pipe(
         const runtime: CrashableRuntime = {
           crash: restore(pipe(
             Effect.sync(() => crashableScheduler.crash()),
-            Effect.zipRight(Deferred.fail(latch, new CrashableRuntimeCrashed())),
+            Effect.zipRight(Deferred.fail(latch, new CrashableRuntimeCrashedError())),
             Effect.asUnit
           )),
           run: (fn) =>
@@ -64,3 +71,13 @@ export const make = pipe(
     )
   )
 )
+
+export function retryWhileCrashes<R, E, A>(
+  fn: (runtime: CrashableRuntime) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
+): Effect.Effect<R, Exclude<E, CrashableRuntimeCrashedError>, A> {
+  return pipe(
+    make,
+    Effect.flatMap(fn),
+    Effect.retryWhile(isCrashableRuntimeCrashedError)
+  ) as any
+}
