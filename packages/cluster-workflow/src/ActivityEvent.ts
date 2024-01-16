@@ -10,20 +10,32 @@ export function ActivityAttempted(sequence: number): ActivityEvent<never, never>
   return ({ _tag: "ActivityAttempted", sequence })
 }
 
+export interface ActivityInterruptionRequested {
+  _tag: "ActivityInterruptionRequested"
+  sequence: number
+}
+
+export function ActivityInterruptionRequested(sequence: number): ActivityEvent<never, never> {
+  return ({ _tag: "ActivityInterruptionRequested", sequence })
+}
+
 export interface ActivityCompleted<E, A> {
   _tag: "ActivityCompleted"
   sequence: number
   exit: Exit.Exit<E, A>
 }
 
-export function ActivityCompleted<E, A>(sequence: number, exit: Exit.Exit<E, A>): ActivityEvent<E, A> {
-  return ({ _tag: "ActivityCompleted", sequence, exit })
+export function ActivityCompleted<E, A>(exit: Exit.Exit<E, A>) {
+  return (sequence: number): ActivityEvent<E, A> => ({ _tag: "ActivityCompleted", sequence, exit })
 }
 
-export type ActivityEvent<E, A> = ActivityAttempted | ActivityCompleted<E, A>
+export type ActivityEvent<E, A> = ActivityAttempted | ActivityInterruptionRequested | ActivityCompleted<E, A>
 
 export type ActivityEventFrom<IE, IA> = {
   readonly _tag: "ActivityAttempted"
+  readonly sequence: number
+} | {
+  readonly _tag: "ActivityInterruptionRequested"
   readonly sequence: number
 } | {
   readonly _tag: "ActivityCompleted"
@@ -41,6 +53,10 @@ export function schema<IE, E, IA, A>(failure: Schema.Schema<IE, E>, success: Sch
       sequence: Schema.number
     }),
     Schema.struct({
+      _tag: Schema.literal("ActivityInterruptionRequested"),
+      sequence: Schema.number
+    }),
+    Schema.struct({
       _tag: Schema.literal("ActivityCompleted"),
       sequence: Schema.number,
       exit: Schema.exit(failure, success)
@@ -48,16 +64,19 @@ export function schema<IE, E, IA, A>(failure: Schema.Schema<IE, E>, success: Sch
   )
 }
 
-export function match<E, A, B, C = B>(
+export function match<E, A, B, C = B, D = C>(
   fns: {
     onAttempted: (event: ActivityAttempted) => B
-    onCompleted: (event: ActivityCompleted<E, A>) => C
+    onInterruptionRequested: (event: ActivityInterruptionRequested) => C
+    onCompleted: (event: ActivityCompleted<E, A>) => D
   }
 ) {
   return (event: ActivityEvent<E, A>) => {
     switch (event._tag) {
       case "ActivityAttempted":
         return fns.onAttempted(event)
+      case "ActivityInterruptionRequested":
+        return fns.onInterruptionRequested(event)
       case "ActivityCompleted":
         return fns.onCompleted(event)
     }

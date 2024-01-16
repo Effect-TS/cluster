@@ -4,6 +4,7 @@ import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import * as FiberId from "effect/FiberId"
 import { pipe } from "effect/Function"
+import * as Ref from "effect/Ref"
 import * as Scope from "effect/Scope"
 
 export function attempt<R, E, A>(
@@ -12,6 +13,8 @@ export function attempt<R, E, A>(
   return Effect.gen(function*(_) {
     const executionScope = yield* _(Scope.make())
     const runtime = yield* _(CrashableScheduler.make)
+    const isGracefulShutdown = yield* _(Ref.make(false))
+    const isInterruptionRequested = yield* _(Ref.make(false))
 
     return yield* _(
       runtime.run(
@@ -20,13 +23,21 @@ export function attempt<R, E, A>(
             execute,
             Effect.provideService(
               WorkflowContext.WorkflowContext,
-              WorkflowContext.make({ crash: runtime.crash, restore, executionScope })
+              WorkflowContext.make({
+                crash: runtime.crash,
+                restore,
+                executionScope,
+                isGracefulShutdown,
+                isInterruptionRequested
+              })
             )
           )
       ),
+      Effect.catchIf(CrashableScheduler.isCrashableRuntimeCrashedError, () => Effect.interrupt),
       Effect.onInterrupt(() =>
         pipe(
-          runtime.crash,
+          Ref.set(isGracefulShutdown, true),
+          Effect.zipRight(runtime.crash),
           Effect.zipRight(Scope.close(executionScope, Exit.interrupt(FiberId.none)))
         )
       )

@@ -3,9 +3,9 @@ import * as Data from "effect/Data"
 import type * as Exit from "effect/Exit"
 import { pipe } from "effect/Function"
 
-export class ActivityStatePending
-  extends Data.TaggedClass("ActivityStatePending")<{ lastSequence: number; currentAttempt: number }>
-{
+export class ActivityStatePending extends Data.TaggedClass("ActivityStatePending")<
+  { lastSequence: number; currentAttempt: number; interruptedPreviously: boolean }
+> {
 }
 
 export class ActivityStateCompleted<E, A> extends Data.TaggedClass("ActivityStateCompleted")<{
@@ -18,7 +18,7 @@ export class ActivityStateCompleted<E, A> extends Data.TaggedClass("ActivityStat
 export type ActivityState<E, A> = ActivityStatePending | ActivityStateCompleted<E, A>
 
 export function initialState<E, A>(): ActivityState<E, A> {
-  return new ActivityStatePending({ lastSequence: 0, currentAttempt: 0 })
+  return new ActivityStatePending({ lastSequence: 0, currentAttempt: 0, interruptedPreviously: false })
 }
 
 export function match<E, A, B, C = B>(fa: ActivityState<E, A>, fns: {
@@ -43,9 +43,16 @@ export function foldActivityEvent<E, A>(
       onAttempted: ({ sequence }) => (
         new ActivityStatePending({
           lastSequence: sequence,
-          currentAttempt: state.currentAttempt + 1
+          currentAttempt: state.currentAttempt + 1,
+          interruptedPreviously: false
         })
       ),
+      onInterruptionRequested: () =>
+        match(state, {
+          onPending: ({ currentAttempt, lastSequence }) =>
+            new ActivityStatePending({ lastSequence, currentAttempt, interruptedPreviously: true }),
+          onCompleted: (_) => _
+        }),
       onCompleted: ({ exit, sequence }) =>
         new ActivityStateCompleted({
           lastSequence: sequence,

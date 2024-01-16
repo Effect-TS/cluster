@@ -1,9 +1,12 @@
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as ActivityError from "@effect/cluster-workflow/ActivityError"
+import * as ActivityJournal from "@effect/cluster-workflow/ActivityJournal"
 import * as ActivityJournalInMemory from "@effect/cluster-workflow/ActivityJournalInMemory"
 import * as CrashableRuntime from "@effect/cluster-workflow/CrashableRuntime"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as Schema from "@effect/schema/Schema"
+import { Stream } from "effect"
+import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import { pipe } from "effect/Function"
@@ -24,7 +27,7 @@ describe.concurrent("Workflow", () => {
     return Effect.gen(function*(_) {
       const workflow = pipe(
         Effect.succeed(42),
-        Activity.make("get-number", Schema.never, Schema.number)
+        Activity.attempt("get-number", Schema.never, Schema.number)
       )
 
       const exit = yield* _(
@@ -40,7 +43,7 @@ describe.concurrent("Workflow", () => {
     return Effect.gen(function*(_) {
       const workflow = pipe(
         Effect.fail("error"),
-        Activity.make("get-number", Schema.string, Schema.number)
+        Activity.attempt("get-number", Schema.string, Schema.number)
       )
 
       const exit = yield* _(
@@ -56,7 +59,7 @@ describe.concurrent("Workflow", () => {
     return Effect.gen(function*(_) {
       const workflow = pipe(
         Effect.die("defect"),
-        Activity.make("get-number", Schema.string, Schema.number)
+        Activity.attempt("get-number", Schema.string, Schema.number)
       )
 
       const exit = yield* _(
@@ -72,7 +75,7 @@ describe.concurrent("Workflow", () => {
     return Effect.gen(function*(_) {
       const workflow = pipe(
         Effect.sync(() => Math.random()),
-        Activity.make("get-number", Schema.never, Schema.number)
+        Activity.attempt("get-number", Schema.never, Schema.number)
       )
 
       const exit1 = yield* _(
@@ -112,7 +115,7 @@ describe.concurrent("Workflow", () => {
                   )
                 )
               ),
-              Activity.make("get-number", Schema.never, Schema.number),
+              Activity.attempt("get-number", Schema.never, Schema.number),
               Workflow.attempt
             )
           )
@@ -122,6 +125,35 @@ describe.concurrent("Workflow", () => {
       const value = yield* _(Ref.get(valueRef))
 
       expect(value).toEqual(3)
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
+
+  it("On graceful interrupt, should not persist exit into ActivityJournal", () => {
+    return Effect.gen(function*(_) {
+      const valueRef = yield* _(Ref.make(0))
+      const latch = yield* _(Deferred.make<never, void>())
+
+      const exit = yield* _(pipe(
+        Ref.set(valueRef, 1),
+        Effect.zipRight(Deferred.succeed(latch, undefined)),
+        Effect.zipRight(Effect.never),
+        Activity.attempt("get-number", Schema.never, Schema.number),
+        Workflow.attempt,
+        Effect.forkScoped,
+        Effect.tap(Deferred.await(latch)),
+        Effect.scoped,
+        Effect.flatMap((_) => _.await)
+      ))
+
+      const value = yield* _(Ref.get(valueRef))
+      const journalEntryCount = yield* _(
+        ActivityJournal.readJournal("get-number", Schema.never, Schema.number),
+        Stream.runCount
+      )
+
+      expect(value).toEqual(1)
+      expect(journalEntryCount).toEqual(1)
+      expect(Exit.isInterrupted(exit)).toEqual(true)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 })

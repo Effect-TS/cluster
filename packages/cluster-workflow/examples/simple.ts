@@ -16,7 +16,7 @@ class TemporaryFailure extends Schema.TaggedClass<TemporaryFailure>()("Temporary
 const getAmountDue = (orderId: string) =>
   pipe(
     Effect.sync(() => Math.round(Math.random() * 100) / 100),
-    Activity.make("get-amount-due-" + orderId, Schema.never, Schema.number)
+    Activity.attempt("get-amount-due-" + orderId, Schema.never, Schema.number)
   )
 
 const processPayment = (billingId: string, amountDue: number) =>
@@ -25,7 +25,7 @@ const processPayment = (billingId: string, amountDue: number) =>
       currentAttempt === 0 ? Effect.die(new TemporaryFailure()) : pipe(
         Effect.logDebug("Processed payment of " + amountDue + " to " + billingId + "...")
       )),
-    Activity.make("process-payment-" + billingId, Schema.never, Schema.void)
+    Activity.attempt("process-payment-" + billingId, Schema.never, Schema.void)
   )
 
 function processPaymentWorkflow(orderId: string, billingId: string) {
