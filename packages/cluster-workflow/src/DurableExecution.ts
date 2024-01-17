@@ -20,13 +20,17 @@ export function attempt<IE, E, IA, A>(
     )
   )
 
-  return <R>(execute: (attempt: number, interruptedPreviously: boolean) => Effect.Effect<R, E, A>) => {
+  return <R1, R2>(
+    peek: (state: ActivityState.ActivityState<E, A>) => Effect.Effect<R1, never, void>,
+    execute: (attempt: number, interruptedPreviously: boolean) => Effect.Effect<R2, E, A>
+  ) => {
     return Effect.interruptibleMask((restore) =>
       pipe(
         readState,
         Effect.flatMap((state) =>
           pipe(
-            ActivityState.match(state, {
+            peek(state),
+            Effect.zipRight(ActivityState.match(state, {
               onPending: (state) =>
                 pipe(
                   Ref.make(state.lastSequence),
@@ -61,7 +65,7 @@ export function attempt<IE, E, IA, A>(
                   })
                 ),
               onCompleted: ({ exit }) => exit
-            }),
+            })),
             Effect.unified
           )
         )

@@ -1,46 +1,49 @@
 import * as CrashableScheduler from "@effect/cluster-workflow/CrashableRuntime"
+import * as DurableExecution from "@effect/cluster-workflow/DurableExecution"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
+import type * as Schema from "@effect/schema/Schema"
 import * as Effect from "effect/Effect"
-import * as Exit from "effect/Exit"
-import * as FiberId from "effect/FiberId"
 import { pipe } from "effect/Function"
 import * as Ref from "effect/Ref"
-import * as Scope from "effect/Scope"
 
-export function attempt<R, E, A>(
-  execute: Effect.Effect<R, E, A>
+export function attempt<IE, E, IA, A>(
+  workflowId: string,
+  failure: Schema.Schema<IE, E>,
+  success: Schema.Schema<IA, A>
 ) {
-  return Effect.gen(function*(_) {
-    const executionScope = yield* _(Scope.make())
-    const runtime = yield* _(CrashableScheduler.make)
-    const isGracefulShutdown = yield* _(Ref.make(false))
-    const isInterruptionRequested = yield* _(Ref.make(false))
+  return <R>(execute: Effect.Effect<R, E, A>) => {
+    return Effect.gen(function*(_) {
+      const runtime = yield* _(CrashableScheduler.make)
+      const shouldInterruptOnFirstPendingActivity = yield* _(Ref.make(false))
 
-    return yield* _(
-      runtime.run(
-        (restore) =>
-          pipe(
-            execute,
-            Effect.provideService(
-              WorkflowContext.WorkflowContext,
-              WorkflowContext.make({
-                crash: runtime.crash,
-                restore,
-                executionScope,
-                isGracefulShutdown,
-                isInterruptionRequested
-              })
-            )
-          )
-      ),
-      Effect.catchIf(CrashableScheduler.isCrashableRuntimeCrashedError, () => Effect.interrupt),
-      Effect.onInterrupt(() =>
+      const check = () => Effect.unit
+
+      const attemptExecution = () =>
         pipe(
-          Ref.set(isGracefulShutdown, true),
-          Effect.zipRight(runtime.crash),
-          Effect.zipRight(Scope.close(executionScope, Exit.interrupt(FiberId.none)))
+          runtime.run(
+            (restore) =>
+              pipe(
+                execute,
+                Effect.provideService(
+                  WorkflowContext.WorkflowContext,
+                  WorkflowContext.make({
+                    workflowId,
+                    crash: runtime.crash,
+                    restore,
+                    shouldInterruptOnFirstPendingActivity
+                  })
+                )
+              )
+          ),
+          Effect.catchIf(CrashableScheduler.isCrashableRuntimeCrashedError, () => Effect.interrupt)
+        )
+
+      return yield* _(
+        DurableExecution.attempt(workflowId, failure, success)(check, attemptExecution),
+        Effect.onInterrupt(() =>
+          pipe(Ref.set(shouldInterruptOnFirstPendingActivity, true), Effect.zipRight(runtime.crash))
         )
       )
-    )
-  })
+    })
+  }
 }

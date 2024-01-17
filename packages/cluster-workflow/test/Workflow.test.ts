@@ -5,7 +5,6 @@ import * as ActivityJournalInMemory from "@effect/cluster-workflow/ActivityJourn
 import * as CrashableRuntime from "@effect/cluster-workflow/CrashableRuntime"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as Schema from "@effect/schema/Schema"
-import { Stream } from "effect"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
@@ -13,6 +12,7 @@ import { pipe } from "effect/Function"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Ref from "effect/Ref"
+import * as Stream from "effect/Stream"
 import { describe, expect, it } from "vitest"
 
 describe.concurrent("Workflow", () => {
@@ -25,13 +25,13 @@ describe.concurrent("Workflow", () => {
 
   it("Should run as expected if not crashed", () => {
     return Effect.gen(function*(_) {
-      const workflow = pipe(
+      const activity = pipe(
         Effect.succeed(42),
-        Activity.attempt("get-number", Schema.never, Schema.number)
+        Activity.attempt("activity", Schema.never, Schema.number)
       )
 
       const exit = yield* _(
-        Workflow.attempt(workflow),
+        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)(activity),
         Effect.exit
       )
 
@@ -41,13 +41,13 @@ describe.concurrent("Workflow", () => {
 
   it("Should fail as expected if not crashed", () => {
     return Effect.gen(function*(_) {
-      const workflow = pipe(
+      const activity = pipe(
         Effect.fail("error"),
-        Activity.attempt("get-number", Schema.string, Schema.number)
+        Activity.attempt("activity", Schema.string, Schema.number)
       )
 
       const exit = yield* _(
-        Workflow.attempt(workflow),
+        Workflow.attempt("wf", Schema.union(Schema.string, ActivityError.ActivityError), Schema.number)(activity),
         Effect.exit
       )
 
@@ -57,33 +57,35 @@ describe.concurrent("Workflow", () => {
 
   it("Die inside an activity gets converted into an ActivityError", () => {
     return Effect.gen(function*(_) {
-      const workflow = pipe(
+      const activity = pipe(
         Effect.die("defect"),
-        Activity.attempt("get-number", Schema.string, Schema.number)
+        Activity.attempt("activity", Schema.never, Schema.number)
       )
 
       const exit = yield* _(
-        Workflow.attempt(workflow),
+        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)(activity),
         Effect.exit
       )
 
+      expect(Exit.isFailure(exit)).toBe(true)
+      console.log(exit)
       expect(exit).toEqual(Exit.fail(new ActivityError.ActivityError({ error: "defect" })))
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Activity should store in journal the result", () => {
     return Effect.gen(function*(_) {
-      const workflow = pipe(
+      const activity = pipe(
         Effect.sync(() => Math.random()),
-        Activity.attempt("get-number", Schema.never, Schema.number)
+        Activity.attempt("activity", Schema.never, Schema.number)
       )
 
       const exit1 = yield* _(
-        Workflow.attempt(workflow),
+        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)(activity),
         Effect.exit
       )
       const exit2 = yield* _(
-        Workflow.attempt(workflow),
+        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)(activity),
         Effect.exit
       )
 
@@ -115,8 +117,8 @@ describe.concurrent("Workflow", () => {
                   )
                 )
               ),
-              Activity.attempt("get-number", Schema.never, Schema.number),
-              Workflow.attempt
+              Activity.attempt("activity", Schema.never, Schema.number),
+              Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)
             )
           )
         )
@@ -137,8 +139,8 @@ describe.concurrent("Workflow", () => {
         Ref.set(valueRef, 1),
         Effect.zipRight(Deferred.succeed(latch, undefined)),
         Effect.zipRight(Effect.never),
-        Activity.attempt("get-number", Schema.never, Schema.number),
-        Workflow.attempt,
+        Activity.attempt("activity", Schema.never, Schema.number),
+        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number),
         Effect.forkScoped,
         Effect.tap(Deferred.await(latch)),
         Effect.scoped,
@@ -147,7 +149,7 @@ describe.concurrent("Workflow", () => {
 
       const value = yield* _(Ref.get(valueRef))
       const journalEntryCount = yield* _(
-        ActivityJournal.readJournal("get-number", Schema.never, Schema.number),
+        ActivityJournal.readJournal("activity", Schema.never, Schema.number),
         Stream.runCount
       )
 

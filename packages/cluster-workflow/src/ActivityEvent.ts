@@ -15,7 +15,7 @@ export interface ActivityInterruptionRequested {
   sequence: number
 }
 
-export function ActivityInterruptionRequested(sequence: number): ActivityEvent<never, never> {
+export function ActivityInterruptionRequested(sequence: number): ActivityInterruptionRequested {
   return ({ _tag: "ActivityInterruptionRequested", sequence })
 }
 
@@ -29,7 +29,10 @@ export function ActivityCompleted<E, A>(exit: Exit.Exit<E, A>) {
   return (sequence: number): ActivityEvent<E, A> => ({ _tag: "ActivityCompleted", sequence, exit })
 }
 
-export type ActivityEvent<E, A> = ActivityAttempted | ActivityInterruptionRequested | ActivityCompleted<E, A>
+export type ActivityEvent<E, A> =
+  | ActivityAttempted
+  | ActivityInterruptionRequested
+  | ActivityCompleted<E, A>
 
 export type ActivityEventFrom<IE, IA> = {
   readonly _tag: "ActivityAttempted"
