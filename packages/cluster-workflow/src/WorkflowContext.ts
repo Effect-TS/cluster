@@ -7,6 +7,7 @@ export interface WorkflowContext {
   crash: Effect.Effect<never, never, void>
   restore: <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, E, A>
   shouldInterruptOnFirstPendingActivity: Ref.Ref<boolean>
+  shouldPersistEventsIntoJournal: Ref.Ref<boolean>
 }
 
 export const WorkflowContext = Context.Tag<WorkflowContext>()

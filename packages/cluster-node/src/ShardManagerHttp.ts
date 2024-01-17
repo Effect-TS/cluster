@@ -12,10 +12,7 @@ import * as ShardManagerProtocolHttp from "./ShardManagerProtocolHttp.js"
 const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
   const managerConfig = yield* _(ManagerConfig.ManagerConfig)
 
-  return Http.server.layer(() => {
-    console.log("creating server", managerConfig.apiPort)
-    return createServer()
-  }, { port: managerConfig.apiPort })
+  return Http.server.layer(() => createServer(), { port: managerConfig.apiPort })
 }))
 
 /**

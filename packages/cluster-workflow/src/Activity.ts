@@ -1,7 +1,7 @@
 import * as ActivityContext from "@effect/cluster-workflow/ActivityContext"
 import * as ActivityError from "@effect/cluster-workflow/ActivityError"
-import * as ActivityState from "@effect/cluster-workflow/ActivityState"
 import * as DurableExecution from "@effect/cluster-workflow/DurableExecution"
+import * as ActivityState from "@effect/cluster-workflow/DurableExecutionState"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import type * as Schema from "@effect/schema/Schema"
 import * as Effect from "effect/Effect"
@@ -14,7 +14,7 @@ export function attempt<IE, E, IA, A>(
 ) {
   return <R>(execute: Effect.Effect<R, E, A>) => {
     return Effect.checkInterruptible((isInterruptible) => {
-      const check = (state: ActivityState.ActivityState<E, A>) =>
+      const attemptExecution = (state: ActivityState.DurableExecutionState<E, A>) =>
         pipe(
           ActivityState.match(state, {
             onPending: () =>
@@ -28,17 +28,12 @@ export function attempt<IE, E, IA, A>(
                 Effect.unit,
             onCompleted: () => Effect.unit
           }),
-          Effect.unified
-        )
-
-      const attemptExecution = (currentAttempt: number) =>
-        pipe(
-          execute,
-          Effect.provideService(ActivityContext.ActivityContext, { activityId, currentAttempt })
+          Effect.zipRight(execute),
+          Effect.provideService(ActivityContext.ActivityContext, { activityId, currentAttempt: state.currentAttempt })
         )
 
       return pipe(
-        DurableExecution.attempt(activityId, failure, success)(check, attemptExecution),
+        DurableExecution.attempt(activityId, failure, success)(attemptExecution),
         Effect.catchAllDefect((defect) => Effect.fail(new ActivityError.ActivityError({ error: String(defect) }))),
         WorkflowContext.restore
       )

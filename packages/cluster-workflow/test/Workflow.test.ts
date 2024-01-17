@@ -1,8 +1,8 @@
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as ActivityError from "@effect/cluster-workflow/ActivityError"
-import * as ActivityJournal from "@effect/cluster-workflow/ActivityJournal"
-import * as ActivityJournalInMemory from "@effect/cluster-workflow/ActivityJournalInMemory"
 import * as CrashableRuntime from "@effect/cluster-workflow/CrashableRuntime"
+import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
+import * as DurableExecutionJournalInMemory from "@effect/cluster-workflow/DurableExecutionJournalInMemory"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as Schema from "@effect/schema/Schema"
 import * as Deferred from "effect/Deferred"
@@ -19,7 +19,7 @@ describe.concurrent("Workflow", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
     pipe(
       fa,
-      Effect.provide(ActivityJournalInMemory.activityJournalInMemory),
+      Effect.provide(DurableExecutionJournalInMemory.activityJournalInMemory),
       Logger.withMinimumLogLevel(LogLevel.Debug)
     )
 
@@ -67,8 +67,6 @@ describe.concurrent("Workflow", () => {
         Effect.exit
       )
 
-      expect(Exit.isFailure(exit)).toBe(true)
-      console.log(exit)
       expect(exit).toEqual(Exit.fail(new ActivityError.ActivityError({ error: "defect" })))
     }).pipe(withTestEnv, Effect.runPromise)
   })
@@ -130,7 +128,7 @@ describe.concurrent("Workflow", () => {
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
-  it("On graceful interrupt, should not persist exit into ActivityJournal", () => {
+  it("On graceful interrupt, should not persist exit into DurableExecutionJournal", () => {
     return Effect.gen(function*(_) {
       const valueRef = yield* _(Ref.make(0))
       const latch = yield* _(Deferred.make<never, void>())
@@ -149,7 +147,7 @@ describe.concurrent("Workflow", () => {
 
       const value = yield* _(Ref.get(valueRef))
       const journalEntryCount = yield* _(
-        ActivityJournal.readJournal("activity", Schema.never, Schema.number),
+        DurableExecutionJournal.read("activity", Schema.never, Schema.number),
         Stream.runCount
       )
 

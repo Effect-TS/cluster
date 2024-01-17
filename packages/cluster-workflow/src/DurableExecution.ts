@@ -1,11 +1,11 @@
-import * as ActivityJournal from "@effect/cluster-workflow/ActivityJournal"
-import * as ActivityState from "@effect/cluster-workflow/ActivityState"
+import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
+import * as ActivityState from "@effect/cluster-workflow/DurableExecutionState"
 import type * as Schema from "@effect/schema/Schema"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Ref from "effect/Ref"
 import * as Stream from "effect/Stream"
-import * as ActivityEvent from "./ActivityEvent.js"
+import * as DurableExecutionEvent from "./DurableExecutionEvent.js"
 
 export function attempt<IE, E, IA, A>(
   persistenceId: string,
@@ -13,51 +13,51 @@ export function attempt<IE, E, IA, A>(
   success: Schema.Schema<IA, A>
 ) {
   const readState = pipe(
-    ActivityJournal.readJournal(persistenceId, failure, success),
+    DurableExecutionJournal.read(persistenceId, failure, success),
     Stream.runFold(
       ActivityState.initialState<E, A>(),
-      (state, event) => ActivityState.foldActivityEvent(state, event)
+      (state, event) => ActivityState.foldDurableExecutionEvent(state, event)
     )
   )
 
-  return <R1, R2>(
-    peek: (state: ActivityState.ActivityState<E, A>) => Effect.Effect<R1, never, void>,
-    execute: (attempt: number, interruptedPreviously: boolean) => Effect.Effect<R2, E, A>
+  return <R>(
+    execute: (state: ActivityState.DurableExecutionState<E, A>) => Effect.Effect<R, E, A>
   ) => {
     return Effect.interruptibleMask((restore) =>
       pipe(
         readState,
         Effect.flatMap((state) =>
           pipe(
-            peek(state),
-            Effect.zipRight(ActivityState.match(state, {
+            ActivityState.match(state, {
               onPending: (state) =>
                 pipe(
                   Ref.make(state.lastSequence),
                   Effect.flatMap((sequenceRef) => {
-                    const persistEventIntoJournal = (fn: (sequence: number) => ActivityEvent.ActivityEvent<E, A>) =>
+                    const persistEventIntoJournal = (
+                      fn: (sequence: number) => DurableExecutionEvent.DurableExecutionEvent<E, A>
+                    ) =>
                       pipe(
                         Ref.updateAndGet(sequenceRef, (_) => _ + 1),
                         Effect.flatMap((sequence) =>
-                          ActivityJournal.persistJournal(persistenceId, failure, success, fn(sequence))
+                          DurableExecutionJournal.append(persistenceId, failure, success, fn(sequence))
                         )
                       )
 
                     return pipe(
-                      persistEventIntoJournal(ActivityEvent.ActivityAttempted),
-                      Effect.zipRight(restore(execute(state.currentAttempt, state.interruptedPreviously))),
+                      persistEventIntoJournal(DurableExecutionEvent.DurableExecutionEventAttempted),
+                      Effect.zipRight(restore(execute(state))),
                       Effect.catchAllDefect((defect) => Effect.die(String(defect))),
                       Effect.exit,
                       Effect.tap((exit) =>
                         persistEventIntoJournal(
-                          ActivityEvent.ActivityCompleted(
+                          DurableExecutionEvent.ActivityCompleted(
                             exit
                           )
                         )
                       ),
                       Effect.onInterrupt(() =>
                         persistEventIntoJournal(
-                          ActivityEvent.ActivityInterruptionRequested
+                          DurableExecutionEvent.DurableExecutionEventInterruptionRequested
                         )
                       ),
                       Effect.flatten
@@ -65,7 +65,7 @@ export function attempt<IE, E, IA, A>(
                   })
                 ),
               onCompleted: ({ exit }) => exit
-            })),
+            }),
             Effect.unified
           )
         )

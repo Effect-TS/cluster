@@ -1,5 +1,5 @@
 import * as Activity from "@effect/cluster-workflow/Activity"
-import * as ActivityJournalMssql from "@effect/cluster-workflow/ActivityJournalMssql"
+import * as DurableExecutionJournalMssql from "@effect/cluster-workflow/DurableExecutionJournalMssql"
 import { runMain } from "@effect/platform-node/Runtime"
 import * as Schema from "@effect/schema/Schema"
 import * as Mssql from "@sqlfx/mssql"
@@ -37,7 +37,7 @@ function processPaymentWorkflow(orderId: string, billingId: string) {
 
 const main = pipe(
   processPaymentWorkflow("order-1", "payment-1"),
-  Effect.provide(ActivityJournalMssql.activityJournalMssql),
+  Effect.provide(DurableExecutionJournalMssql.activityJournalMssql),
   Effect.provide(Mssql.makeLayer({
     server: Config.succeed("localhost"),
     username: Config.succeed("sa"),
