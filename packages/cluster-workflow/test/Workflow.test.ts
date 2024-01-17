@@ -13,7 +13,7 @@ import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Ref from "effect/Ref"
 import * as Stream from "effect/Stream"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 describe.concurrent("Workflow", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
@@ -88,6 +88,60 @@ describe.concurrent("Workflow", () => {
       )
 
       expect(exit1).toEqual(exit2)
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
+
+  it.only("Ensure that acquireUseRelease gets interrupted without calling release inside workflow", () => {
+    return Effect.gen(function*(_) {
+      const spyAcquire = vi.fn(() => 1)
+      const spyUse = vi.fn(() => 2)
+      const spyRelease = vi.fn(() => 3)
+      const crashOnUse = yield* _(Ref.make(true))
+
+      const workflow = CrashableRuntime.runWithCrash((crash) =>
+        pipe(
+          Effect.acquireUseRelease(
+            pipe(
+              Effect.sync(spyAcquire),
+              Activity.attempt("acquire", Schema.never, Schema.number)
+            ),
+            () =>
+              pipe(
+                Effect.sync(spyUse),
+                Effect.zipLeft(pipe(crash, Effect.whenEffect(Ref.get(crashOnUse)))),
+                Activity.attempt("use", Schema.never, Schema.number)
+              ),
+            () =>
+              pipe(
+                Effect.sync(spyRelease),
+                Activity.attempt("release", Schema.never, Schema.number),
+                Effect.orDie
+              )
+          ),
+          Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)
+        )
+      )
+
+      // first execution should crash
+      yield* _(
+        workflow,
+        Effect.exit
+      )
+
+      expect(spyAcquire).toHaveBeenCalledOnce() // first time called
+      expect(spyUse).toHaveBeenCalledOnce() // first attempt
+      expect(spyRelease).not.toHaveBeenCalled() // never gets called
+
+      // now the workflow gets executed again without crashing
+      yield* _(Ref.set(crashOnUse, false))
+      yield* _(
+        workflow,
+        Effect.exit
+      )
+
+      expect(spyAcquire).toHaveBeenCalledOnce() // not called
+      expect(spyUse).toHaveBeenCalledTimes(2) // called again
+      expect(spyRelease).toHaveBeenCalled() // first time called
     }).pipe(withTestEnv, Effect.runPromise)
   })
 

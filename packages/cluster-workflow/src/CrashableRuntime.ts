@@ -81,3 +81,12 @@ export function retryWhileCrashes<R, E, A>(
     Effect.retryWhile(isCrashableRuntimeCrashedError)
   ) as any
 }
+
+export function runWithCrash<R, E, A>(
+  fn: (crash: Effect.Effect<never, never, void>) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
+): Effect.Effect<R, E | CrashableRuntimeCrashedError, A> {
+  return pipe(
+    make,
+    Effect.flatMap((runtime) => runtime.run(() => fn(runtime.crash)))
+  )
+}
