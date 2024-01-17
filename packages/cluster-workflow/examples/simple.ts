@@ -1,5 +1,6 @@
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as DurableExecutionJournalMssql from "@effect/cluster-workflow/DurableExecutionJournalMssql"
+import * as Workflow from "@effect/cluster-workflow/Workflow"
 import { runMain } from "@effect/platform-node/Runtime"
 import * as Schema from "@effect/schema/Schema"
 import * as Mssql from "@sqlfx/mssql"
@@ -32,7 +33,7 @@ function processPaymentWorkflow(orderId: string, billingId: string) {
   return Effect.gen(function*(_) {
     const amount = yield* _(getAmountDue(orderId))
     yield* _(processPayment(billingId, amount))
-  })
+  }).pipe(Workflow.attempt("process", Schema.never, Schema.void))
 }
 
 const main = pipe(

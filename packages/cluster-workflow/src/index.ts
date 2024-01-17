@@ -2,8 +2,6 @@ export * as Activity from "./Activity.js"
 
 export * as ActivityContext from "./ActivityContext.js"
 
-export * as ActivityError from "./ActivityError.js"
-
 export * as DurableExecutionEvent from "./DurableExecutionEvent.js"
 
 /**

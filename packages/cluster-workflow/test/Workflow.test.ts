@@ -1,5 +1,4 @@
 import * as Activity from "@effect/cluster-workflow/Activity"
-import * as ActivityError from "@effect/cluster-workflow/ActivityError"
 import * as CrashableRuntime from "@effect/cluster-workflow/CrashableRuntime"
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as DurableExecutionJournalInMemory from "@effect/cluster-workflow/DurableExecutionJournalInMemory"
@@ -31,7 +30,7 @@ describe.concurrent("Workflow", () => {
       )
 
       const exit = yield* _(
-        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)(activity),
+        Workflow.attempt("wf", Schema.never, Schema.number)(activity),
         Effect.exit
       )
 
@@ -47,27 +46,11 @@ describe.concurrent("Workflow", () => {
       )
 
       const exit = yield* _(
-        Workflow.attempt("wf", Schema.union(Schema.string, ActivityError.ActivityError), Schema.number)(activity),
+        Workflow.attempt("wf", Schema.string, Schema.number)(activity),
         Effect.exit
       )
 
       expect(exit).toEqual(Exit.fail("error"))
-    }).pipe(withTestEnv, Effect.runPromise)
-  })
-
-  it("Die inside an activity gets converted into an ActivityError", () => {
-    return Effect.gen(function*(_) {
-      const activity = pipe(
-        Effect.die("defect"),
-        Activity.attempt("activity", Schema.never, Schema.number)
-      )
-
-      const exit = yield* _(
-        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)(activity),
-        Effect.exit
-      )
-
-      expect(exit).toEqual(Exit.fail(new ActivityError.ActivityError({ error: "defect" })))
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
@@ -79,11 +62,11 @@ describe.concurrent("Workflow", () => {
       )
 
       const exit1 = yield* _(
-        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)(activity),
+        Workflow.attempt("wf", Schema.never, Schema.number)(activity),
         Effect.exit
       )
       const exit2 = yield* _(
-        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)(activity),
+        Workflow.attempt("wf", Schema.never, Schema.number)(activity),
         Effect.exit
       )
 
@@ -91,7 +74,7 @@ describe.concurrent("Workflow", () => {
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
-  it.only("Ensure that acquireUseRelease gets interrupted without calling release inside workflow", () => {
+  it("Ensure that acquireUseRelease gets interrupted without calling release inside workflow", () => {
     return Effect.gen(function*(_) {
       const spyAcquire = vi.fn(() => 1)
       const spyUse = vi.fn(() => 2)
@@ -114,11 +97,10 @@ describe.concurrent("Workflow", () => {
             () =>
               pipe(
                 Effect.sync(spyRelease),
-                Activity.attempt("release", Schema.never, Schema.number),
-                Effect.orDie
+                Activity.attempt("release", Schema.never, Schema.number)
               )
           ),
-          Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)
+          Workflow.attempt("wf", Schema.never, Schema.number)
         )
       )
 
@@ -170,7 +152,7 @@ describe.concurrent("Workflow", () => {
                 )
               ),
               Activity.attempt("activity", Schema.never, Schema.number),
-              Workflow.attempt("wf", ActivityError.ActivityError, Schema.number)
+              Workflow.attempt("wf", Schema.never, Schema.number)
             )
           )
         )
@@ -192,7 +174,7 @@ describe.concurrent("Workflow", () => {
         Effect.zipRight(Deferred.succeed(latch, undefined)),
         Effect.zipRight(Effect.never),
         Activity.attempt("activity", Schema.never, Schema.number),
-        Workflow.attempt("wf", ActivityError.ActivityError, Schema.number),
+        Workflow.attempt("wf", Schema.never, Schema.number),
         Effect.forkScoped,
         Effect.tap(Deferred.await(latch)),
         Effect.scoped,
