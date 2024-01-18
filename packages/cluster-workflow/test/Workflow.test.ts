@@ -2,6 +2,7 @@ import * as Activity from "@effect/cluster-workflow/Activity"
 import * as CrashableRuntime from "@effect/cluster-workflow/CrashableRuntime"
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as DurableExecutionJournalInMemory from "@effect/cluster-workflow/DurableExecutionJournalInMemory"
+import * as utils from "@effect/cluster-workflow/test/utils"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as Schema from "@effect/schema/Schema"
 import * as Deferred from "effect/Deferred"
@@ -12,7 +13,7 @@ import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Ref from "effect/Ref"
 import * as Stream from "effect/Stream"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 describe.concurrent("Workflow", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
@@ -24,8 +25,10 @@ describe.concurrent("Workflow", () => {
 
   it("Should run as expected if not crashed", () => {
     return Effect.gen(function*(_) {
+      const mocked = utils.mockEffect(() => Exit.succeed(42))
+
       const activity = pipe(
-        Effect.succeed(42),
+        mocked.effect,
         Activity.attempt("activity", Schema.never, Schema.number)
       )
 
@@ -34,14 +37,17 @@ describe.concurrent("Workflow", () => {
         Effect.exit
       )
 
+      expect(mocked.spy).toHaveBeenCalledOnce()
       expect(exit).toEqual(Exit.succeed(42))
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Should fail as expected if not crashed", () => {
     return Effect.gen(function*(_) {
+      const mocked = utils.mockEffect(() => Exit.fail("error"))
+
       const activity = pipe(
-        Effect.fail("error"),
+        mocked.effect,
         Activity.attempt("activity", Schema.string, Schema.number)
       )
 
@@ -50,80 +56,110 @@ describe.concurrent("Workflow", () => {
         Effect.exit
       )
 
+      expect(mocked.spy).toHaveBeenCalledOnce()
       expect(exit).toEqual(Exit.fail("error"))
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Activity should store in journal the result", () => {
     return Effect.gen(function*(_) {
-      const activity = pipe(
-        Effect.sync(() => Math.random()),
-        Activity.attempt("activity", Schema.never, Schema.number)
-      )
+      const mocked = utils.mockEffect(() => Exit.succeed(Math.random()))
+
+      const activity = pipe(mocked.effect, Activity.attempt("activity", Schema.never, Schema.number))
+
+      const workflow = Workflow.attempt("wf", Schema.never, Schema.number)(activity)
 
       const exit1 = yield* _(
-        Workflow.attempt("wf", Schema.never, Schema.number)(activity),
+        workflow,
         Effect.exit
       )
       const exit2 = yield* _(
-        Workflow.attempt("wf", Schema.never, Schema.number)(activity),
+        workflow,
         Effect.exit
       )
 
+      expect(mocked.spy).toHaveBeenCalledOnce()
       expect(exit1).toEqual(exit2)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
   it("Ensure that acquireUseRelease gets interrupted without calling release inside workflow", () => {
     return Effect.gen(function*(_) {
-      const spyAcquire = vi.fn(() => 1)
-      const spyUse = vi.fn(() => 2)
-      const spyRelease = vi.fn(() => 3)
-      const crashOnUse = yield* _(Ref.make(true))
+      const mockedAcquire = utils.mockActivity("acquire", Schema.never, Schema.number, () => Exit.succeed(1))
+      const mockedUse = utils.mockActivity("use", Schema.never, Schema.number, () => Exit.succeed(2))
+      const mockedRelease = utils.mockActivity("release", Schema.never, Schema.number, () => Exit.succeed(3))
 
-      const workflow = CrashableRuntime.runWithCrash((crash) =>
-        pipe(
-          Effect.acquireUseRelease(
-            pipe(
-              Effect.sync(spyAcquire),
-              Activity.attempt("acquire", Schema.never, Schema.number)
+      const workflow = (shouldCrash: boolean) =>
+        CrashableRuntime.runWithCrash((crash) =>
+          pipe(
+            Effect.acquireUseRelease(
+              mockedAcquire.activity,
+              () => mockedUse.activityWithBody(shouldCrash ? crash : Effect.succeed(2)),
+              () => mockedRelease.activity
             ),
-            () =>
-              pipe(
-                Effect.sync(spyUse),
-                Effect.zipLeft(pipe(crash, Effect.whenEffect(Ref.get(crashOnUse)))),
-                Activity.attempt("use", Schema.never, Schema.number)
-              ),
-            () =>
-              pipe(
-                Effect.sync(spyRelease),
-                Activity.attempt("release", Schema.never, Schema.number)
-              )
-          ),
-          Workflow.attempt("wf", Schema.never, Schema.number)
+            Workflow.attempt("wf", Schema.never, Schema.number)
+          )
         )
-      )
 
       // first execution should crash
       yield* _(
-        workflow,
+        workflow(true),
         Effect.exit
       )
 
-      expect(spyAcquire).toHaveBeenCalledOnce() // first time called
-      expect(spyUse).toHaveBeenCalledOnce() // first attempt
-      expect(spyRelease).not.toHaveBeenCalled() // never gets called
+      expect(mockedAcquire.spy).toHaveBeenCalledOnce()
+      expect(mockedUse.spy).toHaveBeenCalledOnce()
+      expect(mockedRelease.spy).not.toHaveBeenCalled()
 
       // now the workflow gets executed again without crashing
-      yield* _(Ref.set(crashOnUse, false))
       yield* _(
-        workflow,
+        workflow(false),
         Effect.exit
       )
 
-      expect(spyAcquire).toHaveBeenCalledOnce() // not called
-      expect(spyUse).toHaveBeenCalledTimes(2) // called again
-      expect(spyRelease).toHaveBeenCalled() // first time called
+      expect(mockedAcquire.spy).toHaveBeenCalledOnce()
+      expect(mockedUse.spy).toHaveBeenCalledTimes(2)
+      expect(mockedRelease.spy).toHaveBeenCalled()
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
+
+  it("Upon crash on release, when restarted should resume release", () => {
+    return Effect.gen(function*(_) {
+      const mockedAcquire = utils.mockActivity("acquire", Schema.never, Schema.number, () => Exit.succeed(1))
+      const mockedUse = utils.mockActivity("use", Schema.never, Schema.number, () => Exit.succeed(2))
+      const mockedRelease = utils.mockActivity("release", Schema.never, Schema.number, () => Exit.succeed(3))
+
+      const workflow = (shouldCrash: boolean) =>
+        CrashableRuntime.runWithCrash((crash) =>
+          pipe(
+            Effect.acquireUseRelease(
+              mockedAcquire.activity,
+              () => mockedUse.activity,
+              () => mockedRelease.activityWithBody(shouldCrash ? crash : Effect.succeed(2))
+            ),
+            Workflow.attempt("wf", Schema.never, Schema.number)
+          )
+        )
+
+      // first execution should crash
+      yield* _(
+        workflow(true),
+        Effect.exit
+      )
+
+      expect(mockedAcquire.spy).toHaveBeenCalledOnce()
+      expect(mockedUse.spy).toHaveBeenCalledOnce()
+      expect(mockedRelease.spy).toHaveBeenCalledOnce()
+
+      // now the workflow gets executed again without crashing
+      yield* _(
+        workflow(false),
+        Effect.exit
+      )
+
+      expect(mockedAcquire.spy).toHaveBeenCalledOnce()
+      expect(mockedUse.spy).toHaveBeenCalledOnce()
+      expect(mockedRelease.spy).toHaveBeenCalledTimes(2)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
@@ -166,29 +202,34 @@ describe.concurrent("Workflow", () => {
 
   it("On graceful interrupt, should not persist exit into DurableExecutionJournal", () => {
     return Effect.gen(function*(_) {
-      const valueRef = yield* _(Ref.make(0))
+      const mockedActivity = utils.mockActivity("activity", Schema.never, Schema.number, () => Exit.succeed(1))
       const latch = yield* _(Deferred.make<never, void>())
 
-      const exit = yield* _(pipe(
-        Ref.set(valueRef, 1),
-        Effect.zipRight(Deferred.succeed(latch, undefined)),
-        Effect.zipRight(Effect.never),
-        Activity.attempt("activity", Schema.never, Schema.number),
+      const exit = yield* _(
+        mockedActivity.activityWithBody(pipe(
+          Deferred.succeed(latch, undefined),
+          Effect.zipRight(Effect.never)
+        )),
         Workflow.attempt("wf", Schema.never, Schema.number),
         Effect.forkScoped,
         Effect.tap(Deferred.await(latch)),
         Effect.scoped,
         Effect.flatMap((_) => _.await)
-      ))
+      )
 
-      const value = yield* _(Ref.get(valueRef))
-      const journalEntryCount = yield* _(
+      const workflowJournalEntryCount = yield* _(
+        DurableExecutionJournal.read("wf", Schema.never, Schema.number),
+        Stream.runCount
+      )
+
+      const activityJournalEntryCount = yield* _(
         DurableExecutionJournal.read("activity", Schema.never, Schema.number),
         Stream.runCount
       )
 
-      expect(value).toEqual(1)
-      expect(journalEntryCount).toEqual(1)
+      expect(mockedActivity.spy).toHaveBeenCalledOnce()
+      expect(activityJournalEntryCount).toEqual(1)
+      expect(workflowJournalEntryCount).toEqual(1)
       expect(Exit.isInterrupted(exit)).toEqual(true)
     }).pipe(withTestEnv, Effect.runPromise)
   })

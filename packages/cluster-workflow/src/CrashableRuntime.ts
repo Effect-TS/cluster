@@ -83,7 +83,7 @@ export function retryWhileCrashes<R, E, A>(
 }
 
 export function runWithCrash<R, E, A>(
-  fn: (crash: Effect.Effect<never, never, void>) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
+  fn: (crash: Effect.Effect<never, never, never>) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
 ): Effect.Effect<R, E | CrashableRuntimeCrashedError, A> {
   return pipe(
     make,

@@ -23,7 +23,7 @@ export function attempt<IE, E, IA, A>(
   return <R>(
     execute: (state: ActivityState.DurableExecutionState<E, A>) => Effect.Effect<R, E, A>
   ) => {
-    return Effect.interruptibleMask((restore) =>
+    return Effect.uninterruptibleMask((restore) =>
       pipe(
         readState,
         Effect.flatMap((state) =>

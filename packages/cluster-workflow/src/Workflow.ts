@@ -1,5 +1,6 @@
 import * as CrashableScheduler from "@effect/cluster-workflow/CrashableRuntime"
 import * as DurableExecution from "@effect/cluster-workflow/DurableExecution"
+import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as ActivityState from "@effect/cluster-workflow/DurableExecutionState"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import type * as Schema from "@effect/schema/Schema"
@@ -28,7 +29,7 @@ export function attempt<IE, E, IA, A>(
               pipe(
                 ActivityState.match(state, {
                   onPending: ({ interruptedPreviously }) =>
-                    WorkflowContext.setShouldInterruptOnFirstPendingActivity(interruptedPreviously),
+                    Ref.set(shouldInterruptOnFirstPendingActivity, interruptedPreviously),
                   onCompleted: () => Effect.unit
                 }),
                 Effect.unified,
@@ -39,8 +40,7 @@ export function attempt<IE, E, IA, A>(
                     workflowId,
                     crash: runtime.crash,
                     restore,
-                    shouldInterruptOnFirstPendingActivity,
-                    shouldPersistEventsIntoJournal
+                    shouldInterruptOnFirstPendingActivity
                   })
                 )
               )
@@ -50,8 +50,20 @@ export function attempt<IE, E, IA, A>(
 
       return yield* _(
         DurableExecution.attempt(workflowId, failure, success)(attemptExecution),
+        Effect.updateService(DurableExecutionJournal.DurableExecutionJournal, (journal) => ({
+          read: journal.read,
+          append: (persistenceId, failure, success, event) =>
+            pipe(
+              journal.append(persistenceId, failure, success, event),
+              Effect.whenEffect(Ref.get(shouldPersistEventsIntoJournal))
+            )
+        })),
         Effect.onInterrupt(() =>
-          pipe(Ref.set(shouldInterruptOnFirstPendingActivity, true), Effect.zipRight(runtime.crash))
+          pipe(
+            Ref.set(shouldPersistEventsIntoJournal, false),
+            Effect.zipRight(Effect.logDebug("interrupted writing")),
+            Effect.zipRight(runtime.crash)
+          )
         )
       )
     })
