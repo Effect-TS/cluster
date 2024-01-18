@@ -87,6 +87,6 @@ export function runWithCrash<R, E, A>(
 ): Effect.Effect<R, E | CrashableRuntimeCrashedError, A> {
   return pipe(
     make,
-    Effect.flatMap((runtime) => runtime.run(() => fn(runtime.crash)))
+    Effect.flatMap((runtime) => runtime.run(() => fn(runtime.crash as any)))
   )
 }

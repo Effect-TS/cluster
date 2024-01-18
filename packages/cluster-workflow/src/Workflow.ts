@@ -1,12 +1,14 @@
 import * as CrashableScheduler from "@effect/cluster-workflow/CrashableRuntime"
 import * as DurableExecution from "@effect/cluster-workflow/DurableExecution"
-import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as ActivityState from "@effect/cluster-workflow/DurableExecutionState"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import type * as Schema from "@effect/schema/Schema"
+import { Exit } from "effect"
 import * as Effect from "effect/Effect"
+import * as FiberId from "effect/FiberId"
 import { pipe } from "effect/Function"
 import * as Ref from "effect/Ref"
+import * as Scope from "effect/Scope"
 
 export function attempt<IE, E, IA, A>(
   workflowId: string,
@@ -17,7 +19,7 @@ export function attempt<IE, E, IA, A>(
     return Effect.gen(function*(_) {
       const runtime = yield* _(CrashableScheduler.make)
       const shouldInterruptOnFirstPendingActivity = yield* _(Ref.make(false))
-      const shouldPersistEventsIntoJournal = yield* _(Ref.make(true))
+      const executionScope = yield* _(Scope.make())
 
       // if the execution is pending and interruption has been asked previously,
       // set a flag in the context such as the first pending interruptible activity will interrupt as it were from exit
@@ -50,21 +52,15 @@ export function attempt<IE, E, IA, A>(
 
       return yield* _(
         DurableExecution.attempt(workflowId, failure, success)(attemptExecution),
-        Effect.updateService(DurableExecutionJournal.DurableExecutionJournal, (journal) => ({
-          read: journal.read,
-          append: (persistenceId, failure, success, event) =>
-            pipe(
-              journal.append(persistenceId, failure, success, event),
-              Effect.whenEffect(Ref.get(shouldPersistEventsIntoJournal))
-            )
-        })),
+        Effect.forkIn(executionScope),
         Effect.onInterrupt(() =>
           pipe(
-            Ref.set(shouldPersistEventsIntoJournal, false),
-            Effect.zipRight(Effect.logDebug("interrupted writing")),
+            Scope.close(executionScope, Exit.interrupt(FiberId.none)),
             Effect.zipRight(runtime.crash)
           )
-        )
+        ),
+        Effect.flatMap((fiber) => fiber.await),
+        Effect.flatten
       )
     })
   }
