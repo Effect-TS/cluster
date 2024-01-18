@@ -23,9 +23,7 @@ export const activityJournalInMemory = Layer.effect(
     return ({
       append: (persistenceId, _, __, event) =>
         pipe(
-          Ref.update(memory, (_) => _.concat([new JournalEntry({ persistenceId, event })])),
-          Effect.zipLeft(Effect.logDebug(JSON.stringify(event))),
-          Effect.annotateLogs("persistence_id", persistenceId)
+          Ref.update(memory, (_) => _.concat([new JournalEntry({ persistenceId, event })]))
         ),
       read: (persistenceId) =>
         pipe(

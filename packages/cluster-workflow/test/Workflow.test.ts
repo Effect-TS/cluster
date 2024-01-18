@@ -8,6 +8,7 @@ import * as Schema from "@effect/schema/Schema"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
+import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
@@ -200,22 +201,25 @@ describe.concurrent("Workflow", () => {
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
-  it.only("On graceful interrupt, should not persist exit into DurableExecutionJournal", () => {
+  it("On graceful interrupt, should not persist exit into DurableExecutionJournal", () => {
     return Effect.gen(function*(_) {
       const mockedActivity = utils.mockActivity("activity", Schema.never, Schema.number, () => Exit.succeed(1))
-      const mockedEffect = utils.mockEffect(() => Exit.succeed(1))
+      const mockedRelease = utils.mockEffect(() => Exit.succeed(1))
+      const mockedUse = utils.mockEffect(() => Exit.succeed(1))
       const latch = yield* _(Deferred.make<never, void>())
 
       const exit = yield* _(
-        mockedActivity.activityWithBody(Effect.acquireUseRelease(Effect.unit, () =>
+        Effect.acquireUseRelease(Effect.succeed(1), () =>
           pipe(
-            Effect.never,
+            mockedUse.effect,
+            Effect.zipRight(Effect.never),
             Effect.zipLeft(Deferred.succeed(latch, undefined), { concurrent: true })
-          ), () => mockedEffect.effect)),
+          ), () => mockedRelease.effect),
+        mockedActivity.activityWithBody,
         Workflow.attempt("wf", Schema.never, Schema.number),
-        Effect.forkScoped,
+        Effect.forkDaemon,
         Effect.tap(Deferred.await(latch)),
-        Effect.scoped,
+        Effect.tap((fiber) => Fiber.interrupt(fiber)),
         Effect.flatMap((_) => _.await)
       )
 
@@ -229,11 +233,12 @@ describe.concurrent("Workflow", () => {
         Stream.runCount
       )
 
-      expect(mockedEffect.spy).toHaveBeenCalledOnce()
+      expect(mockedUse.spy).toHaveBeenCalled()
       expect(mockedActivity.spy).toHaveBeenCalledOnce()
       expect(activityJournalEntryCount).toEqual(1)
       expect(workflowJournalEntryCount).toEqual(1)
       expect(Exit.isInterrupted(exit)).toEqual(true)
+      expect(mockedRelease.spy).toHaveBeenCalledOnce()
     }).pipe(withTestEnv, Effect.runPromise)
   })
 })

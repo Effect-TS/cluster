@@ -4,7 +4,6 @@ import * as Ref from "effect/Ref"
 
 export interface WorkflowContext {
   workflowId: string
-  restoreEffectRuntime: <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, E, A>
   shouldInterruptOnFirstPendingActivity: Ref.Ref<boolean>
 }
 
@@ -13,9 +12,6 @@ export const WorkflowContext = Context.Tag<WorkflowContext>()
 export function make(args: WorkflowContext): WorkflowContext {
   return args
 }
-
-export const restoreEffectRuntime = <R, E, A>(effect: Effect.Effect<R, E, A>) =>
-  Effect.flatMap(WorkflowContext, (_) => _.restoreEffectRuntime(effect))
 
 export const shouldInterruptOnFirstPendingActivity = Effect.flatMap(
   WorkflowContext,
