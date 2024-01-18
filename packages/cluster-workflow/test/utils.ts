@@ -10,7 +10,7 @@ export function mockEffect<E, A>(
   impl: () => Exit.Exit<E, A>
 ): { effect: Effect.Effect<never, E, A>; spy: Mock<[], Exit.Exit<E, A>> } {
   const spy = vi.fn(impl)
-  const effect = pipe(Effect.sync(spy), Effect.flatten)
+  const effect = pipe(Effect.sync(spy), Effect.flatten, Effect.uninterruptible)
   return { spy, effect }
 }
 

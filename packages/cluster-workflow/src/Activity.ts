@@ -33,7 +33,7 @@ export function attempt<IE, E, IA, A>(
 
       return pipe(
         DurableExecution.attempt(activityId, failure, success)(attemptExecution),
-        WorkflowContext.restore
+        WorkflowContext.restoreEffectRuntime
       )
     })
   }

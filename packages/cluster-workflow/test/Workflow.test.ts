@@ -200,16 +200,18 @@ describe.concurrent("Workflow", () => {
     }).pipe(withTestEnv, Effect.runPromise)
   })
 
-  it("On graceful interrupt, should not persist exit into DurableExecutionJournal", () => {
+  it.only("On graceful interrupt, should not persist exit into DurableExecutionJournal", () => {
     return Effect.gen(function*(_) {
       const mockedActivity = utils.mockActivity("activity", Schema.never, Schema.number, () => Exit.succeed(1))
+      const mockedEffect = utils.mockEffect(() => Exit.succeed(1))
       const latch = yield* _(Deferred.make<never, void>())
 
       const exit = yield* _(
-        mockedActivity.activityWithBody(pipe(
-          Deferred.succeed(latch, undefined),
-          Effect.zipRight(Effect.never)
-        )),
+        mockedActivity.activityWithBody(Effect.acquireUseRelease(Effect.unit, () =>
+          pipe(
+            Effect.never,
+            Effect.zipLeft(Deferred.succeed(latch, undefined), { concurrent: true })
+          ), () => mockedEffect.effect)),
         Workflow.attempt("wf", Schema.never, Schema.number),
         Effect.forkScoped,
         Effect.tap(Deferred.await(latch)),
@@ -227,6 +229,7 @@ describe.concurrent("Workflow", () => {
         Stream.runCount
       )
 
+      expect(mockedEffect.spy).toHaveBeenCalledOnce()
       expect(mockedActivity.spy).toHaveBeenCalledOnce()
       expect(activityJournalEntryCount).toEqual(1)
       expect(workflowJournalEntryCount).toEqual(1)
