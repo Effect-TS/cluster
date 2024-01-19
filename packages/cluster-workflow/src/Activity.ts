@@ -1,5 +1,6 @@
 import * as ActivityContext from "@effect/cluster-workflow/ActivityContext"
-import * as DurableExecution from "@effect/cluster-workflow/DurableExecution"
+import * as DurableExecutionEvent from "@effect/cluster-workflow/DurableExecutionEvent"
+import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as ActivityState from "@effect/cluster-workflow/DurableExecutionState"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import type * as Schema from "@effect/schema/Schema"
@@ -12,29 +13,49 @@ export function attempt<IE, E, IA, A>(
   success: Schema.Schema<IA, A>
 ) {
   return <R>(execute: Effect.Effect<R, E, A>) => {
-    return Effect.checkInterruptible((isInterruptible) => {
-      const attemptExecution = (state: ActivityState.DurableExecutionState<E, A>) =>
-        pipe(
-          ActivityState.match(state, {
-            onPending: () =>
-              isInterruptible ?
-                pipe(
-                  WorkflowContext.setShouldInterruptOnFirstPendingActivity(false),
-                  Effect.zipRight(Effect.interrupt),
-                  Effect.whenEffect(WorkflowContext.shouldInterruptOnFirstPendingActivity),
-                  Effect.asUnit
-                ) :
-                Effect.unit,
-            onCompleted: () => Effect.unit
-          }),
-          Effect.zipRight(execute),
-          Effect.provideService(ActivityContext.ActivityContext, { activityId, currentAttempt: state.currentAttempt })
+    return DurableExecutionJournal.withState(activityId, failure, success)(
+      (state, persistEvent) => {
+        const interruptCurrentFiber = pipe(
+          WorkflowContext.setShouldInterruptOnFirstPendingActivity(false),
+          Effect.zipRight(Effect.interrupt)
         )
 
-      return pipe(
-        DurableExecution.attempt(activityId, failure, success)(attemptExecution)
-      )
-    })
+        const beginInterruptionIfInterruptible = Effect.checkInterruptible((isInterruptible) =>
+          pipe(
+            persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionRequested),
+            Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted)),
+            Effect.zipRight(interruptCurrentFiber),
+            Effect.when(() => isInterruptible),
+            Effect.whenEffect(WorkflowContext.shouldInterruptOnFirstPendingActivity),
+            Effect.asUnit
+          )
+        )
+
+        return pipe(
+          ActivityState.match(state, {
+            onPending: ({ currentAttempt }) =>
+              pipe(
+                beginInterruptionIfInterruptible,
+                Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted)),
+                Effect.zipRight(execute),
+                Effect.catchAllDefect((defect) => Effect.die(String(defect))),
+                Effect.exit,
+                Effect.tap((exit) => persistEvent(DurableExecutionEvent.ActivityCompleted(exit))),
+                Effect.flatten,
+                Effect.provideService(ActivityContext.ActivityContext, { activityId, currentAttempt })
+              ),
+            onWindDown: () =>
+              pipe(
+                persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted),
+                Effect.zipRight(interruptCurrentFiber)
+              ),
+            onFiberInterrupted: () => interruptCurrentFiber,
+            onCompleted: ({ exit }) => Effect.flatMap(Effect.unit, () => exit)
+          }),
+          Effect.unified
+        )
+      }
+    )
   }
 }
 

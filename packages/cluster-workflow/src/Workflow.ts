@@ -1,4 +1,4 @@
-import * as DurableExecution from "@effect/cluster-workflow/DurableExecution"
+import * as DurableExecutionEvent from "@effect/cluster-workflow/DurableExecutionEvent"
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as DurableExecutionState from "@effect/cluster-workflow/DurableExecutionState"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
@@ -21,30 +21,38 @@ export function attempt<IE, E, IA, A>(
       const shouldAppendIntoJournal = yield* _(Ref.make(true))
       const executionScope = yield* _(Scope.make())
 
-      // if the execution is pending and interruption has been asked previously,
-      // set a flag in the context such as the first pending interruptible activity will interrupt as it were from exit
-      const attemptExecution = (state: DurableExecutionState.DurableExecutionState<E, A>) =>
-        pipe(
-          DurableExecutionState.match(state, {
-            onPending: ({ interruptedPreviously }) =>
-              Ref.set(shouldInterruptOnFirstPendingActivity, interruptedPreviously),
-            onCompleted: () => Effect.unit
-          }),
-          Effect.unified,
-          Effect.zipRight(
-            execute
-          ),
-          Effect.provideService(
-            WorkflowContext.WorkflowContext,
-            WorkflowContext.make({
-              workflowId,
-              shouldInterruptOnFirstPendingActivity
-            })
-          )
-        )
-
       return yield* _(
-        DurableExecution.attempt(workflowId, failure, success)(attemptExecution),
+        DurableExecutionJournal.withState(workflowId, failure, success)(
+          (state, persistEvent) => {
+            const resumeWorkflowExecution = pipe(
+              persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
+              Effect.zipRight(execute),
+              Effect.catchAllDefect((defect) => Effect.die(String(defect))),
+              Effect.provideService(
+                WorkflowContext.WorkflowContext,
+                WorkflowContext.make({
+                  workflowId,
+                  shouldInterruptOnFirstPendingActivity
+                })
+              ),
+              Effect.exit,
+              Effect.tap((exit) => persistEvent(DurableExecutionEvent.ActivityCompleted(exit))),
+              Effect.flatten
+            )
+
+            return DurableExecutionState.match(state, {
+              onPending: () => resumeWorkflowExecution,
+              onWindDown: () =>
+                pipe(
+                  Ref.set(shouldInterruptOnFirstPendingActivity, true),
+                  Effect.zipRight(resumeWorkflowExecution),
+                  Effect.ensuring(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted))
+                ),
+              onFiberInterrupted: () => Effect.interrupt,
+              onCompleted: ({ exit }) => exit
+            })
+          }
+        ),
         Effect.updateService(DurableExecutionJournal.DurableExecutionJournal, (journal) => ({
           read: journal.read,
           append: (persistenceId, failure, success, event) =>
