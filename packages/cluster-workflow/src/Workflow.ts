@@ -17,34 +17,36 @@ export function attempt<IE, E, IA, A>(
 ) {
   return <R>(execute: Effect.Effect<R, E, A>) => {
     return Effect.gen(function*(_) {
-      const shouldInterruptOnFirstPendingActivity = yield* _(Ref.make(false))
+      const shouldInterruptCurrentFiberInActivity = yield* _(Ref.make(false))
       const shouldAppendIntoJournal = yield* _(Ref.make(true))
       const executionScope = yield* _(Scope.make())
 
       return yield* _(
         DurableExecutionJournal.withState(workflowId, failure, success)(
           (state, persistEvent) => {
-            const resumeWorkflowExecution = pipe(
-              persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
-              Effect.zipRight(execute),
+            const attemptExecution = pipe(
+              execute,
               Effect.catchAllDefect((defect) => Effect.die(String(defect))),
               Effect.provideService(
                 WorkflowContext.WorkflowContext,
                 WorkflowContext.make({
                   workflowId,
-                  shouldInterruptOnFirstPendingActivity
+                  shouldInterruptCurrentFiberInActivity
                 })
-              ),
-              Effect.exit,
-              Effect.tap((exit) => persistEvent(DurableExecutionEvent.ActivityCompleted(exit))),
-              Effect.flatten
+              )
+            )
+
+            const resumeWorkflowExecution = pipe(
+              persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
+              Effect.zipRight(attemptExecution),
+              Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
             )
 
             return DurableExecutionState.match(state, {
               onPending: () => resumeWorkflowExecution,
               onWindDown: () =>
                 pipe(
-                  Ref.set(shouldInterruptOnFirstPendingActivity, true),
+                  Ref.set(shouldInterruptCurrentFiberInActivity, true),
                   Effect.zipRight(resumeWorkflowExecution),
                   Effect.ensuring(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted))
                 ),

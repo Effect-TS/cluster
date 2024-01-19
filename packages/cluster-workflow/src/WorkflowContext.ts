@@ -4,7 +4,7 @@ import * as Ref from "effect/Ref"
 
 export interface WorkflowContext {
   workflowId: string
-  shouldInterruptOnFirstPendingActivity: Ref.Ref<boolean>
+  shouldInterruptCurrentFiberInActivity: Ref.Ref<boolean>
 }
 
 export const WorkflowContext = Context.Tag<WorkflowContext>()
@@ -13,13 +13,13 @@ export function make(args: WorkflowContext): WorkflowContext {
   return args
 }
 
-export const shouldInterruptOnFirstPendingActivity = Effect.flatMap(
+export const shouldInterruptCurrentFiberInActivity = Effect.flatMap(
   WorkflowContext,
-  (_) => Ref.get(_.shouldInterruptOnFirstPendingActivity)
+  (_) => Ref.get(_.shouldInterruptCurrentFiberInActivity)
 )
 
-export const setShouldInterruptOnFirstPendingActivity = (value: boolean) =>
+export const setShouldInterruptCurrentFiberInActivity = (value: boolean) =>
   Effect.flatMap(
     WorkflowContext,
-    (_) => Ref.set(_.shouldInterruptOnFirstPendingActivity, value)
+    (_) => Ref.set(_.shouldInterruptCurrentFiberInActivity, value)
   )

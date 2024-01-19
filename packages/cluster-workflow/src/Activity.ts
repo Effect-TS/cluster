@@ -5,6 +5,8 @@ import * as ActivityState from "@effect/cluster-workflow/DurableExecutionState"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import type * as Schema from "@effect/schema/Schema"
 import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
+import * as FiberRef from "effect/FiberRef"
 import { pipe } from "effect/Function"
 
 export function attempt<IE, E, IA, A>(
@@ -15,34 +17,42 @@ export function attempt<IE, E, IA, A>(
   return <R>(execute: Effect.Effect<R, E, A>) => {
     return DurableExecutionJournal.withState(activityId, failure, success)(
       (state, persistEvent) => {
-        const interruptCurrentFiber = pipe(
-          WorkflowContext.setShouldInterruptOnFirstPendingActivity(false),
-          Effect.zipRight(Effect.interrupt)
+        const attemptEffectExecution = pipe(
+          execute,
+          Effect.catchAllDefect((defect) => Effect.die(String(defect))),
+          Effect.provideService(ActivityContext.ActivityContext, { activityId, currentAttempt: state.currentAttempt })
         )
 
-        const beginInterruptionIfInterruptible = Effect.checkInterruptible((isInterruptible) =>
-          pipe(
-            persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionRequested),
-            Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted)),
-            Effect.zipRight(interruptCurrentFiber),
-            Effect.when(() => isInterruptible),
-            Effect.whenEffect(WorkflowContext.shouldInterruptOnFirstPendingActivity),
-            Effect.asUnit
+        const interruptCurrentFiber = pipe(
+          WorkflowContext.setShouldInterruptCurrentFiberInActivity(false),
+          Effect.zipRight(Effect.interrupt),
+          Effect.onExit((exit) =>
+            Exit.match(exit, {
+              onFailure: (cause) => FiberRef.set(FiberRef.interruptedCause, cause),
+              onSuccess: () => Effect.unit
+            })
           )
+        )
+
+        const shouldInterruptCurrentFiber = Effect.checkInterruptible((isInterruptible) =>
+          isInterruptible ? WorkflowContext.shouldInterruptCurrentFiberInActivity : Effect.succeed(false)
+        )
+
+        const beginInterruptionIfRequestedByWorkflow = pipe(
+          persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionRequested),
+          Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted)),
+          Effect.zipRight(interruptCurrentFiber),
+          Effect.whenEffect(shouldInterruptCurrentFiber)
         )
 
         return pipe(
           ActivityState.match(state, {
-            onPending: ({ currentAttempt }) =>
+            onPending: () =>
               pipe(
-                beginInterruptionIfInterruptible,
-                Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted)),
-                Effect.zipRight(execute),
-                Effect.catchAllDefect((defect) => Effect.die(String(defect))),
-                Effect.exit,
-                Effect.tap((exit) => persistEvent(DurableExecutionEvent.ActivityCompleted(exit))),
-                Effect.flatten,
-                Effect.provideService(ActivityContext.ActivityContext, { activityId, currentAttempt })
+                persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
+                Effect.zipRight(beginInterruptionIfRequestedByWorkflow),
+                Effect.zipRight(attemptEffectExecution),
+                Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
               ),
             onWindDown: () =>
               pipe(
@@ -50,7 +60,7 @@ export function attempt<IE, E, IA, A>(
                 Effect.zipRight(interruptCurrentFiber)
               ),
             onFiberInterrupted: () => interruptCurrentFiber,
-            onCompleted: ({ exit }) => Effect.flatMap(Effect.unit, () => exit)
+            onCompleted: ({ exit }) => exit
           }),
           Effect.unified
         )

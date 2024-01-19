@@ -34,7 +34,7 @@ export interface DurableExecutionEventCompleted<E, A> {
   exit: Exit.Exit<E, A>
 }
 
-export function ActivityCompleted<E, A>(exit: Exit.Exit<E, A>) {
+export function DurableExecutionEventCompleted<E, A>(exit: Exit.Exit<E, A>) {
   return (sequence: number): DurableExecutionEvent<E, A> => ({
     _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted",
     sequence,
