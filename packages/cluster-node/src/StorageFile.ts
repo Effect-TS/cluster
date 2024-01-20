@@ -22,7 +22,7 @@ export function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
   return pipe(
     value,
     Schema.encode(schema),
-    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors))),
+    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatError(e))),
     Effect.map((_) => JSON.stringify(_))
   )
 }
@@ -32,7 +32,7 @@ export function jsonParse<I, A>(value: string, schema: Schema.Schema<I, A>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
     Effect.flatMap(Schema.decode(schema)),
-    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatErrors(e.errors)))
+    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatError(e)))
   )
 }
 

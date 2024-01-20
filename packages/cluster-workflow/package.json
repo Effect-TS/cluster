@@ -1,8 +1,8 @@
 {
-  "name": "@effect/cluster",
+  "name": "@effect/cluster-workflow",
   "type": "module",
   "version": "0.0.1",
-  "description": "Unified interfaces for common cluster-specific services",
+  "description": "A workflow runtime using effect-cluster",
   "publishConfig": {
     "access": "public",
     "directory": "dist"
@@ -15,19 +15,8 @@
   "author": "Effect contributors",
   "license": "MIT",
   "sideEffects": false,
-  "effect": {
-    "generateIndex": {
-      "exclude": [
-        "utils.ts"
-      ]
-    },
-    "generateExports": {
-      "exclude": [
-        "utils.ts"
-      ]
-    }
-  },
   "scripts": {
+    "example": "tsx --tsconfig tsconfig.examples.json",
     "build": "pnpm build-prepare && pnpm build-esm && pnpm build-cjs && pnpm build-annotate && build-utils pack-v2",
     "build-prepare": "build-utils prepare-v2",
     "build-esm": "tsc -b tsconfig.build.json",
@@ -35,12 +24,21 @@
     "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
   "peerDependencies": {
+    "@effect/platform-node": "^0.41.0",
     "@effect/schema": "^0.59.1",
-    "effect": "2.0.3"
+    "effect": "2.0.3",
+    "@sqlfx/pg": "0.39.1",
+    "@sqlfx/mysql": "^0.38.1",
+    "@sqlfx/mssql": "0.37.1",
+    "@testcontainers/postgresql": "^10.4.0",
+    "@testcontainers/mysql": "^10.4.0"
   },
   "devDependencies": {
+    "@effect/platform-node": "^0.41.0",
     "@effect/schema": "^0.59.1",
+    "@types/node": "^20.9.0",
     "@types/path-browserify": "^1.0.1",
-    "effect": "2.0.3"
+    "effect": "2.0.3",
+    "tsx": "^4.6.2"
   }
 }
