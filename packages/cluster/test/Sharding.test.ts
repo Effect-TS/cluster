@@ -87,7 +87,8 @@ describe.concurrent("SampleTests", () => {
 
       yield* _(
         Sharding.registerEntity(
-          SampleEntity,
+          SampleEntity
+        )(
           RecipientBehaviour.fromFunctionEffect(() =>
             pipe(Ref.set(received, true), Effect.as(MessageState.Acknowledged))
           )
@@ -128,15 +129,18 @@ describe.concurrent("SampleTests", () => {
       const result1 = yield* _(Ref.make(0))
       const result2 = yield* _(Ref.make(0))
 
-      yield* _(Sharding.registerEntity(
-        SampleEntity,
-        RecipientBehaviour.fromFunctionEffect((entityId, msg) =>
-          pipe(
-            Ref.set(entityId === "entity1" ? result1 : result2, msg.value),
-            Effect.as(MessageState.Acknowledged)
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity
+        )(
+          RecipientBehaviour.fromFunctionEffect((entityId, msg) =>
+            pipe(
+              Ref.set(entityId === "entity1" ? result1 : result2, msg.value),
+              Effect.as(MessageState.Acknowledged)
+            )
           )
         )
-      ))
+      )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 
@@ -155,12 +159,15 @@ describe.concurrent("SampleTests", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
 
-      yield* _(Sharding.registerEntity(
-        SampleEntity,
-        RecipientBehaviour.fromFunctionEffect(() =>
-          Effect.succeed(MessageState.Processed(Option.some(Exit.succeed(42))))
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity
+        )(
+          RecipientBehaviour.fromFunctionEffect(() =>
+            Effect.succeed(MessageState.Processed(Option.some(Exit.succeed(42))))
+          )
         )
-      ))
+      )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       const msg = new SampleMessageWithResult({ id: "a", value: 42 })
@@ -174,14 +181,17 @@ describe.concurrent("SampleTests", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
 
-      yield* _(Sharding.registerEntity(
-        SampleEntity,
-        RecipientBehaviour.fromFunctionEffect<never, SampleEntity>((_, msg) =>
-          msg._tag === "FailableMessageWithResult"
-            ? Effect.succeed(MessageState.Processed(Option.some(Exit.fail("custom-error"))))
-            : Effect.succeed(MessageState.Processed(Option.none())) as any
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity
+        )(
+          RecipientBehaviour.fromFunctionEffect((_, msg) =>
+            msg._tag === "FailableMessageWithResult"
+              ? Effect.succeed(MessageState.Processed(Option.some(Exit.fail("custom-error"))))
+              : Effect.succeed(MessageState.Processed(Option.none()))
+          )
         )
-      ))
+      )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       const msg = new FailableMessageWithResult({ id: "a", value: 42 })
@@ -214,7 +224,8 @@ describe.concurrent("SampleTests", () => {
 
       yield* _(
         Sharding.registerTopic(
-          SampleTopic,
+          SampleTopic
+        )(
           RecipientBehaviour.fromFunctionEffect((entityId, msg) => {
             switch (msg._tag) {
               case "BroadcastIncrement":
@@ -247,27 +258,30 @@ describe.concurrent("SampleTests", () => {
       yield* _(Sharding.registerScoped)
       const entityStarted = yield* _(Deferred.make<never, boolean>())
 
-      yield* _(Sharding.registerEntity(
-        SampleEntity,
-        RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
-          pipe(
-            Queue.take(dequeue),
-            Effect.flatMap((msg) => {
-              if (PoisonPill.isPoisonPill(msg)) {
-                return pipe(
-                  Effect.sync(() => {
-                    entityInterrupted = true
-                  }),
-                  Effect.zipRight(Effect.interrupt)
-                )
-              }
-              return Deferred.succeed(entityStarted, true)
-            }),
-            Effect.forever
-          )
-        ),
-        { entityMaxIdleTime: Option.some(Duration.minutes(10)) }
-      ))
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity
+        )(
+          RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
+            pipe(
+              Queue.take(dequeue),
+              Effect.flatMap((msg) => {
+                if (PoisonPill.isPoisonPill(msg)) {
+                  return pipe(
+                    Effect.sync(() => {
+                      entityInterrupted = true
+                    }),
+                    Effect.zipRight(Effect.interrupt)
+                  )
+                }
+                return Deferred.succeed(entityStarted, true)
+              }),
+              Effect.forever
+            )
+          ),
+          { entityMaxIdleTime: Option.some(Duration.minutes(10)) }
+        )
+      )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 
@@ -284,31 +298,34 @@ describe.concurrent("SampleTests", () => {
       yield* _(Sharding.registerScoped)
       const entityStarted = yield* _(Deferred.make<never, boolean>())
 
-      yield* _(Sharding.registerEntity(
-        SampleEntity,
-        RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
-          pipe(
-            Queue.take(dequeue),
-            Effect.flatMap((msg) => {
-              if (PoisonPill.isPoisonPill(msg)) {
-                return pipe(
-                  Effect.sleep(Duration.seconds(3)),
-                  Effect.zipRight(Effect.logDebug("Shutting down...")),
-                  Effect.zipRight(
-                    Effect.sync(() => {
-                      shutdownCompleted = true
-                    })
-                  ),
-                  Effect.flatMap(() => Effect.interrupt)
-                )
-              }
-              return Deferred.succeed(entityStarted, true)
-            }),
-            Effect.forever
-          )
-        ),
-        { entityMaxIdleTime: Option.some(Duration.minutes(10)) }
-      ))
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity
+        )(
+          RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
+            pipe(
+              Queue.take(dequeue),
+              Effect.flatMap((msg) => {
+                if (PoisonPill.isPoisonPill(msg)) {
+                  return pipe(
+                    Effect.sleep(Duration.seconds(3)),
+                    Effect.zipRight(Effect.logDebug("Shutting down...")),
+                    Effect.zipRight(
+                      Effect.sync(() => {
+                        shutdownCompleted = true
+                      })
+                    ),
+                    Effect.flatMap(() => Effect.interrupt)
+                  )
+                }
+                return Deferred.succeed(entityStarted, true)
+              }),
+              Effect.forever
+            )
+          ),
+          { entityMaxIdleTime: Option.some(Duration.minutes(10)) }
+        )
+      )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 
@@ -327,34 +344,37 @@ describe.concurrent("SampleTests", () => {
       const shutdownReceived = yield* _(Deferred.make<never, boolean>())
       const entityStarted = yield* _(Deferred.make<never, boolean>())
 
-      yield* _(Sharding.registerEntity(
-        SampleEntity,
-        RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
-          pipe(
-            Queue.take(dequeue),
-            Effect.flatMap((msg) => {
-              if (PoisonPill.isPoisonPill(msg)) {
-                return pipe(
-                  Deferred.succeed(shutdownReceived, true),
-                  Effect.zipRight(Effect.logDebug("PoisonPill received")),
-                  Effect.zipRight(Effect.sleep(Duration.seconds(3))),
-                  Effect.zipRight(Effect.sync(() => {
-                    shutdownCompleted = true
-                  })),
-                  Effect.flatMap(() => Effect.interrupt)
-                )
-              }
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity
+        )(
+          RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
+            pipe(
+              Queue.take(dequeue),
+              Effect.flatMap((msg) => {
+                if (PoisonPill.isPoisonPill(msg)) {
+                  return pipe(
+                    Deferred.succeed(shutdownReceived, true),
+                    Effect.zipRight(Effect.logDebug("PoisonPill received")),
+                    Effect.zipRight(Effect.sleep(Duration.seconds(3))),
+                    Effect.zipRight(Effect.sync(() => {
+                      shutdownCompleted = true
+                    })),
+                    Effect.flatMap(() => Effect.interrupt)
+                  )
+                }
 
-              return pipe(
-                Deferred.succeed(entityStarted, true),
-                Effect.zipRight(Effect.logDebug("Entity Started"))
-              )
-            }),
-            Effect.forever
-          )
-        ),
-        { entityMaxIdleTime: Option.some(Duration.millis(100)) }
-      ))
+                return pipe(
+                  Deferred.succeed(entityStarted, true),
+                  Effect.zipRight(Effect.logDebug("Entity Started"))
+                )
+              }),
+              Effect.forever
+            )
+          ),
+          { entityMaxIdleTime: Option.some(Duration.millis(100)) }
+        )
+      )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 
@@ -445,23 +465,26 @@ describe.concurrent("SampleTests", () => {
       const requestReceived = yield* _(Deferred.make<never, boolean>())
       yield* _(Sharding.registerScoped)
 
-      yield* _(Sharding.registerEntity(
-        SampleEntity,
-        RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
-          pipe(
-            PoisonPill.takeOrInterrupt(dequeue),
-            Effect.flatMap(() => {
-              // ignored reply as part of test case
-              return pipe(
-                Deferred.succeed(requestReceived, true),
-                Effect.zipRight(Effect.logDebug("Request received, ignoring reply as part of test case..."))
-              )
-            }),
-            Effect.forever
-          )
-        ),
-        { entityMaxIdleTime: Option.some(Duration.millis(100)) }
-      ))
+      yield* _(
+        Sharding.registerEntity(
+          SampleEntity
+        )(
+          RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
+            pipe(
+              PoisonPill.takeOrInterrupt(dequeue),
+              Effect.flatMap(() => {
+                // ignored reply as part of test case
+                return pipe(
+                  Deferred.succeed(requestReceived, true),
+                  Effect.zipRight(Effect.logDebug("Request received, ignoring reply as part of test case..."))
+                )
+              }),
+              Effect.forever
+            )
+          ),
+          { entityMaxIdleTime: Option.some(Duration.millis(100)) }
+        )
+      )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
 

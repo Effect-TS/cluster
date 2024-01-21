@@ -81,13 +81,15 @@ export interface Sharding {
   readonly isShuttingDown: Effect.Effect<never, never, boolean>
 
   readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
-  readonly registerEntity: <Msg, R>(
-    entityType: RecipentType.EntityType<Msg>,
+  readonly registerEntity: <Msg>(
+    entityType: RecipentType.EntityType<Msg>
+  ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
-  readonly registerTopic: <Msg, R>(
-    topicType: RecipentType.TopicType<Msg>,
+  readonly registerTopic: <Msg>(
+    topicType: RecipentType.TopicType<Msg>
+  ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
@@ -191,8 +193,9 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare const registerEntity: <Msg, R>(
-  entityType: RecipentType.EntityType<Msg>,
+export declare const registerEntity: <Msg>(
+  entityType: RecipentType.EntityType<Msg>
+) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
 ) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
@@ -238,8 +241,9 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare const registerTopic: <Msg, R>(
-  topicType: RecipentType.TopicType<Msg>,
+export declare const registerTopic: <Msg>(
+  topicType: RecipentType.TopicType<Msg>
+) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
 ) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>

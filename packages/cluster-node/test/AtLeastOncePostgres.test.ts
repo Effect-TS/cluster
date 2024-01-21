@@ -83,11 +83,10 @@ describe.concurrent("AtLeastOncePostgres", () => {
 
       yield* _(
         Sharding.registerEntity(
-          SampleEntity,
+          SampleEntity
+        )(
           pipe(
-            RecipientBehaviour.fromFunctionEffect<never, SampleMessage>(() =>
-              Effect.succeed(MessageState.Acknowledged)
-            ),
+            RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Acknowledged)),
             AtLeastOnce.atLeastOnceRecipientBehaviour
           )
         )
@@ -110,11 +109,10 @@ describe.concurrent("AtLeastOncePostgres", () => {
 
       yield* _(
         Sharding.registerEntity(
-          SampleEntity,
+          SampleEntity
+        )(
           pipe(
-            RecipientBehaviour.fromFunctionEffect<never, SampleMessage>(() =>
-              Effect.succeed(MessageState.Processed(Option.none()))
-            ),
+            RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Processed(Option.none()))),
             AtLeastOnce.atLeastOnceRecipientBehaviour
           )
         )
@@ -137,11 +135,10 @@ describe.concurrent("AtLeastOncePostgres", () => {
 
       yield* _(
         Sharding.registerEntity(
-          SampleEntity,
+          SampleEntity
+        )(
           pipe(
-            RecipientBehaviour.fromFunctionEffect<never, SampleMessage>(() =>
-              Effect.succeed(MessageState.Acknowledged)
-            ),
+            RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Acknowledged)),
             AtLeastOnce.atLeastOnceRecipientBehaviour
           )
         )

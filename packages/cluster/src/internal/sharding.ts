@@ -78,23 +78,27 @@ export function registerSingleton<R>(
 /**
  * @internal
  */
-export function registerEntity<Msg, R>(
-  entityType: RecipientType.EntityType<Msg>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
-  options?: RecipientBehaviour.EntityBehaviourOptions
-): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
-  return Effect.flatMap(shardingTag, (_) => _.registerEntity(entityType, behavior, options))
+export function registerEntity<Msg>(
+  entityType: RecipientType.EntityType<Msg>
+) {
+  return <R>(
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    options?: RecipientBehaviour.EntityBehaviourOptions
+  ): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =>
+    Effect.flatMap(shardingTag, (_) => _.registerEntity(entityType)(behavior, options))
 }
 
 /**
  * @internal
  */
-export function registerTopic<Msg, R>(
-  topicType: RecipientType.TopicType<Msg>,
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
-  options?: RecipientBehaviour.EntityBehaviourOptions
-): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
-  return Effect.flatMap(shardingTag, (_) => _.registerTopic(topicType, behavior, options))
+export function registerTopic<Msg>(
+  topicType: RecipientType.TopicType<Msg>
+) {
+  return <R>(
+    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    options?: RecipientBehaviour.EntityBehaviourOptions
+  ): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =>
+    Effect.flatMap(shardingTag, (_) => _.registerTopic(topicType)(behavior, options))
 }
 
 /**
@@ -664,28 +668,32 @@ function make(
     return { broadcast, broadcastDiscard }
   }
 
-  function registerEntity<Msg, R>(
-    entityType: RecipientType.EntityType<Msg>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
-    options?: RecipientBehaviour.EntityBehaviourOptions
-  ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
-    return pipe(
-      registerRecipient(entityType, behavior, options),
-      Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
-      Effect.asUnit
-    )
+  function registerEntity<Msg>(
+    entityType: RecipientType.EntityType<Msg>
+  ) {
+    return <R>(
+      behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+      options?: RecipientBehaviour.EntityBehaviourOptions
+    ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =>
+      pipe(
+        registerRecipient(entityType, behavior, options),
+        Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
+        Effect.asUnit
+      )
   }
 
-  function registerTopic<Msg, R>(
-    topicType: RecipientType.TopicType<Msg>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
-    options?: RecipientBehaviour.EntityBehaviourOptions
-  ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> {
-    return pipe(
-      registerRecipient(topicType, behavior, options),
-      Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
-      Effect.asUnit
-    )
+  function registerTopic<Msg>(
+    topicType: RecipientType.TopicType<Msg>
+  ) {
+    return <R>(
+      behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+      options?: RecipientBehaviour.EntityBehaviourOptions
+    ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =>
+      pipe(
+        registerRecipient(topicType, behavior, options),
+        Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
+        Effect.asUnit
+      )
   }
 
   const getShardingRegistrationEvents: Stream.Stream<
