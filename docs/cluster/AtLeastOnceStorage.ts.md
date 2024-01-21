@@ -61,7 +61,7 @@ export interface AtLeastOnceStorage {
   /**
    * Stores a message into the storage, eventually returning the already existing message state as result in the storage
    */
-  upsert<Msg extends Message.Any>(
+  upsert<Msg>(
     recipientType: RecipientType.RecipientType<Msg>,
     shardId: ShardId.ShardId,
     entityId: string,
@@ -71,7 +71,7 @@ export interface AtLeastOnceStorage {
   /**
    * Marks the message as processed, so no more send attempt will occur
    */
-  markAsProcessed<Msg extends Message.Any>(
+  markAsProcessed<Msg>(
     recipientType: RecipientType.RecipientType<Msg>,
     shardId: ShardId.ShardId,
     entityId: string,

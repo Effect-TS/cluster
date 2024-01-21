@@ -1,11 +1,11 @@
 /**
  * @since 1.0.0
  */
+import type * as Schema from "@effect/schema/Schema"
 import type * as Data from "effect/Data"
 import type * as Effect from "effect/Effect"
 import type * as Queue from "effect/Queue"
 import * as internal from "./internal/poisonPill.js"
-import type * as Message from "./Message.js"
 
 /**
  * @since 1.0.0
@@ -24,12 +24,10 @@ export type PoisonPillTypeId = typeof PoisonPillTypeId
  * @category models
  */
 export interface PoisonPill extends
-  Message.Message<
-    Data.Data<
-      {
-        [PoisonPillTypeId]: PoisonPillTypeId
-      }
-    >
+  Data.Data<
+    {
+      [PoisonPillTypeId]: PoisonPillTypeId
+    }
   >
 {}
 
@@ -53,7 +51,7 @@ export const isPoisonPill: (value: unknown) => value is PoisonPill = internal.is
  * @since 1.0.0
  * @category schema
  */
-export const schema: Message.MessageSchema<
+export const schema: Schema.Schema<
   { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
   Data.Data<{ readonly [PoisonPillTypeId]: typeof PoisonPillTypeId }>
 > = internal.schema

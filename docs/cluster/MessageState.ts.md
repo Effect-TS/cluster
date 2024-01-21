@@ -1,6 +1,6 @@
 ---
 title: MessageState.ts
-nav_order: 8
+nav_order: 7
 parent: "@effect/cluster"
 ---
 

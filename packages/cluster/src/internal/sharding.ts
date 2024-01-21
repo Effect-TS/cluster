@@ -78,7 +78,7 @@ export function registerSingleton<R>(
 /**
  * @internal
  */
-export function registerEntity<Msg extends Message.Any, R>(
+export function registerEntity<Msg, R>(
   entityType: RecipientType.EntityType<Msg>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions
@@ -89,7 +89,7 @@ export function registerEntity<Msg extends Message.Any, R>(
 /**
  * @internal
  */
-export function registerTopic<Msg extends Message.Any, R>(
+export function registerTopic<Msg, R>(
   topicType: RecipientType.TopicType<Msg>,
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions
@@ -100,7 +100,7 @@ export function registerTopic<Msg extends Message.Any, R>(
 /**
  * @internal
  */
-export function messenger<Msg extends Message.Any>(
+export function messenger<Msg>(
   entityType: RecipientType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding.Sharding, never, Messenger<Msg>> {
@@ -110,7 +110,7 @@ export function messenger<Msg extends Message.Any>(
 /**
  * @internal
  */
-export function broadcaster<Msg extends Message.Any>(
+export function broadcaster<Msg>(
   topicType: RecipientType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
 ): Effect.Effect<Sharding.Sharding, never, Broadcaster.Broadcaster<Msg>> {
@@ -167,7 +167,7 @@ function make(
   serialization: Serialization.Serialization,
   eventsHub: PubSub.PubSub<ShardingRegistrationEvent.ShardingRegistrationEvent>
 ) {
-  function getEntityManagerByEntityTypeName<Msg extends Message.Any>(
+  function getEntityManagerByEntityTypeName<Msg>(
     entityType: string
   ) {
     return pipe(
@@ -463,7 +463,7 @@ function make(
       : sendMessageToRemotePodWithoutRetries(pod, envelope)
   }
 
-  function messenger<Msg extends Message.Any>(
+  function messenger<Msg>(
     entityType: RecipientType.EntityType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Messenger<Msg> {
@@ -484,16 +484,8 @@ function make(
         )
     }
 
-    function unsafeSendDiscard(entityId: string) {
-      return (payload: Message.Payload<Msg>) =>
-        pipe(
-          Message.makeEffect(payload),
-          Effect.flatMap((_) => sendDiscard(entityId)(_ as any))
-        )
-    }
-
     function send(entityId: string) {
-      return <A extends Msg & Message.AnyWithResult>(message: A) => {
+      return <A extends Msg & Message.MessageWithResult.Any>(message: A) => {
         return pipe(
           sendMessage(entityId, message),
           Effect.flatMap((state) =>
@@ -559,10 +551,10 @@ function make(
         ))
     }
 
-    return { sendDiscard, unsafeSendDiscard, send }
+    return { sendDiscard, send }
   }
 
-  function broadcaster<Msg extends Message.Any>(
+  function broadcaster<Msg>(
     topicType: RecipientType.TopicType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Broadcaster.Broadcaster<Msg> {
@@ -628,7 +620,7 @@ function make(
     }
 
     function broadcast(topicId: string) {
-      return <A extends Msg & Message.AnyWithResult>(message: A) => {
+      return <A extends Msg & Message.MessageWithResult.Any>(message: A) => {
         return pipe(
           sendMessage(topicId, message),
           Effect.flatMap((results) =>
@@ -672,7 +664,7 @@ function make(
     return { broadcast, broadcastDiscard }
   }
 
-  function registerEntity<Msg extends Message.Any, R>(
+  function registerEntity<Msg, R>(
     entityType: RecipientType.EntityType<Msg>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
@@ -684,7 +676,7 @@ function make(
     )
   }
 
-  function registerTopic<Msg extends Message.Any, R>(
+  function registerTopic<Msg, R>(
     topicType: RecipientType.TopicType<Msg>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
@@ -702,7 +694,7 @@ function make(
     ShardingRegistrationEvent.ShardingRegistrationEvent
   > = Stream.fromPubSub(eventsHub)
 
-  function registerRecipient<Msg extends Message.Any, R>(
+  function registerRecipient<Msg, R>(
     recipientType: RecipientType.RecipientType<Msg>,
     behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions

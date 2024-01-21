@@ -29,7 +29,7 @@ const liveLayer = Sharding.registerEntity(
     RecipientBehaviour.fromFunctionEffectStateful(
       () => Effect.succeed(0),
       (_, message, stateRef) => {
-        switch (message.payload._tag) {
+        switch (message._tag) {
           case "Increment":
             return pipe(Ref.update(stateRef, (count) => count + 1), Effect.as(MessageState.Processed(Option.none())))
           case "Decrement":

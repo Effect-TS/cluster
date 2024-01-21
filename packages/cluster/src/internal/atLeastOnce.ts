@@ -4,7 +4,6 @@ import { pipe } from "effect/Function"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
 import * as AtLeastOnceStorage from "../AtLeastOnceStorage.js"
-import type * as Message from "../Message.js"
 import * as MessageState from "../MessageState.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
@@ -33,7 +32,7 @@ export function runPendingMessageSweeperScoped(
 }
 
 /** @internal */
-export function atLeastOnceRecipientBehaviour<R, Msg extends Message.Any>(
+export function atLeastOnceRecipientBehaviour<R, Msg>(
   fa: RecipientBehaviour.RecipientBehaviour<R, Msg>
 ): RecipientBehaviour.RecipientBehaviour<R | AtLeastOnceStorage.AtLeastOnceStorage, Msg> {
   return Effect.gen(function*(_) {

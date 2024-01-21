@@ -3,27 +3,28 @@
  */
 import type * as Schema from "@effect/schema/Schema"
 import * as Hash from "effect/Hash"
-import type * as Message from "./Message.js"
 import * as ShardId from "./ShardId.js"
 
 /**
  * @since 1.0.0
  * @category models
  */
-export interface EntityType<Msg extends Message.Any> {
+export interface EntityType<Msg> {
   readonly _tag: "EntityType"
   readonly name: string
   readonly schema: Schema.Schema<unknown, Msg>
+  readonly messageToId: (msg: Msg) => string
 }
 
 /**
  * @since 1.0.0
  * @category models
  */
-export interface TopicType<Msg extends Message.Any> {
+export interface TopicType<Msg> {
   readonly _tag: "TopicType"
   readonly name: string
   readonly schema: Schema.Schema<unknown, Msg>
+  readonly messageToId: (msg: Msg) => string
 }
 
 /**
@@ -31,28 +32,30 @@ export interface TopicType<Msg extends Message.Any> {
  * @since 1.0.0
  * @category models
  */
-export type RecipientType<Msg extends Message.Any> = EntityType<Msg> | TopicType<Msg>
+export type RecipientType<Msg> = EntityType<Msg> | TopicType<Msg>
 
 /**
  * @since 1.0.0
  * @category constructors
  */
-export function makeEntityType<I, Msg extends Message.Any>(
+export function makeEntityType<I, Msg>(
   name: string,
-  schema: Schema.Schema<I, Msg>
+  schema: Schema.Schema<I, Msg>,
+  messageToId: (msg: Msg) => string
 ): EntityType<Msg> {
-  return { _tag: "EntityType", name, schema: schema as any }
+  return { _tag: "EntityType", name, schema: schema as any, messageToId }
 }
 
 /**
  * @since 1.0.0
  * @category constructors
  */
-export function makeTopicType<I, Msg extends Message.Any>(
+export function makeTopicType<I, Msg>(
   name: string,
-  schema: Schema.Schema<I, Msg>
+  schema: Schema.Schema<I, Msg>,
+  messageToId: (msg: Msg) => string
 ): TopicType<Msg> {
-  return { _tag: "TopicType", name, schema: schema as any }
+  return { _tag: "TopicType", name, schema: schema as any, messageToId }
 }
 
 /**

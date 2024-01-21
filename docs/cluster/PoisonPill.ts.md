@@ -1,6 +1,6 @@
 ---
 title: PoisonPill.ts
-nav_order: 14
+nav_order: 13
 parent: "@effect/cluster"
 ---
 
@@ -49,11 +49,9 @@ Added in v1.0.0
 
 ```ts
 export interface PoisonPill
-  extends Message.Message<
-    Data.Data<{
-      [PoisonPillTypeId]: PoisonPillTypeId
-    }>
-  > {}
+  extends Data.Data<{
+    [PoisonPillTypeId]: PoisonPillTypeId
+  }> {}
 ```
 
 Added in v1.0.0
@@ -67,7 +65,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Message.MessageSchema<
+export declare const schema: Schema.Schema<
   { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
   Data.Data<{ readonly [PoisonPillTypeId]: typeof PoisonPillTypeId }>
 >

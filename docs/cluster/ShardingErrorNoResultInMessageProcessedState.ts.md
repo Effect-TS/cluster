@@ -1,6 +1,6 @@
 ---
 title: ShardingErrorNoResultInMessageProcessedState.ts
-nav_order: 27
+nav_order: 26
 parent: "@effect/cluster"
 ---
 
