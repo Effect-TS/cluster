@@ -1,6 +1,5 @@
 import * as AtLeastOnceStoragePostgres from "@effect/cluster-node/AtLeastOnceStoragePostgres"
 import * as AtLeastOnce from "@effect/cluster/AtLeastOnce"
-import * as Message from "@effect/cluster/Message"
 import * as MessageState from "@effect/cluster/MessageState"
 import * as Pods from "@effect/cluster/Pods"
 import * as PodsHealth from "@effect/cluster/PodsHealth"
@@ -24,9 +23,7 @@ import * as Option from "effect/Option"
 import * as Secret from "effect/Secret"
 import { describe, expect, it } from "vitest"
 
-const SampleMessage = Message.schema(
-  Schema.number
-)
+class SampleMessage extends Schema.Class<SampleMessage>()({ id: Schema.string, value: Schema.number }) {}
 
 const testContainerPostgresLayer = pipe(
   Effect.acquireRelease(
@@ -37,7 +34,8 @@ const testContainerPostgresLayer = pipe(
   Layer.scoped(Postgres.tag)
 )
 
-const SampleEntity = RecipientType.makeEntityType("SampleEntity", SampleMessage)
+const SampleEntity = RecipientType.makeEntityType("SampleEntity", SampleMessage, (_) => _.id)
+type SampleEntity = SampleMessage
 
 describe.concurrent("AtLeastOncePostgres", () => {
   const inMemorySharding = pipe(
@@ -85,7 +83,8 @@ describe.concurrent("AtLeastOncePostgres", () => {
 
       yield* _(
         Sharding.registerEntity(
-          SampleEntity,
+          SampleEntity
+        )(
           pipe(
             RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Acknowledged)),
             AtLeastOnce.atLeastOnceRecipientBehaviour
@@ -94,7 +93,7 @@ describe.concurrent("AtLeastOncePostgres", () => {
       )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleMessage.makeEffect(42))
+      const msg = new SampleMessage({ id: "a", value: 42 })
       yield* _(messenger.sendDiscard("entity1")(msg))
 
       const sql = yield* _(Postgres.tag)
@@ -110,7 +109,8 @@ describe.concurrent("AtLeastOncePostgres", () => {
 
       yield* _(
         Sharding.registerEntity(
-          SampleEntity,
+          SampleEntity
+        )(
           pipe(
             RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Processed(Option.none()))),
             AtLeastOnce.atLeastOnceRecipientBehaviour
@@ -119,7 +119,7 @@ describe.concurrent("AtLeastOncePostgres", () => {
       )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleMessage.makeEffect(42))
+      const msg = new SampleMessage({ id: "a", value: 42 })
       yield* _(messenger.sendDiscard("entity1")(msg))
 
       const sql = yield* _(Postgres.tag)
@@ -135,7 +135,8 @@ describe.concurrent("AtLeastOncePostgres", () => {
 
       yield* _(
         Sharding.registerEntity(
-          SampleEntity,
+          SampleEntity
+        )(
           pipe(
             RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Acknowledged)),
             AtLeastOnce.atLeastOnceRecipientBehaviour
@@ -144,8 +145,7 @@ describe.concurrent("AtLeastOncePostgres", () => {
       )
 
       const messenger = yield* _(Sharding.messenger(SampleEntity))
-      const msg = yield* _(SampleMessage.makeEffect(42))
-      yield* _(messenger.sendDiscard("entity1")(msg))
+      yield* _(messenger.sendDiscard("entity1")(new SampleMessage({ id: "a", value: 42 })))
 
       const sql = yield* _(Postgres.tag)
       const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack WHERE processed = FALSE`)

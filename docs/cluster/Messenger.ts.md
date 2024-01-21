@@ -1,6 +1,6 @@
 ---
 title: Messenger.ts
-nav_order: 9
+nav_order: 8
 parent: "@effect/cluster"
 ---
 
@@ -26,7 +26,7 @@ An interface to communicate with a remote entity
 **Signature**
 
 ```ts
-export interface Messenger<Msg extends Message.Any> {
+export interface Messenger<Msg> {
   /**
    * Send a message without waiting for a response (fire and forget)
    * @since 1.0.0
@@ -34,25 +34,18 @@ export interface Messenger<Msg extends Message.Any> {
   sendDiscard(entityId: string): (message: Msg) => Effect.Effect<never, ShardingError.ShardingError, void>
 
   /**
-   * Builds and sends a message without waiting for a response (fire and forget)
-   * NOTE: This variant is considered unsafe since it creates the messageId before sending the message.
-   * This means that if the message is sent, received remotely, but acknowledgmenent fails to be sent back
-   * before the configured sendTimeout, if the effect is re-executed you'll end up sending multiple times the same Message.
-   * @since 1.0.0
-   */
-  unsafeSendDiscard(
-    entityId: string
-  ): (message: Message.Payload<Msg>) => Effect.Effect<never, ShardingError.ShardingError, void>
-
-  /**
    * Send a message and wait for a response of type `Res`
    * @since 1.0.0
    */
   send(
     entityId: string
-  ): <A extends Msg & Message.AnyWithResult>(
+  ): <A extends Msg & Message.MessageWithResult.Any>(
     message: A
-  ) => Effect.Effect<never, ShardingError.ShardingError | Message.Failure<A>, Message.Success<A>>
+  ) => Effect.Effect<
+    never,
+    ShardingError.ShardingError | Message.MessageWithResult.Error<A>,
+    Message.MessageWithResult.Success<A>
+  >
 }
 ```
 

@@ -26,7 +26,7 @@ An interface to communicate with a remote broadcast receiver
 **Signature**
 
 ```ts
-export interface Broadcaster<Msg extends Message.Any> {
+export interface Broadcaster<Msg> {
   /**
    * Broadcast a message without waiting for a response (fire and forget)
    * @since 1.0.0
@@ -41,14 +41,17 @@ export interface Broadcaster<Msg extends Message.Any> {
    */
   readonly broadcast: (
     topicId: string
-  ) => <A extends Msg & Message.AnyWithResult>(
+  ) => <A extends Msg & Message.MessageWithResult.Any>(
     message: A
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
     HashMap.HashMap<
       PodAddress.PodAddress,
-      Either.Either<ShardingError.ShardingError | Message.Failure<A>, Message.Success<A>>
+      Either.Either<
+        ShardingError.ShardingError | Message.MessageWithResult.Error<A>,
+        Message.MessageWithResult.Success<A>
+      >
     >
   >
 }

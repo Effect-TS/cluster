@@ -3,68 +3,8 @@
  */
 import type * as Schema from "@effect/schema/Schema"
 import type * as Serializable from "@effect/schema/Serializable"
-import type * as Effect from "effect/Effect"
 import type * as Exit_ from "effect/Exit"
 import * as internal from "./internal/message.js"
-import type * as MessageId from "./MessageId.js"
-
-/**
- * @since 1.0.0
- * @category symbols
- */
-export const MessageTypeId: unique symbol = internal.MessageTypeId
-
-/**
- * @since 1.0.0
- * @category symbols
- */
-export type MessageTypeId = typeof MessageTypeId
-
-/**
- * @since 1.0.0
- * @category models
- */
-export interface Message<Payload> {
-  id: MessageId.MessageId
-  headers: Record<string, string>
-  payload: Payload
-}
-
-/**
- * @since 1.0.0
- * @category models
- */
-export namespace Message {
-  /**
-   * @since 1.0.0
-   * @category models
-   */
-  export interface From<Payload> {
-    readonly id: MessageId.MessageId.From
-    readonly headers: Record<string, string>
-    readonly payload: Payload
-  }
-}
-
-/**
- * @since 1.0.0
- * @category models
- */
-export interface Any extends Message<any> {}
-
-/**
- * @since 1.0.0
- * @category models
- */
-export interface MessageSchema<From, To> extends
-  Schema.Schema<
-    Message.From<From>,
-    Message<To>
-  >
-{
-  make: (message: To, messageId: MessageId.MessageId) => Message<To>
-  makeEffect: (message: To) => Effect.Effect<never, never, Message<To>>
-}
 
 /**
  * A `Message<A>` is a request from a data source for a value of type `A`
@@ -72,9 +12,7 @@ export interface MessageSchema<From, To> extends
  * @since 1.0.0
  * @category models
  */
-export interface MessageWithResult<Payload, Failure, Success>
-  extends Message<Payload>, Serializable.WithResult<unknown, Failure, unknown, Success>
-{
+export interface MessageWithResult<Failure, Success> extends Serializable.WithResult<any, Failure, any, Success> {
 }
 
 /**
@@ -86,109 +24,46 @@ export namespace MessageWithResult {
    * @since 1.0.0
    * @category models
    */
-  export interface From<Payload> extends Message.From<Payload> {}
+  export type Any = Serializable.WithResult<never, never, any, any> | Serializable.WithResult<any, any, any, any>
+
+  /**
+   * Extracts the success type from a `MessageWithResult<A, S>`.
+   *
+   * @since 1.0.0
+   * @category utils
+   */
+  export type Success<S> = S extends MessageWithResult<any, infer X> ? X : never
+
+  /**
+   * Extracts the success type from a `MessageWithResult<A, S>`.
+   *
+   * @since 1.0.0
+   * @category utils
+   */
+  export type Error<S> = S extends MessageWithResult<infer X, any> ? X : never
+
+  /**
+   * Extracts the success type from a `MessageWithResult<A, S>`.
+   *
+   * @since 1.0.0
+   * @category utils
+   */
+  export type Exit<S> = S extends Serializable.WithResult<any, infer E, any, infer A> ? Exit_.Exit<E, A> :
+    S extends Serializable.WithResult<never, infer E, any, infer A> ? Exit_.Exit<E, A>
+    : never
 }
 
 /**
  * @since 1.0.0
- * @category models
- */
-export type AnyWithResult = MessageWithResult<any, never, any> | MessageWithResult<any, any, any>
-
-/**
- * A `MessageSchema<From, To, A>` is an augmented schema that provides utilities to build the Message<A> with a valid replier.
- *
- * @since 1.0.0
- * @category models
- */
-export interface MessageWithResultSchema<From, To, Failure, Success> extends
-  Schema.Schema<
-    MessageWithResult.From<From>,
-    MessageWithResult<To, Failure, Success>
-  >
-{
-  make: (message: To, messageId: MessageId.MessageId) => MessageWithResult<To, Failure, Success>
-  makeEffect: (message: To) => Effect.Effect<never, never, MessageWithResult<To, Failure, Success>>
-}
-
-/**
- * Extracts the success type from a `MessageWithResult<A, S>`.
- *
- * @since 1.0.0
  * @category utils
  */
-export type Success<S> = S extends MessageWithResult<any, any, infer X> ? X : never
-
-/**
- * Extracts the success type from a `MessageWithResult<A, S>`.
- *
- * @since 1.0.0
- * @category utils
- */
-export type Failure<S> = S extends MessageWithResult<any, infer X, any> ? X : never
-
-/**
- * Extracts the payload type from a `Message<A>`.
- *
- * @since 1.0.0
- * @category utils
- */
-export type Payload<S> = S extends Message<infer X> ? X : never
-
-/**
- * Extracts the success type from a `MessageWithResult<A, S>`.
- *
- * @since 1.0.0
- * @category utils
- */
-export type Exit<S> = S extends MessageWithResult<any, infer E, infer A> ? Exit_.Exit<E, A> : never
-
-/**
- * @since 1.0.0
- * @category utils
- */
-export const isMessageWithResult: (value: unknown) => value is MessageWithResult<unknown, unknown, unknown> =
+export const isMessageWithResult: (value: unknown) => value is MessageWithResult<unknown, unknown> =
   internal.isMessageWithResult
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const isMessage: (value: unknown) => value is Message<unknown> = internal.isMessage
-
-/**
- * @since 1.0.0
- * @category utils
- */
-export const messageId: <Payload>(value: Message<Payload>) => MessageId.MessageId = internal.messageId
-
-/**
- * @since 1.0.0
- * @category utils
- */
-export const exitSchema: <A extends AnyWithResult>(message: A) => Schema.Schema<unknown, Exit<A>> = internal.exitSchema
-
-/**
- * Creates both the schema and a constructor for a `MessageWithResult<A>`
- *
- * @since 1.0.0
- * @category schema
- */
-export const schemaWithResult: <REI, RE, RI, RA>(
-  failure: Schema.Schema<REI, RE>,
-  success: Schema.Schema<RI, RA>
-) => <I, A>(payload: Schema.Schema<I, A>) => MessageWithResultSchema<I, A, RE, RA> = internal.schemaWithResult
-
-/**
- * @since 1.0.0
- * @category utils
- */
-export const makeEffect = internal.makeEffect
-
-/**
- * Creates both the schema and a constructor for a `Message`
- *
- * @since 1.0.0
- * @category schema
- */
-export const schema: <I, A>(payload: Schema.Schema<I, A>) => MessageSchema<I, A> = internal.schema
+export const exitSchema: <A extends MessageWithResult.Any>(
+  message: A
+) => Schema.Schema<unknown, MessageWithResult.Exit<A>> = internal.exitSchema

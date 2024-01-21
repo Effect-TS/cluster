@@ -1,6 +1,6 @@
 ---
 title: RecipientBehaviourContext.ts
-nav_order: 16
+nav_order: 15
 parent: "@effect/cluster"
 ---
 
@@ -73,7 +73,7 @@ export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
   readonly shardId: ShardId.ShardId
-  readonly recipientType: RecipientType.RecipientType<Message.Any>
+  readonly recipientType: RecipientType.RecipientType<unknown>
   readonly forkShutdown: Effect.Effect<never, never, void>
 }
 ```
@@ -138,7 +138,7 @@ Gets the current shardId
 export declare const recipientType: Effect.Effect<
   RecipientBehaviourContext,
   never,
-  RecipientType.RecipientType<Message.Any>
+  RecipientType.RecipientType<unknown>
 >
 ```
 

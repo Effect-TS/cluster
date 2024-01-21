@@ -5,7 +5,6 @@
 import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import * as internal from "./internal/recipientBehaviourContext.js"
-import type * as Message from "./Message.js"
 import type * as RecipientType from "./RecipientType.js"
 import type * as ShardId from "./ShardId.js"
 
@@ -30,7 +29,7 @@ export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
   readonly shardId: ShardId.ShardId
-  readonly recipientType: RecipientType.RecipientType<Message.Any>
+  readonly recipientType: RecipientType.RecipientType<unknown>
   readonly forkShutdown: Effect.Effect<never, never, void>
 }
 
@@ -70,7 +69,7 @@ export const shardId: Effect.Effect<RecipientBehaviourContext, never, ShardId.Sh
  * @since 1.0.0
  * @category utils
  */
-export const recipientType: Effect.Effect<RecipientBehaviourContext, never, RecipientType.RecipientType<Message.Any>> =
+export const recipientType: Effect.Effect<RecipientBehaviourContext, never, RecipientType.RecipientType<unknown>> =
   internal.recipientType
 
 /**

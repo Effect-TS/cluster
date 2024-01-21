@@ -1,6 +1,6 @@
 ---
 title: ShardingConfig.ts
-nav_order: 23
+nav_order: 22
 parent: "@effect/cluster"
 ---
 
@@ -16,6 +16,7 @@ Added in v1.0.0
   - [ShardingConfig](#shardingconfig)
 - [layers](#layers)
   - [defaults](#defaults)
+  - [fromConfig](#fromconfig)
   - [withDefaults](#withdefaults)
 - [models](#models)
   - [ShardingConfig (interface)](#shardingconfig-interface)
@@ -45,6 +46,16 @@ Added in v1.0.0
 
 ```ts
 export declare const defaults: Layer.Layer<never, never, ShardingConfig>
+```
+
+Added in v1.0.0
+
+## fromConfig
+
+**Signature**
+
+```ts
+export declare const fromConfig: Layer.Layer<never, ConfigError.ConfigError, ShardingConfig>
 ```
 
 Added in v1.0.0

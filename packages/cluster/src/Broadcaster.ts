@@ -1,10 +1,10 @@
 /**
  * @since 1.0.0
  */
+import type * as Message from "@effect/cluster/Message"
 import type * as Effect from "effect/Effect"
 import type * as Either from "effect/Either"
 import type * as HashMap from "effect/HashMap"
-import type * as Message from "./Message.js"
 import type * as PodAddress from "./PodAddress.js"
 import type * as ShardingError from "./ShardingError.js"
 
@@ -13,7 +13,7 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category models
  */
-export interface Broadcaster<Msg extends Message.Any> {
+export interface Broadcaster<Msg> {
   /**
    * Broadcast a message without waiting for a response (fire and forget)
    * @since 1.0.0
@@ -28,14 +28,17 @@ export interface Broadcaster<Msg extends Message.Any> {
    */
   readonly broadcast: (
     topicId: string
-  ) => <A extends Msg & Message.AnyWithResult>(
+  ) => <A extends Msg & Message.MessageWithResult.Any>(
     message: A
   ) => Effect.Effect<
     never,
     ShardingError.ShardingError,
     HashMap.HashMap<
       PodAddress.PodAddress,
-      Either.Either<ShardingError.ShardingError | Message.Failure<A>, Message.Success<A>>
+      Either.Either<
+        ShardingError.ShardingError | Message.MessageWithResult.Error<A>,
+        Message.MessageWithResult.Success<A>
+      >
     >
   >
 }

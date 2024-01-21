@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import * as AtLeastOnceStorage from "@effect/cluster/AtLeastOnceStorage"
-import * as Message from "@effect/cluster/Message"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import * as SerializedMessage from "@effect/cluster/SerializedMessage"
@@ -51,7 +50,7 @@ export const atLeastOnceStoragePostgres: Layer.Layer<
                   recipient_name: recipientType.name,
                   shard_id: shardId.value,
                   entity_id: entityId,
-                  message_id: Message.messageId(message).value,
+                  message_id: recipientType.messageToId(message),
                   message_body: message_body.value
                 })
               } ON CONFLICT ON CONSTRAINT message_ack_pkey DO NOTHING`
@@ -63,7 +62,7 @@ export const atLeastOnceStoragePostgres: Layer.Layer<
           sql`UPDATE message_ack SET processed = TRUE WHERE
                 recipient_name = ${(recipientType.name)}
                 AND entity_id = ${(entityId)}
-                AND message_id = ${(Message.messageId(message).value)}`,
+                AND message_id = ${(recipientType.messageToId(message))}`,
           Effect.catchAllCause(Effect.logError)
         ),
       sweepPending: (shardIds) =>

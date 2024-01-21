@@ -1,6 +1,5 @@
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
-import type * as Message from "../Message.js"
 import type * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import type * as RecipientType from "../RecipientType.js"
 import type * as ShardId from "../ShardId.js"
@@ -45,7 +44,7 @@ export const shardId: Effect.Effect<RecipientBehaviourContext.RecipientBehaviour
 export const recipientType: Effect.Effect<
   RecipientBehaviourContext.RecipientBehaviourContext,
   never,
-  RecipientType.RecipientType<Message.Any>
+  RecipientType.RecipientType<unknown>
 > = Effect.map(
   recipientBehaviourContextTag,
   (_) => _.recipientType

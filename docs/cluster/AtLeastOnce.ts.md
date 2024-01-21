@@ -26,7 +26,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const atLeastOnceRecipientBehaviour: <R, Msg extends Message.Any>(
+export declare const atLeastOnceRecipientBehaviour: <R, Msg>(
   fa: RecipientBehaviour.RecipientBehaviour<R, Msg>
 ) => RecipientBehaviour.RecipientBehaviour<AtLeastOnceStorage.AtLeastOnceStorage | R, Msg>
 ```

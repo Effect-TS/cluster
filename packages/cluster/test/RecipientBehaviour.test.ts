@@ -1,4 +1,3 @@
-import * as Message from "@effect/cluster/Message"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as RecipientBehaviourContext from "@effect/cluster/RecipientBehaviourContext"
@@ -16,16 +15,15 @@ import * as Queue from "effect/Queue"
 import * as Scope from "effect/Scope"
 import { describe, expect, it } from "vitest"
 
-const Sample = Message.schema(
-  Schema.struct({})
-)
-type Sample = Schema.Schema.To<typeof Sample>
+class Sample extends Schema.TaggedRequest<Sample>()("Sample", Schema.never, Schema.number, {
+  id: Schema.string
+}) {}
 
 describe.concurrent("RecipientBehaviour", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
     pipe(fa, Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
 
-  const makeTestActor = <R, Msg extends Message.Any>(
+  const makeTestActor = <R, Msg>(
     fa: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     scope: Scope.Scope
   ) =>
@@ -37,7 +35,7 @@ describe.concurrent("RecipientBehaviour", () => {
           entityId: "entity1",
           forkShutdown: Effect.unit,
           shardId: ShardId.make(1),
-          recipientType: RecipientType.makeEntityType("Sample", Sample) as any
+          recipientType: RecipientType.makeEntityType("Sample", Sample, (_) => _.id) as any
         })
       ),
       Scope.extend(scope)
@@ -57,7 +55,7 @@ describe.concurrent("RecipientBehaviour", () => {
 
       const scope = yield* _(Scope.make())
       const offer = yield* _(makeTestActor(behaviour, scope))
-      const msg = yield* _(Sample.makeEffect({}))
+      const msg = new Sample({ id: "1" })
       yield* _(offer(msg))
       yield* _(Scope.close(scope, Exit.interrupt(FiberId.none)))
 
@@ -87,7 +85,7 @@ describe.concurrent("RecipientBehaviour", () => {
 
       const scope = yield* _(Scope.make())
       const offer = yield* _(makeTestActor(behaviour, scope))
-      const msg = yield* _(Sample.makeEffect({}))
+      const msg = new Sample({ id: "1" })
       yield* _(offer(msg))
       yield* _(Deferred.await(started))
       yield* _(Scope.close(scope, Exit.interrupt(FiberId.none)))

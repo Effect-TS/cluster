@@ -32,7 +32,7 @@ export const EntityManagerTypeId = Symbol.for(
 export type EntityManagerTypeId = typeof EntityManagerTypeId
 
 /** @internal */
-export interface EntityManager<Msg extends Message.Any> {
+export interface EntityManager<Msg> {
   readonly [EntityManagerTypeId]: EntityManagerTypeId
 
   /** @internal */
@@ -47,7 +47,7 @@ export interface EntityManager<Msg extends Message.Any> {
     | ShardingError.ShardingErrorEntityNotManagedByThisPod
     | ShardingError.ShardingErrorPodUnavailable
     | ShardingError.ShardingErrorWhileOfferingMessage,
-    MessageState.MessageState<Message.Exit<A>>
+    MessageState.MessageState<Message.MessageWithResult.Exit<A>>
   >
 
   /** @internal */
@@ -60,7 +60,7 @@ export interface EntityManager<Msg extends Message.Any> {
 }
 
 /** @internal */
-export function make<Msg extends Message.Any, R>(
+export function make<Msg, R>(
   recipientType: RecipientType.RecipientType<Msg>,
   recipientBehaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   sharding: Sharding.Sharding,
@@ -274,7 +274,7 @@ export function make<Msg extends Message.Any, R>(
       | ShardingError.ShardingErrorEntityNotManagedByThisPod
       | ShardingError.ShardingErrorPodUnavailable
       | ShardingError.ShardingErrorWhileOfferingMessage,
-      MessageState.MessageState<Message.Exit<A>>
+      MessageState.MessageState<Message.MessageWithResult.Exit<A>>
     > {
       return pipe(
         Effect.Do,

@@ -1,6 +1,6 @@
 ---
 title: Sharding.ts
-nav_order: 22
+nav_order: 21
 parent: "@effect/cluster"
 ---
 
@@ -69,11 +69,11 @@ export interface Sharding {
   readonly getShardId: (entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<never, never, void>
   readonly unregister: Effect.Effect<never, never, void>
-  readonly messenger: <Msg extends Message.Any>(
+  readonly messenger: <Msg>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Messenger<Msg>
-  readonly broadcaster: <Msg extends Message.Any>(
+  readonly broadcaster: <Msg>(
     topicType: RecipentType.TopicType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Broadcaster<Msg>
@@ -81,13 +81,15 @@ export interface Sharding {
   readonly isShuttingDown: Effect.Effect<never, never, boolean>
 
   readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
-  readonly registerEntity: <Msg extends Message.Any, R>(
-    entityType: RecipentType.EntityType<Msg>,
+  readonly registerEntity: <Msg>(
+    entityType: RecipentType.EntityType<Msg>
+  ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
-  readonly registerTopic: <Msg extends Message.Any, R>(
-    topicType: RecipentType.TopicType<Msg>,
+  readonly registerTopic: <Msg>(
+    topicType: RecipentType.TopicType<Msg>
+  ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
@@ -121,7 +123,7 @@ You can provide a custom send timeout to override the one globally defined.
 **Signature**
 
 ```ts
-export declare const broadcaster: <Msg extends Message.Any>(
+export declare const broadcaster: <Msg>(
   topicType: RecipentType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Sharding, never, Broadcaster<Msg>>
@@ -161,7 +163,7 @@ You can provide a custom send timeout to override the one globally defined.
 **Signature**
 
 ```ts
-export declare const messenger: <Msg extends Message.Any>(
+export declare const messenger: <Msg>(
   entityType: RecipentType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Sharding, never, Messenger<Msg>>
@@ -191,8 +193,9 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare const registerEntity: <Msg extends Message.Any, R>(
-  entityType: RecipentType.EntityType<Msg>,
+export declare const registerEntity: <Msg>(
+  entityType: RecipentType.EntityType<Msg>
+) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
 ) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
@@ -238,8 +241,9 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare const registerTopic: <Msg extends Message.Any, R>(
-  topicType: RecipentType.TopicType<Msg>,
+export declare const registerTopic: <Msg>(
+  topicType: RecipentType.TopicType<Msg>
+) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
 ) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
