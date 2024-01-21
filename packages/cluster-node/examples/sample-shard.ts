@@ -24,7 +24,8 @@ import * as Ref from "effect/Ref"
 import { CounterEntity } from "./sample-common.js"
 
 const liveLayer = Sharding.registerEntity(
-  CounterEntity,
+  CounterEntity
+)(
   AtLeastOnce.atLeastOnceRecipientBehaviour(
     RecipientBehaviour.fromFunctionEffectStateful(
       () => Effect.succeed(0),
