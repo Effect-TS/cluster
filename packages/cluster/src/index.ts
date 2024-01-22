@@ -1,16 +1,10 @@
-/**
- * @since 1.0.0
- */
+
 export * as AtLeastOnce from "./AtLeastOnce.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as AtLeastOnceStorage from "./AtLeastOnceStorage.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as Broadcaster from "./Broadcaster.js"
 
 /**
@@ -18,9 +12,7 @@ export * as Broadcaster from "./Broadcaster.js"
  */
 export * as ManagerConfig from "./ManagerConfig.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as Message from "./Message.js"
 
 /**
@@ -28,9 +20,7 @@ export * as Message from "./Message.js"
  */
 export * as MessageState from "./MessageState.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as Messenger from "./Messenger.js"
 
 /**
@@ -53,26 +43,16 @@ export * as Pods from "./Pods.js"
  */
 export * as PodsHealth from "./PodsHealth.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as PoisonPill from "./PoisonPill.js"
 
-/**
- * A module that provides utilities to build basic behaviours
- * @since 1.0.0
- */
+
 export * as RecipientBehaviour from "./RecipientBehaviour.js"
 
-/**
- * @since 1.0.0
- * This module provides the context that is given to a RecipientBehaviour
- */
+
 export * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as RecipientType from "./RecipientType.js"
 
 /**
@@ -105,9 +85,7 @@ export * as ShardManager from "./ShardManager.js"
  */
 export * as ShardManagerClient from "./ShardManagerClient.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as Sharding from "./Sharding.js"
 
 /**
@@ -165,9 +143,7 @@ export * as ShardingErrorWhileOfferingMessage from "./ShardingErrorWhileOffering
  */
 export * as ShardingEvent from "./ShardingEvent.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
 
 /**

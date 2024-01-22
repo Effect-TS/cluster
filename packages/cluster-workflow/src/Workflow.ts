@@ -8,7 +8,28 @@ import * as Exit from "effect/Exit"
 import * as FiberId from "effect/FiberId"
 import { pipe } from "effect/Function"
 import * as Ref from "effect/Ref"
+import type * as Request from "effect/Request"
 import * as Scope from "effect/Scope"
+
+export interface Workflow<R, T extends Schema.TaggedRequest.Any> {
+  schema: Schema.Schema<unknown, T>
+  requestToId: (input: T) => string
+  attempt: (input: T) => Effect.Effect<R, Request.Request.Error<T>, Request.Request.Success<T>>
+}
+
+export namespace Workflow {
+  export type Any = Workflow<any, any>
+  export type Context<A> = A extends Workflow<infer R, any> ? R : never
+  export type Request<A> = A extends Workflow<any, infer T> ? T : never
+}
+
+export function make<I, T extends Schema.TaggedRequest.Any, R>(
+  schema: Schema.Schema<I, T>,
+  requestToId: (input: T) => string,
+  attempt: (input: T) => Effect.Effect<R, Request.Request.Error<T>, Request.Request.Success<T>>
+): Workflow<R, T> {
+  return ({ schema: schema as Schema.Schema<unknown, T>, requestToId, attempt })
+}
 
 export function attempt<IE, E, IA, A>(
   workflowId: string,

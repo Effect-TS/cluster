@@ -1,6 +1,4 @@
-/**
- * @since 1.0.0
- */
+
 export * as AtLeastOnceStoragePostgres from "./AtLeastOnceStoragePostgres.js"
 
 /**
@@ -13,9 +11,7 @@ export * as PodsHttp from "./PodsHttp.js"
  */
 export * as ShardManagerClientHttp from "./ShardManagerClientHttp.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as ShardManagerHttp from "./ShardManagerHttp.js"
 
 /**
@@ -33,7 +29,5 @@ export * as ShardingProtocolHttp from "./ShardingProtocolHttp.js"
  */
 export * as ShardingServiceHttp from "./ShardingServiceHttp.js"
 
-/**
- * @since 1.0.0
- */
+
 export * as StorageFile from "./StorageFile.js"
