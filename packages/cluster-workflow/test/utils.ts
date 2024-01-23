@@ -22,7 +22,7 @@ export function mockActivity<IE, E, IA, A>(
 ) {
   const { effect, spy } = mockEffect(impl)
 
-  const activityWithBody = (fa: Effect.Effect<never, E, A>) =>
+  const activityWithBody = <R>(fa: Effect.Effect<R, E, A>) =>
     pipe(
       effect,
       Effect.zipRight(fa),

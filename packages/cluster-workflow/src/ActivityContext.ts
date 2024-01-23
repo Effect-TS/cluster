@@ -1,7 +1,7 @@
 import * as Context from "effect/Context"
 
 export interface ActivityContext {
-  activityId: string
+  persistenceId: string
   currentAttempt: number
 }
 

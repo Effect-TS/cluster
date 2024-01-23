@@ -17,8 +17,10 @@ export function make<IE, E, IA, A>(
   return <R>(execute: Effect.Effect<R, E, A>) => {
     return Effect.flatMap(
       WorkflowContext.WorkflowContext,
-      (context) =>
-        DurableExecutionJournal.withState(
+      (context) => {
+        const persistenceId = context.makePersistenceId(activityId)
+
+        return DurableExecutionJournal.withState(
           context.durableExecutionJournal,
           context.makePersistenceId(activityId),
           failure,
@@ -29,7 +31,7 @@ export function make<IE, E, IA, A>(
               execute,
               Effect.catchAllDefect((defect) => Effect.die(String(defect))),
               Effect.provideService(ActivityContext.ActivityContext, {
-                activityId,
+                persistenceId,
                 currentAttempt: state.currentAttempt
               })
             )
@@ -77,6 +79,7 @@ export function make<IE, E, IA, A>(
             )
           }
         )
+      }
     )
   }
 }
