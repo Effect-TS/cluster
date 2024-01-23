@@ -229,7 +229,7 @@ describe.concurrent("Workflow", () => {
       )
 
       const activityJournalEntryCount = yield* _(
-        DurableExecutionJournal.read(Activity.persistenceId("wf", "activity"), Schema.never, Schema.number),
+        DurableExecutionJournal.read("wf__", Schema.never, Schema.number),
         Stream.runCount
       )
 

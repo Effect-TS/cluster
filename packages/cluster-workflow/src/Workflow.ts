@@ -100,6 +100,8 @@ export function unsafeAttempt<IE, E, IA, A>(
           )
       }
 
+      const makePersistenceId = (localId: string) => workflowId + "__" + localId
+
       return yield* _(
         DurableExecutionJournal.withState(durableExecutionJournal, workflowId, failure, success)(
           (state, persistEvent) => {
@@ -109,7 +111,7 @@ export function unsafeAttempt<IE, E, IA, A>(
               Effect.provideService(
                 WorkflowContext.WorkflowContext,
                 WorkflowContext.make({
-                  workflowId,
+                  makePersistenceId,
                   shouldInterruptCurrentFiberInActivity,
                   durableExecutionJournal
                 })

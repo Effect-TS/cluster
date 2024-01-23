@@ -9,10 +9,6 @@ import * as Exit from "effect/Exit"
 import * as FiberRef from "effect/FiberRef"
 import { pipe } from "effect/Function"
 
-export function persistenceId(workflowId: string, activityId: string) {
-  return workflowId + "__" + activityId
-}
-
 export function make<IE, E, IA, A>(
   activityId: string,
   failure: Schema.Schema<IE, E>,
@@ -24,7 +20,7 @@ export function make<IE, E, IA, A>(
       (context) =>
         DurableExecutionJournal.withState(
           context.durableExecutionJournal,
-          persistenceId(context.workflowId, activityId),
+          context.makePersistenceId(activityId),
           failure,
           success
         )(
