@@ -30,11 +30,11 @@ describe.concurrent("Workflow", () => {
 
       const activity = pipe(
         mocked.effect,
-        Activity.attempt("activity", Schema.never, Schema.number)
+        Activity.make("activity", Schema.never, Schema.number)
       )
 
       const exit = yield* _(
-        Workflow.attempt("wf", Schema.never, Schema.number)(activity),
+        Workflow.unsafeAttempt("wf", Schema.never, Schema.number)(activity),
         Effect.exit
       )
 
@@ -49,11 +49,11 @@ describe.concurrent("Workflow", () => {
 
       const activity = pipe(
         mocked.effect,
-        Activity.attempt("activity", Schema.string, Schema.number)
+        Activity.make("activity", Schema.string, Schema.number)
       )
 
       const exit = yield* _(
-        Workflow.attempt("wf", Schema.string, Schema.number)(activity),
+        Workflow.unsafeAttempt("wf", Schema.string, Schema.number)(activity),
         Effect.exit
       )
 
@@ -66,9 +66,9 @@ describe.concurrent("Workflow", () => {
     return Effect.gen(function*(_) {
       const mocked = utils.mockEffect(() => Exit.succeed(Math.random()))
 
-      const activity = pipe(mocked.effect, Activity.attempt("activity", Schema.never, Schema.number))
+      const activity = pipe(mocked.effect, Activity.make("activity", Schema.never, Schema.number))
 
-      const workflow = Workflow.attempt("wf", Schema.never, Schema.number)(activity)
+      const workflow = Workflow.unsafeAttempt("wf", Schema.never, Schema.number)(activity)
 
       const exit1 = yield* _(
         workflow,
@@ -98,7 +98,7 @@ describe.concurrent("Workflow", () => {
               () => mockedUse.activityWithBody(shouldCrash ? crash : Effect.succeed(2)),
               () => mockedRelease.activity
             ),
-            Workflow.attempt("wf", Schema.never, Schema.number)
+            Workflow.unsafeAttempt("wf", Schema.never, Schema.number)
           )
         )
 
@@ -138,7 +138,7 @@ describe.concurrent("Workflow", () => {
               () => mockedUse.activity,
               () => mockedRelease.activityWithBody(shouldCrash ? crash : Effect.succeed(2))
             ),
-            Workflow.attempt("wf", Schema.never, Schema.number)
+            Workflow.unsafeAttempt("wf", Schema.never, Schema.number)
           )
         )
 
@@ -188,8 +188,8 @@ describe.concurrent("Workflow", () => {
                   )
                 )
               ),
-              Activity.attempt("activity", Schema.never, Schema.number),
-              Workflow.attempt("wf", Schema.never, Schema.number)
+              Activity.make("activity", Schema.never, Schema.number),
+              Workflow.unsafeAttempt("wf", Schema.never, Schema.number)
             )
           )
         )
@@ -216,7 +216,7 @@ describe.concurrent("Workflow", () => {
             Effect.zipLeft(Deferred.succeed(latch, undefined), { concurrent: true })
           ), () => mockedRelease.effect),
         mockedActivity.activityWithBody,
-        Workflow.attempt("wf", Schema.never, Schema.number),
+        Workflow.unsafeAttempt("wf", Schema.never, Schema.number),
         Effect.forkDaemon,
         Effect.tap(Deferred.await(latch)),
         Effect.tap((fiber) => Fiber.interrupt(fiber)),
@@ -229,7 +229,7 @@ describe.concurrent("Workflow", () => {
       )
 
       const activityJournalEntryCount = yield* _(
-        DurableExecutionJournal.read("activity", Schema.never, Schema.number),
+        DurableExecutionJournal.read(Activity.persistenceId("wf", "activity"), Schema.never, Schema.number),
         Stream.runCount
       )
 

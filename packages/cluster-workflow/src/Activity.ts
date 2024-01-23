@@ -9,62 +9,78 @@ import * as Exit from "effect/Exit"
 import * as FiberRef from "effect/FiberRef"
 import { pipe } from "effect/Function"
 
-export function attempt<IE, E, IA, A>(
+export function persistenceId(workflowId: string, activityId: string) {
+  return workflowId + "__" + activityId
+}
+
+export function make<IE, E, IA, A>(
   activityId: string,
   failure: Schema.Schema<IE, E>,
   success: Schema.Schema<IA, A>
 ) {
   return <R>(execute: Effect.Effect<R, E, A>) => {
-    return DurableExecutionJournal.withState(activityId, failure, success)(
-      (state, persistEvent) => {
-        const attemptEffectExecution = pipe(
-          execute,
-          Effect.catchAllDefect((defect) => Effect.die(String(defect))),
-          Effect.provideService(ActivityContext.ActivityContext, { activityId, currentAttempt: state.currentAttempt })
-        )
+    return Effect.flatMap(
+      WorkflowContext.WorkflowContext,
+      (context) =>
+        DurableExecutionJournal.withState(
+          context.durableExecutionJournal,
+          persistenceId(context.workflowId, activityId),
+          failure,
+          success
+        )(
+          (state, persistEvent) => {
+            const attemptEffectExecution = pipe(
+              execute,
+              Effect.catchAllDefect((defect) => Effect.die(String(defect))),
+              Effect.provideService(ActivityContext.ActivityContext, {
+                activityId,
+                currentAttempt: state.currentAttempt
+              })
+            )
 
-        const interruptCurrentFiber = pipe(
-          WorkflowContext.setShouldInterruptCurrentFiberInActivity(false),
-          Effect.zipRight(Effect.interrupt),
-          Effect.onExit((exit) =>
-            Exit.match(exit, {
-              onFailure: (cause) => FiberRef.set(FiberRef.interruptedCause, cause),
-              onSuccess: () => Effect.unit
-            })
-          )
-        )
+            const interruptCurrentFiber = pipe(
+              WorkflowContext.setShouldInterruptCurrentFiberInActivity(false),
+              Effect.zipRight(Effect.interrupt),
+              Effect.onExit((exit) =>
+                Exit.match(exit, {
+                  onFailure: (cause) => FiberRef.set(FiberRef.interruptedCause, cause),
+                  onSuccess: () => Effect.unit
+                })
+              )
+            )
 
-        const shouldInterruptCurrentFiber = Effect.checkInterruptible((isInterruptible) =>
-          isInterruptible ? WorkflowContext.shouldInterruptCurrentFiberInActivity : Effect.succeed(false)
-        )
+            const shouldInterruptCurrentFiber = Effect.checkInterruptible((isInterruptible) =>
+              isInterruptible ? WorkflowContext.shouldInterruptCurrentFiberInActivity : Effect.succeed(false)
+            )
 
-        const beginInterruptionIfRequestedByWorkflow = pipe(
-          persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionRequested),
-          Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted)),
-          Effect.zipRight(interruptCurrentFiber),
-          Effect.whenEffect(shouldInterruptCurrentFiber)
-        )
+            const beginInterruptionIfRequestedByWorkflow = pipe(
+              persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionRequested),
+              Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted)),
+              Effect.zipRight(interruptCurrentFiber),
+              Effect.whenEffect(shouldInterruptCurrentFiber)
+            )
 
-        return pipe(
-          ActivityState.match(state, {
-            onPending: () =>
-              pipe(
-                persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
-                Effect.zipRight(beginInterruptionIfRequestedByWorkflow),
-                Effect.zipRight(attemptEffectExecution),
-                Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
-              ),
-            onWindDown: () =>
-              pipe(
-                persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted),
-                Effect.zipRight(interruptCurrentFiber)
-              ),
-            onFiberInterrupted: () => interruptCurrentFiber,
-            onCompleted: ({ exit }) => exit
-          }),
-          Effect.unified
+            return pipe(
+              ActivityState.match(state, {
+                onPending: () =>
+                  pipe(
+                    persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
+                    Effect.zipRight(beginInterruptionIfRequestedByWorkflow),
+                    Effect.zipRight(attemptEffectExecution),
+                    Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
+                  ),
+                onWindDown: () =>
+                  pipe(
+                    persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted),
+                    Effect.zipRight(interruptCurrentFiber)
+                  ),
+                onFiberInterrupted: () => interruptCurrentFiber,
+                onCompleted: ({ exit }) => exit
+              }),
+              Effect.unified
+            )
+          }
         )
-      }
     )
   }
 }

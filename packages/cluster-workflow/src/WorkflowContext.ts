@@ -1,3 +1,4 @@
+import type * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import { Effect } from "effect"
 import * as Context from "effect/Context"
 import * as Ref from "effect/Ref"
@@ -5,6 +6,7 @@ import * as Ref from "effect/Ref"
 export interface WorkflowContext {
   workflowId: string
   shouldInterruptCurrentFiberInActivity: Ref.Ref<boolean>
+  durableExecutionJournal: DurableExecutionJournal.DurableExecutionJournal
 }
 
 export const WorkflowContext = Context.Tag<WorkflowContext>()
@@ -23,3 +25,5 @@ export const setShouldInterruptCurrentFiberInActivity = (value: boolean) =>
     WorkflowContext,
     (_) => Ref.set(_.shouldInterruptCurrentFiberInActivity, value)
   )
+
+export const durableExecutionJournal = Effect.map(WorkflowContext, (_) => _.durableExecutionJournal)

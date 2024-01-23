@@ -2,19 +2,28 @@ import * as DurableExecutionEvent from "@effect/cluster-workflow/DurableExecutio
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as DurableExecutionState from "@effect/cluster-workflow/DurableExecutionState"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
-import type * as Schema from "@effect/schema/Schema"
+import * as Schema from "@effect/schema/Schema"
+import * as Serializable from "@effect/schema/Serializable"
+import { ReadonlyArray } from "effect"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import * as FiberId from "effect/FiberId"
 import { pipe } from "effect/Function"
+import * as Option from "effect/Option"
 import * as Ref from "effect/Ref"
 import type * as Request from "effect/Request"
 import * as Scope from "effect/Scope"
 
 export interface Workflow<R, T extends Schema.TaggedRequest.Any> {
   schema: Schema.Schema<unknown, T>
-  requestToId: (input: T) => string
-  attempt: (input: T) => Effect.Effect<R, Request.Request.Error<T>, Request.Request.Success<T>>
+  executionId: (input: T) => string
+  execute: (
+    input: T
+  ) => Effect.Effect<
+    R | WorkflowContext.WorkflowContext,
+    Request.Request.Error<T>,
+    Request.Request.Success<T>
+  >
 }
 
 export namespace Workflow {
@@ -23,15 +32,54 @@ export namespace Workflow {
   export type Request<A> = A extends Workflow<any, infer T> ? T : never
 }
 
-export function make<I, T extends Schema.TaggedRequest.Any, R>(
+export function effect<I, T extends Schema.TaggedRequest.Any, R>(
   schema: Schema.Schema<I, T>,
-  requestToId: (input: T) => string,
-  attempt: (input: T) => Effect.Effect<R, Request.Request.Error<T>, Request.Request.Success<T>>
-): Workflow<R, T> {
-  return ({ schema: schema as Schema.Schema<unknown, T>, requestToId, attempt })
+  executionId: (input: T) => string,
+  execute: (
+    input: T
+  ) => Effect.Effect<R, Request.Request.Error<T>, Request.Request.Success<T>>
+): Workflow<Exclude<R, WorkflowContext.WorkflowContext>, T> {
+  return ({
+    schema: schema as Schema.Schema<unknown, T>,
+    executionId,
+    execute: execute as any
+  })
 }
 
-export function attempt<IE, E, IA, A>(
+export function union<WFs extends ReadonlyArray<Workflow.Any>>(
+  ...wfs: WFs
+) {
+  return effect<unknown, Workflow.Request<WFs[number]>, Workflow.Context<WFs[number]>>(
+    Schema.union(...wfs.map((_) => _.schema)),
+    (request) =>
+      pipe(
+        wfs,
+        ReadonlyArray.findFirst((_) => Schema.is(_.schema)(request)),
+        Option.map((_) => _.executionId(request)),
+        Option.getOrElse(() => "")
+      ),
+    (request) =>
+      pipe(
+        wfs,
+        ReadonlyArray.findFirst((_) => Schema.is(_.schema)(request)),
+        Option.map((_) => _.execute(request) as any),
+        Option.getOrElse(() => Effect.die("unknown workflow input"))
+      )
+  )
+}
+
+export function attempt<R, T extends Schema.TaggedRequest.Any>(
+  workflow: Workflow<R, T>
+) {
+  return (request: T) =>
+    unsafeAttempt(
+      workflow.executionId(request),
+      Serializable.failureSchema<unknown, Request.Request.Error<T>, unknown, unknown>(request as any),
+      Serializable.successSchema<unknown, unknown, unknown, Request.Request.Success<T>>(request as any)
+    )(workflow.execute(request))
+}
+
+export function unsafeAttempt<IE, E, IA, A>(
   workflowId: string,
   failure: Schema.Schema<IE, E>,
   success: Schema.Schema<IA, A>
@@ -42,8 +90,18 @@ export function attempt<IE, E, IA, A>(
       const shouldAppendIntoJournal = yield* _(Ref.make(true))
       const executionScope = yield* _(Scope.make())
 
+      const providedJournal = yield* _(DurableExecutionJournal.DurableExecutionJournal)
+      const durableExecutionJournal: DurableExecutionJournal.DurableExecutionJournal = {
+        read: providedJournal.read,
+        append: (persistenceId, failure, success, event) =>
+          pipe(
+            providedJournal.append(persistenceId, failure, success, event),
+            Effect.whenEffect(Ref.get(shouldAppendIntoJournal))
+          )
+      }
+
       return yield* _(
-        DurableExecutionJournal.withState(workflowId, failure, success)(
+        DurableExecutionJournal.withState(durableExecutionJournal, workflowId, failure, success)(
           (state, persistEvent) => {
             const attemptExecution = pipe(
               execute,
@@ -52,7 +110,8 @@ export function attempt<IE, E, IA, A>(
                 WorkflowContext.WorkflowContext,
                 WorkflowContext.make({
                   workflowId,
-                  shouldInterruptCurrentFiberInActivity
+                  shouldInterruptCurrentFiberInActivity,
+                  durableExecutionJournal
                 })
               )
             )
@@ -76,14 +135,6 @@ export function attempt<IE, E, IA, A>(
             })
           }
         ),
-        Effect.updateService(DurableExecutionJournal.DurableExecutionJournal, (journal) => ({
-          read: journal.read,
-          append: (persistenceId, failure, success, event) =>
-            pipe(
-              journal.append(persistenceId, failure, success, event),
-              Effect.whenEffect(Ref.get(shouldAppendIntoJournal))
-            )
-        })),
         Effect.forkIn(executionScope),
         Effect.flatMap((fiber) => fiber.await),
         Effect.flatten,

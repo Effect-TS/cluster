@@ -26,12 +26,12 @@ export function mockActivity<IE, E, IA, A>(
     pipe(
       effect,
       Effect.zipRight(fa),
-      Activity.attempt(persistenceId, failure, success)
+      Activity.make(persistenceId, failure, success)
     )
 
   const activity = pipe(
     effect,
-    Activity.attempt(persistenceId, failure, success)
+    Activity.make(persistenceId, failure, success)
   )
 
   return { spy, activity, activityWithBody }
