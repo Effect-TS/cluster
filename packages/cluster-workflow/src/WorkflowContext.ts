@@ -5,9 +5,11 @@ import { pipe } from "effect/Function"
 import * as Ref from "effect/Ref"
 
 export interface WorkflowContext {
+  currentAttempt: number
   makePersistenceId: (localId: string) => string
   shouldInterruptCurrentFiberInActivity: Ref.Ref<boolean>
   durableExecutionJournal: DurableExecutionJournal.DurableExecutionJournal
+  yieldExecution: Effect.Effect<never, never, void>
 }
 
 export const WorkflowContext = Context.Tag<WorkflowContext>()

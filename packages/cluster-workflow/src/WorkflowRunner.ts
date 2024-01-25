@@ -7,7 +7,6 @@ import type * as Schema from "@effect/schema/Schema"
 import * as Serializable from "@effect/schema/Serializable"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
-import * as FiberId from "effect/FiberId"
 import { pipe } from "effect/Function"
 import * as Ref from "effect/Ref"
 import type * as Request from "effect/Request"
@@ -42,6 +41,12 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
         request as any
       )
 
+      const yieldExecution = pipe(
+        Ref.set(shouldAppendIntoJournal, false),
+        Effect.zipRight(Effect.fiberId),
+        Effect.flatMap((_) => Scope.close(executionScope, Exit.interrupt(_)))
+      )
+
       return yield* _(
         DurableExecutionJournal.withState(
           durableExecutionJournal,
@@ -50,16 +55,20 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
           successSchema
         )(
           (state, persistEvent) => {
+            const workflowCtx = WorkflowContext.make({
+              makePersistenceId,
+              shouldInterruptCurrentFiberInActivity,
+              durableExecutionJournal,
+              yieldExecution: pipe(yieldExecution, Effect.forkDaemon, Effect.zipRight(Effect.interrupt)),
+              currentAttempt: state.currentAttempt
+            })
+
             const attemptExecution = pipe(
               workflow.execute(request),
               Effect.catchAllDefect((defect) => Effect.die(String(defect))),
               Effect.provideService(
                 WorkflowContext.WorkflowContext,
-                WorkflowContext.make({
-                  makePersistenceId,
-                  shouldInterruptCurrentFiberInActivity,
-                  durableExecutionJournal
-                })
+                workflowCtx
               )
             )
 
@@ -85,12 +94,7 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
         Effect.forkIn(executionScope),
         Effect.flatMap((fiber) => fiber.await),
         Effect.flatten,
-        Effect.onInterrupt(() =>
-          pipe(
-            Ref.set(shouldAppendIntoJournal, false),
-            Effect.zipRight(Scope.close(executionScope, Exit.interrupt(FiberId.none)))
-          )
-        )
+        Effect.onInterrupt(() => yieldExecution)
       )
     })
   }
