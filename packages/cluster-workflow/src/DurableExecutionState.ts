@@ -69,32 +69,44 @@ export function foldDurableExecutionEvent<E, A>(
     event,
     DurableExecutionEvent.match({
       onAttempted: ({ sequence }) => (
-        new DurableExecutionStatePending({
-          lastSequence: sequence,
-          currentAttempt: state.currentAttempt + 1
+        match(state, {
+          onPending: ({ currentAttempt }) =>
+            new DurableExecutionStatePending({
+              lastSequence: sequence,
+              currentAttempt: currentAttempt + 1
+            }),
+          onWindDown: (_) => _,
+          onFiberInterrupted: (_) => _,
+          onCompleted: (_) => _
         })
       ),
-      onInterruptionRequested: () =>
+      onInterruptionRequested: ({ sequence }) =>
         match(state, {
-          onPending: ({ currentAttempt, lastSequence }) =>
-            new DurableExecutionStateWindDown({ lastSequence, currentAttempt }),
+          onPending: ({ currentAttempt }) =>
+            new DurableExecutionStateWindDown({ lastSequence: sequence, currentAttempt }),
           onWindDown: (_) => _,
           onFiberInterrupted: (_) => _,
           onCompleted: (_) => _
         }),
-      onInterruptionCompleted: () =>
+      onInterruptionCompleted: ({ sequence }) =>
         match(state, {
           onPending: (_) => _,
-          onWindDown: ({ currentAttempt, lastSequence }) =>
-            new DurableExecutionStateFiberInterrupted({ lastSequence, currentAttempt }),
+          onWindDown: ({ currentAttempt }) =>
+            new DurableExecutionStateFiberInterrupted({ lastSequence: sequence, currentAttempt }),
           onFiberInterrupted: (_) => _,
           onCompleted: (_) => _
         }),
       onCompleted: ({ exit, sequence }) =>
-        new DurableExecutionStateCompleted({
-          lastSequence: sequence,
-          currentAttempt: state.currentAttempt,
-          exit
+        match(state, {
+          onPending: ({ currentAttempt }) =>
+            new DurableExecutionStateCompleted({
+              lastSequence: sequence,
+              currentAttempt,
+              exit
+            }),
+          onWindDown: (_) => _,
+          onFiberInterrupted: (_) => _,
+          onCompleted: (_) => _
         })
     })
   )

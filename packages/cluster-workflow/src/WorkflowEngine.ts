@@ -21,22 +21,25 @@ export function makeScoped<R, T extends Schema.TaggedRequest.Any>(workflow: Work
     const fibers = yield* _(SynchronizedRef.make(HashMap.empty<string, Fiber.Fiber<any, any>>()))
     const env = yield* _(Effect.context<R | DurableExecutionJournal.DurableExecutionJournal>())
 
-    const getOrStartFiber = <A extends T>(request: A): Effect.Effect<never, never, Fiber.Fiber<any, any>> =>
-      SynchronizedRef.modifyEffect(fibers, (state) =>
+    const getOrStartFiber = <A extends T>(request: A): Effect.Effect<never, never, Fiber.Fiber<any, any>> => {
+      const executionId = workflow.executionId(request)
+
+      return SynchronizedRef.modifyEffect(fibers, (state) =>
         pipe(
-          HashMap.get(state, workflow.executionId(request)),
+          HashMap.get(state, executionId),
           Option.match({
             onSome: (fiber) => Effect.succeed([fiber, state] as const),
             onNone: () =>
               pipe(
                 WorkflowRunner.resume(workflow)(request),
                 Effect.provide(env),
-                Effect.ensuring(SynchronizedRef.update(fibers, HashMap.remove(workflow.executionId(request)))),
+                Effect.ensuring(SynchronizedRef.update(fibers, HashMap.remove(executionId))),
                 Effect.forkIn(executionScope),
-                Effect.map((fiber) => [fiber, HashMap.set(state, workflow.executionId(request), fiber)])
+                Effect.map((fiber) => [fiber, HashMap.set(state, executionId, fiber)])
               )
           })
         ))
+    }
 
     const startDiscard = (request: T) =>
       pipe(

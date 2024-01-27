@@ -72,18 +72,17 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
               )
             )
 
-            const resumeWorkflowExecution = pipe(
-              persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
-              Effect.zipRight(attemptExecution),
-              Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
-            )
-
             return DurableExecutionState.match(state, {
-              onPending: () => resumeWorkflowExecution,
+              onPending: () =>
+                pipe(
+                  persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
+                  Effect.zipRight(attemptExecution),
+                  Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
+                ),
               onWindDown: () =>
                 pipe(
                   Ref.set(shouldInterruptCurrentFiberInActivity, true),
-                  Effect.zipRight(resumeWorkflowExecution),
+                  Effect.zipRight(attemptExecution),
                   Effect.ensuring(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted))
                 ),
               onFiberInterrupted: () => Effect.interrupt,
