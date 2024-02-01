@@ -1,6 +1,5 @@
-import * as DurableExecutionEvent from "@effect/cluster-workflow/DurableExecutionEvent"
+import * as DurableExecution from "@effect/cluster-workflow/DurableExecution"
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
-import * as DurableExecutionState from "@effect/cluster-workflow/DurableExecutionState"
 import type * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import type * as Schema from "@effect/schema/Schema"
@@ -19,7 +18,7 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
     return Effect.gen(function*(_) {
       const executionId = workflow.executionId(request)
       const shouldInterruptCurrentFiberInActivity = yield* _(Ref.make(false))
-      const shouldAppendIntoJournal = yield* _(Ref.make(true))
+      const isGracefulShutdownHappening = yield* _(Ref.make(false))
       const executionScope = yield* _(Scope.make())
 
       const providedJournal = yield* _(DurableExecutionJournal.DurableExecutionJournal)
@@ -28,7 +27,7 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
         append: (persistenceId, failure, success, event) =>
           pipe(
             providedJournal.append(persistenceId, failure, success, event),
-            Effect.whenEffect(Ref.get(shouldAppendIntoJournal))
+            Effect.unlessEffect(Ref.get(isGracefulShutdownHappening))
           )
       }
 
@@ -42,54 +41,43 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
       )
 
       const yieldExecution = pipe(
-        Ref.set(shouldAppendIntoJournal, false),
+        Ref.set(isGracefulShutdownHappening, true),
         Effect.zipRight(Effect.fiberId),
         Effect.flatMap((_) => Scope.close(executionScope, Exit.interrupt(_)))
       )
 
+      const resumeExecution = (currentAttempt: number) =>
+        pipe(
+          workflow.execute(request),
+          Effect.provideService(
+            WorkflowContext.WorkflowContext,
+            WorkflowContext.make({
+              makePersistenceId,
+              shouldInterruptCurrentFiberInActivity,
+              isGracefulShutdownHappening: Ref.get(isGracefulShutdownHappening),
+              durableExecutionJournal,
+              yieldExecution: pipe(yieldExecution, Effect.forkDaemon, Effect.zipRight(Effect.interrupt)),
+              currentAttempt
+            })
+          )
+        )
+
       return yield* _(
-        DurableExecutionJournal.withState(
-          durableExecutionJournal,
+        DurableExecution.attempt(
           executionId,
           failureSchema,
           successSchema
         )(
-          (state, persistEvent) => {
-            const workflowCtx = WorkflowContext.make({
-              makePersistenceId,
-              shouldInterruptCurrentFiberInActivity,
-              durableExecutionJournal,
-              yieldExecution: pipe(yieldExecution, Effect.forkDaemon, Effect.zipRight(Effect.interrupt)),
-              currentAttempt: state.currentAttempt
-            })
-
-            const attemptExecution = pipe(
-              workflow.execute(request),
-              Effect.catchAllDefect((defect) => Effect.die(String(defect))),
-              Effect.provideService(
-                WorkflowContext.WorkflowContext,
-                workflowCtx
-              )
-            )
-
-            return DurableExecutionState.match(state, {
-              onPending: () =>
-                pipe(
-                  persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
-                  Effect.zipRight(attemptExecution),
-                  Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
-                ),
-              onWindDown: () =>
-                pipe(
-                  Ref.set(shouldInterruptCurrentFiberInActivity, true),
-                  Effect.zipRight(attemptExecution),
-                  Effect.ensuring(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted))
-                ),
-              onFiberInterrupted: () => Effect.interrupt,
-              onCompleted: ({ exit }) => exit
-            })
-          }
+          resumeExecution,
+          (currentAttempt) =>
+            pipe(
+              Ref.set(shouldInterruptCurrentFiberInActivity, true),
+              Effect.zipRight(resumeExecution(currentAttempt)),
+              Effect.catchAllCause(() => Effect.unit)
+            ),
+          Effect.unit
         ),
+        Effect.provideService(DurableExecutionJournal.DurableExecutionJournal, durableExecutionJournal),
         Effect.forkIn(executionScope),
         Effect.flatMap((fiber) => fiber.await),
         Effect.flatten,

@@ -1,8 +1,11 @@
 import * as CrashableRuntime from "@effect/cluster-workflow/CrashableRuntime"
+import * as Fiber from "effect/Fiber"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
+import * as Option from "effect/Option"
 import * as Ref from "effect/Ref"
 
+import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import { describe, expect, it } from "vitest"
@@ -79,5 +82,63 @@ describe.concurrent("CrashableRuntime", () => {
 
       expect(value).toEqual(42)
     }).pipe(withTestEnv, Effect.runPromise)
+  })
+
+  it("Internal interrupt should be catched by effect.exit", () => {
+    return Effect.gen(function*(_) {
+      let exit: any = null
+
+      const test = pipe(
+        Effect.interrupt,
+        Effect.exit,
+        Effect.map((_) => {
+          exit = _
+        })
+      )
+
+      yield* _(test)
+
+      expect(exit).not.toEqual(null)
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
+
+  it("External interrupt should not be catched by effect.exit", () => {
+    return Effect.gen(function*(_) {
+      let exit: any = null
+
+      const test = pipe(
+        Effect.never,
+        Effect.exit,
+        Effect.map((_) => {
+          exit = _
+        }),
+        Effect.timeout(Duration.millis(100)),
+        Effect.catchAllCause(() => Effect.unit)
+      )
+
+      yield* _(test)
+
+      expect(exit).toEqual(null)
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
+
+  it("Emulation of fiber interrupt from internal", () => {
+    let exit: any = null
+
+    const test = pipe(
+      Fiber.getCurrentFiber(),
+      Option.match({
+        onNone: () => Effect.interrupt,
+        onSome: (_) => Fiber.interrupt(_)
+      }),
+      Effect.asUnit,
+      Effect.map((_) => {
+        exit = _
+      })
+    )
+
+    Effect.runSyncExit(test)
+
+    expect(exit).toEqual(null)
   })
 })
