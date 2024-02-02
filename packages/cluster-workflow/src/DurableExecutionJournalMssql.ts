@@ -53,7 +53,7 @@ function read<IE, E, IA, A>(
   )
 }
 
-export const activityJournalMssql = Layer.effect(
+export const durableExecutionJournalMssql = Layer.effect(
   DurableExecutionJournal.DurableExecutionJournal,
   Effect.gen(function*(_) {
     const sql = yield* _(Mssql.tag)

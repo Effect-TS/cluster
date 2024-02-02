@@ -1,6 +1,7 @@
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as DurableExecutionJournalMssql from "@effect/cluster-workflow/DurableExecutionJournalMssql"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
+import * as WorkflowRunner from "@effect/cluster-workflow/WorkflowRunner"
 import { runMain } from "@effect/platform-node/Runtime"
 import * as Schema from "@effect/schema/Schema"
 import * as Mssql from "@sqlfx/mssql"
@@ -15,30 +16,48 @@ class TemporaryFailure extends Schema.TaggedClass<TemporaryFailure>()("Temporary
 }
 
 const getAmountDue = (orderId: string) =>
-  pipe(
-    Effect.sync(() => Math.round(Math.random() * 100) / 100),
-    Activity.attempt("get-amount-due-" + orderId, Schema.never, Schema.number)
-  )
+  Activity.make("get-amount-due-" + orderId, Schema.never, Schema.number)(pipe(
+    Effect.sync(() => Math.round(Math.random() * 100) / 100)
+  ))
 
 const processPayment = (billingId: string, amountDue: number) =>
-  pipe(
-    Effect.flatMap(Activity.currentAttempt, (currentAttempt) =>
-      currentAttempt === 0 ? Effect.die(new TemporaryFailure()) : pipe(
-        Effect.logDebug("Processed payment of " + amountDue + " to " + billingId + "...")
-      )),
-    Activity.attempt("process-payment-" + billingId, Schema.never, Schema.void)
-  )
+  Activity.make("process-payment-" + billingId, Schema.never, Schema.void)(pipe(
+    Effect.flatMap(
+      Activity.currentAttempt,
+      (currentAttempt) =>
+        currentAttempt === 0 ? Effect.die(new TemporaryFailure()) : pipe(
+          Effect.logDebug("Processed payment of " + amountDue + " to " + billingId + "...")
+        )
+    )
+  ))
 
-function processPaymentWorkflow(orderId: string, billingId: string) {
-  return Effect.gen(function*(_) {
-    const amount = yield* _(getAmountDue(orderId))
-    yield* _(processPayment(billingId, amount))
-  }).pipe(Workflow.attempt("process", Schema.never, Schema.void))
+class BeginPaymentWorkflowRequest extends Schema.TaggedRequest<BeginPaymentWorkflowRequest>()(
+  "BeginPaymentWorkflowRequest",
+  Schema.never,
+  Schema.void,
+  {
+    requestId: Schema.string,
+    orderId: Schema.string,
+    billingId: Schema.string
+  }
+) {
 }
 
+const paymentWorkflow = Workflow.make(
+  BeginPaymentWorkflowRequest,
+  (_) => _.requestId,
+  ({ billingId, orderId }) =>
+    Effect.gen(function*(_) {
+      const amount = yield* _(getAmountDue(orderId))
+      yield* _(processPayment(billingId, amount))
+    })
+)
+
 const main = pipe(
-  processPaymentWorkflow("order-1", "payment-1"),
-  Effect.provide(DurableExecutionJournalMssql.activityJournalMssql),
+  WorkflowRunner.resume(paymentWorkflow)(
+    new BeginPaymentWorkflowRequest({ requestId: "1", orderId: "order-1", billingId: "my-card" })
+  ),
+  Effect.provide(DurableExecutionJournalMssql.durableExecutionJournalMssql),
   Effect.provide(Mssql.makeLayer({
     server: Config.succeed("localhost"),
     username: Config.succeed("sa"),

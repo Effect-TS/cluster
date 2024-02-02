@@ -1,10 +1,16 @@
-import { Effect } from "effect"
+import type * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as Context from "effect/Context"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
 import * as Ref from "effect/Ref"
 
 export interface WorkflowContext {
-  workflowId: string
+  currentAttempt: number
+  makePersistenceId: (localId: string) => string
   shouldInterruptCurrentFiberInActivity: Ref.Ref<boolean>
+  isGracefulShutdownHappening: Effect.Effect<never, never, boolean>
+  durableExecutionJournal: DurableExecutionJournal.DurableExecutionJournal
+  yieldExecution: Effect.Effect<never, never, void>
 }
 
 export const WorkflowContext = Context.Tag<WorkflowContext>()
@@ -23,3 +29,14 @@ export const setShouldInterruptCurrentFiberInActivity = (value: boolean) =>
     WorkflowContext,
     (_) => Ref.set(_.shouldInterruptCurrentFiberInActivity, value)
   )
+
+export function appendToPersistenceId(suffix: string) {
+  return <R, E, A>(fa: Effect.Effect<R, E, A>) =>
+    pipe(
+      fa,
+      Effect.updateService(
+        WorkflowContext,
+        (context) => ({ ...context, makePersistenceId: (localId) => context.makePersistenceId(localId) + suffix })
+      )
+    )
+}

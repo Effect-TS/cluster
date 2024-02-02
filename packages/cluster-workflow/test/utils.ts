@@ -22,16 +22,16 @@ export function mockActivity<IE, E, IA, A>(
 ) {
   const { effect, spy } = mockEffect(impl)
 
-  const activityWithBody = (fa: Effect.Effect<never, E, A>) =>
+  const activityWithBody = <R>(fa: Effect.Effect<R, E, A>) =>
     pipe(
       effect,
       Effect.zipRight(fa),
-      Activity.attempt(persistenceId, failure, success)
+      Activity.make(persistenceId, failure, success)
     )
 
   const activity = pipe(
     effect,
-    Activity.attempt(persistenceId, failure, success)
+    Activity.make(persistenceId, failure, success)
   )
 
   return { spy, activity, activityWithBody }

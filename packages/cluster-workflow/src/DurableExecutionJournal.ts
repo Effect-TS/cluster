@@ -11,7 +11,9 @@ export interface DurableExecutionJournal {
   read<IE, E, IA, A>(
     persistenceId: string,
     failure: Schema.Schema<IE, E>,
-    success: Schema.Schema<IA, A>
+    success: Schema.Schema<IA, A>,
+    fromSequence: number,
+    keepReading: boolean
   ): Stream.Stream<never, never, DurableExecutionEvent.DurableExecutionEvent<E, A>>
   append<IE, E, IA, A>(
     persistenceId: string,
@@ -22,6 +24,19 @@ export interface DurableExecutionJournal {
 }
 
 export const DurableExecutionJournal = Context.Tag<DurableExecutionJournal>()
+
+export function read<IE, E, IA, A>(
+  activityId: string,
+  failure: Schema.Schema<IE, E>,
+  success: Schema.Schema<IA, A>,
+  fromSequence: number,
+  keepReading: boolean
+) {
+  return Stream.flatMap(
+    DurableExecutionJournal,
+    (journal) => journal.read(activityId, failure, success, fromSequence, keepReading)
+  )
+}
 
 export function append<IE, E, IA, A>(
   activityId: string,
@@ -35,14 +50,6 @@ export function append<IE, E, IA, A>(
   )
 }
 
-export function read<IE, E, IA, A>(
-  activityId: string,
-  failure: Schema.Schema<IE, E>,
-  success: Schema.Schema<IA, A>
-) {
-  return Stream.flatMap(DurableExecutionJournal, (journal) => journal.read(activityId, failure, success))
-}
-
 interface WithState<E, A, R2, E2, A2> {
   (
     state: DurableExecutionState.DurableExecutionState<E, A>,
@@ -53,36 +60,32 @@ interface WithState<E, A, R2, E2, A2> {
 }
 
 export function withState<IE, E, IA, A>(
+  journal: DurableExecutionJournal,
   persistenceId: string,
   failure: Schema.Schema<IE, E>,
   success: Schema.Schema<IA, A>
 ) {
   return <R2, E2, A2>(fns: WithState<E, A, R2, E2, A2>) => {
     return pipe(
-      DurableExecutionJournal,
-      Effect.flatMap((journal) =>
+      journal.read(persistenceId, failure, success, 0, false),
+      Stream.runFold(
+        DurableExecutionState.initialState<E, A>(),
+        (state, event) => DurableExecutionState.foldDurableExecutionEvent(state, event)
+      ),
+      Effect.flatMap((state) =>
         pipe(
-          journal.read(persistenceId, failure, success),
-          Stream.runFold(
-            DurableExecutionState.initialState<E, A>(),
-            (state, event) => DurableExecutionState.foldDurableExecutionEvent(state, event)
-          ),
-          Effect.flatMap((state) =>
-            pipe(
-              Ref.make(state.lastSequence),
-              Effect.flatMap((sequenceRef) => {
-                const persistEventIntoJournal = (
-                  fn: (sequence: number) => DurableExecutionEvent.DurableExecutionEvent<E, A>
-                ) =>
-                  pipe(
-                    Ref.updateAndGet(sequenceRef, (_) => _ + 1),
-                    Effect.flatMap((sequence) => journal.append(persistenceId, failure, success, fn(sequence)))
-                  )
+          Ref.make(state.lastSequence),
+          Effect.flatMap((sequenceRef) => {
+            const persistEventIntoJournal = (
+              fn: (sequence: number) => DurableExecutionEvent.DurableExecutionEvent<E, A>
+            ) =>
+              pipe(
+                Ref.updateAndGet(sequenceRef, (_) => _ + 1),
+                Effect.flatMap((sequence) => journal.append(persistenceId, failure, success, fn(sequence)))
+              )
 
-                return fns(state, persistEventIntoJournal)
-              })
-            )
-          )
+            return fns(state, persistEventIntoJournal)
+          })
         )
       )
     )
