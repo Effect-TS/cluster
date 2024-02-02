@@ -16,7 +16,7 @@ export function kill<IE, E, IA, A>(
     DurableExecutionJournal.DurableExecutionJournal,
     (journal) =>
       DurableExecutionJournal.withState(journal, persistenceId, failure, success)(
-        (state, persistEvent) => persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionRequested)
+        (state, persistEvent) => persistEvent(DurableExecutionEvent.DurableExecutionEventKillRequested)
       )
   )
 }
@@ -56,15 +56,15 @@ export function attempt<IE, E, IA, A>(
                     Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
                   )
                 ),
-              onWindDown: () =>
+              onKilling: () =>
                 Effect.interruptibleMask((restore) =>
                   pipe(
                     restore(windDown(state.currentAttempt)),
-                    Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventInterruptionCompleted)),
+                    Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventKilled)),
                     Effect.zipRight(killCurrentFiber)
                   )
                 ),
-              onFiberInterrupted: () => killCurrentFiber,
+              onKilled: () => killCurrentFiber,
               onCompleted: ({ exit }) => exit
             }),
             Effect.unified

@@ -30,8 +30,6 @@ export const setShouldInterruptCurrentFiberInActivity = (value: boolean) =>
     (_) => Ref.set(_.shouldInterruptCurrentFiberInActivity, value)
   )
 
-export const durableExecutionJournal = Effect.map(WorkflowContext, (_) => _.durableExecutionJournal)
-
 export function appendToPersistenceId(suffix: string) {
   return <R, E, A>(fa: Effect.Effect<R, E, A>) =>
     pipe(
