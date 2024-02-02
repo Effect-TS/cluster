@@ -10,22 +10,22 @@ export function DurableExecutionEventAttempted(sequence: number): DurableExecuti
   return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted", sequence })
 }
 
-export interface DurableExecutionEventInterruptionRequested {
-  _tag: "@effect/cluster-workflow/DurableExecutionEventInterruptionRequested"
+export interface DurableExecutionEventKillRequested {
+  _tag: "@effect/cluster-workflow/DurableExecutionEventKillRequested"
   sequence: number
 }
 
-export function DurableExecutionEventInterruptionRequested(sequence: number): DurableExecutionEvent<never, never> {
-  return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventInterruptionRequested", sequence })
+export function DurableExecutionEventKillRequested(sequence: number): DurableExecutionEvent<never, never> {
+  return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventKillRequested", sequence })
 }
 
-export interface DurableExecutionEventInterruptionCompleted {
-  _tag: "@effect/cluster-workflow/DurableExecutionEventInterruptionCompleted"
+export interface DurableExecutionEventKilled {
+  _tag: "@effect/cluster-workflow/DurableExecutionEventKilled"
   sequence: number
 }
 
-export function DurableExecutionEventInterruptionCompleted(sequence: number): DurableExecutionEvent<never, never> {
-  return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventInterruptionCompleted", sequence })
+export function DurableExecutionEventKilled(sequence: number): DurableExecutionEvent<never, never> {
+  return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventKilled", sequence })
 }
 
 export interface DurableExecutionEventCompleted<E, A> {
@@ -44,18 +44,18 @@ export function DurableExecutionEventCompleted<E, A>(exit: Exit.Exit<E, A>) {
 
 export type DurableExecutionEvent<E, A> =
   | DurableExecutionEventAttempted
-  | DurableExecutionEventInterruptionRequested
-  | DurableExecutionEventInterruptionCompleted
+  | DurableExecutionEventKillRequested
+  | DurableExecutionEventKilled
   | DurableExecutionEventCompleted<E, A>
 
 export type DurableExecutionEventFrom<IE, IA> = {
   readonly _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted"
   readonly sequence: number
 } | {
-  readonly _tag: "@effect/cluster-workflow/DurableExecutionEventInterruptionRequested"
+  readonly _tag: "@effect/cluster-workflow/DurableExecutionEventKillRequested"
   readonly sequence: number
 } | {
-  readonly _tag: "@effect/cluster-workflow/DurableExecutionEventInterruptionCompleted"
+  readonly _tag: "@effect/cluster-workflow/DurableExecutionEventKilled"
   readonly sequence: number
 } | {
   readonly _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted"
@@ -73,11 +73,11 @@ export function schema<IE, E, IA, A>(failure: Schema.Schema<IE, E>, success: Sch
       sequence: Schema.number
     }),
     Schema.struct({
-      _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventInterruptionRequested"),
+      _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventKillRequested"),
       sequence: Schema.number
     }),
     Schema.struct({
-      _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventInterruptionCompleted"),
+      _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventKilled"),
       sequence: Schema.number
     }),
     Schema.struct({
@@ -91,8 +91,8 @@ export function schema<IE, E, IA, A>(failure: Schema.Schema<IE, E>, success: Sch
 export function match<E, A, B, C = B, D = C, F = D>(
   fns: {
     onAttempted: (event: DurableExecutionEventAttempted) => B
-    onInterruptionRequested: (event: DurableExecutionEventInterruptionRequested) => C
-    onInterruptionCompleted: (event: DurableExecutionEventInterruptionCompleted) => D
+    onKillRequested: (event: DurableExecutionEventKillRequested) => C
+    onKilled: (event: DurableExecutionEventKilled) => D
     onCompleted: (event: DurableExecutionEventCompleted<E, A>) => F
   }
 ) {
@@ -100,10 +100,10 @@ export function match<E, A, B, C = B, D = C, F = D>(
     switch (event._tag) {
       case "@effect/cluster-workflow/DurableExecutionEventAttempted":
         return fns.onAttempted(event)
-      case "@effect/cluster-workflow/DurableExecutionEventInterruptionRequested":
-        return fns.onInterruptionRequested(event)
-      case "@effect/cluster-workflow/DurableExecutionEventInterruptionCompleted":
-        return fns.onInterruptionCompleted(event)
+      case "@effect/cluster-workflow/DurableExecutionEventKillRequested":
+        return fns.onKillRequested(event)
+      case "@effect/cluster-workflow/DurableExecutionEventKilled":
+        return fns.onKilled(event)
       case "@effect/cluster-workflow/DurableExecutionEventCompleted":
         return fns.onCompleted(event)
     }

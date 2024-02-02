@@ -10,15 +10,15 @@ export class DurableExecutionStatePending
 {
 }
 
-export class DurableExecutionStateWindDown
-  extends Data.TaggedClass("@effect/cluster-workflow/DurableExecutionStateWindDown")<
+export class DurableExecutionStateKilling
+  extends Data.TaggedClass("@effect/cluster-workflow/DurableExecutionStateKilling")<
     { lastSequence: number; currentAttempt: number }
   >
 {
 }
 
-export class DurableExecutionStateFiberInterrupted
-  extends Data.TaggedClass("@effect/cluster-workflow/DurableExecutionStateFiberInterrupted")<
+export class DurableExecutionStateKilled
+  extends Data.TaggedClass("@effect/cluster-workflow/DurableExecutionStateKilled")<
     { lastSequence: number; currentAttempt: number }
   >
 {
@@ -35,8 +35,8 @@ export class DurableExecutionStateCompleted<E, A>
 
 export type DurableExecutionState<E, A> =
   | DurableExecutionStatePending
-  | DurableExecutionStateWindDown
-  | DurableExecutionStateFiberInterrupted
+  | DurableExecutionStateKilling
+  | DurableExecutionStateKilled
   | DurableExecutionStateCompleted<E, A>
 
 export function initialState<E, A>(): DurableExecutionState<E, A> {
@@ -45,17 +45,17 @@ export function initialState<E, A>(): DurableExecutionState<E, A> {
 
 export function match<E, A, B, C = B, D = C, F = D>(fa: DurableExecutionState<E, A>, fns: {
   onPending: (a: DurableExecutionStatePending) => B
-  onWindDown: (a: DurableExecutionStateWindDown) => C
-  onFiberInterrupted: (a: DurableExecutionStateFiberInterrupted) => D
+  onKilling: (a: DurableExecutionStateKilling) => C
+  onKilled: (a: DurableExecutionStateKilled) => D
   onCompleted: (a: DurableExecutionStateCompleted<E, A>) => F
 }) {
   switch (fa._tag) {
     case "@effect/cluster-workflow/DurableExecutionStatePending":
       return fns.onPending(fa)
-    case "@effect/cluster-workflow/DurableExecutionStateWindDown":
-      return fns.onWindDown(fa)
-    case "@effect/cluster-workflow/DurableExecutionStateFiberInterrupted":
-      return fns.onFiberInterrupted(fa)
+    case "@effect/cluster-workflow/DurableExecutionStateKilling":
+      return fns.onKilling(fa)
+    case "@effect/cluster-workflow/DurableExecutionStateKilled":
+      return fns.onKilled(fa)
     case "@effect/cluster-workflow/DurableExecutionStateCompleted":
       return fns.onCompleted(fa)
   }
@@ -75,25 +75,25 @@ export function foldDurableExecutionEvent<E, A>(
               lastSequence: sequence,
               currentAttempt: currentAttempt + 1
             }),
-          onWindDown: (_) => _,
-          onFiberInterrupted: (_) => _,
+          onKilling: (_) => _,
+          onKilled: (_) => _,
           onCompleted: (_) => _
         })
       ),
-      onInterruptionRequested: ({ sequence }) =>
+      onKillRequested: ({ sequence }) =>
         match(state, {
           onPending: ({ currentAttempt }) =>
-            new DurableExecutionStateWindDown({ lastSequence: sequence, currentAttempt }),
-          onWindDown: (_) => _,
-          onFiberInterrupted: (_) => _,
+            new DurableExecutionStateKilling({ lastSequence: sequence, currentAttempt }),
+          onKilling: (_) => _,
+          onKilled: (_) => _,
           onCompleted: (_) => _
         }),
-      onInterruptionCompleted: ({ sequence }) =>
+      onKilled: ({ sequence }) =>
         match(state, {
           onPending: (_) => _,
-          onWindDown: ({ currentAttempt }) =>
-            new DurableExecutionStateFiberInterrupted({ lastSequence: sequence, currentAttempt }),
-          onFiberInterrupted: (_) => _,
+          onKilling: ({ currentAttempt }) =>
+            new DurableExecutionStateKilled({ lastSequence: sequence, currentAttempt }),
+          onKilled: (_) => _,
           onCompleted: (_) => _
         }),
       onCompleted: ({ exit, sequence }) =>
@@ -104,8 +104,8 @@ export function foldDurableExecutionEvent<E, A>(
               currentAttempt,
               exit
             }),
-          onWindDown: (_) => _,
-          onFiberInterrupted: (_) => _,
+          onKilling: (_) => _,
+          onKilled: (_) => _,
           onCompleted: (_) => _
         })
     })
