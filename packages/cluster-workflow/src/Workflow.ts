@@ -1,6 +1,9 @@
+import * as Activity from "@effect/cluster-workflow/Activity"
 import type * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import * as Schema from "@effect/schema/Schema"
 import { ReadonlyArray } from "effect"
+import * as Clock from "effect/Clock"
+import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
@@ -58,4 +61,37 @@ export function union<WFs extends ReadonlyArray<Workflow.Any>>(
         Option.getOrElse(() => Effect.die("unknown workflow input"))
       )
   )
+}
+
+function remainingDuration(persistenceId: string, duration: Duration.Duration) {
+  const startedAtActivity = Activity.make(persistenceId, Schema.never, Schema.number)(pipe(
+    Clock.currentTimeMillis
+  ))
+
+  return pipe(
+    startedAtActivity,
+    Effect.flatMap(
+      (startedAtMillis) =>
+        pipe(
+          Clock.currentTimeMillis,
+          Effect.map((currentMillis) => Math.max(0, startedAtMillis + Duration.toMillis(duration) - currentMillis)),
+          Effect.map(Duration.millis)
+        )
+    )
+  )
+}
+
+export function sleep(persistenceId: string, duration: Duration.Duration) {
+  return Effect.gen(function*(_) {
+    const remaining = yield* _(remainingDuration(persistenceId, duration))
+    yield* _(Effect.sleep(remaining))
+  })
+}
+
+export function timeout(persistenceId: string, duration: Duration.Duration) {
+  return <R, E, A>(fa: Effect.Effect<R, E, A>) =>
+    Effect.gen(function*(_) {
+      const remaining = yield* _(remainingDuration(persistenceId, duration))
+      yield* _(Effect.timeout(fa, remaining))
+    })
 }

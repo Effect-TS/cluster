@@ -48,21 +48,17 @@ export function attempt<IE, E, IA, A>(
           return pipe(
             DurableExecutionState.match(state, {
               onPending: () =>
-                Effect.interruptibleMask((restore) =>
-                  pipe(
-                    persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
-                    Effect.zipRight(restore(attempt(state.currentAttempt))),
-                    Effect.catchAllDefect((defect) => Effect.die(String(defect))),
-                    Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
-                  )
+                pipe(
+                  persistEvent(DurableExecutionEvent.DurableExecutionEventAttempted),
+                  Effect.zipRight(attempt(state.currentAttempt)),
+                  Effect.catchAllDefect((defect) => Effect.die(String(defect))),
+                  Effect.onExit((exit) => persistEvent(DurableExecutionEvent.DurableExecutionEventCompleted(exit)))
                 ),
               onKilling: () =>
-                Effect.interruptibleMask((restore) =>
-                  pipe(
-                    restore(windDown(state.currentAttempt)),
-                    Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventKilled)),
-                    Effect.zipRight(killCurrentFiber)
-                  )
+                pipe(
+                  windDown(state.currentAttempt),
+                  Effect.zipRight(persistEvent(DurableExecutionEvent.DurableExecutionEventKilled)),
+                  Effect.zipRight(killCurrentFiber)
                 ),
               onKilled: () => killCurrentFiber,
               onCompleted: ({ exit }) => exit

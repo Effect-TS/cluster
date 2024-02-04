@@ -81,7 +81,9 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
         Effect.forkIn(executionScope),
         Effect.flatMap((fiber) => fiber.await),
         Effect.flatten,
-        Effect.onInterrupt(() => yieldExecution)
+        Effect.onInterrupt(() => yieldExecution),
+        Effect.annotateLogs("workflowPersistenceId", executionId),
+        Effect.annotateSpans("workflowPersistenceId", executionId)
       )
     })
   }
