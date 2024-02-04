@@ -1,5 +1,3 @@
-export * as AtLeastOnceStoragePostgres from "./AtLeastOnceStoragePostgres.js"
-
 /**
  * @since 1.0.0
  */

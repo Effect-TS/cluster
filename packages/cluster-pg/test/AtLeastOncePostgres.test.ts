@@ -1,4 +1,4 @@
-import * as AtLeastOnceStoragePostgres from "@effect/cluster-node/AtLeastOnceStoragePostgres"
+import * as AtLeastOnceStoragePostgres from "@effect/cluster-pg/AtLeastOnceStoragePostgres"
 import * as AtLeastOnce from "@effect/cluster/AtLeastOnce"
 import * as MessageState from "@effect/cluster/MessageState"
 import * as Pods from "@effect/cluster/Pods"

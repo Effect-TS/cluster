@@ -146,6 +146,35 @@ importers:
         version: 4.6.2
     publishDirectory: dist
 
+  packages/cluster-pg:
+    dependencies:
+      '@sqlfx/pg':
+        specifier: 0.39.1
+        version: 0.39.1(@effect/schema@0.59.1)(effect@2.0.3)
+      '@testcontainers/postgresql':
+        specifier: ^10.4.0
+        version: 10.4.0
+    devDependencies:
+      '@effect/platform-node':
+        specifier: ^0.41.0
+        version: 0.41.0(@effect/platform@0.41.0)(effect@2.0.3)
+      '@effect/schema':
+        specifier: ^0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.13.2)
+      '@types/node':
+        specifier: ^20.9.0
+        version: 20.9.0
+      '@types/path-browserify':
+        specifier: ^1.0.1
+        version: 1.0.2
+      effect:
+        specifier: 2.0.3
+        version: 2.0.3
+      tsx:
+        specifier: ^4.6.2
+        version: 4.6.2
+    publishDirectory: dist
+
   packages/cluster-workflow:
     dependencies:
       '@sqlfx/mssql':

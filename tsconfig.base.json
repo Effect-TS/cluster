@@ -56,6 +56,12 @@
       ],
       "@effect/cluster-workflow/*": [
         "./packages/cluster-workflow/src/*.js"
+      ],
+      "@effect/cluster-pg/test/*": [
+        "./packages/cluster-pg/test/*.js"
+      ],
+      "@effect/cluster-pg/*": [
+        "./packages/cluster-pg/src/*.js"
       ]
     },
     "plugins": [

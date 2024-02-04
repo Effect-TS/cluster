@@ -23,7 +23,7 @@ describe.concurrent("Workflow", () => {
     pipe(
       fa,
       Effect.provide(DurableExecutionJournalInMemory.activityJournalInMemory),
-      Logger.withMinimumLogLevel(LogLevel.Debug)
+      Logger.withMinimumLogLevel(LogLevel.Info)
     )
 
   class StartWorkflowRequest

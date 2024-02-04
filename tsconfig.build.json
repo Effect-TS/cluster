@@ -9,6 +9,9 @@
     },
     {
       "path": "packages/cluster-workflow/tsconfig.build.json"
+    },
+    {
+      "path": "packages/cluster-workflow/tsconfig.build.json"
     }
   ]
 }
