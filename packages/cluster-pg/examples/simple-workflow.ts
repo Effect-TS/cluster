@@ -1,16 +1,15 @@
+import * as DurableExecutionJournalPostgres from "@effect/cluster-pg/DurableExecutionJournalPostgres"
 import * as Activity from "@effect/cluster-workflow/Activity"
-import * as DurableExecutionJournalMssql from "@effect/cluster-workflow/DurableExecutionJournalMssql"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as WorkflowRunner from "@effect/cluster-workflow/WorkflowRunner"
 import { runMain } from "@effect/platform-node/Runtime"
 import * as Schema from "@effect/schema/Schema"
-import * as Mssql from "@sqlfx/mssql"
+import * as Pg from "@sqlfx/pg"
 import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
-import * as Secret from "effect/Secret"
 
 class TemporaryFailure extends Schema.TaggedClass<TemporaryFailure>()("TemporaryFailure", {}) {
 }
@@ -57,11 +56,10 @@ const main = pipe(
   WorkflowRunner.resume(paymentWorkflow)(
     new BeginPaymentWorkflowRequest({ requestId: "1", orderId: "order-1", billingId: "my-card" })
   ),
-  Effect.provide(DurableExecutionJournalMssql.durableExecutionJournalMssql),
-  Effect.provide(Mssql.makeLayer({
-    server: Config.succeed("localhost"),
-    username: Config.succeed("sa"),
-    password: Config.succeed(Secret.fromString("Zuffellat0")),
+  Effect.provide(DurableExecutionJournalPostgres.DurableExecutionJournalPostgres),
+  Effect.provide(Pg.makeLayer({
+    host: Config.succeed("127.0.0.1"),
+    username: Config.succeed("postgres"),
     database: Config.succeed("cluster")
   })),
   Logger.withMinimumLogLevel(LogLevel.All)

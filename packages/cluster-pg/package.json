@@ -1,8 +1,8 @@
 {
-  "name": "@effect/cluster-workflow",
+  "name": "@effect/cluster-pg",
   "type": "module",
   "version": "0.0.1",
-  "description": "A workflow runtime using effect-cluster",
+  "description": "Cluster utililies using postgres",
   "publishConfig": {
     "access": "public",
     "directory": "dist"
@@ -26,7 +26,9 @@
   "peerDependencies": {
     "@effect/platform-node": "^0.41.0",
     "@effect/schema": "^0.59.1",
-    "effect": "2.0.3"
+    "effect": "2.0.3",
+    "@sqlfx/pg": "0.39.1",
+    "@testcontainers/postgresql": "^10.4.0"
   },
   "devDependencies": {
     "@effect/platform-node": "^0.41.0",

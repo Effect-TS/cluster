@@ -10,9 +10,10 @@ export * as DurableExecutionEvent from "./DurableExecutionEvent.js"
 
 export * as DurableExecutionJournal from "./DurableExecutionJournal.js"
 
+/**
+ * @since 1.0.0
+ */
 export * as DurableExecutionJournalInMemory from "./DurableExecutionJournalInMemory.js"
-
-export * as DurableExecutionJournalMssql from "./DurableExecutionJournalMssql.js"
 
 export * as DurableExecutionState from "./DurableExecutionState.js"
 
