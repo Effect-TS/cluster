@@ -5,14 +5,33 @@ import * as WorkflowRunner from "@effect/cluster-workflow/WorkflowRunner"
 import { runMain } from "@effect/platform-node/Runtime"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
+import { Duration } from "effect"
 import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
 import { pipe } from "effect/Function"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
+import * as ReadonlyArray from "effect/ReadonlyArray"
 
-class TemporaryFailure extends Schema.TaggedClass<TemporaryFailure>()("TemporaryFailure", {}) {
-}
+const reserveSeats = (numberOfSeats: number) =>
+  Activity.make(
+    "reserve-seats",
+    Schema.never,
+    Schema.array(Schema.string)
+  )(pipe(
+    Effect.sync(() => ReadonlyArray.makeBy(numberOfSeats, (id) => "seat-" + id)),
+    Effect.tap((seats) => Effect.logInfo("Reserving seats " + seats.join(", ") + "..."))
+  ))
+
+const releaseSeats = (seats: ReadonlyArray<string>) =>
+  Activity.make(
+    "release-seats",
+    Schema.never,
+    Schema.void
+  )(pipe(
+    Effect.logInfo("Releasing seats " + seats.join(", ") + "...")
+  ))
 
 const getAmountDue = (orderId: string) =>
   Activity.make("get-amount-due-" + orderId, Schema.never, Schema.number)(pipe(
@@ -21,40 +40,66 @@ const getAmountDue = (orderId: string) =>
 
 const processPayment = (billingId: string, amountDue: number) =>
   Activity.make("process-payment-" + billingId, Schema.never, Schema.void)(pipe(
-    Effect.flatMap(
-      Activity.currentAttempt,
-      (currentAttempt) =>
-        currentAttempt === 0 ? Effect.die(new TemporaryFailure()) : pipe(
-          Effect.logDebug("Processed payment of " + amountDue + " to " + billingId + "...")
-        )
+    pipe(
+      Effect.logDebug("Processed payment of " + amountDue + " to " + billingId + "..."),
+      Effect.zipRight(Effect.never)
     )
   ))
 
-class BeginPaymentWorkflowRequest extends Schema.TaggedRequest<BeginPaymentWorkflowRequest>()(
+const cancelOrder = (orderId: string) =>
+  Activity.make("cancel-order-" + orderId, Schema.never, Schema.void)(pipe(
+    Effect.logDebug("Canceling order " + orderId + "...")
+  ))
+
+const sendTickets = (email: string, ticketIds: ReadonlyArray<string>) =>
+  Activity.make("send-tickets", Schema.never, Schema.void)(pipe(
+    Effect.logDebug("Sending tickets " + ticketIds.join(", ") + " to " + email + "...")
+  ))
+
+class BookSeatRequest extends Schema.TaggedRequest<BookSeatRequest>()(
   "BeginPaymentWorkflowRequest",
   Schema.never,
   Schema.void,
   {
-    requestId: Schema.string,
     orderId: Schema.string,
-    billingId: Schema.string
+    cardNumber: Schema.string,
+    numberOfSeats: Schema.number,
+    email: Schema.string
   }
 ) {
 }
 
-const paymentWorkflow = Workflow.make(
-  BeginPaymentWorkflowRequest,
-  (_) => _.requestId,
-  ({ billingId, orderId }) =>
-    Effect.gen(function*(_) {
-      const amount = yield* _(getAmountDue(orderId))
-      yield* _(processPayment(billingId, amount))
-    })
+const bookSeatWorkflow = Workflow.make(
+  BookSeatRequest,
+  (_) => _.orderId,
+  ({ cardNumber, email, numberOfSeats, orderId }) =>
+    pipe(
+      Effect.acquireUseRelease(
+        // reserve the seat and get the ids
+        reserveSeats(numberOfSeats),
+        () =>
+          pipe(
+            // gets the amount due to pay and process the payment
+            getAmountDue(orderId),
+            Effect.flatMap((amount) => processPayment(cardNumber, amount))
+          ),
+        (seatsId, exit) =>
+          Exit.match(exit, {
+            // on success send tickets to the user
+            onSuccess: () => sendTickets(email, seatsId),
+            // on failure, release the seats so they can be booked again
+            onFailure: () => releaseSeats(seatsId)
+          })
+      ),
+      // users have 5 minutes to complete their purchase
+      Workflow.timeout("booking-timeout", Duration.minutes(5)),
+      Effect.catchTag("NoSuchElementException", () => cancelOrder(orderId))
+    )
 )
 
 const main = pipe(
-  WorkflowRunner.resume(paymentWorkflow)(
-    new BeginPaymentWorkflowRequest({ requestId: "1", orderId: "order-1", billingId: "my-card" })
+  WorkflowRunner.resume(bookSeatWorkflow)(
+    new BookSeatRequest({ orderId: "order-1", cardNumber: "my-card", numberOfSeats: 2, email: "my@email.com" })
   ),
   Effect.provide(DurableExecutionJournalPostgres.DurableExecutionJournalPostgres),
   Effect.provide(Pg.makeLayer({

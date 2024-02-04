@@ -50,7 +50,9 @@ export function make<IE, E, IA, A>(
               WorkflowContext.setShouldInterruptCurrentFiberInActivity(false)
             )
           ),
-          Effect.provideService(DurableExecutionJournal.DurableExecutionJournal, context.durableExecutionJournal)
+          Effect.provideService(DurableExecutionJournal.DurableExecutionJournal, context.durableExecutionJournal),
+          Effect.annotateLogs("activityPersistenceId", persistenceId),
+          Effect.annotateSpans("activityPersistenceId", persistenceId)
         )
       }
     )

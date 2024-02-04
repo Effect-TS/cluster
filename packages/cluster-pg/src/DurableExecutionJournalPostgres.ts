@@ -65,7 +65,7 @@ export const DurableExecutionJournalPostgres = Layer.effect(
         execution_id varchar(255) NOT NULL,
         sequence integer DEFAULT 0,
         event_json text NOT NULL,
-        CONSTRAINT message_ack_pkey PRIMARY KEY (execution_id, sequence)
+        CONSTRAINT execution_journal_pkey PRIMARY KEY (execution_id, sequence)
     )
     `)
 
