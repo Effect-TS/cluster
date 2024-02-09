@@ -15,7 +15,7 @@ export interface WorkflowEngine<T extends Schema.TaggedRequest.Any> {
   start: <A extends T>(request: A) => Effect.Effect<Request.Request.Success<A>, Request.Request.Error<A>>
 }
 
-export function makeScoped<R, T extends Schema.TaggedRequest.Any>(workflow: Workflow.Workflow<R, T>) {
+export function makeScoped<T extends Schema.TaggedRequest.Any, R>(workflow: Workflow.Workflow<T, R>) {
   return Effect.gen(function*(_) {
     const executionScope = yield* _(Effect.scope)
     const fibers = yield* _(SynchronizedRef.make(HashMap.empty<string, Fiber.Fiber<any, any>>()))
@@ -57,5 +57,5 @@ export function makeScoped<R, T extends Schema.TaggedRequest.Any>(workflow: Work
       )
 
     return ({ start, startDiscard })
-  });
+  })
 }

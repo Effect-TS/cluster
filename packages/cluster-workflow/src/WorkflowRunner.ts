@@ -11,8 +11,8 @@ import * as Ref from "effect/Ref"
 import type * as Request from "effect/Request"
 import * as Scope from "effect/Scope"
 
-export function resume<R, T extends Schema.TaggedRequest.Any>(
-  workflow: Workflow.Workflow<R, T>
+export function resume<T extends Schema.TaggedRequest.Any, R>(
+  workflow: Workflow.Workflow<T, R>
 ) {
   return <A extends T>(request: A) => {
     return Effect.gen(function*(_) {

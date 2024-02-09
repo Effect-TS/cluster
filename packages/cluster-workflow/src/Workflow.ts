@@ -9,7 +9,7 @@ import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import type * as Request from "effect/Request"
 
-export interface Workflow<R, T extends Schema.TaggedRequest.Any> {
+export interface Workflow<T extends Schema.TaggedRequest.Any, R> {
   schema: Schema.Schema<T, unknown>
   executionId: (input: T) => string
   execute: (
@@ -19,17 +19,17 @@ export interface Workflow<R, T extends Schema.TaggedRequest.Any> {
 
 export namespace Workflow {
   export type Any = Workflow<any, any>
-  export type Context<A> = A extends Workflow<infer R, any> ? R : never
-  export type Request<A> = A extends Workflow<any, infer T> ? T : never
+  export type Context<A> = A extends Workflow<any, infer R> ? R : never
+  export type Request<A> = A extends Workflow<infer T, any> ? T : never
 }
 
-export function make<T extends Schema.TaggedRequest.Any, I, R>(
+export function make<T extends Schema.TaggedRequest.Any, R = never, I = unknown>(
   schema: Schema.Schema<T, I>,
   executionId: (input: T) => string,
   execute: (
     input: T
   ) => Effect.Effect<Request.Request.Success<T>, Request.Request.Error<T>, R>
-): Workflow<Exclude<R, WorkflowContext.WorkflowContext>, T> {
+): Workflow<T, Exclude<R, WorkflowContext.WorkflowContext>> {
   return ({
     schema: schema as Schema.Schema<T, unknown>,
     executionId,
@@ -40,7 +40,7 @@ export function make<T extends Schema.TaggedRequest.Any, I, R>(
 export function union<WFs extends ReadonlyArray<Workflow.Any>>(
   ...wfs: WFs
 ) {
-  return make<Workflow.Request<WFs[number]>, unknown, Workflow.Context<WFs[number]>>(
+  return make<Workflow.Request<WFs[number]>, Workflow.Context<WFs[number]>>(
     Schema.union(...wfs.map((_) => _.schema)),
     (request) =>
       pipe(

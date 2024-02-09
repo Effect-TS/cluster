@@ -38,5 +38,5 @@ export function appendToPersistenceId(suffix: string) {
         WorkflowContext,
         (context) => ({ ...context, makePersistenceId: (localId) => context.makePersistenceId(localId) + suffix })
       )
-    );
+    )
 }
