@@ -19,7 +19,9 @@ const StorageSymbolKey = "@effect/cluster/StorageTypeId"
 export const StorageTypeId: Storage.StorageTypeId = Symbol.for(StorageSymbolKey) as Storage.StorageTypeId
 
 /** @internal */
-export const storageTag: Context.Tag<Storage.Storage, Storage.Storage> = Context.Tag<Storage.Storage>(StorageSymbolKey)
+export const storageTag: Context.Tag<Storage.Storage, Storage.Storage> = Context.GenericTag<Storage.Storage>(
+  StorageSymbolKey
+)
 
 /** @internal */
 export function make(args: Omit<Storage.Storage, Storage.StorageTypeId>): Storage.Storage {
@@ -27,7 +29,7 @@ export function make(args: Omit<Storage.Storage, Storage.StorageTypeId>): Storag
 }
 
 /** @internal */
-export const memory: Layer.Layer<never, never, Storage.Storage> = Layer.effect(
+export const memory: Layer.Layer<Storage.Storage> = Layer.effect(
   storageTag,
   Effect.gen(function*($) {
     const assignmentsRef = yield* $(
@@ -46,7 +48,7 @@ export const memory: Layer.Layer<never, never, Storage.Storage> = Layer.effect(
 )
 
 /** @internal */
-export const noop: Layer.Layer<never, never, Storage.Storage> = Layer.effect(
+export const noop: Layer.Layer<Storage.Storage> = Layer.effect(
   storageTag,
   Effect.succeed(make({
     getAssignments: Effect.succeed(HashMap.empty()),

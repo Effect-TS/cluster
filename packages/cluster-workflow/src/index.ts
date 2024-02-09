@@ -17,8 +17,6 @@ export * as DurableExecutionJournalInMemory from "./DurableExecutionJournalInMem
 
 export * as DurableExecutionState from "./DurableExecutionState.js"
 
-export * as DurableTimer from "./DurableTimer.js"
-
 export * as Workflow from "./Workflow.js"
 
 export * as WorkflowContext from "./WorkflowContext.js"

@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import type * as Schema from "@effect/schema/Schema"
-import type * as Data from "effect/Data"
 import * as internal from "./internal/pod.js"
 import type * as PodAddress from "./PodAddress.js"
 
@@ -22,13 +21,11 @@ export type PodTypeId = typeof PodTypeId
  * @since 1.0.0
  * @category models
  */
-export interface Pod extends
-  Data.Data<{
-    readonly [PodTypeId]: PodTypeId
-    readonly address: PodAddress.PodAddress
-    readonly version: string
-  }>
-{}
+export interface Pod {
+  readonly [PodTypeId]: PodTypeId
+  readonly address: PodAddress.PodAddress
+  readonly version: string
+}
 
 /**
  * @since 1.0.0
@@ -63,6 +60,6 @@ export const make: (address: PodAddress.PodAddress, version: string) => Pod = in
  * @category schema
  */
 export const schema: Schema.Schema<
-  Pod.From,
-  Pod
+  Pod,
+  Pod.From
 > = internal.schema

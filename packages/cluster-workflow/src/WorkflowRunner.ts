@@ -11,8 +11,8 @@ import * as Ref from "effect/Ref"
 import type * as Request from "effect/Request"
 import * as Scope from "effect/Scope"
 
-export function resume<R, T extends Schema.TaggedRequest.Any>(
-  workflow: Workflow.Workflow<R, T>
+export function resume<T extends Schema.TaggedRequest.Any, R>(
+  workflow: Workflow.Workflow<T, R>
 ) {
   return <A extends T>(request: A) => {
     return Effect.gen(function*(_) {
@@ -24,19 +24,19 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
       const providedJournal = yield* _(DurableExecutionJournal.DurableExecutionJournal)
       const durableExecutionJournal: DurableExecutionJournal.DurableExecutionJournal = {
         read: providedJournal.read,
-        append: (persistenceId, failure, success, event) =>
+        append: (persistenceId, success, failure, event) =>
           pipe(
-            providedJournal.append(persistenceId, failure, success, event),
+            providedJournal.append(persistenceId, success, failure, event),
             Effect.unlessEffect(Ref.get(isGracefulShutdownHappening))
           )
       }
 
       const makePersistenceId = (localId: string) => executionId + "__" + localId
 
-      const failureSchema = Serializable.failureSchema<unknown, Request.Request.Error<A>, unknown, unknown>(
+      const failureSchema = Serializable.failureSchema<never, unknown, Request.Request.Error<A>, unknown, unknown>(
         request as any
       )
-      const successSchema = Serializable.successSchema<unknown, unknown, unknown, Request.Request.Success<A>>(
+      const successSchema = Serializable.successSchema<never, unknown, unknown, unknown, Request.Request.Success<A>>(
         request as any
       )
 
@@ -65,8 +65,8 @@ export function resume<R, T extends Schema.TaggedRequest.Any>(
       return yield* _(
         DurableExecution.attempt(
           executionId,
-          failureSchema,
-          successSchema
+          successSchema,
+          failureSchema
         )(
           resumeExecution,
           (currentAttempt) =>

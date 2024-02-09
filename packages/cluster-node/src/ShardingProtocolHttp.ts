@@ -13,12 +13,12 @@ import * as Schema from "@effect/schema/Schema"
  * @category schema
  */
 export const AssignShard_: Schema.Schema<
+  { readonly shards: ReadonlyArray<ShardId.ShardId> },
   {
     readonly shards: ReadonlyArray<
       { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number }
     >
-  },
-  { readonly shards: ReadonlyArray<ShardId.ShardId> }
+  }
 > = Schema.struct({
   shards: Schema.array(ShardId.schema)
 })
@@ -28,8 +28,8 @@ export const AssignShard_: Schema.Schema<
  * @category schema
  */
 export const UnassignShards_: Schema.Schema<
-  { readonly shards: ReadonlyArray<ShardId.ShardId.From> },
-  { readonly shards: ReadonlyArray<ShardId.ShardId> }
+  { readonly shards: ReadonlyArray<ShardId.ShardId> },
+  { readonly shards: ReadonlyArray<ShardId.ShardId.From> }
 > = Schema.struct({
   shards: Schema.array(ShardId.schema)
 })
@@ -39,8 +39,8 @@ export const UnassignShards_: Schema.Schema<
  * @category schema
  */
 export const Send_: Schema.Schema<
-  { readonly message: SerializedEnvelope.SerializedEnvelope.From },
-  { readonly message: SerializedEnvelope.SerializedEnvelope }
+  { readonly message: SerializedEnvelope.SerializedEnvelope },
+  { readonly message: SerializedEnvelope.SerializedEnvelope.From }
 > = Schema.struct({
   message: SerializedEnvelope.schema
 })
@@ -49,10 +49,10 @@ export const Send_: Schema.Schema<
  * @since 1.0.0
  * @category schema
  */
-export const SendResult_ = Schema.either(
-  ShardingError.schema,
-  MessageState.schema(SerializedMessage.schema)
-)
+export const SendResult_ = Schema.either({
+  left: ShardingError.schema,
+  right: MessageState.schema(SerializedMessage.schema)
+})
 
 /**
  * @since 1.0.0

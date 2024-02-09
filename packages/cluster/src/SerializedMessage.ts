@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import type * as Schema from "@effect/schema/Schema"
-import type * as Data from "effect/Data"
 import * as internal from "./internal/serializedMessage.js"
 
 /**
@@ -21,12 +20,10 @@ export type SerializedMessageTypeId = typeof SerializedMessageTypeId
  * @since 1.0.0
  * @category models
  */
-export interface SerializedMessage extends
-  Data.Data<{
-    readonly [SerializedMessageTypeId]: SerializedMessageTypeId
-    readonly value: string
-  }>
-{}
+export interface SerializedMessage {
+  readonly [SerializedMessageTypeId]: SerializedMessageTypeId
+  readonly value: string
+}
 
 /**
  * @since 1.0.0
@@ -64,6 +61,6 @@ export const isSerializedMessage: (value: unknown) => value is SerializedMessage
  * @category schema
  */
 export const schema: Schema.Schema<
-  SerializedMessage.From,
-  SerializedMessage
+  SerializedMessage,
+  SerializedMessage.From
 > = internal.schema

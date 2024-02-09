@@ -43,6 +43,6 @@ export function isShardingErrorPodUnavailable(value: any): value is ShardingErro
  * @category schema
  */
 export const ShardingErrorPodUnavailableSchema: Schema.Schema<
-  Schema.Schema.From<typeof ShardingErrorPodUnavailableSchema_>,
-  ShardingErrorPodUnavailable
+  ShardingErrorPodUnavailable,
+  Schema.Schema.From<typeof ShardingErrorPodUnavailableSchema_>
 > = ShardingErrorPodUnavailableSchema_

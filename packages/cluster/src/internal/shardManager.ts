@@ -3,7 +3,7 @@
  */
 import * as Chunk from "effect/Chunk"
 import * as Clock from "effect/Clock"
-import { Tag } from "effect/Context"
+import { GenericTag } from "effect/Context"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import { pipe } from "effect/Function"
@@ -40,7 +40,7 @@ export const ShardManagerTypeId: ShardManager.ShardManagerTypeId = Symbol.for(
 ) as ShardManager.ShardManagerTypeId
 
 /** @internal */
-export const shardManagerTag = Tag<ShardManager.ShardManager>()
+export const shardManagerTag = GenericTag<ShardManager.ShardManager>("@services/shardManagerTag")
 
 /** @internal */
 function make(
@@ -53,11 +53,7 @@ function make(
   stateRepository: Storage.Storage,
   config: ManagerConfig.ManagerConfig
 ): ShardManager.ShardManager {
-  const getAssignments: Effect.Effect<
-    never,
-    never,
-    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  > = pipe(
+  const getAssignments: Effect.Effect<HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>> = pipe(
     RefSynchronized.get(stateRef),
     Effect.map((_) => _.shards)
   )
@@ -153,7 +149,7 @@ function make(
     return Effect.asUnit(Effect.whenEffect(eff, stateHasPod(podAddress)))
   }
 
-  function withRetry<E, A>(zio: Effect.Effect<never, E, A>): Effect.Effect<never, never, void> {
+  function withRetry<A, E>(zio: Effect.Effect<A, E>): Effect.Effect<void> {
     return pipe(
       zio,
       Effect.retry(
@@ -198,7 +194,7 @@ function make(
     })
   }
 
-  function rebalance(rebalanceImmediately: boolean): Effect.Effect<never, never, void> {
+  function rebalance(rebalanceImmediately: boolean): Effect.Effect<void> {
     const algo = Effect.gen(function*(_) {
       const state = yield* _(RefSynchronized.get(stateRef))
 

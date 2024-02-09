@@ -53,4 +53,4 @@ export const ManagerConfig: Context.Tag<ManagerConfig, ManagerConfig> = internal
  * @since 1.0.0
  * @category utils
  */
-export const defaults: Layer.Layer<never, never, ManagerConfig> = internal.defaults
+export const defaults: Layer.Layer<ManagerConfig> = internal.defaults

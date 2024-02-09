@@ -8,12 +8,12 @@ export interface WorkflowContext {
   currentAttempt: number
   makePersistenceId: (localId: string) => string
   shouldInterruptCurrentFiberInActivity: Ref.Ref<boolean>
-  isGracefulShutdownHappening: Effect.Effect<never, never, boolean>
+  isGracefulShutdownHappening: Effect.Effect<boolean>
   durableExecutionJournal: DurableExecutionJournal.DurableExecutionJournal
-  yieldExecution: Effect.Effect<never, never, void>
+  yieldExecution: Effect.Effect<void>
 }
 
-export const WorkflowContext = Context.Tag<WorkflowContext>()
+export const WorkflowContext = Context.GenericTag<WorkflowContext>("@services/WorkflowContext")
 
 export function make(args: WorkflowContext): WorkflowContext {
   return args

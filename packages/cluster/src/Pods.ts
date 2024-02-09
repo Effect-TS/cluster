@@ -46,7 +46,7 @@ export interface Pods {
   readonly assignShards: (
     pod: PodAddress.PodAddress,
     shards: HashSet.HashSet<ShardId.ShardId>
-  ) => Effect.Effect<never, never, void>
+  ) => Effect.Effect<void>
 
   /**
    * Notify a pod that it was unassigned a list of shards
@@ -55,13 +55,13 @@ export interface Pods {
   readonly unassignShards: (
     pod: PodAddress.PodAddress,
     shards: HashSet.HashSet<ShardId.ShardId>
-  ) => Effect.Effect<never, never, void>
+  ) => Effect.Effect<void>
 
   /**
    * Check that a pod is responsive
    * @since 1.0.0
    */
-  readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, ShardingError.ShardingErrorPodUnavailable, void>
+  readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<void, ShardingError.ShardingErrorPodUnavailable>
 
   /**
    * Send a message to a pod and receive its message state
@@ -70,11 +70,7 @@ export interface Pods {
   readonly sendAndGetState: (
     pod: PodAddress.PodAddress,
     envelope: SerializedEnvelope.SerializedEnvelope
-  ) => Effect.Effect<
-    never,
-    ShardingError.ShardingError,
-    MessageState.MessageState<SerializedMessage.SerializedMessage>
-  >
+  ) => Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError>
 }
 
 /**
@@ -96,4 +92,4 @@ export const make: (args: Omit<Pods, typeof PodsTypeId>) => Pods = internal.make
  * @since 1.0.0
  * @category layers
  */
-export const noop: Layer.Layer<never, never, Pods> = internal.noop
+export const noop: Layer.Layer<Pods> = internal.noop

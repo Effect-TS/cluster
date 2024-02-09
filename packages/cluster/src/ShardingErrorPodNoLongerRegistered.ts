@@ -50,6 +50,6 @@ export function isShardingErrorPodNoLongerRegistered(value: unknown): value is S
  * @category schema
  */
 export const ShardingErrorPodNoLongerRegisteredSchema: Schema.Schema<
-  Schema.Schema.From<typeof ShardingErrorPodNoLongerRegisteredSchema_>,
-  ShardingErrorPodNoLongerRegistered
+  ShardingErrorPodNoLongerRegistered,
+  Schema.Schema.From<typeof ShardingErrorPodNoLongerRegisteredSchema_>
 > = ShardingErrorPodNoLongerRegisteredSchema_

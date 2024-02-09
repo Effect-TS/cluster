@@ -8,68 +8,68 @@ import { pipe } from "effect/Function"
 import * as Stream from "effect/Stream"
 
 export interface DurableExecutionJournal {
-  read<IE, E, IA, A>(
+  read<A, IA, E, IE>(
     persistenceId: string,
-    failure: Schema.Schema<IE, E>,
-    success: Schema.Schema<IA, A>,
+    success: Schema.Schema<A, IA>,
+    failure: Schema.Schema<E, IE>,
     fromSequence: number,
     keepReading: boolean
-  ): Stream.Stream<never, never, DurableExecutionEvent.DurableExecutionEvent<E, A>>
-  append<IE, E, IA, A>(
+  ): Stream.Stream<DurableExecutionEvent.DurableExecutionEvent<A, E>>
+  append<A, IA, E, IE>(
     persistenceId: string,
-    failure: Schema.Schema<IE, E>,
-    success: Schema.Schema<IA, A>,
-    event: DurableExecutionEvent.DurableExecutionEvent<E, A>
-  ): Effect.Effect<never, never, void>
+    success: Schema.Schema<A, IA>,
+    failure: Schema.Schema<E, IE>,
+    event: DurableExecutionEvent.DurableExecutionEvent<A, E>
+  ): Effect.Effect<void>
 }
 
-export const DurableExecutionJournal = Context.Tag<DurableExecutionJournal>()
+export const DurableExecutionJournal = Context.GenericTag<DurableExecutionJournal>("@services/DurableExecutionJournal")
 
-export function read<IE, E, IA, A>(
+export function read<A, IA, E, IE>(
   activityId: string,
-  failure: Schema.Schema<IE, E>,
-  success: Schema.Schema<IA, A>,
+  success: Schema.Schema<A, IA>,
+  failure: Schema.Schema<E, IE>,
   fromSequence: number,
   keepReading: boolean
 ) {
   return Stream.flatMap(
     DurableExecutionJournal,
-    (journal) => journal.read(activityId, failure, success, fromSequence, keepReading)
+    (journal) => journal.read(activityId, success, failure, fromSequence, keepReading)
   )
 }
 
-export function append<IE, E, IA, A>(
+export function append<A, IA, E, IE>(
   activityId: string,
-  failure: Schema.Schema<IE, E>,
-  success: Schema.Schema<IA, A>,
-  event: DurableExecutionEvent.DurableExecutionEvent<E, A>
+  success: Schema.Schema<A, IA>,
+  failure: Schema.Schema<E, IE>,
+  event: DurableExecutionEvent.DurableExecutionEvent<A, E>
 ) {
   return Effect.flatMap(
     DurableExecutionJournal,
-    (journal) => journal.append(activityId, failure, success, event)
+    (journal) => journal.append(activityId, success, failure, event)
   )
 }
 
-interface WithState<E, A, R2, E2, A2> {
+interface WithState<A, E, A2, E2, R2> {
   (
-    state: DurableExecutionState.DurableExecutionState<E, A>,
+    state: DurableExecutionState.DurableExecutionState<A, E>,
     persist: (
-      fn: (sequence: number) => DurableExecutionEvent.DurableExecutionEvent<E, A>
-    ) => Effect.Effect<never, never, void>
-  ): Effect.Effect<R2, E2, A2>
+      fn: (sequence: number) => DurableExecutionEvent.DurableExecutionEvent<A, E>
+    ) => Effect.Effect<void>
+  ): Effect.Effect<A2, E2, R2>
 }
 
-export function withState<IE, E, IA, A>(
+export function withState<A, IA, E, IE>(
   journal: DurableExecutionJournal,
   persistenceId: string,
-  failure: Schema.Schema<IE, E>,
-  success: Schema.Schema<IA, A>
+  success: Schema.Schema<A, IA>,
+  failure: Schema.Schema<E, IE>
 ) {
-  return <R2, E2, A2>(fns: WithState<E, A, R2, E2, A2>) => {
+  return <A2, E2, R2>(fns: WithState<A, E, R2, E2, A2>) => {
     return pipe(
-      journal.read(persistenceId, failure, success, 0, false),
+      journal.read(persistenceId, success, failure, 0, false),
       Stream.runFold(
-        DurableExecutionState.initialState<E, A>(),
+        DurableExecutionState.initialState<A, E>(),
         (state, event) => DurableExecutionState.foldDurableExecutionEvent(state, event)
       ),
       Effect.flatMap((state) =>
@@ -77,11 +77,11 @@ export function withState<IE, E, IA, A>(
           Ref.make(state.lastSequence),
           Effect.flatMap((sequenceRef) => {
             const persistEventIntoJournal = (
-              fn: (sequence: number) => DurableExecutionEvent.DurableExecutionEvent<E, A>
+              fn: (sequence: number) => DurableExecutionEvent.DurableExecutionEvent<A, E>
             ) =>
               pipe(
                 Ref.updateAndGet(sequenceRef, (_) => _ + 1),
-                Effect.flatMap((sequence) => journal.append(persistenceId, failure, success, fn(sequence)))
+                Effect.flatMap((sequence) => journal.append(persistenceId, success, failure, fn(sequence)))
               )
 
             return fns(state, persistEventIntoJournal)

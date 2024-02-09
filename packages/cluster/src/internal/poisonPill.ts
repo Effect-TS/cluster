@@ -19,7 +19,7 @@ export const PoisonPillTypeId: PoisonPill.PoisonPillTypeId = Symbol.for(
  * @since 1.0.0
  * @category constructors
  */
-export const make: Effect.Effect<never, never, PoisonPill.PoisonPill> = Effect.succeed(
+export const make: Effect.Effect<PoisonPill.PoisonPill> = Effect.succeed(
   Data.struct({ [PoisonPillTypeId]: PoisonPillTypeId })
 )
 
@@ -43,13 +43,14 @@ export function isPoisonPill(value: unknown): value is PoisonPill.PoisonPill {
  * @category schema
  */
 export const schema: Schema.Schema<
-  { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
-  Data.Data<{ readonly [PoisonPill.PoisonPillTypeId]: typeof PoisonPill.PoisonPillTypeId }>
+  { readonly [PoisonPill.PoisonPillTypeId]: typeof PoisonPill.PoisonPillTypeId },
+  { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" }
 > = Schema.data(Schema.rename(
   Schema.struct({
     [PoisonPillSymbolKey]: Schema.compose(
-      Schema.compose(Schema.literal(PoisonPillSymbolKey), Schema.symbol),
-      Schema.uniqueSymbol(PoisonPillTypeId)
+      Schema.compose(Schema.literal(PoisonPillSymbolKey), Schema.symbol, { strict: false }),
+      Schema.uniqueSymbol(PoisonPillTypeId),
+      { strict: false }
     )
   }),
   { [PoisonPillSymbolKey]: PoisonPillTypeId }
@@ -64,7 +65,7 @@ export const schema: Schema.Schema<
  */
 export function takeOrInterrupt<Req>(
   dequeue: Queue.Dequeue<Req | PoisonPill.PoisonPill>
-): Effect.Effect<never, never, Req> {
+): Effect.Effect<Req> {
   return pipe(
     Queue.take(dequeue),
     Effect.flatMap((msg) => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed(msg))

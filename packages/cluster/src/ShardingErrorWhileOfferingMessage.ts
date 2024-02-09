@@ -48,6 +48,6 @@ export function isShardingErrorWhileOfferingMessage(value: unknown): value is Sh
  * @category schema
  */
 export const ShardingErrorWhileOfferingMessageSchema: Schema.Schema<
-  Schema.Schema.From<typeof ShardingErrorWhileOfferingMessageSchema_>,
-  ShardingErrorWhileOfferingMessage
+  ShardingErrorWhileOfferingMessage,
+  Schema.Schema.From<typeof ShardingErrorWhileOfferingMessageSchema_>
 > = ShardingErrorWhileOfferingMessageSchema_

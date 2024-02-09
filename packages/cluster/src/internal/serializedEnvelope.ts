@@ -32,6 +32,7 @@ export function isSerializedEnvelope(value: unknown): value is SerializedEnvelop
 
 /** @internal */
 export const schema: Schema.Schema<
+  SerializedEnvelope.SerializedEnvelope,
   {
     readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
     readonly entityId: string
@@ -40,14 +41,14 @@ export const schema: Schema.Schema<
       readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
       readonly value: string
     }
-  },
-  SerializedEnvelope.SerializedEnvelope
+  }
 > = Schema.data(
   Schema.rename(
     Schema.struct({
       [SerializedEnvelopeSymbolKey]: Schema.compose(
-        Schema.compose(Schema.literal(SerializedEnvelopeSymbolKey), Schema.symbol),
-        Schema.uniqueSymbol(SerializedEnvelopeTypeId)
+        Schema.compose(Schema.literal(SerializedEnvelopeSymbolKey), Schema.symbol, { strict: false }),
+        Schema.uniqueSymbol(SerializedEnvelopeTypeId),
+        { strict: false }
       ),
       entityId: Schema.string,
       entityType: Schema.string,

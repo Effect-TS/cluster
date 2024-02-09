@@ -23,8 +23,8 @@ describe.concurrent("RecipientBehaviour", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
     pipe(fa, Effect.scoped, Logger.withMinimumLogLevel(LogLevel.Info))
 
-  const makeTestActor = <R, Msg>(
-    fa: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+  const makeTestActor = <Msg, R>(
+    fa: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     scope: Scope.Scope
   ) =>
     pipe(
@@ -43,9 +43,9 @@ describe.concurrent("RecipientBehaviour", () => {
 
   it("Handles a whole queue of messages", () => {
     return Effect.gen(function*(_) {
-      const received = yield* _(Deferred.make<never, boolean>())
+      const received = yield* _(Deferred.make<boolean>())
 
-      const behaviour = RecipientBehaviour.fromInMemoryQueue<never, Sample | PoisonPill.PoisonPill>(
+      const behaviour = RecipientBehaviour.fromInMemoryQueue<Sample | PoisonPill.PoisonPill, never>(
         (entityId, dequeue) =>
           pipe(
             Queue.take(dequeue),
@@ -66,9 +66,9 @@ describe.concurrent("RecipientBehaviour", () => {
   it("Ensure cleanup is run upon closing the scope", () => {
     let interrupted = false
     return Effect.gen(function*(_) {
-      const started = yield* _(Deferred.make<never, boolean>())
+      const started = yield* _(Deferred.make<boolean>())
 
-      const behaviour = RecipientBehaviour.fromInMemoryQueue<never, Sample | PoisonPill.PoisonPill>(
+      const behaviour = RecipientBehaviour.fromInMemoryQueue<Sample | PoisonPill.PoisonPill, never>(
         (entityId, dequeue) =>
           pipe(
             Queue.take(dequeue),

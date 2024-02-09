@@ -13,9 +13,9 @@ import type * as Sharding from "./Sharding.js"
  * @since 1.0.0
  * @category constructors
  */
-export const atLeastOnceRecipientBehaviour: <R, Msg>(
-  fa: RecipientBehaviour.RecipientBehaviour<R, Msg>
-) => RecipientBehaviour.RecipientBehaviour<R | AtLeastOnceStorage.AtLeastOnceStorage, Msg> =
+export const atLeastOnceRecipientBehaviour: <Msg, R>(
+  fa: RecipientBehaviour.RecipientBehaviour<Msg, R>
+) => RecipientBehaviour.RecipientBehaviour<Msg, R | AtLeastOnceStorage.AtLeastOnceStorage> =
   internal.atLeastOnceRecipientBehaviour
 
 /**
@@ -24,5 +24,5 @@ export const atLeastOnceRecipientBehaviour: <R, Msg>(
  */
 export const runPendingMessageSweeperScoped: (
   interval: Duration.Duration
-) => Effect.Effect<AtLeastOnceStorage.AtLeastOnceStorage | Sharding.Sharding | Scope.Scope, never, void> =
+) => Effect.Effect<void, never, AtLeastOnceStorage.AtLeastOnceStorage | Sharding.Sharding | Scope.Scope> =
   internal.runPendingMessageSweeperScoped

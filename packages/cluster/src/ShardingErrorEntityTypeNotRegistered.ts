@@ -52,6 +52,6 @@ export function isShardingErrorEntityTypeNotRegistered(value: unknown): value is
  * @category schema
  */
 export const ShardingErrorEntityTypeNotRegisteredSchema: Schema.Schema<
-  Schema.Schema.From<typeof ShardingErrorEntityTypeNotRegisteredSchema_>,
-  ShardingErrorEntityTypeNotRegistered
+  ShardingErrorEntityTypeNotRegistered,
+  Schema.Schema.From<typeof ShardingErrorEntityTypeNotRegisteredSchema_>
 > = ShardingErrorEntityTypeNotRegisteredSchema_

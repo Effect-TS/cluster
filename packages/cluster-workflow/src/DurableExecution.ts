@@ -7,30 +7,30 @@ import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 
-export function kill<IE, E, IA, A>(
+export function kill<A, IA, E, IE>(
   persistenceId: string,
-  failure: Schema.Schema<IE, E>,
-  success: Schema.Schema<IA, A>
+  success: Schema.Schema<A, IA>,
+  failure: Schema.Schema<E, IE>
 ) {
   return Effect.flatMap(
     DurableExecutionJournal.DurableExecutionJournal,
     (journal) =>
-      DurableExecutionJournal.withState(journal, persistenceId, failure, success)(
+      DurableExecutionJournal.withState(journal, persistenceId, success, failure)(
         (state, persistEvent) => persistEvent(DurableExecutionEvent.DurableExecutionEventKillRequested)
       )
   )
 }
 
-export function attempt<IE, E, IA, A>(
+export function attempt<A, IA, E, IE>(
   persistenceId: string,
-  failure: Schema.Schema<IE, E>,
-  success: Schema.Schema<IA, A>
+  success: Schema.Schema<A, IA>,
+  failure: Schema.Schema<E, IE>
 ) {
   return <R1, R2, R3>(
-    attempt: (currentAttempt: number) => Effect.Effect<R1, E, A>,
-    windDown: (currentAttempt: number) => Effect.Effect<R2, never, void>,
-    beforeFiberInterrupt: Effect.Effect<R3, never, void>
-  ): Effect.Effect<R1 | R2 | R3 | DurableExecutionJournal.DurableExecutionJournal, E, A> =>
+    attempt: (currentAttempt: number) => Effect.Effect<A, E, R1>,
+    windDown: (currentAttempt: number) => Effect.Effect<void, never, R2>,
+    beforeFiberInterrupt: Effect.Effect<void, never, R3>
+  ): Effect.Effect<A, E, R1 | R2 | R3 | DurableExecutionJournal.DurableExecutionJournal> =>
     Effect.gen(function*(_) {
       const journal = yield* _(DurableExecutionJournal.DurableExecutionJournal)
 
@@ -43,7 +43,7 @@ export function attempt<IE, E, IA, A>(
         Effect.zipRight(Effect.never)
       )
 
-      const executeAttempt = DurableExecutionJournal.withState(journal, persistenceId, failure, success)(
+      const executeAttempt = DurableExecutionJournal.withState(journal, persistenceId, success, failure)(
         (state, persistEvent) => {
           return pipe(
             DurableExecutionState.match(state, {

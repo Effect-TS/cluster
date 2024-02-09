@@ -96,16 +96,16 @@ export const Processed: <A>(result: Option.Option<A>) => MessageStateProcessed<A
  */
 export const mapEffect: <A, B, R, E>(
   value: MessageState<A>,
-  fn: (value: A) => Effect.Effect<R, E, B>
-) => Effect.Effect<R, E, MessageState<B>> = internal.mapEffect
+  fn: (value: A) => Effect.Effect<B, E, R>
+) => Effect.Effect<MessageState<B>, E, R> = internal.mapEffect
 
 /**
  * @since 1.0.0
  * @category schema
  */
-export const schema: <I, A>(
-  result: Schema.Schema<I, A>
+export const schema: <A, I>(
+  result: Schema.Schema<A, I>
 ) => Schema.Schema<
-  MessageState.From<I>,
-  MessageState<A>
+  MessageState<A>,
+  MessageState.From<I>
 > = internal.schema

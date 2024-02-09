@@ -25,13 +25,12 @@ export interface EntityState<Msg> {
   readonly sendAndGetState: <A extends Msg>(
     message: Msg
   ) => Effect.Effect<
-    never,
-    ShardingError.ShardingErrorWhileOfferingMessage,
-    MessageState.MessageState<Message.MessageWithResult.Exit<A>>
+    MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
+    ShardingError.ShardingErrorWhileOfferingMessage
   >
-  readonly expirationFiber: Fiber.RuntimeFiber<never, void>
+  readonly expirationFiber: Fiber.RuntimeFiber<void, never>
   readonly executionScope: Scope.CloseableScope
-  readonly terminationFiber: Option.Option<Fiber.RuntimeFiber<never, void>>
+  readonly terminationFiber: Option.Option<Fiber.RuntimeFiber<void, never>>
   readonly lastReceivedAt: number
 }
 
@@ -44,14 +43,14 @@ export function make<Msg>(
 
 /** @internal */
 export function withTerminationFiber(
-  terminationFiber: Fiber.RuntimeFiber<never, void>
+  terminationFiber: Fiber.RuntimeFiber<void, never>
 ): <Msg>(entityState: EntityState<Msg>) => EntityState<Msg> {
   return (entityState) => ({ ...entityState, terminationFiber: Option.some(terminationFiber) })
 }
 
 /** @internal */
 export function withExpirationFiber(
-  expirationFiber: Fiber.RuntimeFiber<never, void>
+  expirationFiber: Fiber.RuntimeFiber<void, never>
 ): <Msg>(entityState: EntityState<Msg>) => EntityState<Msg> {
   return (entityState) => ({ ...entityState, expirationFiber })
 }

@@ -10,7 +10,7 @@ const PodsSymbolKey = "@effect/cluster/Pods"
 export const PodsTypeId: Pods.PodsTypeId = Symbol.for(PodsSymbolKey) as Pods.PodsTypeId
 
 /** @internal */
-export const podsTag = Context.Tag<Pods.Pods>()
+export const podsTag = Context.GenericTag<Pods.Pods>("@services/podsTag")
 
 /** @internal */
 export function make(

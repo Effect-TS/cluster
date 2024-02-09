@@ -48,6 +48,6 @@ export function isShardingErrorNoResultInProcessedMessageState(
  * @category schema
  */
 export const ShardingErrorNoResultInProcessedMessageStateSchema: Schema.Schema<
-  Schema.Schema.From<typeof ShardingErrorNoResultInProcessedMessageStateSchema_>,
-  ShardingErrorNoResultInProcessedMessageState
+  ShardingErrorNoResultInProcessedMessageState,
+  Schema.Schema.From<typeof ShardingErrorNoResultInProcessedMessageStateSchema_>
 > = ShardingErrorNoResultInProcessedMessageStateSchema_

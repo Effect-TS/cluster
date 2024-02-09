@@ -11,17 +11,17 @@ import type * as Request from "effect/Request"
 import * as SynchronizedRef from "effect/SynchronizedRef"
 
 export interface WorkflowEngine<T extends Schema.TaggedRequest.Any> {
-  startDiscard: (request: T) => Effect.Effect<never, never, void>
-  start: <A extends T>(request: A) => Effect.Effect<never, Request.Request.Error<A>, Request.Request.Success<A>>
+  startDiscard: (request: T) => Effect.Effect<void>
+  start: <A extends T>(request: A) => Effect.Effect<Request.Request.Success<A>, Request.Request.Error<A>>
 }
 
-export function makeScoped<R, T extends Schema.TaggedRequest.Any>(workflow: Workflow.Workflow<R, T>) {
+export function makeScoped<T extends Schema.TaggedRequest.Any, R>(workflow: Workflow.Workflow<T, R>) {
   return Effect.gen(function*(_) {
     const executionScope = yield* _(Effect.scope)
     const fibers = yield* _(SynchronizedRef.make(HashMap.empty<string, Fiber.Fiber<any, any>>()))
     const env = yield* _(Effect.context<R | DurableExecutionJournal.DurableExecutionJournal>())
 
-    const getOrStartFiber = <A extends T>(request: A): Effect.Effect<never, never, Fiber.Fiber<any, any>> => {
+    const getOrStartFiber = <A extends T>(request: A): Effect.Effect<Fiber.Fiber<any, any>> => {
       const executionId = workflow.executionId(request)
 
       return SynchronizedRef.modifyEffect(fibers, (state) =>
@@ -49,7 +49,7 @@ export function makeScoped<R, T extends Schema.TaggedRequest.Any>(workflow: Work
 
     const start = <A extends T>(
       request: A
-    ): Effect.Effect<never, Request.Request.Error<A>, Request.Request.Success<A>> =>
+    ): Effect.Effect<Request.Request.Success<A>, Request.Request.Error<A>> =>
       pipe(
         getOrStartFiber(request),
         Effect.flatMap((fiber) => fiber.await),

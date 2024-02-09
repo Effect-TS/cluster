@@ -27,14 +27,15 @@ export function isSerializedMessage(value: unknown): value is SerializedMessage.
 
 /** @internal */
 export const schema: Schema.Schema<
-  { readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"; readonly value: string },
-  SerializedMessage.SerializedMessage
+  SerializedMessage.SerializedMessage,
+  { readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"; readonly value: string }
 > = Schema.data(
   Schema.rename(
     Schema.struct({
       [SerializedMessageSymbolKey]: Schema.compose(
-        Schema.compose(Schema.literal(SerializedMessageSymbolKey), Schema.symbol),
-        Schema.uniqueSymbol(SerializedMessageTypeId)
+        Schema.compose(Schema.literal(SerializedMessageSymbolKey), Schema.symbol, { strict: false }),
+        Schema.uniqueSymbol(SerializedMessageTypeId),
+        { strict: false }
       ),
       value: Schema.string
     }),

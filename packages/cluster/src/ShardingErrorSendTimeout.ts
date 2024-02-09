@@ -43,6 +43,6 @@ export function isShardingErrorSendTimeout(value: any): value is ShardingErrorSe
  * @category schema
  */
 export const ShardingErrorSendTimeoutSchema: Schema.Schema<
-  Schema.Schema.From<typeof ShardingErrorSendTimeoutSchema_>,
-  ShardingErrorSendTimeout
+  ShardingErrorSendTimeout,
+  Schema.Schema.From<typeof ShardingErrorSendTimeoutSchema_>
 > = ShardingErrorSendTimeoutSchema_

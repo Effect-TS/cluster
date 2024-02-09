@@ -57,17 +57,16 @@ export const ShardingConfig: Context.Tag<ShardingConfig, ShardingConfig> = inter
  * @since 1.0.0
  * @category layers
  */
-export const defaults: Layer.Layer<never, never, ShardingConfig> = internal.defaults
+export const defaults: Layer.Layer<ShardingConfig> = internal.defaults
 
 /**
  * @since 1.0.0
  * @category layers
  */
-export const withDefaults: (customs: Partial<ShardingConfig>) => Layer.Layer<never, never, ShardingConfig> =
-  internal.withDefaults
+export const withDefaults: (customs: Partial<ShardingConfig>) => Layer.Layer<ShardingConfig> = internal.withDefaults
 
 /**
  * @since 1.0.0
  * @category layers
  */
-export const fromConfig: Layer.Layer<never, ConfigError.ConfigError, ShardingConfig> = internal.fromConfig
+export const fromConfig: Layer.Layer<ShardingConfig, ConfigError.ConfigError> = internal.fromConfig

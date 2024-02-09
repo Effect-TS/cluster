@@ -39,7 +39,7 @@ export interface PodsHealth {
    * Check if a pod is still alive.
    * @since 1.0.0
    */
-  readonly isAlive: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, boolean>
+  readonly isAlive: (podAddress: PodAddress.PodAddress) => Effect.Effect<boolean>
 }
 
 /**
@@ -60,7 +60,7 @@ export const PodsHealth: Context.Tag<PodsHealth, PodsHealth> = internal.podsHeal
  * @since 1.0.0
  * @category layers
  */
-export const noop: Layer.Layer<never, never, PodsHealth> = internal.noop
+export const noop: Layer.Layer<PodsHealth> = internal.noop
 
 /**
  * A layer that pings the pod directly to check if it's alive.
@@ -68,4 +68,4 @@ export const noop: Layer.Layer<never, never, PodsHealth> = internal.noop
  * @since 1.0.0
  * @category layers
  */
-export const local: Layer.Layer<Pods.Pods, never, PodsHealth> = internal.local
+export const local: Layer.Layer<PodsHealth, never, Pods.Pods> = internal.local

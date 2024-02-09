@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import type * as Schema from "@effect/schema/Schema"
-import type * as Data from "effect/Data"
 import * as internal from "./internal/shardId.js"
 
 /**
@@ -21,12 +20,11 @@ export type ShardIdTypeId = typeof ShardIdTypeId
  * @since 1.0.0
  * @category models
  */
-export interface ShardId extends
-  Data.Data<{
-    readonly [ShardIdTypeId]: ShardIdTypeId
-    readonly value: number
-  }>
-{}
+export interface ShardId {
+  readonly [ShardIdTypeId]: ShardIdTypeId
+  readonly value: number
+}
+
 /**
  * @since 1.0.0
  * @category models
@@ -58,6 +56,6 @@ export const show = internal.show
  * @category schema
  */
 export const schema: Schema.Schema<
-  ShardId.From,
-  ShardId
+  ShardId,
+  ShardId.From
 > = internal.schema

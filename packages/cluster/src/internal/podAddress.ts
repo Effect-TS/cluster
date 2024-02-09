@@ -32,14 +32,15 @@ export function show(podAddress: PodAddress.PodAddress) {
 
 /** @internal */
 export const schema: Schema.Schema<
-  { readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"; readonly host: string; readonly port: number },
-  PodAddress.PodAddress
+  PodAddress.PodAddress,
+  { readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"; readonly host: string; readonly port: number }
 > = Schema.data(
   Schema.rename(
     Schema.struct({
       [PodAddressSymbolKey]: Schema.compose(
-        Schema.compose(Schema.literal(PodAddressSymbolKey), Schema.symbol),
-        Schema.uniqueSymbol(PodAddressTypeId)
+        Schema.compose(Schema.literal(PodAddressSymbolKey), Schema.symbol, { strict: false }),
+        Schema.uniqueSymbol(PodAddressTypeId),
+        { strict: false }
       ),
       host: Schema.string,
       port: Schema.number

@@ -12,7 +12,7 @@ import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
 import * as Schema from "@effect/schema/Schema"
 import * as Cause from "effect/Cause"
-import { Tag } from "effect/Context"
+import * as Context from "effect/Context"
 import * as Deferred from "effect/Deferred"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
@@ -32,7 +32,7 @@ interface SampleService {
   value: number
 }
 
-const SampleService = Tag<SampleService>()
+const SampleService = Context.GenericTag<SampleService>("@services/SampleService")
 
 class SampleMessage extends Schema.TaggedClass<SampleMessage>()("SampleMessage", {
   id: Schema.string,
@@ -256,7 +256,7 @@ describe.concurrent("SampleTests", () => {
 
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const entityStarted = yield* _(Deferred.make<never, boolean>())
+      const entityStarted = yield* _(Deferred.make<boolean>())
 
       yield* _(
         Sharding.registerEntity(
@@ -296,7 +296,7 @@ describe.concurrent("SampleTests", () => {
 
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const entityStarted = yield* _(Deferred.make<never, boolean>())
+      const entityStarted = yield* _(Deferred.make<boolean>())
 
       yield* _(
         Sharding.registerEntity(
@@ -341,8 +341,8 @@ describe.concurrent("SampleTests", () => {
 
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const shutdownReceived = yield* _(Deferred.make<never, boolean>())
-      const entityStarted = yield* _(Deferred.make<never, boolean>())
+      const shutdownReceived = yield* _(Deferred.make<boolean>())
+      const entityStarted = yield* _(Deferred.make<boolean>())
 
       yield* _(
         Sharding.registerEntity(
@@ -389,7 +389,7 @@ describe.concurrent("SampleTests", () => {
   it("Singletons should start", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const received = yield* _(Deferred.make<never, boolean>())
+      const received = yield* _(Deferred.make<boolean>())
 
       yield* _(
         Sharding.registerSingleton(
@@ -409,7 +409,7 @@ describe.concurrent("SampleTests", () => {
   it("Singletons should be interrupted upon sharding stop", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
-      const received = yield* _(Deferred.make<never, boolean>())
+      const received = yield* _(Deferred.make<boolean>())
 
       yield* _(
         Sharding.registerSingleton(
@@ -462,7 +462,7 @@ describe.concurrent("SampleTests", () => {
 
   it("Upon entity termination, pending replies should get errored", () => {
     return Effect.gen(function*(_) {
-      const requestReceived = yield* _(Deferred.make<never, boolean>())
+      const requestReceived = yield* _(Deferred.make<boolean>())
       yield* _(Sharding.registerScoped)
 
       yield* _(

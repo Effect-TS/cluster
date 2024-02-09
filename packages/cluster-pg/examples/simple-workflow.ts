@@ -2,7 +2,7 @@ import * as DurableExecutionJournalPostgres from "@effect/cluster-pg/DurableExec
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as WorkflowRunner from "@effect/cluster-workflow/WorkflowRunner"
-import { runMain } from "@effect/platform-node/Runtime"
+import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
 import { Duration } from "effect"
@@ -17,8 +17,8 @@ import * as ReadonlyArray from "effect/ReadonlyArray"
 const reserveSeats = (numberOfSeats: number) =>
   Activity.make(
     "reserve-seats",
-    Schema.never,
-    Schema.array(Schema.string)
+    Schema.array(Schema.string),
+    Schema.never
   )(pipe(
     Effect.sync(() => ReadonlyArray.makeBy(numberOfSeats, (id) => "seat-" + id)),
     Effect.tap((seats) => Effect.logInfo("Reserving seats " + seats.join(", ") + "..."))
@@ -27,19 +27,19 @@ const reserveSeats = (numberOfSeats: number) =>
 const releaseSeats = (seats: ReadonlyArray<string>) =>
   Activity.make(
     "release-seats",
-    Schema.never,
-    Schema.void
+    Schema.void,
+    Schema.never
   )(pipe(
     Effect.logInfo("Releasing seats " + seats.join(", ") + "...")
   ))
 
 const getAmountDue = (orderId: string) =>
-  Activity.make("get-amount-due-" + orderId, Schema.never, Schema.number)(pipe(
+  Activity.make("get-amount-due-" + orderId, Schema.number, Schema.never)(pipe(
     Effect.sync(() => Math.round(Math.random() * 100) / 100)
   ))
 
 const processPayment = (billingId: string, amountDue: number) =>
-  Activity.make("process-payment-" + billingId, Schema.never, Schema.void)(pipe(
+  Activity.make("process-payment-" + billingId, Schema.void, Schema.never)(pipe(
     pipe(
       Effect.logDebug("Processed payment of " + amountDue + " to " + billingId + "..."),
       Effect.zipRight(Effect.never)
@@ -47,12 +47,12 @@ const processPayment = (billingId: string, amountDue: number) =>
   ))
 
 const cancelOrder = (orderId: string) =>
-  Activity.make("cancel-order-" + orderId, Schema.never, Schema.void)(pipe(
+  Activity.make("cancel-order-" + orderId, Schema.void, Schema.never)(pipe(
     Effect.logDebug("Canceling order " + orderId + "...")
   ))
 
 const sendTickets = (email: string, ticketIds: ReadonlyArray<string>) =>
-  Activity.make("send-tickets", Schema.never, Schema.void)(pipe(
+  Activity.make("send-tickets", Schema.void, Schema.never)(pipe(
     Effect.logDebug("Sending tickets " + ticketIds.join(", ") + " to " + email + "...")
   ))
 
@@ -93,7 +93,7 @@ const bookSeatWorkflow = Workflow.make(
       ),
       // users have 5 minutes to complete their purchase
       Workflow.timeout("booking-timeout", Duration.minutes(5)),
-      Effect.catchTag("NoSuchElementException", () => cancelOrder(orderId))
+      Effect.catchTag("TimeoutException", () => cancelOrder(orderId))
     )
 )
 

@@ -30,7 +30,7 @@ export interface RecipientBehaviourContext {
   readonly entityId: string
   readonly shardId: ShardId.ShardId
   readonly recipientType: RecipientType.RecipientType<unknown>
-  readonly forkShutdown: Effect.Effect<never, never, void>
+  readonly forkShutdown: Effect.Effect<void>
 }
 
 /**
@@ -55,21 +55,21 @@ export const make: (
  * @since 1.0.0
  * @category utils
  */
-export const entityId: Effect.Effect<RecipientBehaviourContext, never, string> = internal.entityId
+export const entityId: Effect.Effect<string, never, RecipientBehaviourContext> = internal.entityId
 
 /**
  * Gets the current shardId
  * @since 1.0.0
  * @category utils
  */
-export const shardId: Effect.Effect<RecipientBehaviourContext, never, ShardId.ShardId> = internal.shardId
+export const shardId: Effect.Effect<ShardId.ShardId, never, RecipientBehaviourContext> = internal.shardId
 
 /**
  * Gets the current shardId
  * @since 1.0.0
  * @category utils
  */
-export const recipientType: Effect.Effect<RecipientBehaviourContext, never, RecipientType.RecipientType<unknown>> =
+export const recipientType: Effect.Effect<RecipientType.RecipientType<unknown>, never, RecipientBehaviourContext> =
   internal.recipientType
 
 /**
@@ -77,4 +77,4 @@ export const recipientType: Effect.Effect<RecipientBehaviourContext, never, Reci
  * @since 1.0.0
  * @category utils
  */
-export const forkShutdown: Effect.Effect<RecipientBehaviourContext, never, void> = internal.forkShutdown
+export const forkShutdown: Effect.Effect<void, never, RecipientBehaviourContext> = internal.forkShutdown

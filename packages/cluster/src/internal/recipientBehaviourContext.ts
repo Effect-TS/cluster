@@ -13,7 +13,7 @@ export const RecipientBehaviourContextTypeId: RecipientBehaviourContext.Recipien
 ) as RecipientBehaviourContext.RecipientBehaviourContextTypeId
 
 /** @internal */
-export const recipientBehaviourContextTag = Context.Tag<RecipientBehaviourContext.RecipientBehaviourContext>(
+export const recipientBehaviourContextTag = Context.GenericTag<RecipientBehaviourContext.RecipientBehaviourContext>(
   RecipientBehaviourContextSymbolKey
 )
 
@@ -28,13 +28,13 @@ export function make(
 }
 
 /** @internal */
-export const entityId: Effect.Effect<RecipientBehaviourContext.RecipientBehaviourContext, never, string> = Effect.map(
+export const entityId: Effect.Effect<string, never, RecipientBehaviourContext.RecipientBehaviourContext> = Effect.map(
   recipientBehaviourContextTag,
   (_) => _.entityId
 )
 
 /** @internal */
-export const shardId: Effect.Effect<RecipientBehaviourContext.RecipientBehaviourContext, never, ShardId.ShardId> =
+export const shardId: Effect.Effect<ShardId.ShardId, never, RecipientBehaviourContext.RecipientBehaviourContext> =
   Effect.map(
     recipientBehaviourContextTag,
     (_) => _.shardId
@@ -42,16 +42,16 @@ export const shardId: Effect.Effect<RecipientBehaviourContext.RecipientBehaviour
 
 /** @internal */
 export const recipientType: Effect.Effect<
-  RecipientBehaviourContext.RecipientBehaviourContext,
+  RecipientType.RecipientType<unknown>,
   never,
-  RecipientType.RecipientType<unknown>
+  RecipientBehaviourContext.RecipientBehaviourContext
 > = Effect.map(
   recipientBehaviourContextTag,
   (_) => _.recipientType
 )
 
 /** @internal */
-export const forkShutdown: Effect.Effect<RecipientBehaviourContext.RecipientBehaviourContext, never, void> = Effect
+export const forkShutdown: Effect.Effect<void, never, RecipientBehaviourContext.RecipientBehaviourContext> = Effect
   .flatMap(
     recipientBehaviourContextTag,
     (_) => _.forkShutdown

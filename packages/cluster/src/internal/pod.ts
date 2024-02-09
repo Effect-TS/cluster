@@ -27,22 +27,21 @@ export function isPod(value: unknown): value is Pod.Pod {
 /** @internal */
 export const schema: Schema.Schema<
   {
+    readonly address: PodAddress.PodAddress
+    readonly version: string
+    readonly [Pod.PodTypeId]: typeof Pod.PodTypeId
+  },
+  {
     readonly address: PodAddress.PodAddress.From
     readonly version: string
     readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
-  },
-  Data.Data<
-    {
-      readonly address: PodAddress.PodAddress
-      readonly version: string
-      readonly [Pod.PodTypeId]: typeof Pod.PodTypeId
-    }
-  >
+  }
 > = Schema.data(Schema.rename(
   Schema.struct({
     [PodSymbolKey]: Schema.compose(
-      Schema.compose(Schema.literal(PodSymbolKey), Schema.symbol),
-      Schema.uniqueSymbol(PodTypeId)
+      Schema.compose(Schema.literal(PodSymbolKey), Schema.symbol, { strict: false }),
+      Schema.uniqueSymbol(PodTypeId),
+      { strict: false }
     ),
     address: PodAddress.schema,
     version: Schema.string

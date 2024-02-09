@@ -13,6 +13,6 @@ export function isMessageWithResult(value: unknown): value is Message.MessageWit
 /** @internal */
 export function exitSchema<A extends Message.MessageWithResult.Any>(
   message: A
-): Schema.Schema<unknown, Message.MessageWithResult.Exit<A>> {
+): Schema.Schema<Message.MessageWithResult.Exit<A>, unknown> {
   return Serializable.exitSchema(message as any) as any
 }

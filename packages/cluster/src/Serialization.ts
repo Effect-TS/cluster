@@ -36,19 +36,19 @@ export interface Serialization {
    * Transforms the given message into binary
    * @since 1.0.0
    */
-  readonly encode: <I, A>(
-    schema: Schema.Schema<I, A>,
+  readonly encode: <A, I>(
+    schema: Schema.Schema<A, I>,
     message: A
-  ) => Effect.Effect<never, ShardingError.ShardingErrorSerialization, SerializedMessage.SerializedMessage>
+  ) => Effect.Effect<SerializedMessage.SerializedMessage, ShardingError.ShardingErrorSerialization>
 
   /**
    * Transform binary back into the given type
    * @since 1.0.0
    */
-  readonly decode: <I, A>(
-    schema: Schema.Schema<I, A>,
+  readonly decode: <A, I>(
+    schema: Schema.Schema<A, I>,
     bytes: SerializedMessage.SerializedMessage
-  ) => Effect.Effect<never, ShardingError.ShardingErrorSerialization, A>
+  ) => Effect.Effect<A, ShardingError.ShardingErrorSerialization>
 }
 
 /**
@@ -69,4 +69,4 @@ export const make: (args: Omit<Serialization, typeof SerializationTypeId>) => Se
  * @since 1.0.0
  * @category layers
  */
-export const json: Layer.Layer<never, never, Serialization> = internal.json
+export const json: Layer.Layer<Serialization> = internal.json
