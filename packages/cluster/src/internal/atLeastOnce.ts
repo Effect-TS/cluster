@@ -32,9 +32,9 @@ export function runPendingMessageSweeperScoped(
 }
 
 /** @internal */
-export function atLeastOnceRecipientBehaviour<R, Msg>(
-  fa: RecipientBehaviour.RecipientBehaviour<R, Msg>
-): RecipientBehaviour.RecipientBehaviour<R | AtLeastOnceStorage.AtLeastOnceStorage, Msg> {
+export function atLeastOnceRecipientBehaviour<Msg, R>(
+  fa: RecipientBehaviour.RecipientBehaviour<Msg, R>
+): RecipientBehaviour.RecipientBehaviour<Msg, R | AtLeastOnceStorage.AtLeastOnceStorage> {
   return Effect.gen(function*(_) {
     const storage = yield* _(AtLeastOnceStorage.Tag)
     const entityId = yield* _(RecipientBehaviourContext.entityId)

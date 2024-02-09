@@ -47,13 +47,13 @@ export interface Sharding {
   readonly registerEntity: <Msg>(
     entityType: RecipentType.EntityType<Msg>
   ) => <R>(
-    behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    behaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
   readonly registerTopic: <Msg>(
     topicType: RecipentType.TopicType<Msg>
   ) => <R>(
-    behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    behaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
   readonly getShardingRegistrationEvents: Stream.Stream<ShardingRegistrationEvent.ShardingRegistrationEvent>
@@ -124,7 +124,7 @@ export const registerSingleton: <R>(
 export const registerEntity: <Msg>(
   entityType: RecipentType.EntityType<Msg>
 ) => <R>(
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+  behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
 ) => Effect.Effect<void, never, Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =
   internal.registerEntity
@@ -140,7 +140,7 @@ export const registerEntity: <Msg>(
 export const registerTopic: <Msg>(
   topicType: RecipentType.TopicType<Msg>
 ) => <R>(
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+  behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
 ) => Effect.Effect<void, never, Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =
   internal.registerTopic

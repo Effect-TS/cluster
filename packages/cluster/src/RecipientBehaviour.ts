@@ -20,7 +20,7 @@ import type * as ShardingError from "./ShardingError.js"
  * @since 1.0.0
  * @category models
  */
-export interface RecipientBehaviour<R, Msg> extends
+export interface RecipientBehaviour<Msg, R> extends
   Effect.Effect<
     <A extends Msg>(
       message: A
@@ -46,31 +46,31 @@ export type EntityBehaviourOptions = {
  * @since 1.0.0
  * @category utils
  */
-export const fromFunctionEffect: <R, Msg>(
+export const fromFunctionEffect: <Msg, R>(
   handler: (entityId: string, message: Msg) => Effect.Effect<MessageState.MessageState<any>, never, R>
-) => RecipientBehaviour<R, Msg> = internal.fromFunctionEffect
+) => RecipientBehaviour<Msg, R> = internal.fromFunctionEffect
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const fromFunctionEffectStateful: <R, S, R2, Msg>(
+export const fromFunctionEffectStateful: <Msg, S, R, R2>(
   initialState: (entityId: string) => Effect.Effect<S, never, R>,
   handler: (
     entityId: string,
     message: Msg,
     stateRef: Ref.Ref<S>
   ) => Effect.Effect<MessageState.MessageState<any>, never, R2>
-) => RecipientBehaviour<R | R2, Msg> = internal.fromFunctionEffectStateful
+) => RecipientBehaviour<Msg, R | R2> = internal.fromFunctionEffectStateful
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const fromInMemoryQueue: <R, Msg>(
+export const fromInMemoryQueue: <Msg, R>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
     processed: <A extends Msg>(message: A, value: Option.Option<any>) => Effect.Effect<void, never, never>
   ) => Effect.Effect<void, never, R>
-) => RecipientBehaviour<R, Msg> = internal.fromInMemoryQueue
+) => RecipientBehaviour<Msg, R> = internal.fromInMemoryQueue

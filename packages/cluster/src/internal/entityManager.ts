@@ -61,7 +61,7 @@ export interface EntityManager<Msg> {
 /** @internal */
 export function make<Msg, R>(
   recipientType: RecipientType.RecipientType<Msg>,
-  recipientBehaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+  recipientBehaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
   options: RecipientBehaviour.EntityBehaviourOptions = {}

@@ -84,7 +84,7 @@ export function registerEntity<Msg>(
   entityType: RecipientType.EntityType<Msg>
 ) {
   return <R>(
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ): Effect.Effect<void, never, Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =>
     Effect.flatMap(shardingTag, (_) => _.registerEntity(entityType)(behavior, options))
@@ -97,7 +97,7 @@ export function registerTopic<Msg>(
   topicType: RecipientType.TopicType<Msg>
 ) {
   return <R>(
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ): Effect.Effect<void, never, Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =>
     Effect.flatMap(shardingTag, (_) => _.registerTopic(topicType)(behavior, options))
@@ -657,7 +657,7 @@ function make(
     entityType: RecipientType.EntityType<Msg>
   ) {
     return <R>(
-      behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+      behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
       options?: RecipientBehaviour.EntityBehaviourOptions
     ): Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =>
       pipe(
@@ -671,7 +671,7 @@ function make(
     topicType: RecipientType.TopicType<Msg>
   ) {
     return <R>(
-      behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+      behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
       options?: RecipientBehaviour.EntityBehaviourOptions
     ): Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =>
       pipe(
@@ -686,7 +686,7 @@ function make(
 
   function registerRecipient<Msg, R>(
     recipientType: RecipientType.RecipientType<Msg>,
-    behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) {
     return Effect.gen(function*($) {

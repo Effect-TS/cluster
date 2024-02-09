@@ -12,12 +12,12 @@ import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 
 /** @internal  */
-export function fromFunctionEffect<R, Msg>(
+export function fromFunctionEffect<Msg, R>(
   handler: (
     entityId: string,
     message: Msg
   ) => Effect.Effect<MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>, never, R>
-): RecipientBehaviour.RecipientBehaviour<R, Msg> {
+): RecipientBehaviour.RecipientBehaviour<Msg, R> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
     pipe(
       Effect.context<R>(),
@@ -31,14 +31,14 @@ export function fromFunctionEffect<R, Msg>(
 }
 
 /** @internal  */
-export function fromFunctionEffectStateful<R, S, R2, Msg>(
+export function fromFunctionEffectStateful<S, R, Msg, R2>(
   initialState: (entityId: string) => Effect.Effect<S, never, R>,
   handler: (
     entityId: string,
     message: Msg,
     stateRef: Ref.Ref<S>
   ) => Effect.Effect<MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>, never, R2>
-): RecipientBehaviour.RecipientBehaviour<R | R2, Msg> {
+): RecipientBehaviour.RecipientBehaviour<Msg, R | R2> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
     pipe(
       initialState(entityId),
@@ -58,7 +58,7 @@ export function fromFunctionEffectStateful<R, S, R2, Msg>(
 }
 
 /** @internal */
-export function fromInMemoryQueue<R, Msg>(
+export function fromInMemoryQueue<Msg, R>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
@@ -67,7 +67,7 @@ export function fromInMemoryQueue<R, Msg>(
       value: Option.Option<Message.MessageWithResult.Exit<A>>
     ) => Effect.Effect<void>
   ) => Effect.Effect<void, never, R>
-): RecipientBehaviour.RecipientBehaviour<R, Msg> {
+): RecipientBehaviour.RecipientBehaviour<Msg, R> {
   return Effect.gen(function*(_) {
     const entityId = yield* _(RecipientBehaviourContext.entityId)
     const entityType = yield* _(RecipientBehaviourContext.recipientType)
