@@ -15,13 +15,11 @@ export const PodWithMetadataTypeId = Symbol.for(PodWithMetadataSymbolKey)
 export type PodWithMetadataTypeId = typeof PodWithMetadataTypeId
 
 /** @internal */
-export interface PodWithMetadata extends
-  Data.Data<{
-    [PodWithMetadataTypeId]: PodWithMetadataTypeId
-    pod: Pod.Pod
-    registered: number
-  }>
-{}
+export interface PodWithMetadata {
+  [PodWithMetadataTypeId]: PodWithMetadataTypeId
+  pod: Pod.Pod
+  registered: number
+}
 
 /** @internal */
 export function make(pod: Pod.Pod, registered: number): PodWithMetadata {
@@ -76,6 +74,7 @@ export function compareVersion(a: List.List<number>, b: List.List<number>): 0 | 
 
 /** @internal */
 export const schema: Schema.Schema<
+  PodWithMetadata,
   {
     readonly "@effect/cluster/PodWithMetadata": "@effect/cluster/PodWithMetadata"
     readonly pod: {
@@ -88,13 +87,13 @@ export const schema: Schema.Schema<
       readonly version: string
     }
     readonly registered: number
-  },
-  PodWithMetadata
+  }
 > = Schema.data(Schema.rename(
   Schema.struct({
     [PodWithMetadataSymbolKey]: Schema.compose(
-      Schema.compose(Schema.literal(PodWithMetadataSymbolKey), Schema.symbol),
-      Schema.uniqueSymbol(PodWithMetadataTypeId)
+      Schema.compose(Schema.literal(PodWithMetadataSymbolKey), Schema.symbol, { strict: false }),
+      Schema.uniqueSymbol(PodWithMetadataTypeId),
+      { strict: false }
     ),
     pod: Pod.schema,
     registered: Schema.number

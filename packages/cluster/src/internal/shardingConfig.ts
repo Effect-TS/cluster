@@ -15,7 +15,7 @@ export const ShardingConfigTypeId: ShardingConfig.ShardingConfigTypeId = Symbol.
 ) as ShardingConfig.ShardingConfigTypeId
 
 /** @internal */
-export const shardingConfigTag = Context.Tag<ShardingConfig.ShardingConfig>(ShardingConfigTypeId)
+export const shardingConfigTag = Context.GenericTag<ShardingConfig.ShardingConfig>(ShardingConfigSymbolKey)
 
 /** @internal */
 const defaultValues = {
@@ -97,7 +97,7 @@ const config: Config.Config<ShardingConfig.ShardingConfig> = Config.all({
 })
 
 /** @internal */
-export const fromConfig: Layer.Layer<never, ConfigError.ConfigError, ShardingConfig.ShardingConfig> = Layer.effect(
+export const fromConfig: Layer.Layer<ShardingConfig.ShardingConfig, ConfigError.ConfigError> = Layer.effect(
   shardingConfigTag,
   config
 )

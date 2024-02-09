@@ -43,20 +43,19 @@ export interface EntityManager<Msg> {
     entityId: string,
     req: A
   ) => Effect.Effect<
-    never,
+    MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
     | ShardingError.ShardingErrorEntityNotManagedByThisPod
     | ShardingError.ShardingErrorPodUnavailable
-    | ShardingError.ShardingErrorWhileOfferingMessage,
-    MessageState.MessageState<Message.MessageWithResult.Exit<A>>
+    | ShardingError.ShardingErrorWhileOfferingMessage
   >
 
   /** @internal */
   readonly terminateEntitiesOnShards: (
     shards: HashSet.HashSet<ShardId.ShardId>
-  ) => Effect.Effect<never, never, void>
+  ) => Effect.Effect<void>
 
   /** @internal */
-  readonly terminateAllEntities: Effect.Effect<never, never, void>
+  readonly terminateAllEntities: Effect.Effect<void>
 }
 
 /** @internal */
@@ -86,7 +85,7 @@ export function make<Msg, R>(
         Duration.toMillis
       )
 
-      function sleep(duration: number): Effect.Effect<never, never, void> {
+      function sleep(duration: number): Effect.Effect<void> {
         return pipe(
           Effect.Do,
           Effect.zipLeft(Clock.sleep(Duration.millis(duration))),
@@ -151,7 +150,7 @@ export function make<Msg, R>(
      */
     function forkEntityTermination(
       entityId: string
-    ): Effect.Effect<never, never, Option.Option<Fiber.RuntimeFiber<never, void>>> {
+    ): Effect.Effect<Option.Option<Fiber.RuntimeFiber<void, never>>> {
       return RefSynchronized.modifyEffect(entityStates, (entityStatesMap) =>
         pipe(
           HashMap.get(entityStatesMap, entityId),
@@ -186,9 +185,8 @@ export function make<Msg, R>(
     function getOrCreateEntityState(
       entityId: string
     ): Effect.Effect<
-      never,
-      ShardingError.ShardingErrorEntityNotManagedByThisPod,
-      Option.Option<EntityState.EntityState<Msg>>
+      Option.Option<EntityState.EntityState<Msg>>,
+      ShardingError.ShardingErrorEntityNotManagedByThisPod
     > {
       return RefSynchronized.modifyEffect(entityStates, (map) =>
         pipe(
@@ -270,11 +268,10 @@ export function make<Msg, R>(
       entityId: string,
       req: A
     ): Effect.Effect<
-      never,
+      MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
       | ShardingError.ShardingErrorEntityNotManagedByThisPod
       | ShardingError.ShardingErrorPodUnavailable
-      | ShardingError.ShardingErrorWhileOfferingMessage,
-      MessageState.MessageState<Message.MessageWithResult.Exit<A>>
+      | ShardingError.ShardingErrorWhileOfferingMessage
     > {
       return pipe(
         Effect.Do,

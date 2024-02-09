@@ -10,15 +10,15 @@ import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Stream from "effect/Stream"
 
-function append<IE, E, IA, A>(
+function append<A, IA, E, IE>(
   persistenceId: string,
-  failure: Schema.Schema<IE, E>,
-  success: Schema.Schema<IA, A>,
-  event: DurableExecutionEvent.DurableExecutionEvent<E, A>,
+  success: Schema.Schema<A, IA>,
+  failure: Schema.Schema<E, IE>,
+  event: DurableExecutionEvent.DurableExecutionEvent<A, E>,
   sql: Pg.PgClient
-): Effect.Effect<never, never, void> {
+): Effect.Effect<void> {
   return pipe(
-    Schema.encode(Schema.parseJson(DurableExecutionEvent.schema(failure, success)))(event),
+    Schema.encode(Schema.parseJson(DurableExecutionEvent.schema(success, failure)))(event),
     Effect.flatMap((event_json) =>
       sql`INSERT INTO execution_journal ${
         sql.insert({
@@ -32,19 +32,19 @@ function append<IE, E, IA, A>(
   )
 }
 
-function read<IE, E, IA, A>(
+function read<A, IA, E, IE>(
   executionId: string,
-  failure: Schema.Schema<IE, E>,
-  success: Schema.Schema<IA, A>,
+  success: Schema.Schema<A, IA>,
+  failure: Schema.Schema<E, IE>,
   fromSequence: number,
   sql: Pg.PgClient
-): Stream.Stream<never, never, DurableExecutionEvent.DurableExecutionEvent<E, A>> {
+): Stream.Stream<DurableExecutionEvent.DurableExecutionEvent<A, E>> {
   return pipe(
     sql<
       { event_json: string }
     >`SELECT event_json FROM execution_journal WHERE execution_id = ${(executionId)} AND sequence >= ${fromSequence} ORDER BY sequence ASC`,
     Effect.flatMap((result) =>
-      Schema.decode(Schema.array(Schema.parseJson(DurableExecutionEvent.schema(failure, success))))(
+      Schema.decode(Schema.array(Schema.parseJson(DurableExecutionEvent.schema(success, failure))))(
         result.map((_) => _.event_json)
       )
     ),
@@ -70,8 +70,8 @@ export const DurableExecutionJournalPostgres = Layer.effect(
     `)
 
     return ({
-      append: (executionId, failure, success, event) => append(executionId, failure, success, event, sql),
-      read: (executionId, failure, success, fromSequence) => read(executionId, failure, success, fromSequence, sql)
+      append: (executionId, success, failure, event) => append(executionId, success, failure, event, sql),
+      read: (executionId, success, failure, fromSequence) => read(executionId, success, failure, fromSequence, sql)
     })
   })
 )

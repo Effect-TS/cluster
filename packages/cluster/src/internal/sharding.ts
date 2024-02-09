@@ -1,4 +1,4 @@
-import { Tag } from "effect/Context"
+import * as Context from "effect/Context"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import type * as Either from "effect/Either"
@@ -42,17 +42,19 @@ import { NotAMessageWithReplierDefect, showHashSet } from "./utils.js"
 /**
  * @internal
  */
-export const shardingTag: Tag<Sharding.Sharding, Sharding.Sharding> = Tag<Sharding.Sharding>()
+export const shardingTag: Context.Tag<Sharding.Sharding, Sharding.Sharding> = Context.GenericTag<Sharding.Sharding>(
+  "@services/shardingTag"
+)
 
 /**
  * @internal
  */
-export const register: Effect.Effect<Sharding.Sharding, never, void> = Effect.flatMap(shardingTag, (_) => _.register)
+export const register: Effect.Effect<void, never, Sharding.Sharding> = Effect.flatMap(shardingTag, (_) => _.register)
 
 /**
  * @internal
  */
-export const unregister: Effect.Effect<Sharding.Sharding, never, void> = Effect.flatMap(
+export const unregister: Effect.Effect<void, never, Sharding.Sharding> = Effect.flatMap(
   shardingTag,
   (_) => _.unregister
 )
@@ -60,7 +62,7 @@ export const unregister: Effect.Effect<Sharding.Sharding, never, void> = Effect.
 /**
  * @internal
  */
-export const registerScoped: Effect.Effect<Sharding.Sharding | Scope.Scope, never, void> = pipe(
+export const registerScoped: Effect.Effect<void, never, Sharding.Sharding | Scope.Scope> = pipe(
   register,
   Effect.zipRight(Effect.addFinalizer(() => unregister))
 )
@@ -70,8 +72,8 @@ export const registerScoped: Effect.Effect<Sharding.Sharding | Scope.Scope, neve
  */
 export function registerSingleton<R>(
   name: string,
-  run: Effect.Effect<R, never, void>
-): Effect.Effect<Sharding.Sharding | R, never, void> {
+  run: Effect.Effect<void, never, R>
+): Effect.Effect<void, never, R | Sharding.Sharding> {
   return Effect.flatMap(shardingTag, (_) => _.registerSingleton(name, run))
 }
 
@@ -84,7 +86,7 @@ export function registerEntity<Msg>(
   return <R>(
     behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =>
+  ): Effect.Effect<void, never, Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =>
     Effect.flatMap(shardingTag, (_) => _.registerEntity(entityType)(behavior, options))
 }
 
@@ -97,7 +99,7 @@ export function registerTopic<Msg>(
   return <R>(
     behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ): Effect.Effect<Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =>
+  ): Effect.Effect<void, never, Sharding.Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =>
     Effect.flatMap(shardingTag, (_) => _.registerTopic(topicType)(behavior, options))
 }
 
@@ -107,7 +109,7 @@ export function registerTopic<Msg>(
 export function messenger<Msg>(
   entityType: RecipientType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding.Sharding, never, Messenger<Msg>> {
+): Effect.Effect<Messenger<Msg>, never, Sharding.Sharding> {
   return Effect.map(shardingTag, (_) => _.messenger(entityType, sendTimeout))
 }
 
@@ -117,14 +119,14 @@ export function messenger<Msg>(
 export function broadcaster<Msg>(
   topicType: RecipientType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
-): Effect.Effect<Sharding.Sharding, never, Broadcaster.Broadcaster<Msg>> {
+): Effect.Effect<Broadcaster.Broadcaster<Msg>, never, Sharding.Sharding> {
   return Effect.map(shardingTag, (_) => _.broadcaster(topicType, sendTimeout))
 }
 
 /**
  * @internal
  */
-export const getPods: Effect.Effect<Sharding.Sharding, never, HashSet.HashSet<PodAddress.PodAddress>> = Effect.flatMap(
+export const getPods: Effect.Effect<HashSet.HashSet<PodAddress.PodAddress>, never, Sharding.Sharding> = Effect.flatMap(
   shardingTag,
   (_) => _.getPods
 )
@@ -135,21 +137,21 @@ export const getPods: Effect.Effect<Sharding.Sharding, never, HashSet.HashSet<Po
 export const sendMessageToLocalEntityManagerWithoutRetries: (
   message: SerializedEnvelope.SerializedEnvelope
 ) => Effect.Effect<
-  Sharding.Sharding,
+  MessageState.MessageState<SerializedMessage.SerializedMessage>,
   ShardingError.ShardingError,
-  MessageState.MessageState<SerializedMessage.SerializedMessage>
+  Sharding.Sharding
 > = (message) => Effect.flatMap(shardingTag, (_) => _.sendMessageToLocalEntityManagerWithoutRetries(message))
 
 /**
  * @internal
  */
 export const getAssignedShardIds: Effect.Effect<
-  Sharding.Sharding,
+  HashSet.HashSet<ShardId.ShardId>,
   never,
-  HashSet.HashSet<ShardId.ShardId>
+  Sharding.Sharding
 > = Effect.flatMap(shardingTag, (_) => _.getAssignedShardIds)
 
-type SingletonEntry = [string, Effect.Effect<never, never, void>, Option.Option<Fiber.Fiber<never, void>>]
+type SingletonEntry = [string, Effect.Effect<void>, Option.Option<Fiber.Fiber<void>>]
 
 /**
  * @internal
@@ -190,13 +192,13 @@ function make(
     return RecipientType.getShardId(entityId, config.numberOfShards)
   }
 
-  const register: Effect.Effect<never, never, void> = pipe(
+  const register: Effect.Effect<void> = pipe(
     Effect.logDebug(`Registering pod ${PodAddress.show(address)} to Shard Manager`),
     Effect.zipRight(pipe(isShuttingDownRef, Ref.set(false))),
     Effect.zipRight(shardManager.register(address))
   )
 
-  const unregister: Effect.Effect<never, never, void> = pipe(
+  const unregister: Effect.Effect<void> = pipe(
     Effect.logDebug("Begin unregistering from ShardManager..."),
     Effect.zipRight(shardManager.getAssignments),
     Effect.matchCauseEffect({
@@ -230,7 +232,7 @@ function make(
     })
   )
 
-  const isSingletonNode: Effect.Effect<never, never, boolean> = pipe(
+  const isSingletonNode: Effect.Effect<boolean> = pipe(
     Ref.get(shardAssignments),
     Effect.map((_) =>
       pipe(
@@ -243,7 +245,7 @@ function make(
     )
   )
 
-  const startSingletonsIfNeeded: Effect.Effect<never, never, void> = pipe(
+  const startSingletonsIfNeeded: Effect.Effect<void> = pipe(
     Synchronized.updateEffect(
       singletons,
       (singletons) =>
@@ -272,7 +274,7 @@ function make(
     Effect.asUnit
   )
 
-  const stopSingletonsIfNeeded: Effect.Effect<never, never, void> = pipe(
+  const stopSingletonsIfNeeded: Effect.Effect<void> = pipe(
     Synchronized.updateEffect(
       singletons,
       (singletons) =>
@@ -298,7 +300,7 @@ function make(
     Effect.asUnit
   )
 
-  function registerSingleton<R>(name: string, run: Effect.Effect<R, never, void>): Effect.Effect<R, never, void> {
+  function registerSingleton<R>(name: string, run: Effect.Effect<void, never, R>): Effect.Effect<void, never, R> {
     return pipe(
       Effect.context<R>(),
       Effect.flatMap((context) =>
@@ -312,9 +314,9 @@ function make(
     )
   }
 
-  const isShuttingDown: Effect.Effect<never, never, boolean> = Ref.get(isShuttingDownRef)
+  const isShuttingDown: Effect.Effect<boolean> = Ref.get(isShuttingDownRef)
 
-  function assign(shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<never, never, void> {
+  function assign(shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<void> {
     return pipe(
       Ref.update(shardAssignments, (_) => HashSet.reduce(shards, _, (_, shardId) => HashMap.set(_, shardId, address))),
       Effect.zipRight(startSingletonsIfNeeded),
@@ -324,7 +326,7 @@ function make(
     )
   }
 
-  function unassign(shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<never, never, void> {
+  function unassign(shards: HashSet.HashSet<ShardId.ShardId>): Effect.Effect<void> {
     return pipe(
       Ref.update(shardAssignments, (_) =>
         HashSet.reduce(shards, _, (_, shardId) => {
@@ -341,7 +343,7 @@ function make(
 
   function getPodAddressForShardId(
     shardId: ShardId.ShardId
-  ): Effect.Effect<never, never, Option.Option<PodAddress.PodAddress>> {
+  ): Effect.Effect<Option.Option<PodAddress.PodAddress>> {
     return pipe(
       Ref.get(shardAssignments),
       Effect.map((shards) => HashMap.get(shards, shardId))
@@ -350,19 +352,19 @@ function make(
 
   function isEntityOnLocalShards(
     entityId: string
-  ): Effect.Effect<never, never, boolean> {
+  ): Effect.Effect<boolean> {
     return pipe(
       getPodAddressForShardId(getShardId(entityId)),
       Effect.map((_) => Option.isSome(_) && equals(_.value, address))
     )
   }
 
-  const getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>> = pipe(
+  const getPods: Effect.Effect<HashSet.HashSet<PodAddress.PodAddress>> = pipe(
     Ref.get(shardAssignments),
     Effect.map((_) => HashSet.fromIterable(HashMap.values(_)))
   )
 
-  const getAssignedShardIds: Effect.Effect<never, never, HashSet.HashSet<ShardId.ShardId>> = pipe(
+  const getAssignedShardIds: Effect.Effect<HashSet.HashSet<ShardId.ShardId>> = pipe(
     Ref.get(shardAssignments),
     Effect.map(HashMap.filter((_) => equals(_, address))),
     Effect.map(HashMap.keySet)
@@ -394,7 +396,7 @@ function make(
     })
   }
 
-  const refreshAssignments: Effect.Effect<Scope.Scope, never, void> = pipe(
+  const refreshAssignments: Effect.Effect<void, never, Scope.Scope> = pipe(
     Stream.fromEffect(Effect.map(shardManager.getAssignments, (_) => [_, true] as const)),
     Stream.merge(
       pipe(
@@ -413,11 +415,7 @@ function make(
 
   function sendMessageToLocalEntityManagerWithoutRetries(
     envelope: SerializedEnvelope.SerializedEnvelope
-  ): Effect.Effect<
-    never,
-    ShardingError.ShardingError,
-    MessageState.MessageState<SerializedMessage.SerializedMessage>
-  > {
+  ): Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError> {
     return Effect.gen(function*(_) {
       const entityManager = yield* _(getEntityManagerByEntityTypeName(envelope.entityType))
       const request = yield* _(serialization.decode(entityManager.recipientType.schema, envelope.body))
@@ -439,12 +437,8 @@ function make(
   function sendMessageToRemotePodWithoutRetries(
     pod: PodAddress.PodAddress,
     envelope: SerializedEnvelope.SerializedEnvelope
-  ): Effect.Effect<
-    never,
-    ShardingError.ShardingError,
-    MessageState.MessageState<SerializedMessage.SerializedMessage>
-  > {
-    const errorHandling = (_: never) => Effect.die("Not handled yet")
+  ): Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError> {
+    const errorHandling = () => Effect.die("Not handled yet")
 
     return pipe(
       pods.sendAndGetState(pod, envelope),
@@ -457,11 +451,7 @@ function make(
   function sendMessageToPodWithoutRetries(
     pod: PodAddress.PodAddress,
     envelope: SerializedEnvelope.SerializedEnvelope
-  ): Effect.Effect<
-    never,
-    ShardingError.ShardingError,
-    MessageState.MessageState<SerializedMessage.SerializedMessage>
-  > {
+  ): Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError> {
     return equals(pod, address)
       ? sendMessageToLocalEntityManagerWithoutRetries(envelope)
       : sendMessageToRemotePodWithoutRetries(pod, envelope)
@@ -527,11 +517,7 @@ function make(
     function sendMessage<A extends Msg>(
       entityId: string,
       message: A
-    ): Effect.Effect<
-      never,
-      ShardingError.ShardingError,
-      MessageState.MessageState<SerializedMessage.SerializedMessage>
-    > {
+    ): Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError> {
       const shardId = getShardId(entityId)
 
       return Effect.flatMap(serialization.encode(entityType.schema, message), (body) =>
@@ -571,12 +557,11 @@ function make(
       topicId: string,
       message: A
     ): Effect.Effect<
-      never,
-      ShardingError.ShardingError,
       HashMap.HashMap<
         PodAddress.PodAddress,
         Either.Either<ShardingError.ShardingError, MessageState.MessageState<SerializedMessage.SerializedMessage>>
-      >
+      >,
+      ShardingError.ShardingError
     > {
       return Effect.flatMap(serialization.encode(topicType.schema, message), (body) =>
         pipe(
@@ -674,7 +659,7 @@ function make(
     return <R>(
       behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
       options?: RecipientBehaviour.EntityBehaviourOptions
-    ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =>
+    ): Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =>
       pipe(
         registerRecipient(entityType, behavior, options),
         Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
@@ -688,7 +673,7 @@ function make(
     return <R>(
       behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
       options?: RecipientBehaviour.EntityBehaviourOptions
-    ): Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =>
+    ): Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =>
       pipe(
         registerRecipient(topicType, behavior, options),
         Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
@@ -696,11 +681,8 @@ function make(
       )
   }
 
-  const getShardingRegistrationEvents: Stream.Stream<
-    never,
-    never,
-    ShardingRegistrationEvent.ShardingRegistrationEvent
-  > = Stream.fromPubSub(eventsHub)
+  const getShardingRegistrationEvents: Stream.Stream<ShardingRegistrationEvent.ShardingRegistrationEvent> = Stream
+    .fromPubSub(eventsHub)
 
   function registerRecipient<Msg, R>(
     recipientType: RecipientType.RecipientType<Msg>,

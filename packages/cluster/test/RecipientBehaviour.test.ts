@@ -43,7 +43,7 @@ describe.concurrent("RecipientBehaviour", () => {
 
   it("Handles a whole queue of messages", () => {
     return Effect.gen(function*(_) {
-      const received = yield* _(Deferred.make<never, boolean>())
+      const received = yield* _(Deferred.make<boolean>())
 
       const behaviour = RecipientBehaviour.fromInMemoryQueue<never, Sample | PoisonPill.PoisonPill>(
         (entityId, dequeue) =>
@@ -66,7 +66,7 @@ describe.concurrent("RecipientBehaviour", () => {
   it("Ensure cleanup is run upon closing the scope", () => {
     let interrupted = false
     return Effect.gen(function*(_) {
-      const started = yield* _(Deferred.make<never, boolean>())
+      const started = yield* _(Deferred.make<boolean>())
 
       const behaviour = RecipientBehaviour.fromInMemoryQueue<never, Sample | PoisonPill.PoisonPill>(
         (entityId, dequeue) =>

@@ -20,14 +20,15 @@ export function show(value: ShardId.ShardId) {
 
 /** @internal */
 export const schema: Schema.Schema<
-  { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number },
-  ShardId.ShardId
+  ShardId.ShardId,
+  { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number }
 > = Schema.data(
   Schema.rename(
     Schema.struct({
       [ShardIdSymbolKey]: Schema.compose(
-        Schema.compose(Schema.literal(ShardIdSymbolKey), Schema.symbol),
-        Schema.uniqueSymbol(ShardIdTypeId)
+        Schema.compose(Schema.literal(ShardIdSymbolKey), Schema.symbol, { strict: false }),
+        Schema.uniqueSymbol(ShardIdTypeId),
+        { strict: false }
       ),
       value: Schema.number
     }),

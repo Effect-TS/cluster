@@ -28,25 +28,25 @@ export function DurableExecutionEventKilled(sequence: number): DurableExecutionE
   return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventKilled", sequence })
 }
 
-export interface DurableExecutionEventCompleted<E, A> {
+export interface DurableExecutionEventCompleted<A, E> {
   _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted"
   sequence: number
-  exit: Exit.Exit<E, A>
+  exit: Exit.Exit<A, E>
 }
 
-export function DurableExecutionEventCompleted<E, A>(exit: Exit.Exit<E, A>) {
-  return (sequence: number): DurableExecutionEvent<E, A> => ({
+export function DurableExecutionEventCompleted<A, E>(exit: Exit.Exit<A, E>) {
+  return (sequence: number): DurableExecutionEvent<A, E> => ({
     _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted",
     sequence,
     exit
   })
 }
 
-export type DurableExecutionEvent<E, A> =
+export type DurableExecutionEvent<A, E> =
   | DurableExecutionEventAttempted
   | DurableExecutionEventKillRequested
   | DurableExecutionEventKilled
-  | DurableExecutionEventCompleted<E, A>
+  | DurableExecutionEventCompleted<A, E>
 
 export type DurableExecutionEventFrom<IE, IA> = {
   readonly _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted"
@@ -63,9 +63,9 @@ export type DurableExecutionEventFrom<IE, IA> = {
   readonly exit: Schema.ExitFrom<IE, IA>
 }
 
-export function schema<IE, E, IA, A>(failure: Schema.Schema<IE, E>, success: Schema.Schema<IA, A>): Schema.Schema<
-  DurableExecutionEventFrom<IE, IA>,
-  DurableExecutionEvent<E, A>
+export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Schema.Schema<E, IE>): Schema.Schema<
+  DurableExecutionEvent<A, E>,
+  DurableExecutionEventFrom<IA, IE>
 > {
   return Schema.union(
     Schema.struct({
@@ -83,20 +83,20 @@ export function schema<IE, E, IA, A>(failure: Schema.Schema<IE, E>, success: Sch
     Schema.struct({
       _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventCompleted"),
       sequence: Schema.number,
-      exit: Schema.exit(failure, success)
+      exit: Schema.exit<E, IE, never, A, IA, never, never>({ failure, success })
     })
   )
 }
 
-export function match<E, A, B, C = B, D = C, F = D>(
+export function match<A, E, B, C = B, D = C, F = D>(
   fns: {
     onAttempted: (event: DurableExecutionEventAttempted) => B
     onKillRequested: (event: DurableExecutionEventKillRequested) => C
     onKilled: (event: DurableExecutionEventKilled) => D
-    onCompleted: (event: DurableExecutionEventCompleted<E, A>) => F
+    onCompleted: (event: DurableExecutionEventCompleted<A, E>) => F
   }
 ) {
-  return (event: DurableExecutionEvent<E, A>) => {
+  return (event: DurableExecutionEvent<A, E>) => {
     switch (event._tag) {
       case "@effect/cluster-workflow/DurableExecutionEventAttempted":
         return fns.onAttempted(event)

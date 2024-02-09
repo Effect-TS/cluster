@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import type * as Schema from "@effect/schema/Schema"
-import type * as Data from "effect/Data"
 import type * as Effect from "effect/Effect"
 import type * as Queue from "effect/Queue"
 import * as internal from "./internal/poisonPill.js"
@@ -23,13 +22,9 @@ export type PoisonPillTypeId = typeof PoisonPillTypeId
  * @since 1.0.0
  * @category models
  */
-export interface PoisonPill extends
-  Data.Data<
-    {
-      [PoisonPillTypeId]: PoisonPillTypeId
-    }
-  >
-{}
+export interface PoisonPill {
+  [PoisonPillTypeId]: PoisonPillTypeId
+}
 
 /**
  * `PoisonPill`
@@ -37,7 +32,7 @@ export interface PoisonPill extends
  * @since 1.0.0
  * @category constructors
  */
-export const make: Effect.Effect<never, never, PoisonPill> = internal.make
+export const make: Effect.Effect<PoisonPill> = internal.make
 
 /**
  * @since 1.0.0
@@ -52,8 +47,8 @@ export const isPoisonPill: (value: unknown) => value is PoisonPill = internal.is
  * @category schema
  */
 export const schema: Schema.Schema<
-  { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
-  Data.Data<{ readonly [PoisonPillTypeId]: typeof PoisonPillTypeId }>
+  { readonly [PoisonPillTypeId]: typeof PoisonPillTypeId },
+  { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" }
 > = internal.schema
 
 /**
@@ -63,5 +58,5 @@ export const schema: Schema.Schema<
  * @since 1.0.0
  * @category schema
  */
-export const takeOrInterrupt: <Req>(dequeue: Queue.Dequeue<PoisonPill | Req>) => Effect.Effect<never, never, Req> =
+export const takeOrInterrupt: <Req>(dequeue: Queue.Dequeue<PoisonPill | Req>) => Effect.Effect<Req> =
   internal.takeOrInterrupt

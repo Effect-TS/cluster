@@ -17,9 +17,9 @@ import * as Stream from "effect/Stream"
  * @category constructors
  */
 export const atLeastOnceStoragePostgres: Layer.Layer<
-  Serialization.Serialization | Pg.PgClient,
+  AtLeastOnceStorage.AtLeastOnceStorage,
   PgError.SqlError,
-  AtLeastOnceStorage.AtLeastOnceStorage
+  Serialization.Serialization | Pg.PgClient
 > = Layer.effect(
   AtLeastOnceStorage.Tag,
   Effect.gen(function*(_) {

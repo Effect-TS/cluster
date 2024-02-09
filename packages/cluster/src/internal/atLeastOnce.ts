@@ -12,7 +12,7 @@ import * as Sharding from "../Sharding.js"
 /** @internal */
 export function runPendingMessageSweeperScoped(
   interval: Duration.Duration
-): Effect.Effect<AtLeastOnceStorage.AtLeastOnceStorage | Sharding.Sharding | Scope.Scope, never, void> {
+): Effect.Effect<void, never, AtLeastOnceStorage.AtLeastOnceStorage | Sharding.Sharding | Scope.Scope> {
   return Effect.flatMap(AtLeastOnceStorage.Tag, (storage) =>
     pipe(
       Sharding.getAssignedShardIds,

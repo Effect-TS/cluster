@@ -38,7 +38,7 @@ describe.concurrent("Workflow", () => {
 
       const activity = pipe(
         mocked.effect,
-        Activity.make("activity", Schema.never, Schema.number)
+        Activity.make("activity", Schema.number, Schema.never)
       )
 
       const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
@@ -59,7 +59,7 @@ describe.concurrent("Workflow", () => {
 
       const activity = pipe(
         mocked.effect,
-        Activity.make("activity", Schema.string, Schema.number)
+        Activity.make("activity", Schema.number, Schema.string)
       )
 
       const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
@@ -111,7 +111,7 @@ describe.concurrent("Workflow", () => {
     return Effect.gen(function*(_) {
       const mocked = utils.mockEffect(() => Exit.succeed(Math.random()))
 
-      const activity = pipe(mocked.effect, Activity.make("activity", Schema.never, Schema.number))
+      const activity = pipe(mocked.effect, Activity.make("activity", Schema.number, Schema.never))
 
       const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
 
@@ -233,7 +233,7 @@ describe.concurrent("Workflow", () => {
                   )
                 )
               ),
-              Activity.make("activity", Schema.never, Schema.number)
+              Activity.make("activity", Schema.number, Schema.never)
             )
 
             const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
@@ -254,7 +254,7 @@ describe.concurrent("Workflow", () => {
       const mockedActivity = utils.mockActivity("activity", Schema.never, Schema.number, () => Exit.succeed(1))
       const mockedRelease = utils.mockEffect(() => Exit.succeed(1))
       const mockedUse = utils.mockEffect(() => Exit.succeed(1))
-      const latch = yield* _(Deferred.make<never, void>())
+      const latch = yield* _(Deferred.make<void>())
       const persistenceIdRef = yield* _(Ref.make(""))
 
       const exit = yield* _(

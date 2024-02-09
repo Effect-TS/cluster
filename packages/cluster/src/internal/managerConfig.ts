@@ -12,12 +12,13 @@ export const ManagerConfigTypeId: ManagerConfig.ManagerConfigTypeId = Symbol.for
 ) as ManagerConfig.ManagerConfigTypeId
 
 /** @internal */
-export const managerConfigTag: Context.Tag<ManagerConfig.ManagerConfig, ManagerConfig.ManagerConfig> = Context.Tag<
-  ManagerConfig.ManagerConfig
->()
+export const managerConfigTag: Context.Tag<ManagerConfig.ManagerConfig, ManagerConfig.ManagerConfig> = Context
+  .GenericTag<
+    ManagerConfig.ManagerConfig
+  >("@services/managerConfigTag")
 
 /** @internal */
-export const defaults: Layer.Layer<never, never, ManagerConfig.ManagerConfig> = Layer.succeed(managerConfigTag, {
+export const defaults: Layer.Layer<ManagerConfig.ManagerConfig> = Layer.succeed(managerConfigTag, {
   [ManagerConfigTypeId]: ManagerConfigTypeId,
   numberOfShards: 300,
   apiPort: 8080,

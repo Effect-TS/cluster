@@ -6,7 +6,7 @@ import * as Pods from "@effect/cluster/Pods"
 import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import type * as ShardId from "@effect/cluster/ShardId"
 import { ShardingErrorPodUnavailable } from "@effect/cluster/ShardingError"
-import * as Http from "@effect/platform-node/HttpClient"
+import * as Http from "@effect/platform/HttpClient"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
@@ -22,7 +22,7 @@ function asHttpUrl(pod: PodAddress.PodAddress): string {
  * @since 1.0.0
  * @category layers
  */
-export const httpPods: Layer.Layer<Http.client.Client.Default, never, Pods.Pods> = Layer.effect(
+export const httpPods: Layer.Layer<Pods.Pods, never, Http.client.Client.Default> = Layer.effect(
   Pods.Pods,
   Effect.gen(function*(_) {
     const client = yield* _(Http.client.Client, Effect.map(Http.client.filterStatusOk))

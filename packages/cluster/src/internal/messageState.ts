@@ -52,8 +52,8 @@ export function match<A, B, C = B>(
 /** @internal */
 export function mapEffect<A, B, R, E>(
   value: MessageState.MessageState<A>,
-  fn: (value: A) => Effect.Effect<R, E, B>
-): Effect.Effect<R, E, MessageState.MessageState<B>> {
+  fn: (value: A) => Effect.Effect<B, E, R>
+): Effect.Effect<MessageState.MessageState<B>, E, R> {
   return pipe(
     value,
     match({
@@ -62,9 +62,9 @@ export function mapEffect<A, B, R, E>(
         pipe(
           _.result,
           Option.match({
-            onNone: () => Effect.succeed(Processed(Option.none())) as Effect.Effect<R, E, MessageState.MessageState<B>>,
+            onNone: () => Effect.succeed(Processed(Option.none())) as Effect.Effect<MessageState.MessageState<B>, E, R>,
             onSome: (_) =>
-              Effect.map(fn(_), (_) => Processed(Option.some(_))) as Effect.Effect<R, E, MessageState.MessageState<B>>
+              Effect.map(fn(_), (_) => Processed(Option.some(_))) as Effect.Effect<MessageState.MessageState<B>, E, R>
           })
         )
     })
@@ -72,18 +72,19 @@ export function mapEffect<A, B, R, E>(
 }
 
 /** @internal */
-export function schema<I, A>(
-  result: Schema.Schema<I, A>
+export function schema<A, I>(
+  result: Schema.Schema<A, I>
 ): Schema.Schema<
-  MessageState.MessageState.From<I>,
-  MessageState.MessageState<A>
+  MessageState.MessageState<A>,
+  MessageState.MessageState.From<I>
 > {
   return Schema.union(
     Schema.rename(
       Schema.struct({
         [MessageStateSymbolKey]: Schema.compose(
-          Schema.compose(Schema.literal(MessageStateSymbolKey), Schema.symbol),
-          Schema.uniqueSymbol(MessageStateTypeId)
+          Schema.compose(Schema.literal(MessageStateSymbolKey), Schema.symbol, { strict: false }),
+          Schema.uniqueSymbol(MessageStateTypeId),
+          { strict: false }
         ),
         _tag: Schema.literal("@effect/cluster/MessageState/Acknowledged")
       }),
@@ -92,8 +93,9 @@ export function schema<I, A>(
     Schema.rename(
       Schema.struct({
         [MessageStateSymbolKey]: Schema.compose(
-          Schema.compose(Schema.literal(MessageStateSymbolKey), Schema.symbol),
-          Schema.uniqueSymbol(MessageStateTypeId)
+          Schema.compose(Schema.literal(MessageStateSymbolKey), Schema.symbol, { strict: false }),
+          Schema.uniqueSymbol(MessageStateTypeId),
+          { strict: false }
         ),
         _tag: Schema.literal("@effect/cluster/MessageState/Processed"),
         result: Schema.option(result)

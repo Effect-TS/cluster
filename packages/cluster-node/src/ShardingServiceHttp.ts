@@ -3,7 +3,8 @@
  */
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
-import * as Http from "@effect/platform-node/HttpServer"
+import * as NodeHttpServer from "@effect/platform-node/NodeHttpServer"
+import * as Http from "@effect/platform/HttpServer"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as HashSet from "effect/HashSet"
@@ -14,7 +15,7 @@ import * as ShardingProtocolHttp from "./ShardingProtocolHttp.js"
 const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
   const config = yield* _(ShardingConfig.ShardingConfig)
 
-  return Http.server.layer(() => createServer(), { port: config.shardingPort })
+  return NodeHttpServer.server.layer(() => createServer(), { port: config.shardingPort })
 }))
 
 /**
@@ -22,10 +23,10 @@ const internalServer = Layer.unwrapEffect(Effect.gen(function*(_) {
  * @category layers
  */
 export const shardingServiceHttp: Layer.Layer<
-  ShardingConfig.ShardingConfig | Sharding.Sharding,
+  never,
   Http.error.ServeError,
-  never
-> = (Http.router.empty.pipe(
+  ShardingConfig.ShardingConfig | Sharding.Sharding
+> = Http.router.empty.pipe(
   Http.router.post(
     "/assign-shards",
     Effect.gen(function*(_) {
@@ -66,4 +67,4 @@ export const shardingServiceHttp: Layer.Layer<
     })
   ),
   Http.server.serve(Http.middleware.logger)
-)).pipe(Layer.provide(internalServer))
+).pipe(Layer.provide(internalServer))

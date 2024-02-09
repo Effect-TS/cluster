@@ -10,15 +10,11 @@ import * as Option from "effect/Option"
 import type * as Request from "effect/Request"
 
 export interface Workflow<R, T extends Schema.TaggedRequest.Any> {
-  schema: Schema.Schema<unknown, T>
+  schema: Schema.Schema<T, unknown>
   executionId: (input: T) => string
   execute: (
     input: T
-  ) => Effect.Effect<
-    R | WorkflowContext.WorkflowContext,
-    Request.Request.Error<T>,
-    Request.Request.Success<T>
-  >
+  ) => Effect.Effect<Request.Request.Success<T>, Request.Request.Error<T>, R | WorkflowContext.WorkflowContext>
 }
 
 export namespace Workflow {
@@ -27,15 +23,15 @@ export namespace Workflow {
   export type Request<A> = A extends Workflow<any, infer T> ? T : never
 }
 
-export function make<I, T extends Schema.TaggedRequest.Any, R>(
-  schema: Schema.Schema<I, T>,
+export function make<T extends Schema.TaggedRequest.Any, I, R>(
+  schema: Schema.Schema<T, I>,
   executionId: (input: T) => string,
   execute: (
     input: T
-  ) => Effect.Effect<R, Request.Request.Error<T>, Request.Request.Success<T>>
+  ) => Effect.Effect<Request.Request.Success<T>, Request.Request.Error<T>, R>
 ): Workflow<Exclude<R, WorkflowContext.WorkflowContext>, T> {
   return ({
-    schema: schema as Schema.Schema<unknown, T>,
+    schema: schema as Schema.Schema<T, unknown>,
     executionId,
     execute: execute as any
   })
@@ -44,7 +40,7 @@ export function make<I, T extends Schema.TaggedRequest.Any, R>(
 export function union<WFs extends ReadonlyArray<Workflow.Any>>(
   ...wfs: WFs
 ) {
-  return make<unknown, Workflow.Request<WFs[number]>, Workflow.Context<WFs[number]>>(
+  return make<Workflow.Request<WFs[number]>, unknown, Workflow.Context<WFs[number]>>(
     Schema.union(...wfs.map((_) => _.schema)),
     (request) =>
       pipe(
@@ -64,7 +60,7 @@ export function union<WFs extends ReadonlyArray<Workflow.Any>>(
 }
 
 function remainingDuration(persistenceId: string, duration: Duration.Duration) {
-  const startedAtActivity = Activity.make(persistenceId, Schema.never, Schema.number)(pipe(
+  const startedAtActivity = Activity.make(persistenceId, Schema.number, Schema.never)(pipe(
     Clock.currentTimeMillis
   ))
 

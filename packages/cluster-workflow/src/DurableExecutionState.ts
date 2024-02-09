@@ -24,30 +24,30 @@ export class DurableExecutionStateKilled
 {
 }
 
-export class DurableExecutionStateCompleted<E, A>
+export class DurableExecutionStateCompleted<A, E>
   extends Data.TaggedClass("@effect/cluster-workflow/DurableExecutionStateCompleted")<{
     lastSequence: number
     currentAttempt: number
-    exit: Exit.Exit<E, A>
+    exit: Exit.Exit<A, E>
   }>
 {
 }
 
-export type DurableExecutionState<E, A> =
+export type DurableExecutionState<A, E> =
   | DurableExecutionStatePending
   | DurableExecutionStateKilling
   | DurableExecutionStateKilled
-  | DurableExecutionStateCompleted<E, A>
+  | DurableExecutionStateCompleted<A, E>
 
-export function initialState<E, A>(): DurableExecutionState<E, A> {
+export function initialState<A, E>(): DurableExecutionState<A, E> {
   return new DurableExecutionStatePending({ lastSequence: 0, currentAttempt: 0 })
 }
 
-export function match<E, A, B, C = B, D = C, F = D>(fa: DurableExecutionState<E, A>, fns: {
+export function match<A, E, B, C = B, D = C, F = D>(fa: DurableExecutionState<A, E>, fns: {
   onPending: (a: DurableExecutionStatePending) => B
   onKilling: (a: DurableExecutionStateKilling) => C
   onKilled: (a: DurableExecutionStateKilled) => D
-  onCompleted: (a: DurableExecutionStateCompleted<E, A>) => F
+  onCompleted: (a: DurableExecutionStateCompleted<A, E>) => F
 }) {
   switch (fa._tag) {
     case "@effect/cluster-workflow/DurableExecutionStatePending":
@@ -61,10 +61,10 @@ export function match<E, A, B, C = B, D = C, F = D>(fa: DurableExecutionState<E,
   }
 }
 
-export function foldDurableExecutionEvent<E, A>(
-  state: DurableExecutionState<E, A>,
-  event: DurableExecutionEvent.DurableExecutionEvent<E, A>
-): DurableExecutionState<E, A> {
+export function foldDurableExecutionEvent<A, E>(
+  state: DurableExecutionState<A, E>,
+  event: DurableExecutionEvent.DurableExecutionEvent<A, E>
+): DurableExecutionState<A, E> {
   return pipe(
     event,
     DurableExecutionEvent.match({

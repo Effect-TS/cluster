@@ -35,20 +35,20 @@ export class CrashableRuntimeScheduler implements Scheduler.Scheduler {
 }
 
 export interface CrashableRuntime {
-  crash: Effect.Effect<never, never, void>
-  run: <R, E, A>(
-    fn: (restore: <R2, E2, A2>(fa: Effect.Effect<R2, E2, A2>) => Effect.Effect<R2, E2, A2>) => Effect.Effect<R, E, A>
-  ) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
+  crash: Effect.Effect<void>
+  run: <A, E, R>(
+    fn: (restore: <A2, E2, R2>(fa: Effect.Effect<A2, E2, R2>) => Effect.Effect<A2, E2, R2>) => Effect.Effect<A, E, R>
+  ) => Effect.Effect<A, E | CrashableRuntimeCrashedError, R>
 }
 
 export const make = pipe(
   FiberRef.get(FiberRef.currentScheduler),
   Effect.flatMap((baseScheduler) =>
     pipe(
-      Deferred.make<CrashableRuntimeCrashedError, never>(),
+      Deferred.make<never, CrashableRuntimeCrashedError>(),
       Effect.map((latch) => {
         const crashableScheduler = new CrashableRuntimeScheduler(baseScheduler)
-        const restore = <R, E, A>(fa: Effect.Effect<R, E, A>) => pipe(fa, Effect.withScheduler(baseScheduler))
+        const restore = <R, E, A>(fa: Effect.Effect<A, E, R>) => pipe(fa, Effect.withScheduler(baseScheduler))
 
         const runtime: CrashableRuntime = {
           crash: restore(pipe(
@@ -78,12 +78,12 @@ export function retryWhileCrashes<R, E, A>(
   return pipe(
     make,
     Effect.flatMap(fn),
-    Effect.retryWhile(isCrashableRuntimeCrashedError)
+    Effect.retry({ while: isCrashableRuntimeCrashedError })
   ) as any
 }
 
 export function runWithCrash<R, E, A>(
-  fn: (crash: Effect.Effect<never, never, never>) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
+  fn: (crash: Effect.Effect<never>) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
 ): Effect.Effect<R, E | CrashableRuntimeCrashedError, A> {
   return pipe(
     make,

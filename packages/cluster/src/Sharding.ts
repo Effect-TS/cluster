@@ -28,8 +28,8 @@ import type * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
 export interface Sharding {
   /** @internal */
   readonly getShardId: (entityId: string) => ShardId.ShardId
-  readonly register: Effect.Effect<never, never, void>
-  readonly unregister: Effect.Effect<never, never, void>
+  readonly register: Effect.Effect<void>
+  readonly unregister: Effect.Effect<void>
   readonly messenger: <Msg>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
@@ -40,41 +40,33 @@ export interface Sharding {
   ) => Broadcaster<Msg>
   readonly isEntityOnLocalShards: (
     entityId: string
-  ) => Effect.Effect<never, never, boolean>
-  readonly isShuttingDown: Effect.Effect<never, never, boolean>
+  ) => Effect.Effect<boolean>
+  readonly isShuttingDown: Effect.Effect<boolean>
 
-  readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
+  readonly registerScoped: Effect.Effect<void, never, Scope.Scope>
   readonly registerEntity: <Msg>(
     entityType: RecipentType.EntityType<Msg>
   ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
+  ) => Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
   readonly registerTopic: <Msg>(
     topicType: RecipentType.TopicType<Msg>
   ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
-  readonly getShardingRegistrationEvents: Stream.Stream<
-    never,
-    never,
-    ShardingRegistrationEvent.ShardingRegistrationEvent
-  >
-  readonly registerSingleton: <R>(name: string, run: Effect.Effect<R, never, void>) => Effect.Effect<R, never, void>
+  ) => Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
+  readonly getShardingRegistrationEvents: Stream.Stream<ShardingRegistrationEvent.ShardingRegistrationEvent>
+  readonly registerSingleton: <R>(name: string, run: Effect.Effect<void, never, R>) => Effect.Effect<void, never, R>
   /** @internal */
-  readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>
-  readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
-  readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
+  readonly refreshAssignments: Effect.Effect<void, never, Scope.Scope>
+  readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
+  readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
   readonly sendMessageToLocalEntityManagerWithoutRetries: (
     message: SerializedEnvelope.SerializedEnvelope
-  ) => Effect.Effect<
-    never,
-    ShardingError.ShardingError,
-    MessageState.MessageState<SerializedMessage.SerializedMessage>
-  >
-  readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
-  readonly getAssignedShardIds: Effect.Effect<never, never, HashSet.HashSet<ShardId.ShardId>>
+  ) => Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError>
+  readonly getPods: Effect.Effect<HashSet.HashSet<PodAddress.PodAddress>>
+  readonly getAssignedShardIds: Effect.Effect<HashSet.HashSet<ShardId.ShardId>>
 }
 
 /**
@@ -94,21 +86,21 @@ export const live = internal.live
  * @since 1.0.0
  * @category utils
  */
-export const register: Effect.Effect<Sharding, never, void> = internal.register
+export const register: Effect.Effect<void, never, Sharding> = internal.register
 
 /**
  * Notify the shard manager that shards must be unassigned from this pod.
  * @since 1.0.0
  * @category utils
  */
-export const unregister: Effect.Effect<Sharding, never, void> = internal.unregister
+export const unregister: Effect.Effect<void, never, Sharding> = internal.unregister
 
 /**
  * Same as `register`, but will automatically call `unregister` when the `Scope` is terminated.
  * @since 1.0.0
  * @category utils
  */
-export const registerScoped: Effect.Effect<Scope.Scope | Sharding, never, void> = internal.registerScoped
+export const registerScoped: Effect.Effect<void, never, Scope.Scope | Sharding> = internal.registerScoped
 
 /**
  * Start a computation that is guaranteed to run only on a single pod.
@@ -118,8 +110,8 @@ export const registerScoped: Effect.Effect<Scope.Scope | Sharding, never, void> 
  */
 export const registerSingleton: <R>(
   name: string,
-  run: Effect.Effect<R, never, void>
-) => Effect.Effect<Sharding | R, never, void> = internal.registerSingleton
+  run: Effect.Effect<void, never, R>
+) => Effect.Effect<void, never, Sharding | R> = internal.registerSingleton
 
 /**
  * Register a new entity type, allowing pods to send messages to entities of this type.
@@ -134,7 +126,7 @@ export const registerEntity: <Msg>(
 ) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
-) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =
+) => Effect.Effect<void, never, Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =
   internal.registerEntity
 
 /**
@@ -150,7 +142,7 @@ export const registerTopic: <Msg>(
 ) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
-) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void> =
+) => Effect.Effect<void, never, Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>> =
   internal.registerTopic
 
 /**
@@ -162,7 +154,7 @@ export const registerTopic: <Msg>(
 export const messenger: <Msg>(
   entityType: RecipentType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
-) => Effect.Effect<Sharding, never, Messenger<Msg>> = internal.messenger
+) => Effect.Effect<Messenger<Msg>, never, Sharding> = internal.messenger
 
 /**
  * Get an object that allows broadcasting messages to a given topic type.
@@ -173,14 +165,14 @@ export const messenger: <Msg>(
 export const broadcaster: <Msg>(
   topicType: RecipentType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
-) => Effect.Effect<Sharding, never, Broadcaster<Msg>> = internal.broadcaster
+) => Effect.Effect<Broadcaster<Msg>, never, Sharding> = internal.broadcaster
 
 /**
  * Get the list of pods currently registered to the Shard Manager
  * @since 1.0.0
  * @category utils
  */
-export const getPods: Effect.Effect<Sharding, never, HashSet.HashSet<PodAddress.PodAddress>> = internal.getPods
+export const getPods: Effect.Effect<HashSet.HashSet<PodAddress.PodAddress>, never, Sharding> = internal.getPods
 
 /**
  * Sends a raw message to the local entity manager
@@ -190,9 +182,9 @@ export const getPods: Effect.Effect<Sharding, never, HashSet.HashSet<PodAddress.
 export const sendMessageToLocalEntityManagerWithoutRetries: (
   message: SerializedEnvelope.SerializedEnvelope
 ) => Effect.Effect<
-  Sharding,
+  MessageState.MessageState<SerializedMessage.SerializedMessage>,
   ShardingError.ShardingError,
-  MessageState.MessageState<SerializedMessage.SerializedMessage>
+  Sharding
 > = internal.sendMessageToLocalEntityManagerWithoutRetries
 
 /**
@@ -200,5 +192,5 @@ export const sendMessageToLocalEntityManagerWithoutRetries: (
  * @since 1.0.0
  * @category utils
  */
-export const getAssignedShardIds: Effect.Effect<Sharding, never, HashSet.HashSet<ShardId.ShardId>> =
+export const getAssignedShardIds: Effect.Effect<HashSet.HashSet<ShardId.ShardId>, never, Sharding> =
   internal.getAssignedShardIds

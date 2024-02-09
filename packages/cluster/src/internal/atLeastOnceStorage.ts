@@ -13,7 +13,7 @@ export const AtLeastOnceStorageTypeId: AtLeastOnceStorage.AtLeastOnceStorageType
 export const atLeastOnceStorageTag: Context.Tag<
   AtLeastOnceStorage.AtLeastOnceStorage,
   AtLeastOnceStorage.AtLeastOnceStorage
-> = Context.Tag<AtLeastOnceStorage.AtLeastOnceStorage>(AtLeastOnceStorageTypeId)
+> = Context.GenericTag<AtLeastOnceStorage.AtLeastOnceStorage>(AtLeastOnceStorageSymbolKey)
 
 /** @internal */
 export function make(

@@ -45,6 +45,6 @@ export function isShardingErrorSerialization(value: any): value is ShardingError
  * @category schema
  */
 export const ShardingErrorSerializationSchema: Schema.Schema<
-  Schema.Schema.From<typeof ShardingErrorSerializationSchema_>,
-  ShardingErrorSerialization
+  ShardingErrorSerialization,
+  Schema.Schema.From<typeof ShardingErrorSerializationSchema_>
 > = ShardingErrorSerializationSchema_

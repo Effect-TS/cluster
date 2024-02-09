@@ -5,4 +5,4 @@ export interface ActivityContext {
   currentAttempt: number
 }
 
-export const ActivityContext = Context.Tag<ActivityContext>()
+export const ActivityContext = Context.GenericTag<ActivityContext>("@services/ActivityContext")

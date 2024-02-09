@@ -18,7 +18,7 @@ import * as Stream from "effect/Stream"
 import * as fs from "node:fs"
 
 /** @internal */
-export function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
+export function jsonStringify<A, I>(value: A, schema: Schema.Schema<A, I>) {
   return pipe(
     value,
     Schema.encode(schema),
@@ -28,7 +28,7 @@ export function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
 }
 
 /** @internal */
-export function jsonParse<I, A>(value: string, schema: Schema.Schema<I, A>) {
+export function jsonParse<A, I>(value: string, schema: Schema.Schema<A, I>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
     Effect.flatMap(Schema.decode(schema)),
@@ -45,7 +45,7 @@ const AssignmentsSchema = Schema.array(
 
 const PodsSchema = Schema.array(Schema.tuple(PodAddress.schema, Pod.schema))
 
-function writeJsonData<I, A>(fileName: string, schema: Schema.Schema<I, A>, data: A) {
+function writeJsonData<A, I>(fileName: string, schema: Schema.Schema<A, I>, data: A) {
   return pipe(
     jsonStringify(data, schema),
     Effect.flatMap((data) => Effect.sync(() => fs.writeFileSync(fileName, data))),
@@ -53,7 +53,7 @@ function writeJsonData<I, A>(fileName: string, schema: Schema.Schema<I, A>, data
   )
 }
 
-function readJsonData<I, A>(fileName: string, schema: Schema.Schema<I, A>, empty: A) {
+function readJsonData<A, I>(fileName: string, schema: Schema.Schema<A, I>, empty: A) {
   return pipe(
     Effect.sync(() => fs.existsSync(fileName)),
     Effect.flatMap((exists) =>
@@ -68,26 +68,25 @@ function readJsonData<I, A>(fileName: string, schema: Schema.Schema<I, A>, empty
   )
 }
 
-const getAssignments: Effect.Effect<
-  never,
-  never,
-  HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-> = pipe(readJsonData(ASSIGNMENTS_FILE, AssignmentsSchema, []), Effect.map(HashMap.fromIterable))
+const getAssignments: Effect.Effect<HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>> = pipe(
+  readJsonData(ASSIGNMENTS_FILE, AssignmentsSchema, []),
+  Effect.map(HashMap.fromIterable)
+)
 
 function saveAssignments(
   assignments: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-): Effect.Effect<never, never, void> {
+): Effect.Effect<void> {
   return writeJsonData(ASSIGNMENTS_FILE, AssignmentsSchema, Array.from(assignments))
 }
 
-const getPods: Effect.Effect<never, never, HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>> = pipe(
+const getPods: Effect.Effect<HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>> = pipe(
   readJsonData(PODS_FILE, PodsSchema, []),
   Effect.map(HashMap.fromIterable)
 )
 
 function savePods(
   pods: HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>
-): Effect.Effect<never, never, void> {
+): Effect.Effect<void> {
   return writeJsonData("pods.json", PodsSchema, Array.from(pods))
 }
 

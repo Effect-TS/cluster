@@ -46,6 +46,6 @@ export function isShardingErrorEntityNotManagedByThisPod(value: any): value is S
  * @category schema
  */
 export const ShardingErrorEntityNotManagedByThisPodSchema: Schema.Schema<
-  Schema.Schema.From<typeof ShardingErrorEntityNotManagedByThisPodSchema_>,
-  ShardingErrorEntityNotManagedByThisPod
+  ShardingErrorEntityNotManagedByThisPod,
+  Schema.Schema.From<typeof ShardingErrorEntityNotManagedByThisPodSchema_>
 > = ShardingErrorEntityNotManagedByThisPodSchema_

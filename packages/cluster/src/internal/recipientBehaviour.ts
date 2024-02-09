@@ -16,7 +16,7 @@ export function fromFunctionEffect<R, Msg>(
   handler: (
     entityId: string,
     message: Msg
-  ) => Effect.Effect<R, never, MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>>
+  ) => Effect.Effect<MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>, never, R>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
     pipe(
@@ -32,12 +32,12 @@ export function fromFunctionEffect<R, Msg>(
 
 /** @internal  */
 export function fromFunctionEffectStateful<R, S, R2, Msg>(
-  initialState: (entityId: string) => Effect.Effect<R, never, S>,
+  initialState: (entityId: string) => Effect.Effect<S, never, R>,
   handler: (
     entityId: string,
     message: Msg,
     stateRef: Ref.Ref<S>
-  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>>
+  ) => Effect.Effect<MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>, never, R2>
 ): RecipientBehaviour.RecipientBehaviour<R | R2, Msg> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
     pipe(
@@ -65,8 +65,8 @@ export function fromInMemoryQueue<R, Msg>(
     processed: <A extends Msg>(
       message: A,
       value: Option.Option<Message.MessageWithResult.Exit<A>>
-    ) => Effect.Effect<never, never, void>
-  ) => Effect.Effect<R, never, void>
+    ) => Effect.Effect<void>
+  ) => Effect.Effect<void, never, R>
 ): RecipientBehaviour.RecipientBehaviour<R, Msg> {
   return Effect.gen(function*(_) {
     const entityId = yield* _(RecipientBehaviourContext.entityId)
@@ -89,7 +89,7 @@ export function fromInMemoryQueue<R, Msg>(
     }
 
     return yield* _(pipe(
-      Deferred.make<never, boolean>(),
+      Deferred.make<boolean>(),
       Effect.flatMap((shutdownCompleted) =>
         pipe(
           Effect.acquireRelease(

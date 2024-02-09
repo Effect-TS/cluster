@@ -17,10 +17,10 @@ export const SerializationTypeId: Serialization.SerializationTypeId = Symbol.for
 ) as Serialization.SerializationTypeId
 
 /** @internal */
-export const serializationTag = Context.Tag<Serialization.Serialization>(SerializationTypeId)
+export const serializationTag = Context.GenericTag<Serialization.Serialization>(SerializationSymbolKey)
 
 /** @internal */
-function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
+function jsonStringify<A, I>(value: A, schema: Schema.Schema<A, I>) {
   return pipe(
     value,
     Schema.encode(schema),
@@ -30,7 +30,7 @@ function jsonStringify<I, A>(value: A, schema: Schema.Schema<I, A>) {
 }
 
 /** @internal */
-function jsonParse<I, A>(value: string, schema: Schema.Schema<I, A>) {
+function jsonParse<A, I>(value: string, schema: Schema.Schema<A, I>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
     Effect.flatMap(Schema.decode(schema)),
@@ -46,7 +46,7 @@ export function make(
 }
 
 /** @internal */
-export const json: Layer.Layer<never, never, Serialization.Serialization> = Layer.succeed(
+export const json: Layer.Layer<Serialization.Serialization> = Layer.succeed(
   serializationTag,
   make({
     encode: (schema, message) =>

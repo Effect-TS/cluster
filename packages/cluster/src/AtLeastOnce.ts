@@ -24,5 +24,5 @@ export const atLeastOnceRecipientBehaviour: <R, Msg>(
  */
 export const runPendingMessageSweeperScoped: (
   interval: Duration.Duration
-) => Effect.Effect<AtLeastOnceStorage.AtLeastOnceStorage | Sharding.Sharding | Scope.Scope, never, void> =
+) => Effect.Effect<void, never, AtLeastOnceStorage.AtLeastOnceStorage | Sharding.Sharding | Scope.Scope> =
   internal.runPendingMessageSweeperScoped

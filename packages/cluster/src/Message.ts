@@ -12,7 +12,9 @@ import * as internal from "./internal/message.js"
  * @since 1.0.0
  * @category models
  */
-export interface MessageWithResult<Failure, Success> extends Serializable.WithResult<any, Failure, any, Success> {
+export interface MessageWithResult<Failure, Success>
+  extends Serializable.WithResult<never, any, Failure, any, Success>
+{
 }
 
 /**
@@ -24,7 +26,9 @@ export namespace MessageWithResult {
    * @since 1.0.0
    * @category models
    */
-  export type Any = Serializable.WithResult<never, never, any, any> | Serializable.WithResult<any, any, any, any>
+  export type Any =
+    | Serializable.WithResult<never, never, never, any, any>
+    | Serializable.WithResult<never, any, any, any, any>
 
   /**
    * Extracts the success type from a `MessageWithResult<A, S>`.
@@ -48,8 +52,8 @@ export namespace MessageWithResult {
    * @since 1.0.0
    * @category utils
    */
-  export type Exit<S> = S extends Serializable.WithResult<any, infer E, any, infer A> ? Exit_.Exit<E, A> :
-    S extends Serializable.WithResult<never, infer E, any, infer A> ? Exit_.Exit<E, A>
+  export type Exit<S> = S extends Serializable.WithResult<never, any, infer E, any, infer A> ? Exit_.Exit<A, E> :
+    S extends Serializable.WithResult<never, never, infer E, any, infer A> ? Exit_.Exit<A, E>
     : never
 }
 
@@ -66,4 +70,4 @@ export const isMessageWithResult: (value: unknown) => value is MessageWithResult
  */
 export const exitSchema: <A extends MessageWithResult.Any>(
   message: A
-) => Schema.Schema<unknown, MessageWithResult.Exit<A>> = internal.exitSchema
+) => Schema.Schema<MessageWithResult.Exit<A>, unknown> = internal.exitSchema

@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import type { Tag } from "effect/Context"
+import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import type * as HashMap from "effect/HashMap"
 import type * as Layer from "effect/Layer"
@@ -29,14 +29,10 @@ export type ShardManagerClientTypeId = typeof ShardManagerClientTypeId
  */
 export interface ShardManagerClient {
   readonly [ShardManagerClientTypeId]: ShardManagerClientTypeId
-  readonly register: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
-  readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
-  readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
-  readonly getAssignments: Effect.Effect<
-    never,
-    never,
-    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  >
+  readonly register: (podAddress: PodAddress.PodAddress) => Effect.Effect<void>
+  readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<void>
+  readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<void>
+  readonly getAssignments: Effect.Effect<HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
 }
 
 /**
@@ -50,10 +46,10 @@ export const make: (args: Omit<ShardManagerClient, typeof ShardManagerClientType
  * @since 1.0.0
  * @category context
  */
-export const ShardManagerClient: Tag<ShardManagerClient, ShardManagerClient> = internal.shardManagerClientTag
+export const ShardManagerClient: Context.Tag<ShardManagerClient, ShardManagerClient> = internal.shardManagerClientTag
 
 /**
  * @since 1.0.0
  * @category layers
  */
-export const local: Layer.Layer<ShardingConfig.ShardingConfig, never, ShardManagerClient> = internal.local
+export const local: Layer.Layer<ShardManagerClient, never, ShardingConfig.ShardingConfig> = internal.local

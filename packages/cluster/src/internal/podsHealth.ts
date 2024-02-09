@@ -16,7 +16,7 @@ export const PodsHealthTypeId: PodsHealth.PodsHealthTypeId = Symbol.for(
 ) as PodsHealth.PodsHealthTypeId
 
 /** @internal */
-export const podsHealthTag = Context.Tag<PodsHealth.PodsHealth>(PodsHealthTypeId)
+export const podsHealthTag = Context.GenericTag<PodsHealth.PodsHealth>(PodsHealthSymbolKey)
 
 /** @internal */
 export function make(args: Omit<PodsHealth.PodsHealth, PodsHealth.PodsHealthTypeId>): PodsHealth.PodsHealth {

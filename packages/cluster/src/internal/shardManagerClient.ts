@@ -18,7 +18,7 @@ export const ShardManagerClientTypeId: ShardManagerClient.ShardManagerClientType
 ) as ShardManagerClient.ShardManagerClientTypeId
 
 /** @internal */
-export const shardManagerClientTag = Context.Tag<ShardManagerClient.ShardManagerClient>(ShardManagerClientTypeId)
+export const shardManagerClientTag = Context.GenericTag<ShardManagerClient.ShardManagerClient>(ShardManagerSymbolKey)
 
 /** @internal */
 export function make(

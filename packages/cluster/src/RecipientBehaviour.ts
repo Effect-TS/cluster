@@ -22,15 +22,14 @@ import type * as ShardingError from "./ShardingError.js"
  */
 export interface RecipientBehaviour<R, Msg> extends
   Effect.Effect<
-    R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
-    never,
     <A extends Msg>(
       message: A
     ) => Effect.Effect<
-      never,
-      ShardingError.ShardingErrorWhileOfferingMessage,
-      MessageState.MessageState<Message.MessageWithResult.Exit<A>>
-    >
+      MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
+      ShardingError.ShardingErrorWhileOfferingMessage
+    >,
+    never,
+    R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope
   >
 {}
 
@@ -48,10 +47,7 @@ export type EntityBehaviourOptions = {
  * @category utils
  */
 export const fromFunctionEffect: <R, Msg>(
-  handler: (
-    entityId: string,
-    message: Msg
-  ) => Effect.Effect<R, never, MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>>
+  handler: (entityId: string, message: Msg) => Effect.Effect<MessageState.MessageState<any>, never, R>
 ) => RecipientBehaviour<R, Msg> = internal.fromFunctionEffect
 
 /**
@@ -59,12 +55,12 @@ export const fromFunctionEffect: <R, Msg>(
  * @category utils
  */
 export const fromFunctionEffectStateful: <R, S, R2, Msg>(
-  initialState: (entityId: string) => Effect.Effect<R, never, S>,
+  initialState: (entityId: string) => Effect.Effect<S, never, R>,
   handler: (
     entityId: string,
     message: Msg,
     stateRef: Ref.Ref<S>
-  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>>
+  ) => Effect.Effect<MessageState.MessageState<any>, never, R2>
 ) => RecipientBehaviour<R | R2, Msg> = internal.fromFunctionEffectStateful
 
 /**
@@ -75,9 +71,6 @@ export const fromInMemoryQueue: <R, Msg>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-    processed: <A extends Msg>(
-      message: A,
-      value: Option.Option<Message.MessageWithResult.Exit<A>>
-    ) => Effect.Effect<never, never, void>
-  ) => Effect.Effect<R, never, void>
+    processed: <A extends Msg>(message: A, value: Option.Option<any>) => Effect.Effect<void, never, never>
+  ) => Effect.Effect<void, never, R>
 ) => RecipientBehaviour<R, Msg> = internal.fromInMemoryQueue

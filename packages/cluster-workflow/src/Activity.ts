@@ -6,19 +6,19 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as DurableExecutionJournal from "./DurableExecutionJournal.js"
 
-export function make<IE, E, IA, A>(
+export function make<A, IA, E, IE>(
   activityId: string,
-  failure: Schema.Schema<IE, E>,
-  success: Schema.Schema<IA, A>
+  success: Schema.Schema<A, IA>,
+  failure: Schema.Schema<E, IE>
 ) {
-  return <R>(execute: Effect.Effect<R, E, A>) => {
+  return <R>(execute: Effect.Effect<A, E, R>) => {
     return Effect.flatMap(
       WorkflowContext.WorkflowContext,
       (context) => {
         const persistenceId = context.makePersistenceId(activityId)
 
         const beginInterruptionIfRequestedByWorkflow = pipe(
-          DurableExecution.kill(persistenceId, failure, success),
+          DurableExecution.kill(persistenceId, success, failure),
           Effect.zipRight(Effect.never),
           Effect.whenEffect(
             Effect.checkInterruptible((isInterruptible) =>
@@ -36,7 +36,7 @@ export function make<IE, E, IA, A>(
         return pipe(
           earlyExitInGracefulShutdown,
           Effect.zipRight(
-            DurableExecution.attempt(persistenceId, failure, success)(
+            DurableExecution.attempt(persistenceId, success, failure)(
               (currentAttempt) =>
                 pipe(
                   beginInterruptionIfRequestedByWorkflow,

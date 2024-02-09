@@ -34,37 +34,29 @@ export interface Storage {
   /**
    * Get the current state of shard assignments to pods
    */
-  readonly getAssignments: Effect.Effect<
-    never,
-    never,
-    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  >
+  readonly getAssignments: Effect.Effect<HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
 
   /**
    * Save the current state of shard assignments to pods
    */
   readonly saveAssignments: (
     assignments: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  ) => Effect.Effect<never, never, void>
+  ) => Effect.Effect<void>
 
   /**
    * A stream that will emit the state of shard assignments whenever it changes
    */
-  readonly assignmentsStream: Stream.Stream<
-    never,
-    never,
-    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  >
+  readonly assignmentsStream: Stream.Stream<HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
 
   /**
    * Get the list of existing pods
    */
-  readonly getPods: Effect.Effect<never, never, HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>>
+  readonly getPods: Effect.Effect<HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>>
 
   /**
    * Save the list of existing pods
    */
-  readonly savePods: (pods: HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>) => Effect.Effect<never, never, void>
+  readonly savePods: (pods: HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>) => Effect.Effect<void>
 }
 
 /**
@@ -86,7 +78,7 @@ export const Storage: Context.Tag<Storage, Storage> = internal.storageTag
  * @since 1.0.0
  * @category layers
  */
-export const memory: Layer.Layer<never, never, Storage> = internal.memory
+export const memory: Layer.Layer<Storage> = internal.memory
 
 /**
  * A layer that does nothing, useful for testing.
@@ -94,4 +86,4 @@ export const memory: Layer.Layer<never, never, Storage> = internal.memory
  * @since 1.0.0
  * @category layers
  */
-export const noop: Layer.Layer<never, never, Storage> = internal.noop
+export const noop: Layer.Layer<Storage> = internal.noop
