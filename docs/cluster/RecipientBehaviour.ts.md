@@ -33,17 +33,16 @@ An alias to a RecipientBehaviour
 **Signature**
 
 ```ts
-export interface RecipientBehaviour<R, Msg>
+export interface RecipientBehaviour<Msg, R>
   extends Effect.Effect<
-    R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope,
-    never,
     <A extends Msg>(
       message: A
     ) => Effect.Effect<
-      never,
-      ShardingError.ShardingErrorWhileOfferingMessage,
-      MessageState.MessageState<Message.MessageWithResult.Exit<A>>
-    >
+      MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
+      ShardingError.ShardingErrorWhileOfferingMessage
+    >,
+    never,
+    R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope
   > {}
 ```
 
@@ -70,12 +69,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fromFunctionEffect: <R, Msg>(
-  handler: (
-    entityId: string,
-    message: Msg
-  ) => Effect.Effect<R, never, MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>>
-) => RecipientBehaviour<R, Msg>
+export declare const fromFunctionEffect: <Msg, R>(
+  handler: (entityId: string, message: Msg) => Effect.Effect<MessageState.MessageState<any>, never, R>
+) => RecipientBehaviour<Msg, R>
 ```
 
 Added in v1.0.0
@@ -85,14 +81,14 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fromFunctionEffectStateful: <R, S, R2, Msg>(
-  initialState: (entityId: string) => Effect.Effect<R, never, S>,
+export declare const fromFunctionEffectStateful: <Msg, S, R, R2>(
+  initialState: (entityId: string) => Effect.Effect<S, never, R>,
   handler: (
     entityId: string,
     message: Msg,
     stateRef: Ref.Ref<S>
-  ) => Effect.Effect<R2, never, MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>>
-) => RecipientBehaviour<R | R2, Msg>
+  ) => Effect.Effect<MessageState.MessageState<any>, never, R2>
+) => RecipientBehaviour<Msg, R | R2>
 ```
 
 Added in v1.0.0
@@ -102,16 +98,13 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fromInMemoryQueue: <R, Msg>(
+export declare const fromInMemoryQueue: <Msg, R>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-    processed: <A extends Msg>(
-      message: A,
-      value: Option.Option<Message.MessageWithResult.Exit<A>>
-    ) => Effect.Effect<never, never, void>
-  ) => Effect.Effect<R, never, void>
-) => RecipientBehaviour<R, Msg>
+    processed: <A extends Msg>(message: A, value: Option.Option<any>) => Effect.Effect<void, never, never>
+  ) => Effect.Effect<void, never, R>
+) => RecipientBehaviour<Msg, R>
 ```
 
 Added in v1.0.0

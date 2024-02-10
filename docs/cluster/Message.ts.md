@@ -34,7 +34,8 @@ A `Message<A>` is a request from a data source for a value of type `A`
 **Signature**
 
 ```ts
-export interface MessageWithResult<Failure, Success> extends Serializable.WithResult<any, Failure, any, Success> {}
+export interface MessageWithResult<Failure, Success>
+  extends Serializable.WithResult<never, any, Failure, any, Success> {}
 ```
 
 Added in v1.0.0
@@ -48,7 +49,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Any = Serializable.WithResult<never, never, any, any> | Serializable.WithResult<any, any, any, any>
+export type Any =
+  | Serializable.WithResult<never, never, never, any, any>
+  | Serializable.WithResult<never, any, any, any, any>
 ```
 
 Added in v1.0.0
@@ -72,10 +75,10 @@ Extracts the success type from a `MessageWithResult<A, S>`.
 **Signature**
 
 ```ts
-export type Exit<S> = S extends Serializable.WithResult<any, infer E, any, infer A>
-  ? Exit_.Exit<E, A>
-  : S extends Serializable.WithResult<never, infer E, any, infer A>
-  ? Exit_.Exit<E, A>
+export type Exit<S> = S extends Serializable.WithResult<never, any, infer E, any, infer A>
+  ? Exit_.Exit<A, E>
+  : S extends Serializable.WithResult<never, never, infer E, any, infer A>
+  ? Exit_.Exit<A, E>
   : never
 ```
 
@@ -102,7 +105,7 @@ Added in v1.0.0
 ```ts
 export declare const exitSchema: <A extends MessageWithResult.Any>(
   message: A
-) => Schema.Schema<unknown, MessageWithResult.Exit<A>>
+) => Schema.Schema<MessageWithResult.Exit<A>, unknown, never>
 ```
 
 Added in v1.0.0

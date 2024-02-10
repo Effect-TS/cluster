@@ -61,7 +61,7 @@ This is useful for testing with a single pod only.
 **Signature**
 
 ```ts
-export declare const memory: Layer.Layer<never, never, Storage>
+export declare const memory: Layer.Layer<Storage, never, never>
 ```
 
 Added in v1.0.0
@@ -73,7 +73,7 @@ A layer that does nothing, useful for testing.
 **Signature**
 
 ```ts
-export declare const noop: Layer.Layer<never, never, Storage>
+export declare const noop: Layer.Layer<Storage, never, never>
 ```
 
 Added in v1.0.0
@@ -91,37 +91,29 @@ export interface Storage {
   /**
    * Get the current state of shard assignments to pods
    */
-  readonly getAssignments: Effect.Effect<
-    never,
-    never,
-    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  >
+  readonly getAssignments: Effect.Effect<HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
 
   /**
    * Save the current state of shard assignments to pods
    */
   readonly saveAssignments: (
     assignments: HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  ) => Effect.Effect<never, never, void>
+  ) => Effect.Effect<void>
 
   /**
    * A stream that will emit the state of shard assignments whenever it changes
    */
-  readonly assignmentsStream: Stream.Stream<
-    never,
-    never,
-    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  >
+  readonly assignmentsStream: Stream.Stream<HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
 
   /**
    * Get the list of existing pods
    */
-  readonly getPods: Effect.Effect<never, never, HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>>
+  readonly getPods: Effect.Effect<HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>>
 
   /**
    * Save the list of existing pods
    */
-  readonly savePods: (pods: HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>) => Effect.Effect<never, never, void>
+  readonly savePods: (pods: HashMap.HashMap<PodAddress.PodAddress, Pod.Pod>) => Effect.Effect<void>
 }
 ```
 

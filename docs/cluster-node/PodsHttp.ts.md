@@ -1,6 +1,6 @@
 ---
 title: PodsHttp.ts
-nav_order: 3
+nav_order: 2
 parent: "@effect/cluster-node"
 ---
 
@@ -24,7 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const httpPods: Layer.Layer<Http.client.Client.Default, never, Pods.Pods>
+export declare const httpPods: Layer.Layer<Pods.Pods, never, Http.client.Client.Default>
 ```
 
 Added in v1.0.0

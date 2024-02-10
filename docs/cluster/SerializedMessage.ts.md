@@ -49,11 +49,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface SerializedMessage
-  extends Data.Data<{
-    readonly [SerializedMessageTypeId]: SerializedMessageTypeId
-    readonly value: string
-  }> {}
+export interface SerializedMessage {
+  readonly [SerializedMessageTypeId]: SerializedMessageTypeId
+  readonly value: string
+}
 ```
 
 Added in v1.0.0
@@ -84,7 +83,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<SerializedMessage.From, SerializedMessage>
+export declare const schema: Schema.Schema<SerializedMessage, SerializedMessage.From, never>
 ```
 
 Added in v1.0.0

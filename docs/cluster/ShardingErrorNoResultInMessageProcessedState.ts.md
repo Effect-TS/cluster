@@ -58,8 +58,9 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorNoResultInProcessedMessageStateSchema: Schema.Schema<
+  ShardingErrorNoResultInProcessedMessageState,
   { readonly _tag: "./ShardingErrorNoResultInProcessedMessageState" },
-  ShardingErrorNoResultInProcessedMessageState
+  never
 >
 ```
 

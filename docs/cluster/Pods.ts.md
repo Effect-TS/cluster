@@ -57,7 +57,7 @@ Useful for testing ShardManager or when using Sharding.local.
 **Signature**
 
 ```ts
-export declare const noop: Layer.Layer<never, never, Pods>
+export declare const noop: Layer.Layer<Pods, never, never>
 ```
 
 Added in v1.0.0
@@ -83,25 +83,19 @@ export interface Pods {
    * Notify a pod that it was assigned a list of shards
    * @since 1.0.0
    */
-  readonly assignShards: (
-    pod: PodAddress.PodAddress,
-    shards: HashSet.HashSet<ShardId.ShardId>
-  ) => Effect.Effect<never, never, void>
+  readonly assignShards: (pod: PodAddress.PodAddress, shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
 
   /**
    * Notify a pod that it was unassigned a list of shards
    * @since 1.0.0
    */
-  readonly unassignShards: (
-    pod: PodAddress.PodAddress,
-    shards: HashSet.HashSet<ShardId.ShardId>
-  ) => Effect.Effect<never, never, void>
+  readonly unassignShards: (pod: PodAddress.PodAddress, shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
 
   /**
    * Check that a pod is responsive
    * @since 1.0.0
    */
-  readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<never, ShardingError.ShardingErrorPodUnavailable, void>
+  readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<void, ShardingError.ShardingErrorPodUnavailable>
 
   /**
    * Send a message to a pod and receive its message state
@@ -110,7 +104,7 @@ export interface Pods {
   readonly sendAndGetState: (
     pod: PodAddress.PodAddress,
     envelope: SerializedEnvelope.SerializedEnvelope
-  ) => Effect.Effect<never, ShardingError.ShardingError, MessageState.MessageState<SerializedMessage.SerializedMessage>>
+  ) => Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError>
 }
 ```
 

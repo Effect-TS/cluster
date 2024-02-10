@@ -74,7 +74,7 @@ export interface RecipientBehaviourContext {
   readonly entityId: string
   readonly shardId: ShardId.ShardId
   readonly recipientType: RecipientType.RecipientType<unknown>
-  readonly forkShutdown: Effect.Effect<never, never, void>
+  readonly forkShutdown: Effect.Effect<void>
 }
 ```
 
@@ -111,7 +111,7 @@ Gets the current entityId
 **Signature**
 
 ```ts
-export declare const entityId: Effect.Effect<RecipientBehaviourContext, never, string>
+export declare const entityId: Effect.Effect<string, never, RecipientBehaviourContext>
 ```
 
 Added in v1.0.0
@@ -123,7 +123,7 @@ Forks the shutdown of the current recipient
 **Signature**
 
 ```ts
-export declare const forkShutdown: Effect.Effect<RecipientBehaviourContext, never, void>
+export declare const forkShutdown: Effect.Effect<void, never, RecipientBehaviourContext>
 ```
 
 Added in v1.0.0
@@ -136,9 +136,9 @@ Gets the current shardId
 
 ```ts
 export declare const recipientType: Effect.Effect<
-  RecipientBehaviourContext,
+  RecipientType.RecipientType<unknown>,
   never,
-  RecipientType.RecipientType<unknown>
+  RecipientBehaviourContext
 >
 ```
 
@@ -151,7 +151,7 @@ Gets the current shardId
 **Signature**
 
 ```ts
-export declare const shardId: Effect.Effect<RecipientBehaviourContext, never, ShardId.ShardId>
+export declare const shardId: Effect.Effect<ShardId.ShardId, never, RecipientBehaviourContext>
 ```
 
 Added in v1.0.0

@@ -1,6 +1,6 @@
 ---
 title: ShardManagerHttp.ts
-nav_order: 7
+nav_order: 6
 parent: "@effect/cluster-node"
 ---
 
@@ -24,7 +24,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const shardManagerHttp: Layer.Layer<unknown, unknown, never>
+export declare const shardManagerHttp: Layer.Layer<never, unknown, unknown>
 ```
 
 Added in v1.0.0

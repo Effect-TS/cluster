@@ -16,8 +16,8 @@ export function mockEffect<A, E>(
 
 export function mockActivity<A, IA, E, IE>(
   persistenceId: string,
-  failure: Schema.Schema<E, IE>,
   success: Schema.Schema<A, IA>,
+  failure: Schema.Schema<E, IE>,
   impl: () => Exit.Exit<A, E>
 ) {
   const { effect, spy } = mockEffect(impl)

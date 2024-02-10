@@ -128,7 +128,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const schema: <I, A>(result: Schema.Schema<I, A>) => Schema.Schema<MessageState.From<I>, MessageState<A>>
+export declare const schema: <A, I>(
+  result: Schema.Schema<A, I, never>
+) => Schema.Schema<MessageState<A>, MessageState.From<I>, never>
 ```
 
 Added in v1.0.0
@@ -174,8 +176,8 @@ Added in v1.0.0
 ```ts
 export declare const mapEffect: <A, B, R, E>(
   value: MessageState<A>,
-  fn: (value: A) => Effect.Effect<R, E, B>
-) => Effect.Effect<R, E, MessageState<B>>
+  fn: (value: A) => Effect.Effect<B, E, R>
+) => Effect.Effect<MessageState<B>, E, R>
 ```
 
 Added in v1.0.0

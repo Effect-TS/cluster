@@ -71,8 +71,9 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorPodNoLongerRegisteredSchema: Schema.Schema<
+  ShardingErrorPodNoLongerRegistered,
   { readonly _tag: "./ShardingErrorPodNoLongerRegistered"; readonly podAddress: PodAddress.PodAddress.From },
-  ShardingErrorPodNoLongerRegistered
+  never
 >
 ```
 
