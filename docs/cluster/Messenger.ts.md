@@ -31,7 +31,7 @@ export interface Messenger<Msg> {
    * Send a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  sendDiscard(entityId: string): (message: Msg) => Effect.Effect<never, ShardingError.ShardingError, void>
+  sendDiscard(entityId: string): (message: Msg) => Effect.Effect<void, ShardingError.ShardingError>
 
   /**
    * Send a message and wait for a response of type `Res`
@@ -42,9 +42,8 @@ export interface Messenger<Msg> {
   ): <A extends Msg & Message.MessageWithResult.Any>(
     message: A
   ) => Effect.Effect<
-    never,
-    ShardingError.ShardingError | Message.MessageWithResult.Error<A>,
-    Message.MessageWithResult.Success<A>
+    Message.MessageWithResult.Success<A>,
+    ShardingError.ShardingError | Message.MessageWithResult.Error<A>
   >
 }
 ```

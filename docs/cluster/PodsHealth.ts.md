@@ -61,7 +61,7 @@ This is useful for developing and testing but not reliable in production.
 **Signature**
 
 ```ts
-export declare const local: Layer.Layer<Pods.Pods, never, PodsHealth>
+export declare const local: Layer.Layer<PodsHealth, never, Pods.Pods>
 ```
 
 Added in v1.0.0
@@ -74,7 +74,7 @@ This is useful for testing only.
 **Signature**
 
 ```ts
-export declare const noop: Layer.Layer<never, never, PodsHealth>
+export declare const noop: Layer.Layer<PodsHealth, never, never>
 ```
 
 Added in v1.0.0
@@ -102,7 +102,7 @@ export interface PodsHealth {
    * Check if a pod is still alive.
    * @since 1.0.0
    */
-  readonly isAlive: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, boolean>
+  readonly isAlive: (podAddress: PodAddress.PodAddress) => Effect.Effect<boolean>
 }
 ```
 

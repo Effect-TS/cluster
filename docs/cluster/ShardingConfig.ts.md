@@ -45,7 +45,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const defaults: Layer.Layer<never, never, ShardingConfig>
+export declare const defaults: Layer.Layer<ShardingConfig, never, never>
 ```
 
 Added in v1.0.0
@@ -55,7 +55,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fromConfig: Layer.Layer<never, ConfigError.ConfigError, ShardingConfig>
+export declare const fromConfig: Layer.Layer<ShardingConfig, ConfigError.ConfigError, never>
 ```
 
 Added in v1.0.0
@@ -65,7 +65,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const withDefaults: (customs: Partial<ShardingConfig>) => Layer.Layer<never, never, ShardingConfig>
+export declare const withDefaults: (customs: Partial<ShardingConfig>) => Layer.Layer<ShardingConfig>
 ```
 
 Added in v1.0.0

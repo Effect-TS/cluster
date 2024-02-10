@@ -5,12 +5,11 @@ import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecut
 import * as DurableExecutionJournalInMemory from "@effect/cluster-workflow/DurableExecutionJournalInMemory"
 import * as utils from "@effect/cluster-workflow/test/utils"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
-import * as WorkflowRunner from "@effect/cluster-workflow/WorkflowRunner"
+import * as WorkflowEngine from "@effect/cluster-workflow/WorkflowEngine"
 import * as Schema from "@effect/schema/Schema"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
-import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
@@ -23,7 +22,8 @@ describe.concurrent("Workflow", () => {
     pipe(
       fa,
       Effect.provide(DurableExecutionJournalInMemory.activityJournalInMemory),
-      Logger.withMinimumLogLevel(LogLevel.Info)
+      Logger.withMinimumLogLevel(LogLevel.Info),
+      Effect.scoped
     )
 
   class StartWorkflowRequest
@@ -42,9 +42,10 @@ describe.concurrent("Workflow", () => {
       )
 
       const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
+      const engine = yield* _(WorkflowEngine.makeScoped(workflow))
 
       const exit = yield* _(
-        WorkflowRunner.resume(workflow)(new StartWorkflowRequest({ executionId: "wf" })),
+        engine.send(new StartWorkflowRequest({ executionId: "wf" })),
         Effect.exit
       )
 
@@ -63,9 +64,10 @@ describe.concurrent("Workflow", () => {
       )
 
       const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
+      const engine = yield* _(WorkflowEngine.makeScoped(workflow))
 
       const exit = yield* _(
-        WorkflowRunner.resume(workflow)(new StartWorkflowRequest({ executionId: "wf" })),
+        engine.send(new StartWorkflowRequest({ executionId: "wf" })),
         Effect.exit
       )
 
@@ -75,8 +77,8 @@ describe.concurrent("Workflow", () => {
   })
 
   it("Should be able to compose different workflows", () => {
-    const firstActivity = utils.mockActivity("activity1", Schema.never, Schema.number, () => Exit.succeed(1))
-    const secondActivity = utils.mockActivity("activity2", Schema.never, Schema.number, () => Exit.succeed(2))
+    const firstActivity = utils.mockActivity("activity1", Schema.number, Schema.never, () => Exit.succeed(1))
+    const secondActivity = utils.mockActivity("activity2", Schema.number, Schema.never, () => Exit.succeed(2))
 
     class FirstWorkflow extends Schema.TaggedRequest<FirstWorkflow>()("FirstWorkflow", Schema.never, Schema.number, {
       id: Schema.string
@@ -93,13 +95,14 @@ describe.concurrent("Workflow", () => {
     const mergedWorkflow = Workflow.union(firstWorkflow, secondWorkflow)
 
     return Effect.gen(function*(_) {
-      const exit = yield* _(WorkflowRunner.resume(mergedWorkflow)(new FirstWorkflow({ id: "wf1" })), Effect.exit)
+      const engine = yield* _(WorkflowEngine.makeScoped(mergedWorkflow))
+      const exit = yield* _(engine.send(new FirstWorkflow({ id: "wf1" })), Effect.exit)
 
       expect(exit).toEqual(Exit.succeed(1))
       expect(firstActivity.spy).toHaveBeenCalledOnce()
       expect(secondActivity.spy).not.toHaveBeenCalled()
 
-      const exit2 = yield* _(WorkflowRunner.resume(mergedWorkflow)(new SecondWorkflow({ id: "wf2" })), Effect.exit)
+      const exit2 = yield* _(engine.send(new SecondWorkflow({ id: "wf2" })), Effect.exit)
 
       expect(exit2).toEqual(Exit.succeed(2))
       expect(firstActivity.spy).toHaveBeenCalledOnce()
@@ -114,13 +117,14 @@ describe.concurrent("Workflow", () => {
       const activity = pipe(mocked.effect, Activity.make("activity", Schema.number, Schema.never))
 
       const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
+      const engine = yield* _(WorkflowEngine.makeScoped(workflow))
 
       const exit1 = yield* _(
-        WorkflowRunner.resume(workflow)(new StartWorkflowRequest({ executionId: "wf" })),
+        engine.send(new StartWorkflowRequest({ executionId: "wf" })),
         Effect.exit
       )
       const exit2 = yield* _(
-        WorkflowRunner.resume(workflow)(new StartWorkflowRequest({ executionId: "wf" })),
+        engine.send(new StartWorkflowRequest({ executionId: "wf" })),
         Effect.exit
       )
 
@@ -131,21 +135,25 @@ describe.concurrent("Workflow", () => {
 
   it("Ensure that acquireUseRelease gets interrupted without calling release inside workflow", () => {
     return Effect.gen(function*(_) {
-      const mockedAcquire = utils.mockActivity("acquire", Schema.never, Schema.number, () => Exit.succeed(1))
-      const mockedUse = utils.mockActivity("use", Schema.never, Schema.number, () => Exit.succeed(2))
-      const mockedRelease = utils.mockActivity("release", Schema.never, Schema.number, () => Exit.succeed(3))
+      const mockedAcquire = utils.mockActivity("acquire", Schema.number, Schema.never, () => Exit.succeed(1))
+      const mockedUse = utils.mockActivity("use", Schema.number, Schema.never, () => Exit.succeed(2))
+      const mockedRelease = utils.mockActivity("release", Schema.number, Schema.never, () => Exit.succeed(3))
 
       const executeAttempt = (shouldCrash: boolean) =>
-        CrashableRuntime.runWithCrash((crash) => {
-          const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () =>
-            Effect.acquireUseRelease(
-              mockedAcquire.activity,
-              () => mockedUse.activityWithBody(shouldCrash ? crash : Effect.succeed(2)),
-              () => mockedRelease.activity
-            ))
+        CrashableRuntime.runWithCrash((crash) =>
+          Effect.gen(function*(_) {
+            const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () =>
+              Effect.acquireUseRelease(
+                mockedAcquire.activity,
+                () => mockedUse.activityWithBody(shouldCrash ? crash : Effect.succeed(2)),
+                () => mockedRelease.activity
+              ))
 
-          return WorkflowRunner.resume(workflow)(new StartWorkflowRequest({ executionId: "wf" }))
-        })
+            const engine = yield* _(WorkflowEngine.makeScoped(workflow))
+
+            return yield* _(engine.send(new StartWorkflowRequest({ executionId: "wf" })))
+          }).pipe(Effect.scoped)
+        )
 
       // first execution should crash
       yield* _(
@@ -171,21 +179,24 @@ describe.concurrent("Workflow", () => {
 
   it("Upon crash on release, when restarted should resume release", () => {
     return Effect.gen(function*(_) {
-      const mockedAcquire = utils.mockActivity("acquire", Schema.never, Schema.number, () => Exit.succeed(1))
-      const mockedUse = utils.mockActivity("use", Schema.never, Schema.number, () => Exit.succeed(2))
-      const mockedRelease = utils.mockActivity("release", Schema.never, Schema.number, () => Exit.succeed(3))
+      const mockedAcquire = utils.mockActivity("acquire", Schema.number, Schema.never, () => Exit.succeed(1))
+      const mockedUse = utils.mockActivity("use", Schema.number, Schema.never, () => Exit.succeed(2))
+      const mockedRelease = utils.mockActivity("release", Schema.number, Schema.never, () => Exit.succeed(3))
 
       const executeAttempt = (shouldCrash: boolean) =>
-        CrashableRuntime.runWithCrash((crash) => {
-          const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () =>
-            Effect.acquireUseRelease(
-              mockedAcquire.activity,
-              () => mockedUse.activity,
-              () => mockedRelease.activityWithBody(shouldCrash ? crash : Effect.succeed(3))
-            ))
+        CrashableRuntime.runWithCrash((crash) =>
+          Effect.gen(function*(_) {
+            const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () =>
+              Effect.acquireUseRelease(
+                mockedAcquire.activity,
+                () => mockedUse.activity,
+                () => mockedRelease.activityWithBody(shouldCrash ? crash : Effect.succeed(3))
+              ))
+            const engine = yield* _(WorkflowEngine.makeScoped(workflow))
 
-          return WorkflowRunner.resume(workflow)(new StartWorkflowRequest({ executionId: "wf" }))
-        })
+            return yield* _(engine.send(new StartWorkflowRequest({ executionId: "wf" })))
+          }).pipe(Effect.scoped)
+        )
 
       // first execution should crash
       yield* _(
@@ -215,31 +226,34 @@ describe.concurrent("Workflow", () => {
 
       yield* _(
         CrashableRuntime.retryWhileCrashes((runtime) =>
-          runtime.run(() => {
-            const activity = pipe(
-              Activity.currentAttempt,
-              Effect.flatMap((attempt) =>
-                pipe(
-                  Ref.get(valueRef),
-                  Effect.tap((_) => Effect.sync(() => expect(_).toEqual(attempt))),
-                  Effect.flatMap(() =>
-                    attempt < 3
-                      ? pipe(
-                        Ref.update(valueRef, (_) => _ + 1),
-                        Effect.zipRight(runtime.crash),
-                        Effect.zipRight(Effect.die("error"))
-                      )
-                      : Effect.succeed(42)
+          runtime.run(() =>
+            Effect.gen(function*(_) {
+              const activity = pipe(
+                Activity.currentAttempt,
+                Effect.flatMap((attempt) =>
+                  pipe(
+                    Ref.get(valueRef),
+                    Effect.tap((_) => Effect.sync(() => expect(_).toEqual(attempt))),
+                    Effect.flatMap(() =>
+                      attempt < 3
+                        ? pipe(
+                          Ref.update(valueRef, (_) => _ + 1),
+                          Effect.zipRight(runtime.crash),
+                          Effect.zipRight(Effect.die("error"))
+                        )
+                        : Effect.succeed(42)
+                    )
                   )
-                )
-              ),
-              Activity.make("activity", Schema.number, Schema.never)
-            )
+                ),
+                Activity.make("activity", Schema.number, Schema.never)
+              )
 
-            const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
+              const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
+              const engine = yield* _(WorkflowEngine.makeScoped(workflow))
 
-            return WorkflowRunner.resume(workflow)(new StartWorkflowRequest({ executionId: "wf" }))
-          })
+              return yield* _(engine.send(new StartWorkflowRequest({ executionId: "wf" })))
+            }).pipe(Effect.scoped)
+          )
         )
       )
 
@@ -251,28 +265,35 @@ describe.concurrent("Workflow", () => {
 
   it("On graceful interrupt, should not persist exit into DurableExecutionJournal", () => {
     return Effect.gen(function*(_) {
-      const mockedActivity = utils.mockActivity("activity", Schema.never, Schema.number, () => Exit.succeed(1))
+      const mockedActivity = utils.mockActivity("activity", Schema.number, Schema.never, () => Exit.succeed(1))
       const mockedRelease = utils.mockEffect(() => Exit.succeed(1))
       const mockedUse = utils.mockEffect(() => Exit.succeed(1))
       const latch = yield* _(Deferred.make<void>())
       const persistenceIdRef = yield* _(Ref.make(""))
 
+      const workflow = Workflow.make(
+        StartWorkflowRequest,
+        (_) => _.executionId,
+        () =>
+          mockedActivity.activityWithBody(
+            Effect.acquireUseRelease(Effect.succeed(1), () =>
+              pipe(
+                mockedUse.effect,
+                Effect.zipRight(
+                  Effect.flatMap(ActivityContext.ActivityContext, (ctx) => Ref.set(persistenceIdRef, ctx.persistenceId))
+                ),
+                Effect.zipRight(Effect.never),
+                Effect.zipLeft(Deferred.succeed(latch, undefined), { concurrent: true })
+              ), () => mockedRelease.effect)
+          )
+      )
+
       const exit = yield* _(
-        Effect.acquireUseRelease(Effect.succeed(1), () =>
-          pipe(
-            mockedUse.effect,
-            Effect.zipRight(
-              Effect.flatMap(ActivityContext.ActivityContext, (ctx) => Ref.set(persistenceIdRef, ctx.persistenceId))
-            ),
-            Effect.zipRight(Effect.never),
-            Effect.zipLeft(Deferred.succeed(latch, undefined), { concurrent: true })
-          ), () => mockedRelease.effect),
-        mockedActivity.activityWithBody,
-        (activity) => Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity),
-        (workflow) => WorkflowRunner.resume(workflow)(new StartWorkflowRequest({ executionId: "wf" })),
+        WorkflowEngine.makeScoped(workflow),
+        Effect.flatMap((engine) => engine.send(new StartWorkflowRequest({ executionId: "wf" }))),
         Effect.forkDaemon,
         Effect.tap(Deferred.await(latch)),
-        Effect.tap((fiber) => Fiber.interrupt(fiber)),
+        Effect.scoped,
         Effect.flatMap((_) => _.await)
       )
 

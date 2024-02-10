@@ -56,8 +56,9 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorSendTimeoutSchema: Schema.Schema<
+  ShardingErrorSendTimeout,
   { readonly _tag: "./ShardingErrorSendTimeout" },
-  ShardingErrorSendTimeout
+  never
 >
 ```
 

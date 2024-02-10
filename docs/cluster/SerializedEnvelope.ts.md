@@ -53,13 +53,12 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface SerializedEnvelope
-  extends Data.Data<{
-    readonly [SerializedEnvelopeTypeId]: SerializedEnvelopeTypeId
-    readonly entityId: string
-    readonly entityType: string
-    readonly body: SerializedMessage.SerializedMessage
-  }> {}
+export interface SerializedEnvelope {
+  readonly [SerializedEnvelopeTypeId]: SerializedEnvelopeTypeId
+  readonly entityId: string
+  readonly entityType: string
+  readonly body: SerializedMessage.SerializedMessage
+}
 ```
 
 Added in v1.0.0
@@ -92,7 +91,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<SerializedEnvelope.From, SerializedEnvelope>
+export declare const schema: Schema.Schema<SerializedEnvelope, SerializedEnvelope.From, never>
 ```
 
 Added in v1.0.0

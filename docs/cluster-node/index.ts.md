@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 2
+nav_order: 1
 parent: "@effect/cluster-node"
 ---
 
@@ -13,7 +13,6 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./AtLeastOnceStoragePostgres.js"](#from-atleastoncestoragepostgresjs)
   - [From "./PodsHttp.js"](#from-podshttpjs)
   - [From "./ShardManagerClientHttp.js"](#from-shardmanagerclienthttpjs)
   - [From "./ShardManagerHttp.js"](#from-shardmanagerhttpjs)
@@ -25,18 +24,6 @@ Added in v1.0.0
 ---
 
 # exports
-
-## From "./AtLeastOnceStoragePostgres.js"
-
-Re-exports all named exports from the "./AtLeastOnceStoragePostgres.js" module as `AtLeastOnceStoragePostgres`.
-
-**Signature**
-
-```ts
-export * as AtLeastOnceStoragePostgres from "./AtLeastOnceStoragePostgres.js"
-```
-
-Added in v1.0.0
 
 ## From "./PodsHttp.js"
 

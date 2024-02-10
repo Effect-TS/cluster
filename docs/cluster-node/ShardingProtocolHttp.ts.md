@@ -1,6 +1,6 @@
 ---
 title: ShardingProtocolHttp.ts
-nav_order: 4
+nav_order: 3
 parent: "@effect/cluster-node"
 ---
 
@@ -30,13 +30,14 @@ Added in v1.0.0
 
 ```ts
 export declare const AssignShard_: Schema.Schema<
+  { readonly shards: ReadonlyArray<ShardId.ShardId> },
   {
     readonly shards: ReadonlyArray<{
       readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
       readonly value: number
     }>
   },
-  { readonly shards: ReadonlyArray<ShardId.ShardId> }
+  never
 >
 ```
 
@@ -47,7 +48,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const PingShards_: Schema.Schema<{}, {}>
+export declare const PingShards_: Schema.Schema<{}, {}, never>
 ```
 
 Added in v1.0.0
@@ -57,7 +58,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const SendResult_: Schema.Schema<Schema.EitherFrom<unknown, unknown>, Either<unknown, unknown>>
+export declare const SendResult_: Schema.Schema<Either<unknown, unknown>, Schema.EitherFrom<unknown, unknown>, unknown>
 ```
 
 Added in v1.0.0
@@ -68,8 +69,9 @@ Added in v1.0.0
 
 ```ts
 export declare const Send_: Schema.Schema<
+  { readonly message: SerializedEnvelope.SerializedEnvelope },
   { readonly message: SerializedEnvelope.SerializedEnvelope.From },
-  { readonly message: SerializedEnvelope.SerializedEnvelope }
+  never
 >
 ```
 
@@ -81,8 +83,9 @@ Added in v1.0.0
 
 ```ts
 export declare const UnassignShards_: Schema.Schema<
+  { readonly shards: ReadonlyArray<ShardId.ShardId> },
   { readonly shards: ReadonlyArray<ShardId.ShardId.From> },
-  { readonly shards: ReadonlyArray<ShardId.ShardId> }
+  never
 >
 ```
 
@@ -96,6 +99,10 @@ This is the schema for the protocol.
 
 ```ts
 export declare const schema: Schema.Schema<
+  | { readonly shards: readonly ShardId.ShardId[] }
+  | { readonly shards: readonly ShardId.ShardId[] }
+  | { readonly message: SerializedEnvelope.SerializedEnvelope }
+  | {},
   | {
       readonly shards: readonly {
         readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
@@ -105,10 +112,7 @@ export declare const schema: Schema.Schema<
   | { readonly shards: readonly ShardId.ShardId.From[] }
   | { readonly message: SerializedEnvelope.SerializedEnvelope.From }
   | {},
-  | { readonly shards: readonly ShardId.ShardId[] }
-  | { readonly shards: readonly ShardId.ShardId[] }
-  | { readonly message: SerializedEnvelope.SerializedEnvelope }
-  | {}
+  never
 >
 ```
 

@@ -146,6 +146,14 @@ Added in v1.0.0
 
 ```ts
 export declare const schema: Schema.Schema<
+  | ShardingErrorWhileOfferingMessage
+  | ShardingErrorSerialization
+  | ShardingErrorSendTimeout
+  | ShardingErrorPodUnavailable
+  | ShardingErrorPodNoLongerRegistered
+  | ShardingErrorNoResultInProcessedMessageState
+  | ShardingErrorEntityTypeNotRegistered
+  | ShardingErrorEntityNotManagedByThisPod,
   | { readonly _tag: "./ShardingErrorWhileOfferingMessage"; readonly error: string }
   | { readonly _tag: "./ShardingErrorSerialization"; readonly error: string }
   | { readonly _tag: "./ShardingErrorSendTimeout" }
@@ -158,14 +166,7 @@ export declare const schema: Schema.Schema<
       readonly entityType: string
     }
   | { readonly _tag: "./ShardingErrorEntityNotManagedByThisPod"; readonly entityId: string },
-  | ShardingErrorWhileOfferingMessage
-  | ShardingErrorSerialization
-  | ShardingErrorSendTimeout
-  | ShardingErrorPodUnavailable
-  | ShardingErrorPodNoLongerRegistered
-  | ShardingErrorNoResultInProcessedMessageState
-  | ShardingErrorEntityTypeNotRegistered
-  | ShardingErrorEntityNotManagedByThisPod
+  never
 >
 ```
 

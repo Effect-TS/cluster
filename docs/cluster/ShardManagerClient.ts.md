@@ -45,7 +45,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardManagerClient: Tag<ShardManagerClient, ShardManagerClient>
+export declare const ShardManagerClient: Context.Tag<ShardManagerClient, ShardManagerClient>
 ```
 
 Added in v1.0.0
@@ -57,7 +57,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const local: Layer.Layer<ShardingConfig.ShardingConfig, never, ShardManagerClient>
+export declare const local: Layer.Layer<ShardManagerClient, never, ShardingConfig.ShardingConfig>
 ```
 
 Added in v1.0.0
@@ -71,14 +71,10 @@ Added in v1.0.0
 ```ts
 export interface ShardManagerClient {
   readonly [ShardManagerClientTypeId]: ShardManagerClientTypeId
-  readonly register: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
-  readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
-  readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
-  readonly getAssignments: Effect.Effect<
-    never,
-    never,
-    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  >
+  readonly register: (podAddress: PodAddress.PodAddress) => Effect.Effect<void>
+  readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<void>
+  readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<void>
+  readonly getAssignments: Effect.Effect<HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
 }
 ```
 

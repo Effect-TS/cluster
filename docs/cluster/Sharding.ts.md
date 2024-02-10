@@ -52,7 +52,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const live: Layer<Storage | ShardingConfig | Pods | ShardManagerClient | Serialization, never, Sharding>
+export declare const live: Layer<Sharding, never, Storage | ShardingConfig | Pods | ShardManagerClient | Serialization>
 ```
 
 Added in v1.0.0
@@ -67,8 +67,8 @@ Added in v1.0.0
 export interface Sharding {
   /** @internal */
   readonly getShardId: (entityId: string) => ShardId.ShardId
-  readonly register: Effect.Effect<never, never, void>
-  readonly unregister: Effect.Effect<never, never, void>
+  readonly register: Effect.Effect<void>
+  readonly unregister: Effect.Effect<void>
   readonly messenger: <Msg>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
@@ -77,37 +77,33 @@ export interface Sharding {
     topicType: RecipentType.TopicType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Broadcaster<Msg>
-  readonly isEntityOnLocalShards: (entityId: string) => Effect.Effect<never, never, boolean>
-  readonly isShuttingDown: Effect.Effect<never, never, boolean>
+  readonly isEntityOnLocalShards: (entityId: string) => Effect.Effect<boolean>
+  readonly isShuttingDown: Effect.Effect<boolean>
 
-  readonly registerScoped: Effect.Effect<Scope.Scope, never, void>
+  readonly registerScoped: Effect.Effect<void, never, Scope.Scope>
   readonly registerEntity: <Msg>(
     entityType: RecipentType.EntityType<Msg>
   ) => <R>(
-    behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    behaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
+  ) => Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
   readonly registerTopic: <Msg>(
     topicType: RecipentType.TopicType<Msg>
   ) => <R>(
-    behaviour: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+    behaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions
-  ) => Effect.Effect<Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
-  readonly getShardingRegistrationEvents: Stream.Stream<
-    never,
-    never,
-    ShardingRegistrationEvent.ShardingRegistrationEvent
-  >
-  readonly registerSingleton: <R>(name: string, run: Effect.Effect<R, never, void>) => Effect.Effect<R, never, void>
+  ) => Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
+  readonly getShardingRegistrationEvents: Stream.Stream<ShardingRegistrationEvent.ShardingRegistrationEvent>
+  readonly registerSingleton: <R>(name: string, run: Effect.Effect<void, never, R>) => Effect.Effect<void, never, R>
   /** @internal */
-  readonly refreshAssignments: Effect.Effect<Scope.Scope, never, void>
-  readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
-  readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<never, never, void>
+  readonly refreshAssignments: Effect.Effect<void, never, Scope.Scope>
+  readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
+  readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
   readonly sendMessageToLocalEntityManagerWithoutRetries: (
     message: SerializedEnvelope.SerializedEnvelope
-  ) => Effect.Effect<never, ShardingError.ShardingError, MessageState.MessageState<SerializedMessage.SerializedMessage>>
-  readonly getPods: Effect.Effect<never, never, HashSet.HashSet<PodAddress.PodAddress>>
-  readonly getAssignedShardIds: Effect.Effect<never, never, HashSet.HashSet<ShardId.ShardId>>
+  ) => Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError>
+  readonly getPods: Effect.Effect<HashSet.HashSet<PodAddress.PodAddress>>
+  readonly getAssignedShardIds: Effect.Effect<HashSet.HashSet<ShardId.ShardId>>
 }
 ```
 
@@ -126,7 +122,7 @@ You can provide a custom send timeout to override the one globally defined.
 export declare const broadcaster: <Msg>(
   topicType: RecipentType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
-) => Effect.Effect<Sharding, never, Broadcaster<Msg>>
+) => Effect.Effect<Broadcaster<Msg>, never, Sharding>
 ```
 
 Added in v1.0.0
@@ -138,7 +134,7 @@ Gets the list of shardIds assigned to the current Pod
 **Signature**
 
 ```ts
-export declare const getAssignedShardIds: Effect.Effect<Sharding, never, HashSet.HashSet<ShardId.ShardId>>
+export declare const getAssignedShardIds: Effect.Effect<HashSet.HashSet<ShardId.ShardId>, never, Sharding>
 ```
 
 Added in v1.0.0
@@ -150,7 +146,7 @@ Get the list of pods currently registered to the Shard Manager
 **Signature**
 
 ```ts
-export declare const getPods: Effect.Effect<Sharding, never, HashSet.HashSet<PodAddress.PodAddress>>
+export declare const getPods: Effect.Effect<HashSet.HashSet<PodAddress.PodAddress>, never, Sharding>
 ```
 
 Added in v1.0.0
@@ -166,7 +162,7 @@ You can provide a custom send timeout to override the one globally defined.
 export declare const messenger: <Msg>(
   entityType: RecipentType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
-) => Effect.Effect<Sharding, never, Messenger<Msg>>
+) => Effect.Effect<Messenger<Msg>, never, Sharding>
 ```
 
 Added in v1.0.0
@@ -178,7 +174,7 @@ Notify the shard manager that shards can now be assigned to this pod.
 **Signature**
 
 ```ts
-export declare const register: Effect.Effect<Sharding, never, void>
+export declare const register: Effect.Effect<void, never, Sharding>
 ```
 
 Added in v1.0.0
@@ -196,9 +192,9 @@ If entity goes to idle timeout, it will be interrupted from outside.
 export declare const registerEntity: <Msg>(
   entityType: RecipentType.EntityType<Msg>
 ) => <R>(
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+  behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
-) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
+) => Effect.Effect<void, never, Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
 ```
 
 Added in v1.0.0
@@ -210,7 +206,7 @@ Same as `register`, but will automatically call `unregister` when the `Scope` is
 **Signature**
 
 ```ts
-export declare const registerScoped: Effect.Effect<Sharding | Scope.Scope, never, void>
+export declare const registerScoped: Effect.Effect<void, never, Sharding | Scope.Scope>
 ```
 
 Added in v1.0.0
@@ -225,8 +221,8 @@ Each pod should call `registerSingleton` but only a single pod will actually run
 ```ts
 export declare const registerSingleton: <R>(
   name: string,
-  run: Effect.Effect<R, never, void>
-) => Effect.Effect<Sharding | R, never, void>
+  run: Effect.Effect<void, never, R>
+) => Effect.Effect<void, never, Sharding | R>
 ```
 
 Added in v1.0.0
@@ -244,9 +240,9 @@ If entity goes to idle timeout, it will be interrupted from outside.
 export declare const registerTopic: <Msg>(
   topicType: RecipentType.TopicType<Msg>
 ) => <R>(
-  behavior: RecipientBehaviour.RecipientBehaviour<R, Msg>,
+  behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
   options?: RecipientBehaviour.EntityBehaviourOptions | undefined
-) => Effect.Effect<Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>, never, void>
+) => Effect.Effect<void, never, Sharding | Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
 ```
 
 Added in v1.0.0
@@ -261,9 +257,9 @@ Sends a raw message to the local entity manager
 export declare const sendMessageToLocalEntityManagerWithoutRetries: (
   message: SerializedEnvelope.SerializedEnvelope
 ) => Effect.Effect<
-  Sharding,
+  MessageState.MessageState<SerializedMessage.SerializedMessage>,
   ShardingError.ShardingError,
-  MessageState.MessageState<SerializedMessage.SerializedMessage>
+  Sharding
 >
 ```
 
@@ -276,7 +272,7 @@ Notify the shard manager that shards must be unassigned from this pod.
 **Signature**
 
 ```ts
-export declare const unregister: Effect.Effect<Sharding, never, void>
+export declare const unregister: Effect.Effect<void, never, Sharding>
 ```
 
 Added in v1.0.0

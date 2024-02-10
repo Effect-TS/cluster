@@ -72,12 +72,13 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorEntityTypeNotRegisteredSchema: Schema.Schema<
+  ShardingErrorEntityTypeNotRegistered,
   {
     readonly _tag: "./ShardingErrorEntityTypeNotRegistered"
     readonly podAddress: PodAddress.PodAddress.From
     readonly entityType: string
   },
-  ShardingErrorEntityTypeNotRegistered
+  never
 >
 ```
 

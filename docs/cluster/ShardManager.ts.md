@@ -43,7 +43,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const live: Layer<Storage | Pods | ManagerConfig | PodsHealth, never, ShardManager>
+export declare const live: Layer<ShardManager, never, Storage | Pods | ManagerConfig | PodsHealth>
 ```
 
 Added in v1.0.0
@@ -56,20 +56,16 @@ Added in v1.0.0
 
 ```ts
 export interface ShardManager {
-  readonly getShardingEvents: Stream.Stream<never, never, ShardingEvent.ShardingEvent>
-  readonly register: (pod: Pod.Pod) => Effect.Effect<never, never, void>
-  readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
-  readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<never, never, void>
-  readonly checkAllPodsHealth: Effect.Effect<never, never, void>
-  readonly getAssignments: Effect.Effect<
-    never,
-    never,
-    HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>
-  >
+  readonly getShardingEvents: Stream.Stream<ShardingEvent.ShardingEvent>
+  readonly register: (pod: Pod.Pod) => Effect.Effect<void>
+  readonly unregister: (podAddress: PodAddress.PodAddress) => Effect.Effect<void>
+  readonly notifyUnhealthyPod: (podAddress: PodAddress.PodAddress) => Effect.Effect<void>
+  readonly checkAllPodsHealth: Effect.Effect<void>
+  readonly getAssignments: Effect.Effect<HashMap.HashMap<ShardId.ShardId, Option.Option<PodAddress.PodAddress>>>
   /* @internal */
-  readonly rebalance: (rebalanceImmediately: boolean) => Effect.Effect<never, never, void>
+  readonly rebalance: (rebalanceImmediately: boolean) => Effect.Effect<void>
   /* @internal */
-  readonly persistPods: Effect.Effect<never, never, void>
+  readonly persistPods: Effect.Effect<void>
 }
 ```
 

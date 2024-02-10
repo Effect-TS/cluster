@@ -47,12 +47,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface PodAddress
-  extends Data.Data<{
-    readonly [PodAddressTypeId]: PodAddressTypeId
-    readonly host: string
-    readonly port: number
-  }> {}
+export interface PodAddress {
+  readonly [PodAddressTypeId]: PodAddressTypeId
+  readonly host: string
+  readonly port: number
+}
 ```
 
 Added in v1.0.0
@@ -84,7 +83,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<PodAddress.From, PodAddress>
+export declare const schema: Schema.Schema<PodAddress, PodAddress.From, never>
 ```
 
 Added in v1.0.0

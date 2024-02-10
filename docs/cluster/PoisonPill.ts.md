@@ -36,7 +36,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: Effect.Effect<never, never, PoisonPill>
+export declare const make: Effect.Effect<PoisonPill, never, never>
 ```
 
 Added in v1.0.0
@@ -48,10 +48,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface PoisonPill
-  extends Data.Data<{
-    [PoisonPillTypeId]: PoisonPillTypeId
-  }> {}
+export interface PoisonPill {
+  [PoisonPillTypeId]: PoisonPillTypeId
+}
 ```
 
 Added in v1.0.0
@@ -66,8 +65,9 @@ This is the schema for a value.
 
 ```ts
 export declare const schema: Schema.Schema<
+  { readonly [PoisonPillTypeId]: typeof PoisonPillTypeId },
   { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" },
-  Data.Data<{ readonly [PoisonPillTypeId]: typeof PoisonPillTypeId }>
+  never
 >
 ```
 
@@ -83,7 +83,7 @@ If the result is a PoisonPill, it will interrupt the effect.
 ```ts
 export declare const takeOrInterrupt: <Req>(
   dequeue: Queue.Dequeue<PoisonPill | Req>
-) => Effect.Effect<never, never, Req>
+) => Effect.Effect<Req, never, never>
 ```
 
 Added in v1.0.0

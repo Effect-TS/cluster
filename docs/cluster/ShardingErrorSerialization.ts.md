@@ -57,8 +57,9 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorSerializationSchema: Schema.Schema<
+  ShardingErrorSerialization,
   { readonly _tag: "./ShardingErrorSerialization"; readonly error: string },
-  ShardingErrorSerialization
+  never
 >
 ```
 

@@ -66,7 +66,7 @@ export interface AtLeastOnceStorage {
     shardId: ShardId.ShardId,
     entityId: string,
     message: Msg
-  ): Effect.Effect<never, ShardingError.ShardingErrorWhileOfferingMessage, void>
+  ): Effect.Effect<void, ShardingError.ShardingErrorWhileOfferingMessage>
 
   /**
    * Marks the message as processed, so no more send attempt will occur
@@ -76,12 +76,12 @@ export interface AtLeastOnceStorage {
     shardId: ShardId.ShardId,
     entityId: string,
     message: Msg
-  ): Effect.Effect<never, ShardingError.ShardingErrorWhileOfferingMessage, void>
+  ): Effect.Effect<void, ShardingError.ShardingErrorWhileOfferingMessage>
 
   /**
    * Gets a set of messages that will be sent to the local Pod as second attempt
    */
-  sweepPending(shardIds: Iterable<ShardId.ShardId>): Stream.Stream<never, never, SerializedEnvelope.SerializedEnvelope>
+  sweepPending(shardIds: Iterable<ShardId.ShardId>): Stream.Stream<SerializedEnvelope.SerializedEnvelope>
 }
 ```
 

@@ -1,6 +1,6 @@
 ---
 title: ShardManagerProtocolHttp.ts
-nav_order: 8
+nav_order: 7
 parent: "@effect/cluster-node"
 ---
 
@@ -27,7 +27,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const GetAssignmentsResult_: Schema.Schema<readonly any[], readonly any[]>
+export declare const GetAssignmentsResult_: Schema.Schema<readonly any[], readonly any[], unknown>
 ```
 
 Added in v1.0.0
@@ -37,7 +37,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const NotifyUnhealthyPod_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }>
+export declare const NotifyUnhealthyPod_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }, any>
 ```
 
 Added in v1.0.0
@@ -47,7 +47,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Register_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }>
+export declare const Register_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }, any>
 ```
 
 Added in v1.0.0
@@ -57,7 +57,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Unregister_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }>
+export declare const Unregister_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }, any>
 ```
 
 Added in v1.0.0

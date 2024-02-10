@@ -45,11 +45,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface ShardId
-  extends Data.Data<{
-    readonly [ShardIdTypeId]: ShardIdTypeId
-    readonly value: number
-  }> {}
+export interface ShardId {
+  readonly [ShardIdTypeId]: ShardIdTypeId
+  readonly value: number
+}
 ```
 
 Added in v1.0.0
@@ -80,7 +79,7 @@ This is the schema for a value.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<ShardId.From, ShardId>
+export declare const schema: Schema.Schema<ShardId, ShardId.From, never>
 ```
 
 Added in v1.0.0

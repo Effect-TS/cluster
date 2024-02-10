@@ -57,8 +57,9 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorPodUnavailableSchema: Schema.Schema<
+  ShardingErrorPodUnavailable,
   { readonly _tag: "./ShardingErrorPodUnavailable"; readonly pod: PodAddress.PodAddress.From },
-  ShardingErrorPodUnavailable
+  never
 >
 ```
 

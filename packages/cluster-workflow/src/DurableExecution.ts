@@ -68,6 +68,6 @@ export function attempt<A, IA, E, IE>(
         }
       )
 
-      return yield* _(executeAttempt)
+      return yield* _(executeAttempt, Effect.withSpan(persistenceId))
     })
 }

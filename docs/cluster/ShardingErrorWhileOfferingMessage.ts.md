@@ -58,8 +58,9 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorWhileOfferingMessageSchema: Schema.Schema<
+  ShardingErrorWhileOfferingMessage,
   { readonly _tag: "./ShardingErrorWhileOfferingMessage"; readonly error: string },
-  ShardingErrorWhileOfferingMessage
+  never
 >
 ```
 

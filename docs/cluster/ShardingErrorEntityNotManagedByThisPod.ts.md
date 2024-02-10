@@ -58,8 +58,9 @@ Added in v1.0.0
 
 ```ts
 export declare const ShardingErrorEntityNotManagedByThisPodSchema: Schema.Schema<
+  ShardingErrorEntityNotManagedByThisPod,
   { readonly _tag: "./ShardingErrorEntityNotManagedByThisPod"; readonly entityId: string },
-  ShardingErrorEntityNotManagedByThisPod
+  never
 >
 ```
 
