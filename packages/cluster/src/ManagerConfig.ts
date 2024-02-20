@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import type * as ConfigError from "effect/ConfigError"
 import type * as Context from "effect/Context"
 import type * as Duration from "effect/Duration"
 import type * as Layer from "effect/Layer"
@@ -32,7 +33,6 @@ export type ManagerConfigTypeId = typeof ManagerConfigTypeId
  * @category models
  */
 export interface ManagerConfig {
-  readonly [ManagerConfigTypeId]: ManagerConfigTypeId
   readonly numberOfShards: number
   readonly apiPort: number
   readonly rebalanceInterval: Duration.Duration
@@ -54,3 +54,8 @@ export const ManagerConfig: Context.Tag<ManagerConfig, ManagerConfig> = internal
  * @category utils
  */
 export const defaults: Layer.Layer<ManagerConfig> = internal.defaults
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+export const fromConfig: Layer.Layer<ManagerConfig, ConfigError.ConfigError, never> = internal.fromConfig

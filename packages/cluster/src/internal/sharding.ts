@@ -1,3 +1,4 @@
+import * as Clock from "effect/Clock"
 import * as Context from "effect/Context"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
@@ -165,7 +166,7 @@ function make(
   singletons: Synchronized.SynchronizedRef<
     List.List<SingletonEntry>
   >,
-  // lastUnhealthyNodeReported: Ref.Ref<Date>,
+  lastUnhealthyNodeReported: Ref.Ref<number>,
   isShuttingDownRef: Ref.Ref<boolean>,
   shardManager: ShardManagerClient.ShardManagerClient,
   pods: Pods.Pods,
@@ -438,11 +439,34 @@ function make(
     pod: PodAddress.PodAddress,
     envelope: SerializedEnvelope.SerializedEnvelope
   ): Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError> {
-    const errorHandling = () => Effect.die("Not handled yet")
-
     return pipe(
       pods.sendAndGetState(pod, envelope),
-      Effect.tapError(errorHandling),
+      Effect.tapError((error) => {
+        if (ShardingError.isShardingErrorPodUnavailable(error)) {
+          const notify = pipe(
+            Clock.currentTimeMillis,
+            Effect.flatMap((cdt) =>
+              pipe(
+                Ref.updateAndGet(lastUnhealthyNodeReported, (old) =>
+                  old + Duration.toMillis(config.unhealthyPodReportInterval) < cdt ? cdt : old),
+                Effect.map((_) =>
+                  _ === cdt
+                )
+              )
+            )
+          )
+
+          return pipe(
+            shardManager.notifyUnhealthyPod(pod),
+            Effect.zipRight(shardManager.getAssignments),
+            Effect.flatMap((_) => updateAssignments(_, true)),
+            Effect.forkDaemon,
+            Effect.whenEffect(notify),
+            Effect.asUnit
+          )
+        }
+        return Effect.unit
+      }),
       Effect.annotateLogs("pod", pod),
       Effect.annotateLogs("envelope", envelope)
     )
@@ -748,6 +772,8 @@ export const live = Layer.scoped(
     const eventsHub = yield* _(PubSub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>())
     const singletons = yield* _(Synchronized.make<List.List<SingletonEntry>>(List.nil()))
     const layerScope = yield* _(Effect.scope)
+    const cdt = yield* _(Clock.currentTimeMillis)
+    const lastUnhealthyNodeReported = yield* _(Ref.make(cdt))
     yield* _(Effect.addFinalizer(() =>
       pipe(
         Synchronized.get(singletons),
@@ -764,6 +790,7 @@ export const live = Layer.scoped(
       shardsCache,
       entityManagers,
       singletons,
+      lastUnhealthyNodeReported,
       shuttingDown,
       shardManager,
       pods,

@@ -65,7 +65,7 @@ function resume<T extends Schema.TaggedRequest.Any, R>(
               shouldInterruptCurrentFiberInActivity,
               isGracefulShutdownHappening: Ref.get(isGracefulShutdownHappening),
               durableExecutionJournal,
-              yieldExecution: pipe(yieldExecution, Effect.forkDaemon, Effect.zipRight(Effect.interrupt)),
+              yieldExecution: pipe(yieldExecution, Effect.forkDaemon, Effect.zipRight(Effect.never)),
               currentAttempt
             })
           )

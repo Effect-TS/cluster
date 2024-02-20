@@ -18,7 +18,7 @@ const liveShardingManager = pipe(
   Layer.provide(StorageFile.storageFile),
   Layer.provide(PodsHealth.local),
   Layer.provide(PodsHttp.httpPods),
-  Layer.provide(ManagerConfig.defaults),
+  Layer.provide(ManagerConfig.fromConfig),
   Layer.provide(HttpClient.client.layer)
 )
 

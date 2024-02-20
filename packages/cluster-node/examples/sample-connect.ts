@@ -10,17 +10,23 @@ import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
+import * as Ref from "effect/Ref"
 import { CounterEntity, GetCurrent, Increment } from "./sample-common.js"
 
 const liveLayer = Effect.gen(function*(_) {
   const messenger = yield* _(Sharding.messenger(CounterEntity))
+  const idRef = yield* _(Ref.make(0))
 
-  yield* _(messenger.sendDiscard("entity1")(new Increment({ messageId: "a" })))
-  yield* _(messenger.sendDiscard("entity1")(new Increment({ messageId: "b" })))
+  while (true) {
+    const id = yield* _(Ref.getAndUpdate(idRef, (_) => _ + 1))
+    const entityId = `entity-${id % 10}`
 
-  const result = yield* _(messenger.send("entity1")(new GetCurrent({ messageId: "c" })))
+    yield* _(messenger.sendDiscard(entityId)(new Increment({ messageId: `increment-${id}` })))
+    const result = yield* _(messenger.send(entityId)(new GetCurrent({ messageId: `get-count-${id}` })))
+    yield* _(Effect.logInfo(`Counter ${entityId} is now: ${result}`))
 
-  yield* _(Effect.logInfo("Current count is " + result))
+    yield* _(Effect.sleep(200))
+  }
 }).pipe(
   Layer.effectDiscard,
   Layer.provide(Sharding.live),

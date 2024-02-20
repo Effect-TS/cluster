@@ -23,12 +23,20 @@ const liveLayer = Sharding.registerEntity(
 )(
   RecipientBehaviour.fromFunctionEffectStateful(
     () => Effect.succeed(0),
-    (_, message, stateRef) => {
+    (entityId, message, stateRef) => {
       switch (message._tag) {
         case "Increment":
-          return pipe(Ref.update(stateRef, (count) => count + 1), Effect.as(MessageState.Processed(Option.none())))
+          return pipe(
+            Ref.update(stateRef, (count) => count + 1),
+            Effect.zipLeft(Effect.logInfo(`Counter ${entityId} incremented`)),
+            Effect.as(MessageState.Processed(Option.none()))
+          )
         case "Decrement":
-          return pipe(Ref.update(stateRef, (count) => count - 1), Effect.as(MessageState.Processed(Option.none())))
+          return pipe(
+            Ref.update(stateRef, (count) => count - 1),
+            Effect.zipLeft(Effect.logInfo(`Counter ${entityId} decremented`)),
+            Effect.as(MessageState.Processed(Option.none()))
+          )
         case "GetCurrent":
           return pipe(
             Ref.get(stateRef),
@@ -48,11 +56,11 @@ const liveLayer = Sharding.registerEntity(
   Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
   Layer.provide(Serialization.json),
   Layer.provide(NodeClient.layer),
-  Layer.provide(ShardingConfig.defaults)
+  Layer.provide(ShardingConfig.fromConfig)
 )
 
 Layer.launch(liveLayer).pipe(
-  Logger.withMinimumLogLevel(LogLevel.All),
+  Logger.withMinimumLogLevel(LogLevel.Debug),
   Effect.tapErrorCause(Effect.logError),
   runMain
 )
