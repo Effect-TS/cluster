@@ -93,7 +93,14 @@ export const httpPods: Layer.Layer<Pods.Pods, never, Http.client.Client.Default>
         )
 
         return response
-      }).pipe(Effect.orDie, Effect.flatten)
+      }).pipe(
+        Effect.matchEffect({
+          onSuccess: (e) => Effect.succeed(e),
+          onFailure: (error) =>
+            error._tag === "RequestError" ? Effect.fail(ShardingErrorPodUnavailable(podAddress)) : Effect.die(error)
+        }),
+        Effect.flatten
+      )
     }
 
     return Pods.make({

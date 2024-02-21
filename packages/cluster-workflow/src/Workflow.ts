@@ -1,5 +1,5 @@
 import * as Activity from "@effect/cluster-workflow/Activity"
-import type * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
+import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import * as Schema from "@effect/schema/Schema"
 import { ReadonlyArray } from "effect"
 import * as Clock from "effect/Clock"
@@ -77,17 +77,16 @@ function remainingDuration(persistenceId: string, duration: Duration.Duration) {
   )
 }
 
-export function sleep(persistenceId: string, duration: Duration.Duration) {
-  return Effect.gen(function*(_) {
+export const sleep = (persistenceId: string, duration: Duration.Duration) =>
+  Effect.gen(function*(_) {
     const remaining = yield* _(remainingDuration(persistenceId, duration))
     yield* _(Effect.sleep(remaining))
   })
-}
 
-export function timeout(persistenceId: string, duration: Duration.Duration) {
-  return <R, E, A>(fa: Effect.Effect<R, E, A>) =>
-    Effect.gen(function*(_) {
-      const remaining = yield* _(remainingDuration(persistenceId, duration))
-      yield* _(Effect.timeout(fa, remaining))
-    })
-}
+export const timeout = (persistenceId: string, duration: Duration.Duration) => <R, E, A>(fa: Effect.Effect<R, E, A>) =>
+  Effect.gen(function*(_) {
+    const remaining = yield* _(remainingDuration(persistenceId, duration))
+    yield* _(Effect.timeout(fa, remaining))
+  })
+
+export const yieldExecution = Effect.flatMap(WorkflowContext.WorkflowContext, (ctx) => ctx.yieldExecution)

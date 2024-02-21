@@ -60,3 +60,5 @@ export function make<A, IA, E, IE>(
 }
 
 export const currentAttempt = Effect.map(ActivityContext.ActivityContext, (_) => _.currentAttempt)
+
+export const persistenceId = Effect.map(ActivityContext.ActivityContext, (_) => _.persistenceId)

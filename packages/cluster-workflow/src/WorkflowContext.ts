@@ -10,7 +10,7 @@ export interface WorkflowContext {
   shouldInterruptCurrentFiberInActivity: Ref.Ref<boolean>
   isGracefulShutdownHappening: Effect.Effect<boolean>
   durableExecutionJournal: DurableExecutionJournal.DurableExecutionJournal
-  yieldExecution: Effect.Effect<void>
+  yieldExecution: Effect.Effect<never>
 }
 
 export const WorkflowContext = Context.GenericTag<WorkflowContext>("@services/WorkflowContext")

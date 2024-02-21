@@ -62,7 +62,7 @@ function make(
 
   function register(pod: Pod.Pod) {
     return pipe(
-      Effect.logInfo("Registering " + PodAddress.show(pod.address) + "@" + pod.version),
+      Effect.logDebug("Registering " + PodAddress.show(pod.address) + "@" + pod.version),
       Effect.zipRight(
         RefSynchronized.updateAndGetEffect(stateRef, (state) =>
           pipe(
@@ -119,7 +119,7 @@ function make(
   function unregister(podAddress: PodAddress.PodAddress) {
     const eff = pipe(
       Effect.Do,
-      Effect.zipLeft(Effect.logInfo(`Unregistering ${podAddress}`)),
+      Effect.zipLeft(Effect.logDebug(`Unregistering ${podAddress}`)),
       Effect.bind("unassignments", (_) =>
         pipe(
           stateRef,
@@ -584,10 +584,10 @@ export const live = Effect.gen(function*(_) {
   // log info events
   yield* _(
     shardManager.getShardingEvents,
-    Stream.mapEffect((_) => Effect.logInfo(JSON.stringify(_))),
+    Stream.mapEffect((_) => Effect.logDebug(JSON.stringify(_))),
     Stream.runDrain,
     Effect.forkIn(layerScope)
   )
-  yield* _(Effect.logInfo("Shard Manager loaded"))
+  yield* _(Effect.logDebug("Shard Manager loaded"))
   return shardManager
 }).pipe(Layer.scoped(shardManagerTag))
