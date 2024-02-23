@@ -24,18 +24,18 @@
     "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
   "peerDependencies": {
-    "@effect/platform-node": "^0.43.1",
-    "@effect/schema": "^0.62.1",
-    "effect": "^2.3.1",
-    "@sqlfx/pg": "^0.44.0",
+    "@effect/platform-node": "^0.44.9",
+    "@effect/schema": "^0.63.0",
+    "effect": "^2.4.0",
+    "@sqlfx/pg": "^0.45.0",
     "@testcontainers/postgresql": "^10.4.0"
   },
   "devDependencies": {
-    "@effect/platform-node": "^0.43.1",
-    "@effect/schema": "^0.62.1",
+    "@effect/platform-node": "^0.44.9",
+    "@effect/schema": "^0.63.0",
     "@types/node": "^20.9.0",
     "@types/path-browserify": "^1.0.1",
-    "effect": "^2.3.1",
+    "effect": "^2.4.0",
     "tsx": "^4.6.2"
   }
 }

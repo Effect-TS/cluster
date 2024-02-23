@@ -101,27 +101,27 @@ importers:
   packages/cluster:
     devDependencies:
       '@effect/schema':
-        specifier: ^0.62.1
-        version: 0.62.1(effect@2.3.1)(fast-check@3.13.2)
+        specifier: ^0.63.0
+        version: 0.63.0(effect@2.4.0)(fast-check@3.13.2)
       '@types/path-browserify':
         specifier: ^1.0.1
         version: 1.0.2
       effect:
-        specifier: ^2.3.1
-        version: 2.3.1
+        specifier: ^2.4.0
+        version: 2.4.0
     publishDirectory: dist
 
   packages/cluster-node:
     devDependencies:
       '@effect/platform':
-        specifier: ^0.44.1
-        version: 0.44.1(@effect/schema@0.62.1)(effect@2.3.1)
+        specifier: ^0.46.1
+        version: 0.46.1(@effect/schema@0.63.0)(effect@2.4.0)
       '@effect/platform-node':
-        specifier: ^0.43.1
-        version: 0.43.1(@effect/platform@0.44.1)(effect@2.3.1)
+        specifier: ^0.44.9
+        version: 0.44.9(@effect/platform@0.46.1)(effect@2.4.0)
       '@effect/schema':
-        specifier: ^0.62.1
-        version: 0.62.1(effect@2.3.1)(fast-check@3.13.2)
+        specifier: ^0.63.0
+        version: 0.63.0(effect@2.4.0)(fast-check@3.13.2)
       '@types/node':
         specifier: ^20.9.0
         version: 20.9.0
@@ -129,8 +129,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.2
       effect:
-        specifier: ^2.3.1
-        version: 2.3.1
+        specifier: ^2.4.0
+        version: 2.4.0
       tsx:
         specifier: ^4.6.2
         version: 4.6.2
@@ -139,18 +139,18 @@ importers:
   packages/cluster-pg:
     dependencies:
       '@sqlfx/pg':
-        specifier: ^0.44.0
-        version: 0.44.0(@effect/schema@0.62.1)(effect@2.3.1)
+        specifier: ^0.45.0
+        version: 0.45.0(@effect/schema@0.63.0)(effect@2.4.0)
       '@testcontainers/postgresql':
         specifier: ^10.4.0
         version: 10.4.0
     devDependencies:
       '@effect/platform-node':
-        specifier: ^0.43.1
-        version: 0.43.1(@effect/platform@0.44.1)(effect@2.3.1)
+        specifier: ^0.44.9
+        version: 0.44.9(@effect/platform@0.46.1)(effect@2.4.0)
       '@effect/schema':
-        specifier: ^0.62.1
-        version: 0.62.1(effect@2.3.1)(fast-check@3.13.2)
+        specifier: ^0.63.0
+        version: 0.63.0(effect@2.4.0)(fast-check@3.13.2)
       '@types/node':
         specifier: ^20.9.0
         version: 20.9.0
@@ -158,8 +158,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.2
       effect:
-        specifier: ^2.3.1
-        version: 2.3.1
+        specifier: ^2.4.0
+        version: 2.4.0
       tsx:
         specifier: ^4.6.2
         version: 4.6.2
@@ -168,11 +168,11 @@ importers:
   packages/cluster-workflow:
     devDependencies:
       '@effect/platform-node':
-        specifier: ^0.43.1
-        version: 0.43.1(@effect/platform@0.44.1)(effect@2.3.1)
+        specifier: ^0.44.9
+        version: 0.44.9(@effect/platform@0.46.1)(effect@2.4.0)
       '@effect/schema':
-        specifier: ^0.62.1
-        version: 0.62.1(effect@2.3.1)(fast-check@3.13.2)
+        specifier: ^0.63.0
+        version: 0.63.0(effect@2.4.0)(fast-check@3.13.2)
       '@types/node':
         specifier: ^20.9.0
         version: 20.9.0
@@ -180,8 +180,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.2
       effect:
-        specifier: ^2.3.1
-        version: 2.3.1
+        specifier: ^2.4.0
+        version: 2.4.0
       tsx:
         specifier: ^4.6.2
         version: 4.6.2
@@ -824,14 +824,14 @@ packages:
     resolution: {integrity: sha512-e8vfKbjnbYiyneBincEFS0tzXluopGK77OkVFbPRtUbNDS5tJfb+jiwOQEiqASDsadcZmd+9J9+Q6v/z7GuN2g==}
     dev: true
 
-  /@effect/platform-node-shared@0.1.1(@effect/platform@0.44.1)(effect@2.3.1):
-    resolution: {integrity: sha512-qfsanOJchaeijIlP4VrGN5t1fFHQ7t6msIEbDHtSFm3PTuBNkn0RiNQ/+ck2hxXSwiTy1b5mKGxwXen6PtxzWg==}
+  /@effect/platform-node-shared@0.2.1(@effect/platform@0.46.1)(effect@2.4.0):
+    resolution: {integrity: sha512-EQEc2diCC2Bs0PJ9MtN7QQOWHxR/DzrIsUUWJnQn6+ZLrOZLyunK9bbR/qpMWG7+hCRhH8+xdssrpvCX2c2N9w==}
     peerDependencies:
-      '@effect/platform': ^0.44.1
-      effect: ^2.3.1
+      '@effect/platform': ^0.46.1
+      effect: ^2.4.0
     dependencies:
-      '@effect/platform': 0.44.1(@effect/schema@0.62.1)(effect@2.3.1)
-      effect: 2.3.1
+      '@effect/platform': 0.46.1(@effect/schema@0.63.0)(effect@2.4.0)
+      effect: 2.4.0
       multipasta: 0.1.21
     dev: true
 
@@ -849,15 +849,15 @@ packages:
       - '@effect/schema'
     dev: true
 
-  /@effect/platform-node@0.43.1(@effect/platform@0.44.1)(effect@2.3.1):
-    resolution: {integrity: sha512-fyACX6agBrUmtQK0AllB+j6B/fLq4PmG3uI6OpLHwBbiypGJTwx56IyfD2w1Il+ZHzK84HRs/4CD2icXtB+nmg==}
+  /@effect/platform-node@0.44.9(@effect/platform@0.46.1)(effect@2.4.0):
+    resolution: {integrity: sha512-QfbIYP5eZWjlz2W0PK3vUbFwyVp9YsmN/ys89CI86rxluCEVVTjkZVwtmpJd5jjVwRtE4sLpBRcWMfZNQHP1lQ==}
     peerDependencies:
-      '@effect/platform': ^0.44.1
-      effect: ^2.3.1
+      '@effect/platform': ^0.46.1
+      effect: ^2.4.0
     dependencies:
-      '@effect/platform': 0.44.1(@effect/schema@0.62.1)(effect@2.3.1)
-      '@effect/platform-node-shared': 0.1.1(@effect/platform@0.44.1)(effect@2.3.1)
-      effect: 2.3.1
+      '@effect/platform': 0.46.1(@effect/schema@0.63.0)(effect@2.4.0)
+      '@effect/platform-node-shared': 0.2.1(@effect/platform@0.46.1)(effect@2.4.0)
+      effect: 2.4.0
       mime: 3.0.0
     dev: true
 
@@ -873,14 +873,14 @@ packages:
       path-browserify: 1.0.1
     dev: true
 
-  /@effect/platform@0.44.1(@effect/schema@0.62.1)(effect@2.3.1):
-    resolution: {integrity: sha512-j22/P4dYkyoMcTgR341w0hXX/4Xr9STIxXrHOgcw4CRKLz8U8dZjoB+zOZ8JVdrQQ64IRmdLqMiyabXiGfzufA==}
+  /@effect/platform@0.46.1(@effect/schema@0.63.0)(effect@2.4.0):
+    resolution: {integrity: sha512-WVtMAPrx/QvdOFTffDGZVQVd93uG22pYWYATI8fuFbrqW68f5hIm7B3dBdF9aQ7RLw1ckxsRldtP7RkvMOZ4Tw==}
     peerDependencies:
-      '@effect/schema': ^0.62.1
-      effect: ^2.3.1
+      '@effect/schema': ^0.63.0
+      effect: ^2.4.0
     dependencies:
-      '@effect/schema': 0.62.1(effect@2.3.1)(fast-check@3.13.2)
-      effect: 2.3.1
+      '@effect/schema': 0.63.0(effect@2.4.0)(fast-check@3.13.2)
+      effect: 2.4.0
       find-my-way-ts: 0.1.1
       multipasta: 0.1.21
       path-browserify: 1.0.1
@@ -896,13 +896,13 @@ packages:
       fast-check: 3.13.2
     dev: true
 
-  /@effect/schema@0.62.1(effect@2.3.1)(fast-check@3.13.2):
-    resolution: {integrity: sha512-Zi8PtOElNyq0INLqGlDrMqB/uzs/TACP2ZhcLABm/QjFVvRTO996UaVdsOyA+OTqroQkoYEe+q/cnXxlMAGLBw==}
+  /@effect/schema@0.63.0(effect@2.4.0)(fast-check@3.13.2):
+    resolution: {integrity: sha512-z+QTqCUexkh/qyEz5WMHVV/dDLr5jN2eOMUsXzgxzmtBFiBy1L8xunbt+/JgGBhPLOBqLzDysLlnL56edzTNzQ==}
     peerDependencies:
-      effect: ^2.3.1
+      effect: ^2.4.0
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.3.1
+      effect: 2.4.0
       fast-check: 3.13.2
 
   /@esbuild/android-arm64@0.18.20:
@@ -1283,26 +1283,26 @@ packages:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
 
-  /@sqlfx/pg@0.44.0(@effect/schema@0.62.1)(effect@2.3.1):
-    resolution: {integrity: sha512-hxs2V6S2gKeJd1bw97Y7oIlKglXfaVUZkb95zjmZYUfTZHXmkq77UgJiBaicI+kHPy4kBomcsyTDceqrf/RQnw==}
+  /@sqlfx/pg@0.45.0(@effect/schema@0.63.0)(effect@2.4.0):
+    resolution: {integrity: sha512-OhuCNfLcUlDnuOWtRSY8BVQcs9NhCmku8jeZLwaz0BUeve5sHYkxkLqIX8IVZKAPVpCmovUY7Ow06b8mnZ+n+A==}
     peerDependencies:
-      effect: ^2.3.0
+      effect: ^2.4.0
     dependencies:
-      '@sqlfx/sql': 0.44.0(@effect/schema@0.62.1)(effect@2.3.1)
-      effect: 2.3.1
-      postgres: 3.4.2
+      '@sqlfx/sql': 0.45.0(@effect/schema@0.63.0)(effect@2.4.0)
+      effect: 2.4.0
+      postgres: 3.4.3
     transitivePeerDependencies:
       - '@effect/schema'
     dev: false
 
-  /@sqlfx/sql@0.44.0(@effect/schema@0.62.1)(effect@2.3.1):
-    resolution: {integrity: sha512-uSqg9fGtTxAzGPOvS2748w/81EhWlU/bS8V5JvCq5/sOpKMW1uttlOBHSWLsBOVsKXsIFJRfYfc49qoM3O7BmA==}
+  /@sqlfx/sql@0.45.0(@effect/schema@0.63.0)(effect@2.4.0):
+    resolution: {integrity: sha512-sBgGpAGd8TYcK1tf+Anq0bERgVxZxJ0mWyreGmAFlkSVhMQCLMYFCnRKlTN+kxLZng8o4l2kkeZESmlqBJNYqQ==}
     peerDependencies:
-      '@effect/schema': ^0.62.0
-      effect: ^2.3.0
+      '@effect/schema': ^0.63.0
+      effect: ^2.4.0
     dependencies:
-      '@effect/schema': 0.62.1(effect@2.3.1)(fast-check@3.13.2)
-      effect: 2.3.1
+      '@effect/schema': 0.63.0(effect@2.4.0)(fast-check@3.13.2)
+      effect: 2.4.0
     dev: false
 
   /@testcontainers/postgresql@10.4.0:
@@ -2769,8 +2769,8 @@ packages:
     resolution: {integrity: sha512-qROhKMxlm6fpa90YRfWSgKeelDfhaDq2igPK+pIKupGehiCnZH4vd2qrY71HVZ10qZgXxh0VXpGyDQxJC+EQqw==}
     dev: true
 
-  /effect@2.3.1:
-    resolution: {integrity: sha512-bOmhWIt3WjccP2DXan8eJmIqjVXwan0hj+Y6BHJOauHt8HNEuQndp6D7bAUsUsjPoKGCU70J9sMeT5QEVYlgbQ==}
+  /effect@2.4.0:
+    resolution: {integrity: sha512-HAtFVAbAGYDzfGbrSrX1gzMzXym15zk1+ps72X8W1wdZY0vxq+u23w8u9DhAZjiJPHT4W9ZYL7QWQqpP4t+dSg==}
 
   /electron-to-chromium@1.4.502:
     resolution: {integrity: sha512-xqeGw3Gr6o3uyHy/yKjdnDQHY2RQvXcGC2cfHjccK1IGkH6cX1WQBN8EeC/YpwPhGkBaikDTecJ8+ssxSVRQlw==}
@@ -4963,8 +4963,8 @@ packages:
       source-map-js: 1.0.2
     dev: true
 
-  /postgres@3.4.2:
-    resolution: {integrity: sha512-0UcCGvDBSaAzLeWwiq+QVmiGfOPTosFb+sxJUUtd+7Pi/ByFPuz6Gq05LbS0sM1ghMWC5atuks3pfl34g0qmFw==}
+  /postgres@3.4.3:
+    resolution: {integrity: sha512-iHJn4+M9vbTdHSdDzNkC0crHq+1CUdFhx+YqCE+SqWxPjm+Zu63jq7yZborOBF64c8pc58O5uMudyL1FQcHacA==}
     engines: {node: '>=12'}
     dev: false
 

@@ -6,6 +6,7 @@ import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
+import * as Unify from "effect/Unify"
 
 export function kill<A, IA, E, IE>(
   persistenceId: string,
@@ -45,7 +46,7 @@ export function attempt<A, IA, E, IE>(
 
       const executeAttempt = DurableExecutionJournal.withState(journal, persistenceId, success, failure)(
         (state, persistEvent) => {
-          return pipe(
+          return Unify.unify(pipe(
             DurableExecutionState.match(state, {
               onPending: () =>
                 pipe(
@@ -62,9 +63,8 @@ export function attempt<A, IA, E, IE>(
                 ),
               onKilled: () => killCurrentFiber,
               onCompleted: ({ exit }) => exit
-            }),
-            Effect.unified
-          )
+            })
+          ))
         }
       )
 
