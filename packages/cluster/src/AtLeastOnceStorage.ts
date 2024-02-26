@@ -8,7 +8,6 @@ import * as internal from "./internal/atLeastOnceStorage.js"
 import type * as RecipientType from "./RecipientType.js"
 import type * as SerializedEnvelope from "./SerializedEnvelope.js"
 import type * as ShardId from "./ShardId.js"
-import type * as ShardingError from "./ShardingError.js"
 
 /**
  * @since 1.0.0
@@ -43,7 +42,7 @@ export interface AtLeastOnceStorage {
     shardId: ShardId.ShardId,
     entityId: string,
     message: Msg
-  ): Effect.Effect<void, ShardingError.ShardingErrorWhileOfferingMessage>
+  ): Effect.Effect<void>
 
   /**
    * Marks the message as processed, so no more send attempt will occur
@@ -53,7 +52,7 @@ export interface AtLeastOnceStorage {
     shardId: ShardId.ShardId,
     entityId: string,
     message: Msg
-  ): Effect.Effect<void, ShardingError.ShardingErrorWhileOfferingMessage>
+  ): Effect.Effect<void>
 
   /**
    * Gets a set of messages that will be sent to the local Pod as second attempt

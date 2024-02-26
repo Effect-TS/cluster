@@ -7,7 +7,7 @@ import * as RecipientType from "@effect/cluster/RecipientType"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
-import * as ShardingError from "@effect/cluster/ShardingError"
+import * as ShardingException from "@effect/cluster/ShardingException"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
 import * as Schema from "@effect/schema/Schema"
@@ -117,7 +117,7 @@ describe.concurrent("SampleTests", () => {
         const error = Cause.failureOption(exit.cause)
         expect(Option.isSome(error)).toBe(true)
         if (Option.isSome(error)) {
-          expect(ShardingError.isShardingErrorEntityTypeNotRegistered(error.value)).toBe(true)
+          expect(ShardingException.isEntityTypeNotRegisteredException(error.value)).toBe(true)
         }
       }
     }).pipe(withTestEnv, Effect.runPromise)
@@ -429,37 +429,6 @@ describe.concurrent("SampleTests", () => {
     )
   })
 
-  // it("If offer fails, send should fail.", () => {
-  //   return Effect.gen(function*(_) {
-  //     yield* _(Sharding.registerScoped)
-  //     const received = yield* _(Ref.make(false))
-  //     const failed = yield* _(Ref.make(false))
-
-  //     const SampleEntity = RecipientType.makeEntityType("Sample", Schema.number)
-
-  //     yield* _(
-  //       Sharding.registerEntity(
-  //         SampleEntity,
-  //         pipe(
-  //           RecipientBehaviour.fromInMemoryQueue((entityId, dequeue) =>
-  //             pipe(PoisonPill.takeOrInterrupt(dequeue), Effect.zipRight(Ref.set(received, true)))
-  //           ),
-  //           RecipientBehaviour.mapOffer(() => () => Effect.fail(ShardingError.ShardingErrorWhileOfferingMessage("ERROR!")))
-  //         )
-  //       )
-  //     )
-
-  //     const messenger = yield* _(Sharding.messenger(SampleEntity))
-  //     yield* _(
-  //       messenger.sendDiscard("entity1")(1),
-  //       Effect.catchTag(ShardingError.ShardingErrorWhileOfferingMessageTag, () => Ref.set(failed, true))
-  //     )
-
-  //     expect(yield* _(Ref.get(failed))).toBe(true)
-  //     expect(yield* _(Ref.get(received))).toBe(false)
-  //   }).pipe(withTestEnv, Effect.runPromise)
-  // })
-
   it("Upon entity termination, pending replies should get errored", () => {
     return Effect.gen(function*(_) {
       const requestReceived = yield* _(Deferred.make<boolean>())
@@ -498,7 +467,7 @@ describe.concurrent("SampleTests", () => {
       yield* _(Sharding.unregister)
 
       const exit = yield* _(Fiber.await(replyFiber))
-      const expectedExit = Exit.fail(ShardingError.ShardingErrorSendTimeout())
+      const expectedExit = Exit.fail(new ShardingException.SendTimeoutException())
 
       expect(Exit.isFailure(exit)).toBe(true)
       expect(exit.toString() === expectedExit.toString()).toBe(true)

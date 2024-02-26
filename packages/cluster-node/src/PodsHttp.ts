@@ -5,7 +5,7 @@ import type * as PodAddress from "@effect/cluster/PodAddress"
 import * as Pods from "@effect/cluster/Pods"
 import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import type * as ShardId from "@effect/cluster/ShardId"
-import { ShardingErrorPodUnavailable } from "@effect/cluster/ShardingError"
+import * as ShardingException from "@effect/cluster/ShardingException"
 import * as Http from "@effect/platform/HttpClient"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -71,7 +71,7 @@ export const httpPods: Layer.Layer<Pods.Pods, never, Http.client.Client.Default>
         return yield* _(client(request))
       }).pipe(
         Effect.asUnit,
-        Effect.mapError(() => ShardingErrorPodUnavailable(podAddress)),
+        Effect.mapError(() => new ShardingException.PodUnavailableException({ podAddress })),
         Effect.scoped
       )
     }
@@ -98,7 +98,9 @@ export const httpPods: Layer.Layer<Pods.Pods, never, Http.client.Client.Default>
         Effect.matchEffect({
           onSuccess: (e) => Effect.succeed(e),
           onFailure: (error) =>
-            error._tag === "RequestError" ? Effect.fail(ShardingErrorPodUnavailable(podAddress)) : Effect.die(error)
+            error._tag === "RequestError"
+              ? Effect.fail(new ShardingException.PodUnavailableException({ podAddress }))
+              : Effect.die(error)
         }),
         Effect.flatten,
         Effect.scoped

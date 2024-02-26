@@ -13,7 +13,7 @@ import * as internal from "./internal/recipientBehaviour.js"
 import type * as MessageState from "./MessageState.js"
 import type * as PoisonPill from "./PoisonPill.js"
 import type * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
-import type * as ShardingError from "./ShardingError.js"
+import type * as ShardingException from "./ShardingException.js"
 
 /**
  * An alias to a RecipientBehaviour
@@ -26,7 +26,7 @@ export interface RecipientBehaviour<Msg, R> extends
       message: A
     ) => Effect.Effect<
       MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
-      ShardingError.ShardingErrorWhileOfferingMessage
+      ShardingException.ExceptionWhileOfferingMessageException
     >,
     never,
     R | RecipientBehaviourContext.RecipientBehaviourContext | Scope.Scope

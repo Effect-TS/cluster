@@ -6,7 +6,7 @@ import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import type * as Serialization from "../Serialization.js"
 import * as SerializedMessage from "../SerializedMessage.js"
-import * as ShardingError from "../ShardingError.js"
+import * as ShardingException from "../ShardingException.js"
 
 /** @internal */
 const SerializationSymbolKey = "@effect/cluster/Serialization"
@@ -24,7 +24,7 @@ function jsonStringify<A, I>(value: A, schema: Schema.Schema<A, I>) {
   return pipe(
     value,
     Schema.encode(schema),
-    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatError(e))),
+    Effect.mapError((e) => new ShardingException.SerializationException({ error: TreeFormatter.formatError(e) })),
     Effect.map((_) => JSON.stringify(_))
   )
 }
@@ -34,7 +34,7 @@ function jsonParse<A, I>(value: string, schema: Schema.Schema<A, I>) {
   return pipe(
     Effect.sync(() => JSON.parse(value)),
     Effect.flatMap(Schema.decode(schema)),
-    Effect.mapError((e) => ShardingError.ShardingErrorSerialization(TreeFormatter.formatError(e)))
+    Effect.mapError((e) => new ShardingException.SerializationException({ error: TreeFormatter.formatError(e) }))
   )
 }
 

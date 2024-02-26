@@ -11,7 +11,7 @@ import type * as PodAddress from "./PodAddress.js"
 import type * as SerializedEnvelope from "./SerializedEnvelope.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
 import type * as ShardId from "./ShardId.js"
-import type * as ShardingError from "./ShardingError.js"
+import type * as ShardingException from "./ShardingException.js"
 
 /**
  * @since 1.0.0
@@ -61,7 +61,7 @@ export interface Pods {
    * Check that a pod is responsive
    * @since 1.0.0
    */
-  readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<void, ShardingError.ShardingErrorPodUnavailable>
+  readonly ping: (pod: PodAddress.PodAddress) => Effect.Effect<void, ShardingException.PodUnavailableException>
 
   /**
    * Send a message to a pod and receive its message state
@@ -70,7 +70,10 @@ export interface Pods {
   readonly sendAndGetState: (
     pod: PodAddress.PodAddress,
     envelope: SerializedEnvelope.SerializedEnvelope
-  ) => Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError>
+  ) => Effect.Effect<
+    MessageState.MessageState<SerializedMessage.SerializedMessage>,
+    ShardingException.ShardingException
+  >
 }
 
 /**

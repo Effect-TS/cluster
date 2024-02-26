@@ -118,52 +118,12 @@ export * as ShardingConfig from "./ShardingConfig.js"
 /**
  * @since 1.0.0
  */
-export * as ShardingError from "./ShardingError.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingErrorEntityNotManagedByThisPod from "./ShardingErrorEntityNotManagedByThisPod.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingErrorEntityTypeNotRegistered from "./ShardingErrorEntityTypeNotRegistered.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingErrorNoResultInMessageProcessedState from "./ShardingErrorNoResultInMessageProcessedState.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingErrorPodNoLongerRegistered from "./ShardingErrorPodNoLongerRegistered.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingErrorPodUnavailable from "./ShardingErrorPodUnavailable.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingErrorSendTimeout from "./ShardingErrorSendTimeout.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingErrorSerialization from "./ShardingErrorSerialization.js"
-
-/**
- * @since 1.0.0
- */
-export * as ShardingErrorWhileOfferingMessage from "./ShardingErrorWhileOfferingMessage.js"
-
-/**
- * @since 1.0.0
- */
 export * as ShardingEvent from "./ShardingEvent.js"
+
+/**
+ * @since 1.0.0
+ */
+export * as ShardingException from "./ShardingException.js"
 
 /**
  * @since 1.0.0

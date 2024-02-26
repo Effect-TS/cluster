@@ -5,7 +5,7 @@ import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 import type * as Message from "../Message.js"
 import type * as MessageState from "../MessageState.js"
-import type * as ShardingError from "../ShardingError.js"
+import type * as ShardingException from "../ShardingException.js"
 
 /** @internal */
 const EntityStateSymbolKey = "@effect/cluster/EntityState"
@@ -26,7 +26,7 @@ export interface EntityState<Msg> {
     message: Msg
   ) => Effect.Effect<
     MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
-    ShardingError.ShardingErrorWhileOfferingMessage
+    ShardingException.ExceptionWhileOfferingMessageException
   >
   readonly expirationFiber: Fiber.RuntimeFiber<void, never>
   readonly executionScope: Scope.CloseableScope
