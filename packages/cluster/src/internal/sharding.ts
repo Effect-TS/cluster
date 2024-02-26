@@ -18,6 +18,7 @@ import * as Schedule from "effect/Schedule"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
 import * as Synchronized from "effect/SynchronizedRef"
+import * as Unify from "effect/Unify"
 import type * as Broadcaster from "../Broadcaster.js"
 import * as Message from "../Message.js"
 import * as MessageState from "../MessageState.js"
@@ -181,7 +182,7 @@ function make(
       Ref.get(entityManagers),
       Effect.map(HashMap.get(entityType)),
       Effect.flatMap((_) =>
-        Effect.unified(Option.match(_, {
+        Unify.unify(Option.match(_, {
           onNone: () => Effect.fail(ShardingError.ShardingErrorEntityTypeNotRegistered(entityType, address)),
           onSome: (entityManager) => Effect.succeed(entityManager as EntityManager.EntityManager<Msg>)
         }))
@@ -510,7 +511,7 @@ function make(
             MessageState.mapEffect(state, (body) => serialization.decode(Message.exitSchema(message), body))
           ),
           Effect.flatMap((state) =>
-            pipe(
+            Unify.unify(pipe(
               state,
               MessageState.match({
                 onAcknowledged: () => Effect.fail(ShardingError.ShardingErrorNoResultInProcessedMessageState()),
@@ -520,9 +521,8 @@ function make(
                       ShardingError.ShardingErrorNoResultInProcessedMessageState()
                     )
                     : Effect.succeed(state.result.value)
-              }),
-              Effect.unified
-            )
+              })
+            ))
           ),
           Effect.retry(pipe(
             Schedule.fixed(100),
@@ -583,7 +583,7 @@ function make(
     ): Effect.Effect<
       HashMap.HashMap<
         PodAddress.PodAddress,
-        Either.Either<ShardingError.ShardingError, MessageState.MessageState<SerializedMessage.SerializedMessage>>
+        Either.Either<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError>
       >,
       ShardingError.ShardingError
     > {
@@ -645,7 +645,7 @@ function make(
                     MessageState.mapEffect(state, (body) => serialization.decode(Message.exitSchema(message), body))
                   ),
                   Effect.flatMap((state) =>
-                    pipe(
+                    Unify.unify(pipe(
                       state,
                       MessageState.match({
                         onAcknowledged: () => Effect.fail(ShardingError.ShardingErrorNoResultInProcessedMessageState()),
@@ -653,9 +653,8 @@ function make(
                           Option.isNone(state.result)
                             ? Effect.fail(ShardingError.ShardingErrorNoResultInProcessedMessageState())
                             : Effect.succeed(state.result.value)
-                      }),
-                      Effect.unified
-                    )
+                      })
+                    ))
                   ),
                   Effect.retry(pipe(
                     Schedule.fixed(100),
