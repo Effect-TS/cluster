@@ -17,7 +17,7 @@ import type * as RecipientType from "../RecipientType.js"
 import type * as ShardId from "../ShardId.js"
 import type * as Sharding from "../Sharding.js"
 import type * as ShardingConfig from "../ShardingConfig.js"
-import * as ShardingError from "../ShardingError.js"
+import * as ShardingException from "../ShardingException.js"
 import * as EntityState from "./entityState.js"
 
 /** @internal */
@@ -44,9 +44,9 @@ export interface EntityManager<Msg> {
     req: A
   ) => Effect.Effect<
     MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
-    | ShardingError.ShardingErrorEntityNotManagedByThisPod
-    | ShardingError.ShardingErrorPodUnavailable
-    | ShardingError.ShardingErrorWhileOfferingMessage
+    | ShardingException.EntityNotManagedByThisPodException
+    | ShardingException.PodUnavailableException
+    | ShardingException.ExceptionWhileOfferingMessageException
   >
 
   /** @internal */
@@ -186,7 +186,7 @@ export function make<Msg, R>(
       entityId: string
     ): Effect.Effect<
       Option.Option<EntityState.EntityState<Msg>>,
-      ShardingError.ShardingErrorEntityNotManagedByThisPod
+      ShardingException.EntityNotManagedByThisPodException
     > {
       return RefSynchronized.modifyEffect(entityStates, (map) =>
         pipe(
@@ -216,7 +216,7 @@ export function make<Msg, R>(
               Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
                 if (isGoingDown) {
                   // don't start any fiber while sharding is shutting down
-                  return Effect.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId))
+                  return Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ entityId }))
                 } else {
                   // offer doesn't exist, create a new one
                   return Effect.gen(function*(_) {
@@ -269,9 +269,9 @@ export function make<Msg, R>(
       req: A
     ): Effect.Effect<
       MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
-      | ShardingError.ShardingErrorEntityNotManagedByThisPod
-      | ShardingError.ShardingErrorPodUnavailable
-      | ShardingError.ShardingErrorWhileOfferingMessage
+      | ShardingException.EntityNotManagedByThisPodException
+      | ShardingException.PodUnavailableException
+      | ShardingException.ExceptionWhileOfferingMessageException
     > {
       return pipe(
         Effect.Do,
@@ -279,7 +279,7 @@ export function make<Msg, R>(
           // first, verify that this entity should be handled by this pod
           if (recipientType._tag === "EntityType") {
             return Effect.asUnit(Effect.unlessEffect(
-              Effect.fail(ShardingError.ShardingErrorEntityNotManagedByThisPod(entityId)),
+              Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ entityId })),
               sharding.isEntityOnLocalShards(entityId)
             ))
           } else if (recipientType._tag === "TopicType") {

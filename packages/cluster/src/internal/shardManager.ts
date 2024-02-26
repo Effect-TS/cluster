@@ -23,8 +23,8 @@ import * as PodAddress from "../PodAddress.js"
 import * as Pods from "../Pods.js"
 import * as PodsHealth from "../PodsHealth.js"
 import * as ShardId from "../ShardId.js"
-import { ShardingErrorPodNoLongerRegistered } from "../ShardingError.js"
 import * as ShardingEvent from "../ShardingEvent.js"
+import * as ShardingException from "../ShardingException.js"
 import type * as ShardManager from "../ShardManager.js"
 import * as Storage from "../Storage.js"
 import * as PodWithMetadata from "./podWithMetadata.js"
@@ -182,7 +182,7 @@ function make(
   ) {
     return RefSynchronized.updateEffect(stateRef, (state) => {
       if (Option.isSome(pod) && !HashMap.has(state.pods, pod.value)) {
-        return Effect.fail(ShardingErrorPodNoLongerRegistered(pod.value))
+        return Effect.fail(new ShardingException.PodNoLongerRegisteredException({ podAddress: pod.value }))
       }
       return Effect.succeed({
         ...state,

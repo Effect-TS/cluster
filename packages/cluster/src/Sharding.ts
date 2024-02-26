@@ -18,7 +18,7 @@ import type * as RecipentType from "./RecipientType.js"
 import type * as SerializedEnvelope from "./SerializedEnvelope.js"
 import type * as SerializedMessage from "./SerializedMessage.js"
 import type * as ShardId from "./ShardId.js"
-import type * as ShardingError from "./ShardingError.js"
+import type * as ShardingException from "./ShardingException.js"
 import type * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
 
 /**
@@ -64,7 +64,10 @@ export interface Sharding {
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
   readonly sendMessageToLocalEntityManagerWithoutRetries: (
     message: SerializedEnvelope.SerializedEnvelope
-  ) => Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError>
+  ) => Effect.Effect<
+    MessageState.MessageState<SerializedMessage.SerializedMessage>,
+    ShardingException.ShardingException
+  >
   readonly getPods: Effect.Effect<HashSet.HashSet<PodAddress.PodAddress>>
   readonly getAssignedShardIds: Effect.Effect<HashSet.HashSet<ShardId.ShardId>>
 }
@@ -183,7 +186,7 @@ export const sendMessageToLocalEntityManagerWithoutRetries: (
   message: SerializedEnvelope.SerializedEnvelope
 ) => Effect.Effect<
   MessageState.MessageState<SerializedMessage.SerializedMessage>,
-  ShardingError.ShardingError,
+  ShardingException.ShardingException,
   Sharding
 > = internal.sendMessageToLocalEntityManagerWithoutRetries
 

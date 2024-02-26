@@ -3,7 +3,7 @@
  */
 import type * as Message from "@effect/cluster/Message"
 import type * as Effect from "effect/Effect"
-import type * as ShardingError from "./ShardingError.js"
+import type * as ShardingException from "./ShardingException.js"
 
 /**
  * An interface to communicate with a remote entity
@@ -16,7 +16,7 @@ export interface Messenger<Msg> {
    * Send a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  sendDiscard(entityId: string): (message: Msg) => Effect.Effect<void, ShardingError.ShardingError>
+  sendDiscard(entityId: string): (message: Msg) => Effect.Effect<void, ShardingException.ShardingException>
 
   /**
    * Send a message and wait for a response of type `Res`
@@ -28,6 +28,6 @@ export interface Messenger<Msg> {
     message: A
   ) => Effect.Effect<
     Message.MessageWithResult.Success<A>,
-    ShardingError.ShardingError | Message.MessageWithResult.Error<A>
+    ShardingException.ShardingException | Message.MessageWithResult.Error<A>
   >
 }

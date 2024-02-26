@@ -5,7 +5,7 @@ import * as MessageState from "@effect/cluster/MessageState"
 import * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import * as SerializedMessage from "@effect/cluster/SerializedMessage"
 import * as ShardId from "@effect/cluster/ShardId"
-import * as ShardingError from "@effect/cluster/ShardingError"
+import * as ShardingException from "@effect/cluster/ShardingException"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -50,7 +50,7 @@ export const Send_: Schema.Schema<
  * @category schema
  */
 export const SendResult_ = Schema.either({
-  left: ShardingError.schema,
+  left: ShardingException.schema,
   right: MessageState.schema(SerializedMessage.schema)
 })
 
