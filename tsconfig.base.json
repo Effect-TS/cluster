@@ -51,6 +51,12 @@
       "@effect/cluster-node/*": [
         "./packages/cluster-node/src/*.js"
       ],
+      "@effect/cluster-browser/test/*": [
+        "./packages/cluster-browser/test/*.js"
+      ],
+      "@effect/cluster-browser/*": [
+        "./packages/cluster-browser/src/*.js"
+      ],
       "@effect/cluster-workflow/test/*": [
         "./packages/cluster-workflow/test/*.js"
       ],
