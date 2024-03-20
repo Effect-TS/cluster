@@ -47,7 +47,7 @@ export const schema: Schema.Schema<
     Schema.struct({
       [SerializedEnvelopeSymbolKey]: Schema.compose(
         Schema.compose(Schema.literal(SerializedEnvelopeSymbolKey), Schema.symbol, { strict: false }),
-        Schema.uniqueSymbol(SerializedEnvelopeTypeId),
+        Schema.uniqueSymbolFromSelf(SerializedEnvelopeTypeId),
         { strict: false }
       ),
       entityId: Schema.string,

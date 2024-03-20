@@ -60,7 +60,7 @@ export type DurableExecutionEventFrom<IE, IA> = {
 } | {
   readonly _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted"
   readonly sequence: number
-  readonly exit: Schema.ExitFrom<IE, IA>
+  readonly exit: Schema.ExitEncoded<IE, IA>
 }
 
 export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Schema.Schema<E, IE>): Schema.Schema<
@@ -83,7 +83,7 @@ export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Sch
     Schema.struct({
       _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventCompleted"),
       sequence: Schema.number,
-      exit: Schema.exit<E, IE, never, A, IA, never, never>({ failure, success })
+      exit: Schema.exit<Schema.Schema<A, IA, never>, Schema.Schema<E, IE, never>, never>({ failure, success })
     })
   )
 }

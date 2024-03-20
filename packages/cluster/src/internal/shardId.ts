@@ -27,7 +27,7 @@ export const schema: Schema.Schema<
     Schema.struct({
       [ShardIdSymbolKey]: Schema.compose(
         Schema.compose(Schema.literal(ShardIdSymbolKey), Schema.symbol, { strict: false }),
-        Schema.uniqueSymbol(ShardIdTypeId),
+        Schema.uniqueSymbolFromSelf(ShardIdTypeId),
         { strict: false }
       ),
       value: Schema.number

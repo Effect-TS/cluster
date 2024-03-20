@@ -8,6 +8,9 @@
       "path": "packages/cluster-node"
     },
     {
+      "path": "packages/cluster-browser"
+    },
+    {
       "path": "packages/cluster-workflow"
     },
     {

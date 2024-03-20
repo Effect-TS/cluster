@@ -49,7 +49,7 @@ export const schema: Schema.Schema<
   Schema.struct({
     [PoisonPillSymbolKey]: Schema.compose(
       Schema.compose(Schema.literal(PoisonPillSymbolKey), Schema.symbol, { strict: false }),
-      Schema.uniqueSymbol(PoisonPillTypeId),
+      Schema.uniqueSymbolFromSelf(PoisonPillTypeId),
       { strict: false }
     )
   }),

@@ -13,7 +13,7 @@ import * as internal from "./internal/message.js"
  * @category models
  */
 export interface MessageWithResult<Failure, Success>
-  extends Serializable.WithResult<never, any, Failure, any, Success>
+  extends Serializable.WithResult<Success, any, Failure, any, never>
 {
 }
 
@@ -27,8 +27,8 @@ export namespace MessageWithResult {
    * @category models
    */
   export type Any =
-    | Serializable.WithResult<never, never, never, any, any>
-    | Serializable.WithResult<never, any, any, any, any>
+    | Serializable.WithResult<any, any, never, never, never>
+    | Serializable.WithResult<any, any, any, any, never>
 
   /**
    * Extracts the success type from a `MessageWithResult<A, S>`.
@@ -52,8 +52,8 @@ export namespace MessageWithResult {
    * @since 1.0.0
    * @category utils
    */
-  export type Exit<S> = S extends Serializable.WithResult<never, any, infer E, any, infer A> ? Exit_.Exit<A, E> :
-    S extends Serializable.WithResult<never, never, infer E, any, infer A> ? Exit_.Exit<A, E>
+  export type Exit<S> = S extends Serializable.WithResult<infer A, any, infer E, any, never> ? Exit_.Exit<A, E> :
+    S extends Serializable.WithResult<infer A, any, infer E, never, never> ? Exit_.Exit<A, E>
     : never
 }
 

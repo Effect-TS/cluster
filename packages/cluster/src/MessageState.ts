@@ -60,7 +60,7 @@ export namespace MessageState {
     readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
     readonly _tag: "@effect/cluster/MessageState/Acknowledged"
   } | {
-    readonly result: Schema.OptionFrom<I>
+    readonly result: Schema.OptionEncoded<I>
     readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
     readonly _tag: "@effect/cluster/MessageState/Processed"
   }

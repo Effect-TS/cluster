@@ -42,10 +42,10 @@ function resume<T extends Schema.TaggedRequest.Any, R>(
 
       const makePersistenceId = (localId: string) => executionId + "__" + localId
 
-      const failureSchema = Serializable.failureSchema<never, unknown, Request.Request.Error<A>, unknown, unknown>(
+      const failureSchema = Serializable.failureSchema<unknown, unknown, Request.Request.Error<A>, unknown, never>(
         request as any
       )
-      const successSchema = Serializable.successSchema<never, unknown, unknown, unknown, Request.Request.Success<A>>(
+      const successSchema = Serializable.successSchema<Request.Request.Success<A>, unknown, unknown, unknown, never>(
         request as any
       )
 

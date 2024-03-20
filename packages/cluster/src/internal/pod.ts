@@ -40,7 +40,7 @@ export const schema: Schema.Schema<
   Schema.struct({
     [PodSymbolKey]: Schema.compose(
       Schema.compose(Schema.literal(PodSymbolKey), Schema.symbol, { strict: false }),
-      Schema.uniqueSymbol(PodTypeId),
+      Schema.uniqueSymbolFromSelf(PodTypeId),
       { strict: false }
     ),
     address: PodAddress.schema,
