@@ -3,6 +3,7 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as Option from "effect/Option"
+import * as PrimaryKey from "effect/PrimaryKey"
 import * as Queue from "effect/Queue"
 import * as Ref from "effect/Ref"
 import type * as Message from "../Message.js"
@@ -12,11 +13,11 @@ import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 
 /** @internal  */
-export function fromFunctionEffect<Msg, R>(
+export function fromFunctionEffect<Msg extends Message.Message.Any, R>(
   handler: (
     entityId: string,
     message: Msg
-  ) => Effect.Effect<MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>, never, R>
+  ) => Effect.Effect<MessageState.MessageState<Message.Message.Exit<Msg>>, never, R>
 ): RecipientBehaviour.RecipientBehaviour<Msg, R> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
     pipe(
@@ -31,13 +32,13 @@ export function fromFunctionEffect<Msg, R>(
 }
 
 /** @internal  */
-export function fromFunctionEffectStateful<S, R, Msg, R2>(
+export function fromFunctionEffectStateful<S, R, Msg extends Message.Message.Any, R2>(
   initialState: (entityId: string) => Effect.Effect<S, never, R>,
   handler: (
     entityId: string,
     message: Msg,
     stateRef: Ref.Ref<S>
-  ) => Effect.Effect<MessageState.MessageState<Message.MessageWithResult.Exit<Msg>>, never, R2>
+  ) => Effect.Effect<MessageState.MessageState<Message.Message.Exit<Msg>>, never, R2>
 ): RecipientBehaviour.RecipientBehaviour<Msg, R | R2> {
   return Effect.flatMap(RecipientBehaviourContext.entityId, (entityId) =>
     pipe(
@@ -58,33 +59,32 @@ export function fromFunctionEffectStateful<S, R, Msg, R2>(
 }
 
 /** @internal */
-export function fromInMemoryQueue<Msg, R>(
+export function fromInMemoryQueue<Msg extends Message.Message.Any, R>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
     processed: <A extends Msg>(
       message: A,
-      value: Option.Option<Message.MessageWithResult.Exit<A>>
+      value: Option.Option<Message.Message.Exit<A>>
     ) => Effect.Effect<void>
   ) => Effect.Effect<void, never, R>
 ): RecipientBehaviour.RecipientBehaviour<Msg, R> {
   return Effect.gen(function*(_) {
     const entityId = yield* _(RecipientBehaviourContext.entityId)
-    const entityType = yield* _(RecipientBehaviourContext.recipientType)
     const messageStates = yield* _(Ref.make(HashMap.empty<string, MessageState.MessageState<any>>()))
 
     function updateMessageState(message: Msg, state: MessageState.MessageState<any>) {
-      return pipe(Ref.update(messageStates, HashMap.set(entityType.messageToId(message), state)), Effect.as(state))
+      return pipe(Ref.update(messageStates, HashMap.set(PrimaryKey.value(message), state)), Effect.as(state))
     }
 
     function getMessageState(message: Msg) {
       return pipe(
         Ref.get(messageStates),
-        Effect.map(HashMap.get(entityType.messageToId(message)))
+        Effect.map(HashMap.get(PrimaryKey.value(message)))
       )
     }
 
-    function reply<A extends Msg>(message: A, reply: Option.Option<Message.MessageWithResult.Exit<A>>) {
+    function reply<A extends Msg>(message: A, reply: Option.Option<Message.Message.Exit<A>>) {
       return updateMessageState(message, MessageState.Processed(reply))
     }
 

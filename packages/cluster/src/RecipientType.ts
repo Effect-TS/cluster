@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import type * as Message from "@effect/cluster/Message"
 import type * as Schema from "@effect/schema/Schema"
 import * as Hash from "effect/Hash"
 import * as ShardId from "./ShardId.js"
@@ -9,22 +10,20 @@ import * as ShardId from "./ShardId.js"
  * @since 1.0.0
  * @category models
  */
-export interface EntityType<Msg> {
+export interface EntityType<Msg extends Message.Message.Any> {
   readonly _tag: "EntityType"
   readonly name: string
-  readonly schema: Schema.Schema<unknown, Msg>
-  readonly messageToId: (msg: Msg) => string
+  readonly schema: Schema.Schema<Msg, unknown>
 }
 
 /**
  * @since 1.0.0
  * @category models
  */
-export interface TopicType<Msg> {
+export interface TopicType<Msg extends Message.Message.Any> {
   readonly _tag: "TopicType"
   readonly name: string
-  readonly schema: Schema.Schema<unknown, Msg>
-  readonly messageToId: (msg: Msg) => string
+  readonly schema: Schema.Schema<Msg, unknown>
 }
 
 /**
@@ -32,30 +31,28 @@ export interface TopicType<Msg> {
  * @since 1.0.0
  * @category models
  */
-export type RecipientType<Msg> = EntityType<Msg> | TopicType<Msg>
+export type RecipientType<Msg extends Message.Message.Any> = EntityType<Msg> | TopicType<Msg>
 
 /**
  * @since 1.0.0
  * @category constructors
  */
-export function makeEntityType<I, Msg>(
+export function makeEntityType<Msg extends Message.Message.Any, I>(
   name: string,
-  schema: Schema.Schema<I, Msg>,
-  messageToId: (msg: Msg) => string
+  schema: Schema.Schema<Msg, I>
 ): EntityType<Msg> {
-  return { _tag: "EntityType", name, schema: schema as any, messageToId }
+  return { _tag: "EntityType", name, schema: schema as any }
 }
 
 /**
  * @since 1.0.0
  * @category constructors
  */
-export function makeTopicType<I, Msg>(
+export function makeTopicType<Msg extends Message.Message.Any, I>(
   name: string,
-  schema: Schema.Schema<I, Msg>,
-  messageToId: (msg: Msg) => string
+  schema: Schema.Schema<Msg, I>
 ): TopicType<Msg> {
-  return { _tag: "TopicType", name, schema: schema as any, messageToId }
+  return { _tag: "TopicType", name, schema: schema as any }
 }
 
 /**

@@ -2,6 +2,7 @@
  * @since 1.0.0
  * This module provides the context that is given to a RecipientBehaviour
  */
+import type * as Message from "@effect/cluster/Message"
 import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import * as internal from "./internal/recipientBehaviourContext.js"
@@ -29,7 +30,7 @@ export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
   readonly shardId: ShardId.ShardId
-  readonly recipientType: RecipientType.RecipientType<unknown>
+  readonly recipientType: RecipientType.RecipientType<Message.Message.Any>
   readonly forkShutdown: Effect.Effect<void>
 }
 
@@ -69,8 +70,11 @@ export const shardId: Effect.Effect<ShardId.ShardId, never, RecipientBehaviourCo
  * @since 1.0.0
  * @category utils
  */
-export const recipientType: Effect.Effect<RecipientType.RecipientType<unknown>, never, RecipientBehaviourContext> =
-  internal.recipientType
+export const recipientType: Effect.Effect<
+  RecipientType.RecipientType<Message.Message.Any>,
+  never,
+  RecipientBehaviourContext
+> = internal.recipientType
 
 /**
  * Forks the shutdown of the current recipient

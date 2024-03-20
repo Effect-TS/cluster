@@ -4,6 +4,8 @@
 import type * as Schema from "@effect/schema/Schema"
 import type * as Serializable from "@effect/schema/Serializable"
 import type * as Exit_ from "effect/Exit"
+import type * as PrimaryKey from "effect/PrimaryKey"
+import type * as Types from "effect/Types"
 import * as internal from "./internal/message.js"
 
 /**
@@ -12,62 +14,80 @@ import * as internal from "./internal/message.js"
  * @since 1.0.0
  * @category models
  */
-export interface MessageWithResult<Failure, Success>
-  extends Serializable.WithResult<Success, any, Failure, any, never>
-{
-}
+export interface Message<A, AI, E, EI>
+  extends Serializable.SerializableWithResult<any, any, never, A, AI, E, EI, never>, PrimaryKey.PrimaryKey
+{}
 
 /**
  * @since 1.0.0
  * @category models
  */
-export namespace MessageWithResult {
+export namespace Message {
   /**
    * @since 1.0.0
    * @category models
    */
   export type Any =
-    | Serializable.WithResult<any, any, never, never, never>
-    | Serializable.WithResult<any, any, any, any, never>
+    | Message<any, any, any, any>
+    | Message<any, any, never, never>
 
   /**
-   * Extracts the success type from a `MessageWithResult<A, S>`.
+   * Extracts the success type from a `MessageWithResult<A, E>`.
    *
    * @since 1.0.0
    * @category utils
    */
-  export type Success<S> = S extends MessageWithResult<any, infer X> ? X : never
+  export type Success<S> = S extends Message<infer A, infer _AI, infer _E, infer _EI> ? A : never
 
   /**
-   * Extracts the success type from a `MessageWithResult<A, S>`.
+   * Extracts the success type from a `MessageWithResult<A, E>`.
    *
    * @since 1.0.0
    * @category utils
    */
-  export type Error<S> = S extends MessageWithResult<infer X, any> ? X : never
+  export type Error<S> = S extends Message<infer _A, infer _AI, infer E, infer _EI> ? E : never
 
   /**
-   * Extracts the success type from a `MessageWithResult<A, S>`.
+   * Extracts the success type from a `MessageWithResult<A, E>`.
    *
    * @since 1.0.0
    * @category utils
    */
-  export type Exit<S> = S extends Serializable.WithResult<infer A, any, infer E, any, never> ? Exit_.Exit<A, E> :
-    S extends Serializable.WithResult<infer A, any, infer E, never, never> ? Exit_.Exit<A, E>
+  export type Exit<S> = S extends Serializable.WithResult<infer A, infer _AI, infer E, infer _EI, infer _R> ?
+    Exit_.Exit<A, E>
     : never
 }
 
 /**
  * @since 1.0.0
+ * @category schemas
+ */
+export interface TaggedMessageConstructor<Tag extends string, Self, R, IS, S, IE, E, IA, A>
+  extends Schema.Schema<Self, Types.Simplify<IS & { readonly _tag: Tag }>, R>
+{
+  new(
+    props: Types.Equals<S, {}> extends true ? void : S,
+    disableValidation?: boolean
+  ): Schema.TaggedRequest<Tag, S, IS & { readonly _tag: Tag }, never, A, IA, E, IE, never> & S & PrimaryKey.PrimaryKey
+}
+
+/**
+ * @since 1.0.0
+ * @category schemas
+ */
+export const TaggedMessage = internal.TaggedMessage_
+
+/**
+ * @since 1.0.0
  * @category utils
  */
-export const isMessageWithResult: (value: unknown) => value is MessageWithResult<unknown, unknown> =
+export const isMessageWithResult: (value: unknown) => value is Message<unknown, unknown, unknown, unknown> =
   internal.isMessageWithResult
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const exitSchema: <A extends MessageWithResult.Any>(
+export const exitSchema: <A extends Message.Any>(
   message: A
-) => Schema.Schema<MessageWithResult.Exit<A>, unknown> = internal.exitSchema
+) => Schema.Schema<Message.Exit<A>, unknown> = internal.exitSchema

@@ -82,7 +82,7 @@ export function registerSingleton<R>(
 /**
  * @internal
  */
-export function registerEntity<Msg>(
+export function registerEntity<Msg extends Message.Message.Any>(
   entityType: RecipientType.EntityType<Msg>
 ) {
   return <R>(
@@ -95,7 +95,7 @@ export function registerEntity<Msg>(
 /**
  * @internal
  */
-export function registerTopic<Msg>(
+export function registerTopic<Msg extends Message.Message.Any>(
   topicType: RecipientType.TopicType<Msg>
 ) {
   return <R>(
@@ -108,7 +108,7 @@ export function registerTopic<Msg>(
 /**
  * @internal
  */
-export function messenger<Msg>(
+export function messenger<Msg extends Message.Message.Any>(
   entityType: RecipientType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
 ): Effect.Effect<Messenger<Msg>, never, Sharding.Sharding> {
@@ -118,7 +118,7 @@ export function messenger<Msg>(
 /**
  * @internal
  */
-export function broadcaster<Msg>(
+export function broadcaster<Msg extends Message.Message.Any>(
   topicType: RecipientType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration>
 ): Effect.Effect<Broadcaster.Broadcaster<Msg>, never, Sharding.Sharding> {
@@ -175,7 +175,7 @@ function make(
   serialization: Serialization.Serialization,
   eventsHub: PubSub.PubSub<ShardingRegistrationEvent.ShardingRegistrationEvent>
 ) {
-  function getEntityManagerByEntityTypeName<Msg>(
+  function getEntityManagerByEntityTypeName<Msg extends Message.Message.Any>(
     entityType: string
   ) {
     return pipe(
@@ -492,7 +492,7 @@ function make(
       : sendMessageToRemotePodWithoutRetries(pod, envelope)
   }
 
-  function messenger<Msg>(
+  function messenger<Msg extends Message.Message.Any>(
     entityType: RecipientType.EntityType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Messenger<Msg> {
@@ -514,7 +514,7 @@ function make(
     }
 
     function send(entityId: string) {
-      return <A extends Msg & Message.MessageWithResult.Any>(message: A) => {
+      return <A extends Msg & Message.Message.Any>(message: A) => {
         return pipe(
           sendMessage(entityId, message),
           Effect.flatMap((state) =>
@@ -581,7 +581,7 @@ function make(
     return { sendDiscard, send }
   }
 
-  function broadcaster<Msg>(
+  function broadcaster<Msg extends Message.Message.Any>(
     topicType: RecipientType.TopicType<Msg>,
     sendTimeout: Option.Option<Duration.Duration> = Option.none()
   ): Broadcaster.Broadcaster<Msg> {
@@ -649,7 +649,7 @@ function make(
     }
 
     function broadcast(topicId: string) {
-      return <A extends Msg & Message.MessageWithResult.Any>(message: A) => {
+      return <A extends Msg & Message.Message.Any>(message: A) => {
         return pipe(
           sendMessage(topicId, message),
           Effect.flatMap((results) =>
@@ -693,7 +693,7 @@ function make(
     return { broadcast, broadcastDiscard }
   }
 
-  function registerEntity<Msg>(
+  function registerEntity<Msg extends Message.Message.Any>(
     entityType: RecipientType.EntityType<Msg>
   ) {
     return <R>(
@@ -707,7 +707,7 @@ function make(
       )
   }
 
-  function registerTopic<Msg>(
+  function registerTopic<Msg extends Message.Message.Any>(
     topicType: RecipientType.TopicType<Msg>
   ) {
     return <R>(
@@ -724,7 +724,7 @@ function make(
   const getShardingRegistrationEvents: Stream.Stream<ShardingRegistrationEvent.ShardingRegistrationEvent> = Stream
     .fromPubSub(eventsHub)
 
-  function registerRecipient<Msg, R>(
+  function registerRecipient<Msg extends Message.Message.Any, R>(
     recipientType: RecipientType.RecipientType<Msg>,
     behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions

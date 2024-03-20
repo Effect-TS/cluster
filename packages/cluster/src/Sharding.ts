@@ -1,6 +1,17 @@
 /**
  * @since 1.0.0
  */
+import type * as Message from "@effect/cluster/Message"
+import type * as MessageState from "@effect/cluster/MessageState"
+import type { Messenger } from "@effect/cluster/Messenger"
+import type * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
+import type * as RecipientBehaviourContext from "@effect/cluster/RecipientBehaviourContext"
+import type * as RecipentType from "@effect/cluster/RecipientType"
+import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
+import type * as SerializedMessage from "@effect/cluster/SerializedMessage"
+import type * as ShardId from "@effect/cluster/ShardId"
+import type * as ShardingException from "@effect/cluster/ShardingException"
+import type * as ShardingRegistrationEvent from "@effect/cluster/ShardingRegistrationEvent"
 import type * as Duration from "effect/Duration"
 import type * as Effect from "effect/Effect"
 import type * as HashSet from "effect/HashSet"
@@ -9,17 +20,7 @@ import type * as Scope from "effect/Scope"
 import type * as Stream from "effect/Stream"
 import type { Broadcaster } from "./Broadcaster.js"
 import * as internal from "./internal/sharding.js"
-import type * as MessageState from "./MessageState.js"
-import type { Messenger } from "./Messenger.js"
 import type * as PodAddress from "./PodAddress.js"
-import type * as RecipientBehaviour from "./RecipientBehaviour.js"
-import type * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
-import type * as RecipentType from "./RecipientType.js"
-import type * as SerializedEnvelope from "./SerializedEnvelope.js"
-import type * as SerializedMessage from "./SerializedMessage.js"
-import type * as ShardId from "./ShardId.js"
-import type * as ShardingException from "./ShardingException.js"
-import type * as ShardingRegistrationEvent from "./ShardingRegistrationEvent.js"
 
 /**
  * @since 1.0.0
@@ -30,11 +31,11 @@ export interface Sharding {
   readonly getShardId: (entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<void>
   readonly unregister: Effect.Effect<void>
-  readonly messenger: <Msg>(
+  readonly messenger: <Msg extends Message.Message.Any>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Messenger<Msg>
-  readonly broadcaster: <Msg>(
+  readonly broadcaster: <Msg extends Message.Message.Any>(
     topicType: RecipentType.TopicType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Broadcaster<Msg>
@@ -44,13 +45,13 @@ export interface Sharding {
   readonly isShuttingDown: Effect.Effect<boolean>
 
   readonly registerScoped: Effect.Effect<void, never, Scope.Scope>
-  readonly registerEntity: <Msg>(
+  readonly registerEntity: <Msg extends Message.Message.Any>(
     entityType: RecipentType.EntityType<Msg>
   ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
-  readonly registerTopic: <Msg>(
+  readonly registerTopic: <Msg extends Message.Message.Any>(
     topicType: RecipentType.TopicType<Msg>
   ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
@@ -124,7 +125,7 @@ export const registerSingleton: <R>(
  * @since 1.0.0
  * @category utils
  */
-export const registerEntity: <Msg>(
+export const registerEntity: <Msg extends Message.Message.Any>(
   entityType: RecipentType.EntityType<Msg>
 ) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
@@ -140,7 +141,7 @@ export const registerEntity: <Msg>(
  * @since 1.0.0
  * @category utils
  */
-export const registerTopic: <Msg>(
+export const registerTopic: <Msg extends Message.Message.Any>(
   topicType: RecipentType.TopicType<Msg>
 ) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
@@ -154,7 +155,7 @@ export const registerTopic: <Msg>(
  * @since 1.0.0
  * @category utils
  */
-export const messenger: <Msg>(
+export const messenger: <Msg extends Message.Message.Any>(
   entityType: RecipentType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Messenger<Msg>, never, Sharding> = internal.messenger
@@ -165,7 +166,7 @@ export const messenger: <Msg>(
  * @since 1.0.0
  * @category utils
  */
-export const broadcaster: <Msg>(
+export const broadcaster: <Msg extends Message.Message.Any>(
   topicType: RecipentType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Broadcaster<Msg>, never, Sharding> = internal.broadcaster
