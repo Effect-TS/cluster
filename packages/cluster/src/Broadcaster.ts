@@ -13,7 +13,7 @@ import type * as ShardingException from "./ShardingException.js"
  * @since 1.0.0
  * @category models
  */
-export interface Broadcaster<Msg> {
+export interface Broadcaster<Msg extends Message.Message.Any> {
   /**
    * Broadcast a message without waiting for a response (fire and forget)
    * @since 1.0.0
@@ -28,14 +28,14 @@ export interface Broadcaster<Msg> {
    */
   readonly broadcast: (
     topicId: string
-  ) => <A extends Msg & Message.MessageWithResult.Any>(
+  ) => <A extends Msg>(
     message: A
   ) => Effect.Effect<
     HashMap.HashMap<
       PodAddress.PodAddress,
       Either.Either<
-        ShardingException.ShardingException | Message.MessageWithResult.Error<A>,
-        Message.MessageWithResult.Success<A>
+        ShardingException.ShardingException | Message.Message.Error<A>,
+        Message.Message.Success<A>
       >
     >,
     ShardingException.ShardingException

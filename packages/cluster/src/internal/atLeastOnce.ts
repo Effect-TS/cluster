@@ -1,3 +1,4 @@
+import type * as Message from "@effect/cluster/Message"
 import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -32,7 +33,7 @@ export function runPendingMessageSweeperScoped(
 }
 
 /** @internal */
-export function atLeastOnceRecipientBehaviour<Msg, R>(
+export function atLeastOnceRecipientBehaviour<Msg extends Message.Message.Any, R>(
   fa: RecipientBehaviour.RecipientBehaviour<Msg, R>
 ): RecipientBehaviour.RecipientBehaviour<Msg, R | AtLeastOnceStorage.AtLeastOnceStorage> {
   return Effect.gen(function*(_) {

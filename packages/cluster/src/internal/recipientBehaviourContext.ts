@@ -1,3 +1,4 @@
+import type * as Message from "@effect/cluster/Message"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import type * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
@@ -42,7 +43,7 @@ export const shardId: Effect.Effect<ShardId.ShardId, never, RecipientBehaviourCo
 
 /** @internal */
 export const recipientType: Effect.Effect<
-  RecipientType.RecipientType<unknown>,
+  RecipientType.RecipientType<Message.Message.Any>,
   never,
   RecipientBehaviourContext.RecipientBehaviourContext
 > = Effect.map(

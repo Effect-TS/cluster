@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import type * as Message from "@effect/cluster/Message"
 import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import type * as Stream from "effect/Stream"
@@ -37,7 +38,7 @@ export interface AtLeastOnceStorage {
   /**
    * Stores a message into the storage, eventually returning the already existing message state as result in the storage
    */
-  upsert<Msg>(
+  upsert<Msg extends Message.Message.Any>(
     recipientType: RecipientType.RecipientType<Msg>,
     shardId: ShardId.ShardId,
     entityId: string,
@@ -47,7 +48,7 @@ export interface AtLeastOnceStorage {
   /**
    * Marks the message as processed, so no more send attempt will occur
    */
-  markAsProcessed<Msg>(
+  markAsProcessed<Msg extends Message.Message.Any>(
     recipientType: RecipientType.RecipientType<Msg>,
     shardId: ShardId.ShardId,
     entityId: string,

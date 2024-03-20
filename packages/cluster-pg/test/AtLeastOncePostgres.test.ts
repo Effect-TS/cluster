@@ -20,10 +20,18 @@ import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Option from "effect/Option"
+import * as PrimaryKey from "effect/PrimaryKey"
 import * as Secret from "effect/Secret"
 import { describe, expect, it } from "vitest"
 
-class SampleMessage extends Schema.Class<SampleMessage>("SampleMessage")({ id: Schema.string, value: Schema.number }) {}
+class SampleMessage extends Schema.TaggedRequest<SampleMessage>()("SampleMessage", Schema.never, Schema.void, {
+  id: Schema.string,
+  value: Schema.number
+}) {
+  [PrimaryKey.symbol]() {
+    return this.id
+  }
+}
 
 const testContainerPostgresLayer = pipe(
   Effect.acquireRelease(
@@ -34,7 +42,7 @@ const testContainerPostgresLayer = pipe(
   Layer.scoped(Postgres.tag)
 )
 
-const SampleEntity = RecipientType.makeEntityType("SampleEntity", SampleMessage, (_) => _.id)
+const SampleEntity = RecipientType.makeEntityType("SampleEntity", SampleMessage)
 type SampleEntity = SampleMessage
 
 describe.concurrent("AtLeastOncePostgres", () => {

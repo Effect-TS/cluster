@@ -20,12 +20,12 @@ export type EntityStateTypeId = typeof EntityStateTypeId
  * @since 1.0.0
  * @category models
  */
-export interface EntityState<Msg> {
+export interface EntityState<Msg extends Message.Message.Any> {
   readonly [EntityStateTypeId]: EntityStateTypeId
   readonly sendAndGetState: <A extends Msg>(
     message: Msg
   ) => Effect.Effect<
-    MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
+    MessageState.MessageState<Message.Message.Exit<A>>,
     ShardingException.ExceptionWhileOfferingMessageException
   >
   readonly expirationFiber: Fiber.RuntimeFiber<void, never>
@@ -35,7 +35,7 @@ export interface EntityState<Msg> {
 }
 
 /** @internal */
-export function make<Msg>(
+export function make<Msg extends Message.Message.Any>(
   data: Omit<EntityState<Msg>, EntityStateTypeId>
 ): EntityState<Msg> {
   return Data.struct({ [EntityStateTypeId]: EntityStateTypeId, ...data })
@@ -44,20 +44,20 @@ export function make<Msg>(
 /** @internal */
 export function withTerminationFiber(
   terminationFiber: Fiber.RuntimeFiber<void, never>
-): <Msg>(entityState: EntityState<Msg>) => EntityState<Msg> {
+): <Msg extends Message.Message.Any>(entityState: EntityState<Msg>) => EntityState<Msg> {
   return (entityState) => ({ ...entityState, terminationFiber: Option.some(terminationFiber) })
 }
 
 /** @internal */
 export function withExpirationFiber(
   expirationFiber: Fiber.RuntimeFiber<void, never>
-): <Msg>(entityState: EntityState<Msg>) => EntityState<Msg> {
+): <Msg extends Message.Message.Any>(entityState: EntityState<Msg>) => EntityState<Msg> {
   return (entityState) => ({ ...entityState, expirationFiber })
 }
 
 /** @internal */
 export function withLastReceivedAd(
   lastReceivedAt: number
-): <Msg>(entityState: EntityState<Msg>) => EntityState<Msg> {
+): <Msg extends Message.Message.Any>(entityState: EntityState<Msg>) => EntityState<Msg> {
   return (entityState) => ({ ...entityState, lastReceivedAt })
 }

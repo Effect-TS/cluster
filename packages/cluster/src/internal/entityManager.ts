@@ -32,7 +32,7 @@ export const EntityManagerTypeId = Symbol.for(
 export type EntityManagerTypeId = typeof EntityManagerTypeId
 
 /** @internal */
-export interface EntityManager<Msg> {
+export interface EntityManager<Msg extends Message.Message.Any> {
   readonly [EntityManagerTypeId]: EntityManagerTypeId
 
   /** @internal */
@@ -43,7 +43,7 @@ export interface EntityManager<Msg> {
     entityId: string,
     req: A
   ) => Effect.Effect<
-    MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
+    MessageState.MessageState<Message.Message.Exit<A>>,
     | ShardingException.EntityNotManagedByThisPodException
     | ShardingException.PodUnavailableException
     | ShardingException.ExceptionWhileOfferingMessageException
@@ -59,7 +59,7 @@ export interface EntityManager<Msg> {
 }
 
 /** @internal */
-export function make<Msg, R>(
+export function make<Msg extends Message.Message.Any, R>(
   recipientType: RecipientType.RecipientType<Msg>,
   recipientBehaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
   sharding: Sharding.Sharding,
@@ -268,7 +268,7 @@ export function make<Msg, R>(
       entityId: string,
       req: A
     ): Effect.Effect<
-      MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
+      MessageState.MessageState<Message.Message.Exit<A>>,
       | ShardingException.EntityNotManagedByThisPodException
       | ShardingException.PodUnavailableException
       | ShardingException.ExceptionWhileOfferingMessageException

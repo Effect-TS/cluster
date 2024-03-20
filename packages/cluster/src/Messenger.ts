@@ -11,7 +11,7 @@ import type * as ShardingException from "./ShardingException.js"
  * @since 1.0.0
  * @category models
  */
-export interface Messenger<Msg> {
+export interface Messenger<Msg extends Message.Message.Any> {
   /**
    * Send a message without waiting for a response (fire and forget)
    * @since 1.0.0
@@ -24,10 +24,10 @@ export interface Messenger<Msg> {
    */
   send(
     entityId: string
-  ): <A extends Msg & Message.MessageWithResult.Any>(
+  ): <A extends Msg>(
     message: A
   ) => Effect.Effect<
-    Message.MessageWithResult.Success<A>,
-    ShardingException.ShardingException | Message.MessageWithResult.Error<A>
+    Message.Message.Success<A>,
+    ShardingException.ShardingException | Message.Message.Error<A>
   >
 }

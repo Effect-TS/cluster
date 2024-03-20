@@ -25,7 +25,7 @@ export interface RecipientBehaviour<Msg, R> extends
     <A extends Msg>(
       message: A
     ) => Effect.Effect<
-      MessageState.MessageState<Message.MessageWithResult.Exit<A>>,
+      MessageState.MessageState<Message.Message.Exit<A>>,
       ShardingException.ExceptionWhileOfferingMessageException
     >,
     never,
@@ -46,31 +46,37 @@ export type EntityBehaviourOptions = {
  * @since 1.0.0
  * @category utils
  */
-export const fromFunctionEffect: <Msg, R>(
-  handler: (entityId: string, message: Msg) => Effect.Effect<MessageState.MessageState<any>, never, R>
+export const fromFunctionEffect: <Msg extends Message.Message.Any, R>(
+  handler: (
+    entityId: string,
+    message: Msg
+  ) => Effect.Effect<MessageState.MessageState<Message.Message.Exit<Msg>>, never, R>
 ) => RecipientBehaviour<Msg, R> = internal.fromFunctionEffect
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const fromFunctionEffectStateful: <Msg, S, R, R2>(
+export const fromFunctionEffectStateful: <S, R, Msg extends Message.Message.Any, R2>(
   initialState: (entityId: string) => Effect.Effect<S, never, R>,
   handler: (
     entityId: string,
     message: Msg,
     stateRef: Ref.Ref<S>
-  ) => Effect.Effect<MessageState.MessageState<any>, never, R2>
+  ) => Effect.Effect<MessageState.MessageState<Message.Message.Exit<Msg>>, never, R2>
 ) => RecipientBehaviour<Msg, R | R2> = internal.fromFunctionEffectStateful
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const fromInMemoryQueue: <Msg, R>(
+export const fromInMemoryQueue: <Msg extends Message.Message.Any, R>(
   handler: (
     entityId: string,
     dequeue: Queue.Dequeue<Msg | PoisonPill.PoisonPill>,
-    processed: <A extends Msg>(message: A, value: Option.Option<any>) => Effect.Effect<void, never, never>
+    processed: <A extends Msg>(
+      message: A,
+      value: Option.Option<Message.Message.Exit<A>>
+    ) => Effect.Effect<void, never, never>
   ) => Effect.Effect<void, never, R>
 ) => RecipientBehaviour<Msg, R> = internal.fromInMemoryQueue

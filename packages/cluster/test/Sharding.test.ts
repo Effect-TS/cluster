@@ -1,3 +1,4 @@
+import * as Message from "@effect/cluster/Message"
 import * as MessageState from "@effect/cluster/MessageState"
 import * as Pods from "@effect/cluster/Pods"
 import * as PodsHealth from "@effect/cluster/PodsHealth"
@@ -24,6 +25,7 @@ import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Option from "effect/Option"
+import * as PrimaryKey from "effect/PrimaryKey"
 import * as Queue from "effect/Queue"
 import * as Ref from "effect/Ref"
 import { describe, expect, it } from "vitest"
@@ -34,31 +36,41 @@ interface SampleService {
 
 const SampleService = Context.GenericTag<SampleService>("@services/SampleService")
 
-class SampleMessage extends Schema.TaggedClass<SampleMessage>()("SampleMessage", {
+class SampleMessage extends Message.TaggedMessage<SampleMessage>()("SampleMessage", Schema.never, Schema.void, {
   id: Schema.string,
   value: Schema.number
-}) {}
+}, (_) => _.id) {
+}
 
-class SampleMessageWithResult
-  extends Schema.TaggedRequest<SampleMessageWithResult>()("SampleMessageWithResult", Schema.never, Schema.number, {
+class SampleMessageWithResult extends Message.TaggedMessage<SampleMessageWithResult>()(
+  "SampleMessageWithResult",
+  Schema.never,
+  Schema.number,
+  {
     id: Schema.string,
     value: Schema.number
-  })
-{}
+  },
+  (_) => _.id
+) {
+}
 
-class FailableMessageWithResult
-  extends Schema.TaggedRequest<FailableMessageWithResult>()("FailableMessageWithResult", Schema.string, Schema.number, {
+class FailableMessageWithResult extends Message.TaggedMessage<FailableMessageWithResult>()(
+  "FailableMessageWithResult",
+  Schema.string,
+  Schema.number,
+  {
     id: Schema.string,
     value: Schema.number
-  })
-{}
+  },
+  (_) => _.id
+) {
+}
 
 type SampleEntity = SampleMessage | SampleMessageWithResult | FailableMessageWithResult
 
 const SampleEntity = RecipientType.makeEntityType(
   "Sample",
-  Schema.union(SampleMessage, SampleMessageWithResult, FailableMessageWithResult),
-  (_) => _.id
+  Schema.union(SampleMessage, SampleMessageWithResult, FailableMessageWithResult)
 )
 
 describe.concurrent("SampleTests", () => {
@@ -207,18 +219,28 @@ describe.concurrent("SampleTests", () => {
 
       class GetIncrement extends Schema.TaggedRequest<GetIncrement>()("GetIncrement", Schema.never, Schema.number, {
         id: Schema.string
-      }) {}
+      }) {
+        [PrimaryKey.symbol]() {
+          return this.id
+        }
+      }
 
       class BroadcastIncrement
-        extends Schema.TaggedClass<BroadcastIncrement>()("BroadcastIncrement", { id: Schema.string })
-      {}
+        extends Schema.TaggedRequest<BroadcastIncrement>()("BroadcastIncrement", Schema.never, Schema.void, {
+          id: Schema.string
+        })
+      {
+        [PrimaryKey.symbol]() {
+          return this.id
+        }
+      }
 
       const SampleProtocol = Schema.union(
         BroadcastIncrement,
         GetIncrement
       )
 
-      const SampleTopic = RecipientType.makeTopicType("Sample", SampleProtocol, (_) => _.id)
+      const SampleTopic = RecipientType.makeTopicType("Sample", SampleProtocol)
 
       const ref = yield* _(Ref.make(0))
 

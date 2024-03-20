@@ -1,17 +1,21 @@
+import * as Message from "@effect/cluster/Message"
 import * as RecipientType from "@effect/cluster/RecipientType"
 import * as Schema from "@effect/schema/Schema"
 
-export class GetCurrent extends Schema.TaggedRequest<GetCurrent>()("GetCurrent", Schema.never, Schema.number, {
+export class GetCurrent extends Message.TaggedMessage<GetCurrent>()("GetCurrent", Schema.never, Schema.number, {
   messageId: Schema.string
-}) {}
+}, (_) => _.messageId) {
+}
 
-export class Increment extends Schema.TaggedClass<Increment>()("Increment", {
+export class Increment extends Message.TaggedMessage<Increment>()("Increment", Schema.never, Schema.void, {
   messageId: Schema.string
-}) {}
+}, (_) => _.messageId) {
+}
 
-export class Decrement extends Schema.TaggedClass<Decrement>()("Decrement", {
+export class Decrement extends Message.TaggedMessage<Decrement>()("Decrement", Schema.never, Schema.void, {
   messageId: Schema.string
-}) {}
+}, (_) => _.messageId) {
+}
 
 export const CounterMsg = Schema.union(
   Increment,
@@ -21,4 +25,4 @@ export const CounterMsg = Schema.union(
 
 export type CounterMsg = Schema.Schema.Type<typeof CounterMsg>
 
-export const CounterEntity = RecipientType.makeEntityType("Counter", CounterMsg, (_) => _.messageId)
+export const CounterEntity = RecipientType.makeEntityType("Counter", CounterMsg)

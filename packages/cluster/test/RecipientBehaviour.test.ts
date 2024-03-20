@@ -1,3 +1,4 @@
+import * as Message from "@effect/cluster/Message"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as RecipientBehaviourContext from "@effect/cluster/RecipientBehaviourContext"
@@ -15,9 +16,10 @@ import * as Queue from "effect/Queue"
 import * as Scope from "effect/Scope"
 import { describe, expect, it } from "vitest"
 
-class Sample extends Schema.TaggedRequest<Sample>()("Sample", Schema.never, Schema.number, {
+class Sample extends Message.TaggedMessage<Sample>()("Sample", Schema.never, Schema.number, {
   id: Schema.string
-}) {}
+}, (_) => _.id) {
+}
 
 describe.concurrent("RecipientBehaviour", () => {
   const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
@@ -35,7 +37,7 @@ describe.concurrent("RecipientBehaviour", () => {
           entityId: "entity1",
           forkShutdown: Effect.unit,
           shardId: ShardId.make(1),
-          recipientType: RecipientType.makeEntityType("Sample", Sample, (_) => _.id) as any
+          recipientType: RecipientType.makeEntityType("Sample", Sample) as any
         })
       ),
       Scope.extend(scope)
@@ -45,7 +47,7 @@ describe.concurrent("RecipientBehaviour", () => {
     return Effect.gen(function*(_) {
       const received = yield* _(Deferred.make<boolean>())
 
-      const behaviour = RecipientBehaviour.fromInMemoryQueue<Sample | PoisonPill.PoisonPill, never>(
+      const behaviour = RecipientBehaviour.fromInMemoryQueue<Sample, never>(
         (entityId, dequeue) =>
           pipe(
             Queue.take(dequeue),
@@ -68,7 +70,7 @@ describe.concurrent("RecipientBehaviour", () => {
     return Effect.gen(function*(_) {
       const started = yield* _(Deferred.make<boolean>())
 
-      const behaviour = RecipientBehaviour.fromInMemoryQueue<Sample | PoisonPill.PoisonPill, never>(
+      const behaviour = RecipientBehaviour.fromInMemoryQueue<Sample, never>(
         (entityId, dequeue) =>
           pipe(
             Queue.take(dequeue),
