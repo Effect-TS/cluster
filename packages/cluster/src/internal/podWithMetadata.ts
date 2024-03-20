@@ -92,7 +92,7 @@ export const schema: Schema.Schema<
   Schema.struct({
     [PodWithMetadataSymbolKey]: Schema.compose(
       Schema.compose(Schema.literal(PodWithMetadataSymbolKey), Schema.symbol, { strict: false }),
-      Schema.uniqueSymbol(PodWithMetadataTypeId),
+      Schema.uniqueSymbolFromSelf(PodWithMetadataTypeId),
       { strict: false }
     ),
     pod: Pod.schema,

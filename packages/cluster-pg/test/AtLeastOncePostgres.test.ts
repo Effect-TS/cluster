@@ -23,7 +23,7 @@ import * as Option from "effect/Option"
 import * as Secret from "effect/Secret"
 import { describe, expect, it } from "vitest"
 
-class SampleMessage extends Schema.Class<SampleMessage>()({ id: Schema.string, value: Schema.number }) {}
+class SampleMessage extends Schema.Class<SampleMessage>("SampleMessage")({ id: Schema.string, value: Schema.number }) {}
 
 const testContainerPostgresLayer = pipe(
   Effect.acquireRelease(

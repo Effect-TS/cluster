@@ -1,4 +1,5 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -28,7 +29,10 @@
   ],
   "references": [
     {
-      "path": "./tsconfig.node.json"
-    }
+      "path": "../../packages/cluster"
+    },
+    {
+      "path": "../../packages/cluster-browser"
+    },
   ]
 }

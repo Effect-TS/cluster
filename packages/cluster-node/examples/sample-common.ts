@@ -19,6 +19,6 @@ export const CounterMsg = Schema.union(
   GetCurrent
 )
 
-export type CounterMsg = Schema.Schema.To<typeof CounterMsg>
+export type CounterMsg = Schema.Schema.Type<typeof CounterMsg>
 
 export const CounterEntity = RecipientType.makeEntityType("Counter", CounterMsg, (_) => _.messageId)

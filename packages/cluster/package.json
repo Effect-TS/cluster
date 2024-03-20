@@ -35,12 +35,12 @@
     "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
   "peerDependencies": {
-    "@effect/schema": "^0.63.0",
-    "effect": "^2.4.0"
+    "@effect/schema": "^0.64.6",
+    "effect": "^2.4.8"
   },
   "devDependencies": {
-    "@effect/schema": "^0.63.0",
+    "@effect/schema": "^0.64.6",
     "@types/path-browserify": "^1.0.1",
-    "effect": "^2.4.0"
+    "effect": "^2.4.8"
   }
 }

@@ -11,10 +11,13 @@
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",    
+    "@effect/schema": "^0.64.6",
+    "effect": "^2.4.8",
+    "@effect/rpc": "^0.28.9",
+    "@effect/cluster": "workspace:*"
   },
   "devDependencies": {
-    "@effect/cluster": "workspace",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
