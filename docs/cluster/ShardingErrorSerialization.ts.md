@@ -32,7 +32,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function ShardingErrorSerialization(error: string): ShardingErrorSerialization
+export declare function ShardingErrorSerialization(
+  error: string
+): ShardingErrorSerialization;
 ```
 
 Added in v1.0.0
@@ -44,7 +46,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface ShardingErrorSerialization extends Schema.Schema.To<typeof ShardingErrorSerializationSchema_> {}
+export interface ShardingErrorSerialization
+  extends Schema.Schema.Type<typeof ShardingErrorSerializationSchema_> {}
 ```
 
 Added in v1.0.0
@@ -60,7 +63,7 @@ export declare const ShardingErrorSerializationSchema: Schema.Schema<
   ShardingErrorSerialization,
   { readonly _tag: "./ShardingErrorSerialization"; readonly error: string },
   never
->
+>;
 ```
 
 Added in v1.0.0
@@ -72,7 +75,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorSerializationTag: "./ShardingErrorSerialization"
+export declare const ShardingErrorSerializationTag: "./ShardingErrorSerialization";
 ```
 
 Added in v1.0.0
@@ -84,7 +87,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isShardingErrorSerialization(value: any): value is ShardingErrorSerialization
+export declare function isShardingErrorSerialization(
+  value: any
+): value is ShardingErrorSerialization;
 ```
 
 Added in v1.0.0

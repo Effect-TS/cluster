@@ -31,7 +31,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function ShardingErrorSendTimeout(): ShardingErrorSendTimeout
+export declare function ShardingErrorSendTimeout(): ShardingErrorSendTimeout;
 ```
 
 Added in v1.0.0
@@ -43,7 +43,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface ShardingErrorSendTimeout extends Schema.Schema.To<typeof ShardingErrorSendTimeoutSchema_> {}
+export interface ShardingErrorSendTimeout
+  extends Schema.Schema.Type<typeof ShardingErrorSendTimeoutSchema_> {}
 ```
 
 Added in v1.0.0
@@ -59,7 +60,7 @@ export declare const ShardingErrorSendTimeoutSchema: Schema.Schema<
   ShardingErrorSendTimeout,
   { readonly _tag: "./ShardingErrorSendTimeout" },
   never
->
+>;
 ```
 
 Added in v1.0.0
@@ -69,7 +70,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorSendTimeoutTag: "./ShardingErrorSendTimeout"
+export declare const ShardingErrorSendTimeoutTag: "./ShardingErrorSendTimeout";
 ```
 
 Added in v1.0.0
@@ -81,7 +82,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isShardingErrorSendTimeout(value: any): value is ShardingErrorSendTimeout
+export declare function isShardingErrorSendTimeout(
+  value: any
+): value is ShardingErrorSendTimeout;
 ```
 
 Added in v1.0.0

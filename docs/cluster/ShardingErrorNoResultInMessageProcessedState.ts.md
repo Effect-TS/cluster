@@ -32,7 +32,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function ShardingErrorNoResultInProcessedMessageState(): ShardingErrorNoResultInProcessedMessageState
+export declare function ShardingErrorNoResultInProcessedMessageState(): ShardingErrorNoResultInProcessedMessageState;
 ```
 
 Added in v1.0.0
@@ -45,7 +45,9 @@ Added in v1.0.0
 
 ```ts
 export interface ShardingErrorNoResultInProcessedMessageState
-  extends Schema.Schema.To<typeof ShardingErrorNoResultInProcessedMessageStateSchema_> {}
+  extends Schema.Schema.Type<
+    typeof ShardingErrorNoResultInProcessedMessageStateSchema_
+  > {}
 ```
 
 Added in v1.0.0
@@ -61,7 +63,7 @@ export declare const ShardingErrorNoResultInProcessedMessageStateSchema: Schema.
   ShardingErrorNoResultInProcessedMessageState,
   { readonly _tag: "./ShardingErrorNoResultInProcessedMessageState" },
   never
->
+>;
 ```
 
 Added in v1.0.0
@@ -73,7 +75,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorNoResultInProcessedMessageStateTag: "./ShardingErrorNoResultInProcessedMessageState"
+export declare const ShardingErrorNoResultInProcessedMessageStateTag: "./ShardingErrorNoResultInProcessedMessageState";
 ```
 
 Added in v1.0.0
@@ -87,7 +89,7 @@ Added in v1.0.0
 ```ts
 export declare function isShardingErrorNoResultInProcessedMessageState(
   value: unknown
-): value is ShardingErrorNoResultInProcessedMessageState
+): value is ShardingErrorNoResultInProcessedMessageState;
 ```
 
 Added in v1.0.0

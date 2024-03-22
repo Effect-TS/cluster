@@ -48,7 +48,7 @@ export type DurableExecutionEvent<A, E> =
   | DurableExecutionEventKilled
   | DurableExecutionEventCompleted<A, E>
 
-export type DurableExecutionEventFrom<IE, IA> = {
+export type DurableExecutionEventEncoded<IE, IA> = {
   readonly _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted"
   readonly sequence: number
 } | {
@@ -65,7 +65,7 @@ export type DurableExecutionEventFrom<IE, IA> = {
 
 export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Schema.Schema<E, IE>): Schema.Schema<
   DurableExecutionEvent<A, E>,
-  DurableExecutionEventFrom<IA, IE>
+  DurableExecutionEventEncoded<IA, IE>
 > {
   return Schema.union(
     Schema.struct({

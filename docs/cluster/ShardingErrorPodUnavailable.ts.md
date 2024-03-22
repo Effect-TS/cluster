@@ -32,7 +32,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function ShardingErrorPodUnavailable(pod: PodAddress.PodAddress): ShardingErrorPodUnavailable
+export declare function ShardingErrorPodUnavailable(
+  pod: PodAddress.PodAddress
+): ShardingErrorPodUnavailable;
 ```
 
 Added in v1.0.0
@@ -44,7 +46,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface ShardingErrorPodUnavailable extends Schema.Schema.To<typeof ShardingErrorPodUnavailableSchema_> {}
+export interface ShardingErrorPodUnavailable
+  extends Schema.Schema.Type<typeof ShardingErrorPodUnavailableSchema_> {}
 ```
 
 Added in v1.0.0
@@ -58,9 +61,12 @@ Added in v1.0.0
 ```ts
 export declare const ShardingErrorPodUnavailableSchema: Schema.Schema<
   ShardingErrorPodUnavailable,
-  { readonly _tag: "./ShardingErrorPodUnavailable"; readonly pod: PodAddress.PodAddress.From },
+  {
+    readonly _tag: "./ShardingErrorPodUnavailable";
+    readonly pod: PodAddress.PodAddress.From;
+  },
   never
->
+>;
 ```
 
 Added in v1.0.0
@@ -72,7 +78,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorPodUnavailableTag: "./ShardingErrorPodUnavailable"
+export declare const ShardingErrorPodUnavailableTag: "./ShardingErrorPodUnavailable";
 ```
 
 Added in v1.0.0
@@ -84,7 +90,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isShardingErrorPodUnavailable(value: any): value is ShardingErrorPodUnavailable
+export declare function isShardingErrorPodUnavailable(
+  value: any
+): value is ShardingErrorPodUnavailable;
 ```
 
 Added in v1.0.0

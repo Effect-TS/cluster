@@ -76,7 +76,7 @@ export function schema<A, I>(
   result: Schema.Schema<A, I>
 ): Schema.Schema<
   MessageState.MessageState<A>,
-  MessageState.MessageState.From<I>
+  MessageState.MessageState.Encoded<I>
 > {
   return Schema.union(
     Schema.rename(
