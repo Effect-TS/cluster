@@ -32,7 +32,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function ShardingErrorEntityNotManagedByThisPod(entityId: string): ShardingErrorEntityNotManagedByThisPod
+export declare function ShardingErrorEntityNotManagedByThisPod(
+  entityId: string
+): ShardingErrorEntityNotManagedByThisPod;
 ```
 
 Added in v1.0.0
@@ -45,7 +47,9 @@ Added in v1.0.0
 
 ```ts
 export interface ShardingErrorEntityNotManagedByThisPod
-  extends Schema.Schema.To<typeof ShardingErrorEntityNotManagedByThisPodSchema_> {}
+  extends Schema.Schema.Type<
+    typeof ShardingErrorEntityNotManagedByThisPodSchema_
+  > {}
 ```
 
 Added in v1.0.0
@@ -59,9 +63,12 @@ Added in v1.0.0
 ```ts
 export declare const ShardingErrorEntityNotManagedByThisPodSchema: Schema.Schema<
   ShardingErrorEntityNotManagedByThisPod,
-  { readonly _tag: "./ShardingErrorEntityNotManagedByThisPod"; readonly entityId: string },
+  {
+    readonly _tag: "./ShardingErrorEntityNotManagedByThisPod";
+    readonly entityId: string;
+  },
   never
->
+>;
 ```
 
 Added in v1.0.0
@@ -73,7 +80,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorEntityNotManagedByThisPodTag: "./ShardingErrorEntityNotManagedByThisPod"
+export declare const ShardingErrorEntityNotManagedByThisPodTag: "./ShardingErrorEntityNotManagedByThisPod";
 ```
 
 Added in v1.0.0
@@ -87,7 +94,7 @@ Added in v1.0.0
 ```ts
 export declare function isShardingErrorEntityNotManagedByThisPod(
   value: any
-): value is ShardingErrorEntityNotManagedByThisPod
+): value is ShardingErrorEntityNotManagedByThisPod;
 ```
 
 Added in v1.0.0

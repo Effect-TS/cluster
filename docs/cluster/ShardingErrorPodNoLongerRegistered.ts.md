@@ -33,7 +33,7 @@ Added in v1.0.0
 ```ts
 export declare function ShardingErrorPodNoLongerRegistered(
   podAddress: PodAddress.PodAddress
-): ShardingErrorPodNoLongerRegistered
+): ShardingErrorPodNoLongerRegistered;
 ```
 
 Added in v1.0.0
@@ -45,7 +45,7 @@ Added in v1.0.0
 ```ts
 export declare function isShardingErrorPodNoLongerRegistered(
   value: unknown
-): value is ShardingErrorPodNoLongerRegistered
+): value is ShardingErrorPodNoLongerRegistered;
 ```
 
 Added in v1.0.0
@@ -58,7 +58,9 @@ Added in v1.0.0
 
 ```ts
 export interface ShardingErrorPodNoLongerRegistered
-  extends Schema.Schema.To<typeof ShardingErrorPodNoLongerRegisteredSchema_> {}
+  extends Schema.Schema.Type<
+    typeof ShardingErrorPodNoLongerRegisteredSchema_
+  > {}
 ```
 
 Added in v1.0.0
@@ -72,9 +74,12 @@ Added in v1.0.0
 ```ts
 export declare const ShardingErrorPodNoLongerRegisteredSchema: Schema.Schema<
   ShardingErrorPodNoLongerRegistered,
-  { readonly _tag: "./ShardingErrorPodNoLongerRegistered"; readonly podAddress: PodAddress.PodAddress.From },
+  {
+    readonly _tag: "./ShardingErrorPodNoLongerRegistered";
+    readonly podAddress: PodAddress.PodAddress.From;
+  },
   never
->
+>;
 ```
 
 Added in v1.0.0
@@ -86,7 +91,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorPodNoLongerRegisteredTag: "./ShardingErrorPodNoLongerRegistered"
+export declare const ShardingErrorPodNoLongerRegisteredTag: "./ShardingErrorPodNoLongerRegistered";
 ```
 
 Added in v1.0.0

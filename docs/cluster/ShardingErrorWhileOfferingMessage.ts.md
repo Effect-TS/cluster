@@ -32,7 +32,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function ShardingErrorWhileOfferingMessage(error: string): ShardingErrorWhileOfferingMessage
+export declare function ShardingErrorWhileOfferingMessage(
+  error: string
+): ShardingErrorWhileOfferingMessage;
 ```
 
 Added in v1.0.0
@@ -45,7 +47,7 @@ Added in v1.0.0
 
 ```ts
 export interface ShardingErrorWhileOfferingMessage
-  extends Schema.Schema.To<typeof ShardingErrorWhileOfferingMessageSchema_> {}
+  extends Schema.Schema.Type<typeof ShardingErrorWhileOfferingMessageSchema_> {}
 ```
 
 Added in v1.0.0
@@ -59,9 +61,12 @@ Added in v1.0.0
 ```ts
 export declare const ShardingErrorWhileOfferingMessageSchema: Schema.Schema<
   ShardingErrorWhileOfferingMessage,
-  { readonly _tag: "./ShardingErrorWhileOfferingMessage"; readonly error: string },
+  {
+    readonly _tag: "./ShardingErrorWhileOfferingMessage";
+    readonly error: string;
+  },
   never
->
+>;
 ```
 
 Added in v1.0.0
@@ -73,7 +78,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorWhileOfferingMessageTag: "./ShardingErrorWhileOfferingMessage"
+export declare const ShardingErrorWhileOfferingMessageTag: "./ShardingErrorWhileOfferingMessage";
 ```
 
 Added in v1.0.0
@@ -85,7 +90,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isShardingErrorWhileOfferingMessage(value: unknown): value is ShardingErrorWhileOfferingMessage
+export declare function isShardingErrorWhileOfferingMessage(
+  value: unknown
+): value is ShardingErrorWhileOfferingMessage;
 ```
 
 Added in v1.0.0

@@ -56,7 +56,7 @@ export namespace MessageState {
    * @since 1.0.0
    * @category models
    */
-  export type From<I> = {
+  export type Encoded<I> = {
     readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
     readonly _tag: "@effect/cluster/MessageState/Acknowledged"
   } | {
@@ -107,5 +107,5 @@ export const schema: <A, I>(
   result: Schema.Schema<A, I>
 ) => Schema.Schema<
   MessageState<A>,
-  MessageState.From<I>
+  MessageState.Encoded<I>
 > = internal.schema

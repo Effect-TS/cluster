@@ -34,7 +34,7 @@ Added in v1.0.0
 export declare function ShardingErrorEntityTypeNotRegistered(
   entityType: string,
   podAddress: PodAddress.PodAddress
-): ShardingErrorEntityTypeNotRegistered
+): ShardingErrorEntityTypeNotRegistered;
 ```
 
 Added in v1.0.0
@@ -46,7 +46,7 @@ Added in v1.0.0
 ```ts
 export declare function isShardingErrorEntityTypeNotRegistered(
   value: unknown
-): value is ShardingErrorEntityTypeNotRegistered
+): value is ShardingErrorEntityTypeNotRegistered;
 ```
 
 Added in v1.0.0
@@ -59,7 +59,9 @@ Added in v1.0.0
 
 ```ts
 export interface ShardingErrorEntityTypeNotRegistered
-  extends Schema.Schema.To<typeof ShardingErrorEntityTypeNotRegisteredSchema_> {}
+  extends Schema.Schema.Type<
+    typeof ShardingErrorEntityTypeNotRegisteredSchema_
+  > {}
 ```
 
 Added in v1.0.0
@@ -74,12 +76,12 @@ Added in v1.0.0
 export declare const ShardingErrorEntityTypeNotRegisteredSchema: Schema.Schema<
   ShardingErrorEntityTypeNotRegistered,
   {
-    readonly _tag: "./ShardingErrorEntityTypeNotRegistered"
-    readonly podAddress: PodAddress.PodAddress.From
-    readonly entityType: string
+    readonly _tag: "./ShardingErrorEntityTypeNotRegistered";
+    readonly podAddress: PodAddress.PodAddress.From;
+    readonly entityType: string;
   },
   never
->
+>;
 ```
 
 Added in v1.0.0
@@ -91,7 +93,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ShardingErrorEntityTypeNotRegisteredTag: "./ShardingErrorEntityTypeNotRegistered"
+export declare const ShardingErrorEntityTypeNotRegisteredTag: "./ShardingErrorEntityTypeNotRegistered";
 ```
 
 Added in v1.0.0
