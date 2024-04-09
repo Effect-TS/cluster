@@ -13,7 +13,7 @@
     "coverage": "vitest --coverage",
     "check": "tsc -b tsconfig.json",
     "docgen": "pnpm --recursive --parallel --filter \"./packages/*\" exec docgen && node scripts/docs.mjs",
-    "lint": "eslint \"packages/*/{src,test,examples}/**/*.ts\"",
+    "lint": "eslint \"{apps,packages}/*/{src,test,examples}/**/*.ts\"",
     "lint-fix": "pnpm lint --fix"
   },
   "devDependencies": {
