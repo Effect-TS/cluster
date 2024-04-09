@@ -26,12 +26,12 @@ An interface to communicate with a remote entity
 **Signature**
 
 ```ts
-export interface Messenger<Msg> {
+export interface Messenger<Msg extends Message.Message.Any> {
   /**
    * Send a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  sendDiscard(entityId: string): (message: Msg) => Effect.Effect<void, ShardingError.ShardingError>
+  sendDiscard(entityId: string): (message: Msg) => Effect.Effect<void, ShardingException.ShardingException>
 
   /**
    * Send a message and wait for a response of type `Res`
@@ -39,12 +39,9 @@ export interface Messenger<Msg> {
    */
   send(
     entityId: string
-  ): <A extends Msg & Message.MessageWithResult.Any>(
+  ): <A extends Msg>(
     message: A
-  ) => Effect.Effect<
-    Message.MessageWithResult.Success<A>,
-    ShardingError.ShardingError | Message.MessageWithResult.Error<A>
-  >
+  ) => Effect.Effect<Message.Message.Success<A>, ShardingException.ShardingException | Message.Message.Error<A>>
 }
 ```
 

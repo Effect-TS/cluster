@@ -27,7 +27,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const GetAssignmentsResult_: Schema.Schema<readonly any[], readonly any[], unknown>
+export declare const GetAssignmentsResult_: Schema.array<Schema.tupleType<any, [Schema.option<any>]>>
 ```
 
 Added in v1.0.0
@@ -37,7 +37,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const NotifyUnhealthyPod_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }, any>
+export declare const NotifyUnhealthyPod_: Schema.struct<{ podAddress: any }>
 ```
 
 Added in v1.0.0
@@ -47,7 +47,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Register_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }, any>
+export declare const Register_: Schema.struct<{ pod: any }>
 ```
 
 Added in v1.0.0
@@ -57,7 +57,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Unregister_: Schema.Schema<{ [x: string]: any }, { [x: string]: any }, any>
+export declare const Unregister_: Schema.struct<{ pod: any }>
 ```
 
 Added in v1.0.0

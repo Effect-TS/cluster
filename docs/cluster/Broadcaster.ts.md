@@ -26,12 +26,14 @@ An interface to communicate with a remote broadcast receiver
 **Signature**
 
 ```ts
-export interface Broadcaster<Msg> {
+export interface Broadcaster<Msg extends Message.Message.Any> {
   /**
    * Broadcast a message without waiting for a response (fire and forget)
    * @since 1.0.0
    */
-  readonly broadcastDiscard: (topicId: string) => (message: Msg) => Effect.Effect<void, ShardingError.ShardingError>
+  readonly broadcastDiscard: (
+    topicId: string
+  ) => (message: Msg) => Effect.Effect<void, ShardingException.ShardingException>
 
   /**
    * Broadcast a message and wait for a response from each consumer
@@ -39,17 +41,14 @@ export interface Broadcaster<Msg> {
    */
   readonly broadcast: (
     topicId: string
-  ) => <A extends Msg & Message.MessageWithResult.Any>(
+  ) => <A extends Msg>(
     message: A
   ) => Effect.Effect<
     HashMap.HashMap<
       PodAddress.PodAddress,
-      Either.Either<
-        ShardingError.ShardingError | Message.MessageWithResult.Error<A>,
-        Message.MessageWithResult.Success<A>
-      >
+      Either.Either<ShardingException.ShardingException | Message.Message.Error<A>, Message.Message.Success<A>>
     >,
-    ShardingError.ShardingError
+    ShardingException.ShardingException
   >
 }
 ```

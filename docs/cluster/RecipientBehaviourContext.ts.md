@@ -73,7 +73,7 @@ export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
   readonly entityId: string
   readonly shardId: ShardId.ShardId
-  readonly recipientType: RecipientType.RecipientType<unknown>
+  readonly recipientType: RecipientType.RecipientType<Message.Message.Any>
   readonly forkShutdown: Effect.Effect<void>
 }
 ```
@@ -136,7 +136,7 @@ Gets the current shardId
 
 ```ts
 export declare const recipientType: Effect.Effect<
-  RecipientType.RecipientType<unknown>,
+  RecipientType.RecipientType<Message.Message.Any>,
   never,
   RecipientBehaviourContext
 >

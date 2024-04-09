@@ -87,7 +87,7 @@ export interface Serialization {
   readonly encode: <A, I>(
     schema: Schema.Schema<A, I>,
     message: A
-  ) => Effect.Effect<SerializedMessage.SerializedMessage, ShardingError.ShardingErrorSerialization>
+  ) => Effect.Effect<SerializedMessage.SerializedMessage, ShardingException.SerializationException>
 
   /**
    * Transform binary back into the given type
@@ -96,7 +96,7 @@ export interface Serialization {
   readonly decode: <A, I>(
     schema: Schema.Schema<A, I>,
     bytes: SerializedMessage.SerializedMessage
-  ) => Effect.Effect<A, ShardingError.ShardingErrorSerialization>
+  ) => Effect.Effect<A, ShardingException.SerializationException>
 }
 ```
 

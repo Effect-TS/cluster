@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as ActivityContext from "@effect/cluster-workflow/ActivityContext"
 import * as DurableExecution from "@effect/cluster-workflow/DurableExecution"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
@@ -6,6 +9,9 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as DurableExecutionJournal from "./DurableExecutionJournal.js"
 
+/**
+ * @since 1.0.0
+ */
 export function make<A, IA, E, IE>(
   activityId: string,
   success: Schema.Schema<A, IA>,
@@ -59,6 +65,12 @@ export function make<A, IA, E, IE>(
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const currentAttempt = Effect.map(ActivityContext.ActivityContext, (_) => _.currentAttempt)
 
+/**
+ * @since 1.0.0
+ */
 export const persistenceId = Effect.map(ActivityContext.ActivityContext, (_) => _.persistenceId)

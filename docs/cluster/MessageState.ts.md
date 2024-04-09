@@ -18,7 +18,7 @@ Added in v1.0.0
 - [models](#models)
   - [MessageState (type alias)](#messagestate-type-alias)
   - [MessageState (namespace)](#messagestate-namespace)
-    - [From (type alias)](#from-type-alias)
+    - [Encoded (type alias)](#encoded-type-alias)
   - [MessageStateAcknowledged (interface)](#messagestateacknowledged-interface)
   - [MessageStateProcessed (interface)](#messagestateprocessed-interface)
 - [schema](#schema)
@@ -40,7 +40,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Acknowledged: MessageStateAcknowledged;
+export declare const Acknowledged: MessageStateAcknowledged
 ```
 
 Added in v1.0.0
@@ -50,9 +50,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Processed: <A>(
-  result: Option.Option<A>
-) => MessageStateProcessed<A>;
+export declare const Processed: <A>(result: Option.Option<A>) => MessageStateProcessed<A>
 ```
 
 Added in v1.0.0
@@ -64,9 +62,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type MessageState<A> =
-  | MessageStateAcknowledged
-  | MessageStateProcessed<A>;
+export type MessageState<A> = MessageStateAcknowledged | MessageStateProcessed<A>
 ```
 
 Added in v1.0.0
@@ -75,21 +71,21 @@ Added in v1.0.0
 
 Added in v1.0.0
 
-### From (type alias)
+### Encoded (type alias)
 
 **Signature**
 
 ```ts
 export type Encoded<I> =
   | {
-      readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState";
-      readonly _tag: "@effect/cluster/MessageState/Acknowledged";
+      readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
+      readonly _tag: "@effect/cluster/MessageState/Acknowledged"
     }
   | {
-      readonly result: Schema.OptionEncoded<I>;
-      readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState";
-      readonly _tag: "@effect/cluster/MessageState/Processed";
-    };
+      readonly result: Schema.OptionEncoded<I>
+      readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
+      readonly _tag: "@effect/cluster/MessageState/Processed"
+    }
 ```
 
 Added in v1.0.0
@@ -102,8 +98,8 @@ A message state given to just acknowledged messages
 
 ```ts
 export interface MessageStateAcknowledged {
-  readonly [MessageStateTypeId]: MessageStateTypeId;
-  readonly _tag: "@effect/cluster/MessageState/Acknowledged";
+  readonly [MessageStateTypeId]: MessageStateTypeId
+  readonly _tag: "@effect/cluster/MessageState/Acknowledged"
 }
 ```
 
@@ -117,9 +113,9 @@ A message state given to processed messages
 
 ```ts
 export interface MessageStateProcessed<A> {
-  readonly [MessageStateTypeId]: MessageStateTypeId;
-  readonly _tag: "@effect/cluster/MessageState/Processed";
-  readonly result: Option.Option<A>;
+  readonly [MessageStateTypeId]: MessageStateTypeId
+  readonly _tag: "@effect/cluster/MessageState/Processed"
+  readonly result: Option.Option<A>
 }
 ```
 
@@ -134,7 +130,7 @@ Added in v1.0.0
 ```ts
 export declare const schema: <A, I>(
   result: Schema.Schema<A, I, never>
-) => Schema.Schema<MessageState<A>, MessageState.Encoded<I>, never>;
+) => Schema.Schema<MessageState<A>, MessageState.Encoded<I>, never>
 ```
 
 Added in v1.0.0
@@ -146,7 +142,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const MessageStateTypeId: typeof MessageStateTypeId;
+export declare const MessageStateTypeId: typeof MessageStateTypeId
 ```
 
 Added in v1.0.0
@@ -156,7 +152,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type MessageStateTypeId = typeof MessageStateTypeId;
+export type MessageStateTypeId = typeof MessageStateTypeId
 ```
 
 Added in v1.0.0
@@ -168,7 +164,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isMessageState: typeof internal.isMessageState;
+export declare const isMessageState: typeof internal.isMessageState
 ```
 
 Added in v1.0.0
@@ -181,7 +177,7 @@ Added in v1.0.0
 export declare const mapEffect: <A, B, R, E>(
   value: MessageState<A>,
   fn: (value: A) => Effect.Effect<B, E, R>
-) => Effect.Effect<MessageState<B>, E, R>;
+) => Effect.Effect<MessageState<B>, E, R>
 ```
 
 Added in v1.0.0
@@ -191,7 +187,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const match: typeof internal.match;
+export declare const match: typeof internal.match
 ```
 
 Added in v1.0.0

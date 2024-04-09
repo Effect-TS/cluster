@@ -33,12 +33,12 @@ export declare const AssignShard_: Schema.Schema<
   { readonly shards: ReadonlyArray<ShardId.ShardId> },
   {
     readonly shards: ReadonlyArray<{
-      readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId";
-      readonly value: number;
-    }>;
+      readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
+      readonly value: number
+    }>
   },
   never
->;
+>
 ```
 
 Added in v1.0.0
@@ -48,7 +48,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const PingShards_: Schema.Schema<{}, {}, never>;
+export declare const PingShards_: Schema.struct<{}>
 ```
 
 Added in v1.0.0
@@ -58,11 +58,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const SendResult_: Schema.Schema<
-  Either<unknown, unknown>,
-  Schema.EitherEncoded<unknown, unknown>,
-  unknown
->;
+export declare const SendResult_: Schema.either<any, any>
 ```
 
 Added in v1.0.0
@@ -76,7 +72,7 @@ export declare const Send_: Schema.Schema<
   { readonly message: SerializedEnvelope.SerializedEnvelope },
   { readonly message: SerializedEnvelope.SerializedEnvelope.From },
   never
->;
+>
 ```
 
 Added in v1.0.0
@@ -90,7 +86,7 @@ export declare const UnassignShards_: Schema.Schema<
   { readonly shards: ReadonlyArray<ShardId.ShardId> },
   { readonly shards: ReadonlyArray<ShardId.ShardId.From> },
   never
->;
+>
 ```
 
 Added in v1.0.0
@@ -102,22 +98,31 @@ This is the schema for the protocol.
 **Signature**
 
 ```ts
-export declare const schema: Schema.Schema<
-  | { readonly shards: readonly ShardId.ShardId[] }
-  | { readonly shards: readonly ShardId.ShardId[] }
-  | { readonly message: SerializedEnvelope.SerializedEnvelope }
-  | {},
-  | {
-      readonly shards: readonly {
-        readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId";
-        readonly value: number;
-      }[];
-    }
-  | { readonly shards: readonly ShardId.ShardId.From[] }
-  | { readonly message: SerializedEnvelope.SerializedEnvelope.From }
-  | {},
-  never
->;
+export declare const schema: Schema.union<
+  [
+    Schema.Schema<
+      { readonly shards: readonly ShardId.ShardId[] },
+      {
+        readonly shards: readonly {
+          readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
+          readonly value: number
+        }[]
+      },
+      never
+    >,
+    Schema.Schema<
+      { readonly shards: readonly ShardId.ShardId[] },
+      { readonly shards: readonly ShardId.ShardId.From[] },
+      never
+    >,
+    Schema.Schema<
+      { readonly message: SerializedEnvelope.SerializedEnvelope },
+      { readonly message: SerializedEnvelope.SerializedEnvelope.From },
+      never
+    >,
+    Schema.struct<{}>
+  ]
+>
 ```
 
 Added in v1.0.0

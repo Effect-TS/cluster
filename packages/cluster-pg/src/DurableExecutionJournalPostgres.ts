@@ -54,6 +54,9 @@ function read<A, IA, E, IE>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export const DurableExecutionJournalPostgres = Layer.effect(
   DurableExecutionJournal.DurableExecutionJournal,
   Effect.gen(function*(_) {

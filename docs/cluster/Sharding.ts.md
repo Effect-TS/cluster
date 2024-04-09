@@ -69,11 +69,11 @@ export interface Sharding {
   readonly getShardId: (entityId: string) => ShardId.ShardId
   readonly register: Effect.Effect<void>
   readonly unregister: Effect.Effect<void>
-  readonly messenger: <Msg>(
+  readonly messenger: <Msg extends Message.Message.Any>(
     entityType: RecipentType.EntityType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Messenger<Msg>
-  readonly broadcaster: <Msg>(
+  readonly broadcaster: <Msg extends Message.Message.Any>(
     topicType: RecipentType.TopicType<Msg>,
     sendTimeout?: Option.Option<Duration.Duration>
   ) => Broadcaster<Msg>
@@ -81,13 +81,13 @@ export interface Sharding {
   readonly isShuttingDown: Effect.Effect<boolean>
 
   readonly registerScoped: Effect.Effect<void, never, Scope.Scope>
-  readonly registerEntity: <Msg>(
+  readonly registerEntity: <Msg extends Message.Message.Any>(
     entityType: RecipentType.EntityType<Msg>
   ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
     options?: RecipientBehaviour.EntityBehaviourOptions
   ) => Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
-  readonly registerTopic: <Msg>(
+  readonly registerTopic: <Msg extends Message.Message.Any>(
     topicType: RecipentType.TopicType<Msg>
   ) => <R>(
     behaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
@@ -101,7 +101,10 @@ export interface Sharding {
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
   readonly sendMessageToLocalEntityManagerWithoutRetries: (
     message: SerializedEnvelope.SerializedEnvelope
-  ) => Effect.Effect<MessageState.MessageState<SerializedMessage.SerializedMessage>, ShardingError.ShardingError>
+  ) => Effect.Effect<
+    MessageState.MessageState<SerializedMessage.SerializedMessage>,
+    ShardingException.ShardingException
+  >
   readonly getPods: Effect.Effect<HashSet.HashSet<PodAddress.PodAddress>>
   readonly getAssignedShardIds: Effect.Effect<HashSet.HashSet<ShardId.ShardId>>
 }
@@ -119,7 +122,7 @@ You can provide a custom send timeout to override the one globally defined.
 **Signature**
 
 ```ts
-export declare const broadcaster: <Msg>(
+export declare const broadcaster: <Msg extends Message.Message.Any>(
   topicType: RecipentType.TopicType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Broadcaster<Msg>, never, Sharding>
@@ -159,7 +162,7 @@ You can provide a custom send timeout to override the one globally defined.
 **Signature**
 
 ```ts
-export declare const messenger: <Msg>(
+export declare const messenger: <Msg extends Message.Message.Any>(
   entityType: RecipentType.EntityType<Msg>,
   sendTimeout?: Option.Option<Duration.Duration> | undefined
 ) => Effect.Effect<Messenger<Msg>, never, Sharding>
@@ -189,7 +192,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare const registerEntity: <Msg>(
+export declare const registerEntity: <Msg extends Message.Message.Any>(
   entityType: RecipentType.EntityType<Msg>
 ) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
@@ -237,7 +240,7 @@ If entity goes to idle timeout, it will be interrupted from outside.
 **Signature**
 
 ```ts
-export declare const registerTopic: <Msg>(
+export declare const registerTopic: <Msg extends Message.Message.Any>(
   topicType: RecipentType.TopicType<Msg>
 ) => <R>(
   behavior: RecipientBehaviour.RecipientBehaviour<Msg, R>,
@@ -258,7 +261,7 @@ export declare const sendMessageToLocalEntityManagerWithoutRetries: (
   message: SerializedEnvelope.SerializedEnvelope
 ) => Effect.Effect<
   MessageState.MessageState<SerializedMessage.SerializedMessage>,
-  ShardingError.ShardingError,
+  ShardingException.ShardingException,
   Sharding
 >
 ```

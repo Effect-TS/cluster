@@ -12,6 +12,8 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [constructors](#constructors)
+  - [fromConfig](#fromconfig)
 - [context](#context)
   - [ManagerConfig](#managerconfig)
 - [models](#models)
@@ -23,6 +25,18 @@ Added in v1.0.0
   - [defaults](#defaults)
 
 ---
+
+# constructors
+
+## fromConfig
+
+**Signature**
+
+```ts
+export declare const fromConfig: Layer.Layer<ManagerConfig, ConfigError.ConfigError, never>
+```
+
+Added in v1.0.0
 
 # context
 
@@ -46,7 +60,6 @@ Shard Manager configuration
 
 ```ts
 export interface ManagerConfig {
-  readonly [ManagerConfigTypeId]: ManagerConfigTypeId
   readonly numberOfShards: number
   readonly apiPort: number
   readonly rebalanceInterval: Duration.Duration

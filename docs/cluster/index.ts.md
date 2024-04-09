@@ -36,16 +36,8 @@ Added in v1.0.0
   - [From "./ShardManagerClient.js"](#from-shardmanagerclientjs)
   - [From "./Sharding.js"](#from-shardingjs)
   - [From "./ShardingConfig.js"](#from-shardingconfigjs)
-  - [From "./ShardingError.js"](#from-shardingerrorjs)
-  - [From "./ShardingErrorEntityNotManagedByThisPod.js"](#from-shardingerrorentitynotmanagedbythispodjs)
-  - [From "./ShardingErrorEntityTypeNotRegistered.js"](#from-shardingerrorentitytypenotregisteredjs)
-  - [From "./ShardingErrorNoResultInMessageProcessedState.js"](#from-shardingerrornoresultinmessageprocessedstatejs)
-  - [From "./ShardingErrorPodNoLongerRegistered.js"](#from-shardingerrorpodnolongerregisteredjs)
-  - [From "./ShardingErrorPodUnavailable.js"](#from-shardingerrorpodunavailablejs)
-  - [From "./ShardingErrorSendTimeout.js"](#from-shardingerrorsendtimeoutjs)
-  - [From "./ShardingErrorSerialization.js"](#from-shardingerrorserializationjs)
-  - [From "./ShardingErrorWhileOfferingMessage.js"](#from-shardingerrorwhileofferingmessagejs)
   - [From "./ShardingEvent.js"](#from-shardingeventjs)
+  - [From "./ShardingException.js"](#from-shardingexceptionjs)
   - [From "./ShardingRegistrationEvent.js"](#from-shardingregistrationeventjs)
   - [From "./Storage.js"](#from-storagejs)
 
@@ -330,114 +322,6 @@ export * as ShardingConfig from "./ShardingConfig.js"
 
 Added in v1.0.0
 
-## From "./ShardingError.js"
-
-Re-exports all named exports from the "./ShardingError.js" module as `ShardingError`.
-
-**Signature**
-
-```ts
-export * as ShardingError from "./ShardingError.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardingErrorEntityNotManagedByThisPod.js"
-
-Re-exports all named exports from the "./ShardingErrorEntityNotManagedByThisPod.js" module as `ShardingErrorEntityNotManagedByThisPod`.
-
-**Signature**
-
-```ts
-export * as ShardingErrorEntityNotManagedByThisPod from "./ShardingErrorEntityNotManagedByThisPod.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardingErrorEntityTypeNotRegistered.js"
-
-Re-exports all named exports from the "./ShardingErrorEntityTypeNotRegistered.js" module as `ShardingErrorEntityTypeNotRegistered`.
-
-**Signature**
-
-```ts
-export * as ShardingErrorEntityTypeNotRegistered from "./ShardingErrorEntityTypeNotRegistered.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardingErrorNoResultInMessageProcessedState.js"
-
-Re-exports all named exports from the "./ShardingErrorNoResultInMessageProcessedState.js" module as `ShardingErrorNoResultInMessageProcessedState`.
-
-**Signature**
-
-```ts
-export * as ShardingErrorNoResultInMessageProcessedState from "./ShardingErrorNoResultInMessageProcessedState.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardingErrorPodNoLongerRegistered.js"
-
-Re-exports all named exports from the "./ShardingErrorPodNoLongerRegistered.js" module as `ShardingErrorPodNoLongerRegistered`.
-
-**Signature**
-
-```ts
-export * as ShardingErrorPodNoLongerRegistered from "./ShardingErrorPodNoLongerRegistered.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardingErrorPodUnavailable.js"
-
-Re-exports all named exports from the "./ShardingErrorPodUnavailable.js" module as `ShardingErrorPodUnavailable`.
-
-**Signature**
-
-```ts
-export * as ShardingErrorPodUnavailable from "./ShardingErrorPodUnavailable.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardingErrorSendTimeout.js"
-
-Re-exports all named exports from the "./ShardingErrorSendTimeout.js" module as `ShardingErrorSendTimeout`.
-
-**Signature**
-
-```ts
-export * as ShardingErrorSendTimeout from "./ShardingErrorSendTimeout.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardingErrorSerialization.js"
-
-Re-exports all named exports from the "./ShardingErrorSerialization.js" module as `ShardingErrorSerialization`.
-
-**Signature**
-
-```ts
-export * as ShardingErrorSerialization from "./ShardingErrorSerialization.js"
-```
-
-Added in v1.0.0
-
-## From "./ShardingErrorWhileOfferingMessage.js"
-
-Re-exports all named exports from the "./ShardingErrorWhileOfferingMessage.js" module as `ShardingErrorWhileOfferingMessage`.
-
-**Signature**
-
-```ts
-export * as ShardingErrorWhileOfferingMessage from "./ShardingErrorWhileOfferingMessage.js"
-```
-
-Added in v1.0.0
-
 ## From "./ShardingEvent.js"
 
 Re-exports all named exports from the "./ShardingEvent.js" module as `ShardingEvent`.
@@ -446,6 +330,18 @@ Re-exports all named exports from the "./ShardingEvent.js" module as `ShardingEv
 
 ```ts
 export * as ShardingEvent from "./ShardingEvent.js"
+```
+
+Added in v1.0.0
+
+## From "./ShardingException.js"
+
+Re-exports all named exports from the "./ShardingException.js" module as `ShardingException`.
+
+**Signature**
+
+```ts
+export * as ShardingException from "./ShardingException.js"
 ```
 
 Added in v1.0.0

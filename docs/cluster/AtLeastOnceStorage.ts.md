@@ -61,22 +61,22 @@ export interface AtLeastOnceStorage {
   /**
    * Stores a message into the storage, eventually returning the already existing message state as result in the storage
    */
-  upsert<Msg>(
+  upsert<Msg extends Message.Message.Any>(
     recipientType: RecipientType.RecipientType<Msg>,
     shardId: ShardId.ShardId,
     entityId: string,
     message: Msg
-  ): Effect.Effect<void, ShardingError.ShardingErrorWhileOfferingMessage>
+  ): Effect.Effect<void>
 
   /**
    * Marks the message as processed, so no more send attempt will occur
    */
-  markAsProcessed<Msg>(
+  markAsProcessed<Msg extends Message.Message.Any>(
     recipientType: RecipientType.RecipientType<Msg>,
     shardId: ShardId.ShardId,
     entityId: string,
     message: Msg
-  ): Effect.Effect<void, ShardingError.ShardingErrorWhileOfferingMessage>
+  ): Effect.Effect<void>
 
   /**
    * Gets a set of messages that will be sent to the local Pod as second attempt

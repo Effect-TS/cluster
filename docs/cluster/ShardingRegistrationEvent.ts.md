@@ -1,6 +1,6 @@
 ---
 title: ShardingRegistrationEvent.ts
-nav_order: 33
+nav_order: 25
 parent: "@effect/cluster"
 ---
 
@@ -28,7 +28,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function EntityRegistered<Msg>(entityType: RecipientType.EntityType<Msg>): ShardingRegistrationEvent
+export declare function EntityRegistered<Msg extends Message.Message.Any>(
+  entityType: RecipientType.EntityType<Msg>
+): ShardingRegistrationEvent
 ```
 
 Added in v1.0.0
@@ -48,7 +50,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function TopicRegistered<Msg>(topicType: RecipientType.TopicType<Msg>): ShardingRegistrationEvent
+export declare function TopicRegistered<Msg extends Message.Message.Any>(
+  topicType: RecipientType.TopicType<Msg>
+): ShardingRegistrationEvent
 ```
 
 Added in v1.0.0

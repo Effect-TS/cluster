@@ -31,10 +31,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function makeEntityType<I, Msg>(
+export declare function makeEntityType<Msg extends Message.Message.Any, I>(
   name: string,
-  schema: Schema.Schema<I, Msg>,
-  messageToId: (msg: Msg) => string
+  schema: Schema.Schema<Msg, I>
 ): EntityType<Msg>
 ```
 
@@ -45,10 +44,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function makeTopicType<I, Msg>(
+export declare function makeTopicType<Msg extends Message.Message.Any, I>(
   name: string,
-  schema: Schema.Schema<I, Msg>,
-  messageToId: (msg: Msg) => string
+  schema: Schema.Schema<Msg, I>
 ): TopicType<Msg>
 ```
 
@@ -61,11 +59,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface EntityType<Msg> {
+export interface EntityType<Msg extends Message.Message.Any> {
   readonly _tag: "EntityType"
   readonly name: string
-  readonly schema: Schema.Schema<unknown, Msg>
-  readonly messageToId: (msg: Msg) => string
+  readonly schema: Schema.Schema<Msg, unknown>
 }
 ```
 
@@ -78,7 +75,7 @@ An abstract type to extend for each type of entity or topic
 **Signature**
 
 ```ts
-export type RecipientType<Msg> = EntityType<Msg> | TopicType<Msg>
+export type RecipientType<Msg extends Message.Message.Any> = EntityType<Msg> | TopicType<Msg>
 ```
 
 Added in v1.0.0
@@ -88,11 +85,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface TopicType<Msg> {
+export interface TopicType<Msg extends Message.Message.Any> {
   readonly _tag: "TopicType"
   readonly name: string
-  readonly schema: Schema.Schema<unknown, Msg>
-  readonly messageToId: (msg: Msg) => string
+  readonly schema: Schema.Schema<Msg, unknown>
 }
 ```
 

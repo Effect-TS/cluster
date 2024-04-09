@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import type * as DurableExecutionEvent from "@effect/cluster-workflow/DurableExecutionEvent"
 import * as DurableExecutionState from "@effect/cluster-workflow/DurableExecutionState"
 import type * as Schema from "@effect/schema/Schema"
@@ -7,6 +10,9 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Stream from "effect/Stream"
 
+/**
+ * @since 1.0.0
+ */
 export interface DurableExecutionJournal {
   read<A, IA, E, IE>(
     persistenceId: string,
@@ -23,8 +29,14 @@ export interface DurableExecutionJournal {
   ): Effect.Effect<void>
 }
 
+/**
+ * @since 1.0.0
+ */
 export const DurableExecutionJournal = Context.GenericTag<DurableExecutionJournal>("@services/DurableExecutionJournal")
 
+/**
+ * @since 1.0.0
+ */
 export function read<A, IA, E, IE>(
   activityId: string,
   success: Schema.Schema<A, IA>,
@@ -38,6 +50,9 @@ export function read<A, IA, E, IE>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function append<A, IA, E, IE>(
   activityId: string,
   success: Schema.Schema<A, IA>,
@@ -59,6 +74,9 @@ interface WithState<A, E, A2, E2, R2> {
   ): Effect.Effect<A2, E2, R2>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function withState<A, IA, E, IE>(
   journal: DurableExecutionJournal,
   persistenceId: string,
