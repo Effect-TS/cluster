@@ -1,32 +1,26 @@
-name: Build
-
+name: Release
 on:
-  workflow_dispatch:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build
+  release:
+    if: github.repository_owner == 'Effect-Ts'
+    name: Release
     runs-on: ubuntu-latest
-    steps: 
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
       - name: Install dependencies
         uses: ./.github/actions/setup
-      - run: pnpm build
-      - run: pnpm circular
-      - run: pnpm docgen
       - name: Create Release Pull Request or Publish
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        id: changesets
         uses: changesets/action@v1
         with:
           publish: pnpm changeset publish

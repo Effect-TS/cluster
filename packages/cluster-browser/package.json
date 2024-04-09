@@ -23,19 +23,19 @@
     "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
   "peerDependencies": {
-    "@effect/platform-node": "^0.45.11",
     "@effect/platform": "^0.48.9",
+    "@effect/platform-node": "^0.45.11",
     "@effect/schema": "^0.64.6",
     "effect": "^2.4.8"
   },
   "devDependencies": {
-    "@effect/platform-node": "^0.45.11",
     "@effect/platform": "^0.48.9",
-    "@effect/schema": "^0.64.6",
-    "@types/node": "^20.9.0",
+    "@effect/platform-node": "^0.45.11",
     "@effect/rpc": "^0.28.9",
+    "@effect/schema": "^0.64.6",
+    "@types/node": "^20.12.6",
     "@types/path-browserify": "^1.0.1",
     "effect": "^2.4.8",
-    "tsx": "^4.6.2"
+    "tsx": "^4.7.2"
   }
 }
