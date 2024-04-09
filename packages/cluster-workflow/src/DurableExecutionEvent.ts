@@ -1,39 +1,66 @@
+/**
+ * @since 1.0.0
+ */
 import { Schema } from "@effect/schema"
 import type * as Exit from "effect/Exit"
 
+/**
+ * @since 1.0.0
+ */
 export interface DurableExecutionEventAttempted {
   _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted"
   sequence: number
 }
 
+/**
+ * @since 1.0.0
+ */
 export function DurableExecutionEventAttempted(sequence: number): DurableExecutionEvent<never, never> {
   return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted", sequence })
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface DurableExecutionEventKillRequested {
   _tag: "@effect/cluster-workflow/DurableExecutionEventKillRequested"
   sequence: number
 }
 
+/**
+ * @since 1.0.0
+ */
 export function DurableExecutionEventKillRequested(sequence: number): DurableExecutionEvent<never, never> {
   return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventKillRequested", sequence })
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface DurableExecutionEventKilled {
   _tag: "@effect/cluster-workflow/DurableExecutionEventKilled"
   sequence: number
 }
 
+/**
+ * @since 1.0.0
+ */
 export function DurableExecutionEventKilled(sequence: number): DurableExecutionEvent<never, never> {
   return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventKilled", sequence })
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface DurableExecutionEventCompleted<A, E> {
   _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted"
   sequence: number
   exit: Exit.Exit<A, E>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function DurableExecutionEventCompleted<A, E>(exit: Exit.Exit<A, E>) {
   return (sequence: number): DurableExecutionEvent<A, E> => ({
     _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted",
@@ -42,12 +69,18 @@ export function DurableExecutionEventCompleted<A, E>(exit: Exit.Exit<A, E>) {
   })
 }
 
+/**
+ * @since 1.0.0
+ */
 export type DurableExecutionEvent<A, E> =
   | DurableExecutionEventAttempted
   | DurableExecutionEventKillRequested
   | DurableExecutionEventKilled
   | DurableExecutionEventCompleted<A, E>
 
+/**
+ * @since 1.0.0
+ */
 export type DurableExecutionEventEncoded<IE, IA> = {
   readonly _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted"
   readonly sequence: number
@@ -63,6 +96,9 @@ export type DurableExecutionEventEncoded<IE, IA> = {
   readonly exit: Schema.ExitEncoded<IE, IA>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Schema.Schema<E, IE>): Schema.Schema<
   DurableExecutionEvent<A, E>,
   DurableExecutionEventEncoded<IA, IE>
@@ -88,6 +124,9 @@ export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Sch
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function match<A, E, B, C = B, D = C, F = D>(
   fns: {
     onAttempted: (event: DurableExecutionEventAttempted) => B

@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Data from "effect/Data"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
@@ -6,41 +9,76 @@ import * as FiberRef from "effect/FiberRef"
 import { pipe } from "effect/Function"
 import type * as Scheduler from "effect/Scheduler"
 
+/**
+ * @since 1.0.0
+ */
 export class CrashableRuntimeCrashedError
   extends Data.TaggedClass("@effect/cluster-workflow/CrashableRuntimeCrashedError")<{}>
 {}
 
+/**
+ * @since 1.0.0
+ */
 export function isCrashableRuntimeCrashedError(value: unknown): value is CrashableRuntimeCrashedError {
   return typeof value === "object" && value !== null && "_tag" in value &&
     value._tag === "@effect/cluster-workflow/CrashableRuntimeCrashedError"
 }
 
+/**
+ * @since 1.0.0
+ */
 export class CrashableRuntimeScheduler implements Scheduler.Scheduler {
+  /**
+   * @since 1.0.0
+   */
   crashed: boolean = false
+
   constructor(readonly baseScheduler: Scheduler.Scheduler) {}
 
+  /**
+   * @since 1.0.0
+   */
   shouldYield(fiber: RuntimeFiber<unknown, unknown>): number | false {
     if (this.crashed) return 1
     return this.baseScheduler.shouldYield(fiber)
   }
 
+  /**
+   * @since 1.0.0
+   */
   scheduleTask(task: Scheduler.Task, priority: number): void {
     if (this.crashed) return
     return this.baseScheduler.scheduleTask(task, priority)
   }
 
+  /**
+   * @since 1.0.0
+   */
   crash() {
     this.crashed = true
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface CrashableRuntime {
+  /**
+   * @since 1.0.0
+   */
   crash: Effect.Effect<void>
+
+  /**
+   * @since 1.0.0
+   */
   run: <A, E, R>(
     fn: (restore: <A2, E2, R2>(fa: Effect.Effect<A2, E2, R2>) => Effect.Effect<A2, E2, R2>) => Effect.Effect<A, E, R>
   ) => Effect.Effect<A, E | CrashableRuntimeCrashedError, R>
 }
 
+/**
+ * @since 1.0.0
+ */
 export const make = pipe(
   FiberRef.get(FiberRef.currentScheduler),
   Effect.flatMap((baseScheduler) =>
@@ -72,6 +110,9 @@ export const make = pipe(
   )
 )
 
+/**
+ * @since 1.0.0
+ */
 export function retryWhileCrashes<R, E, A>(
   fn: (runtime: CrashableRuntime) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
 ): Effect.Effect<R, Exclude<E, CrashableRuntimeCrashedError>, A> {
@@ -82,6 +123,9 @@ export function retryWhileCrashes<R, E, A>(
   ) as any
 }
 
+/**
+ * @since 1.0.0
+ */
 export function runWithCrash<R, E, A>(
   fn: (crash: Effect.Effect<never>) => Effect.Effect<R, E | CrashableRuntimeCrashedError, A>
 ): Effect.Effect<R, E | CrashableRuntimeCrashedError, A> {

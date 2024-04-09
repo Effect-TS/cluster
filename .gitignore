@@ -4,6 +4,7 @@ node_modules/
 .DS_Store
 tmp/
 build/
+docs/
 dist/
 .cache/
 .direnv/

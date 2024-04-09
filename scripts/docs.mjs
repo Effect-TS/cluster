@@ -1,6 +1,5 @@
-/* eslint-disable */
-const Fs = require("node:fs");
-const Path = require("node:path");
+import * as Fs from "node:fs";
+import * as Path from "node:path";
 
 function packages() {
   return Fs.readdirSync("packages").filter((_) =>
@@ -9,7 +8,10 @@ function packages() {
 }
 
 function pkgName(pkg) {
-  return require(Path.join(process.cwd(), "packages", pkg, "package.json")).name;
+  const packageJson = Fs.readFileSync(
+    Path.join("packages", pkg, "package.json")
+  );
+  return JSON.parse(packageJson).name;
 }
 
 function copyFiles(pkg) {
@@ -25,7 +27,10 @@ function copyFiles(pkg) {
 
       if (file.isDirectory()) {
         Fs.mkdirSync(destPath, { recursive: true });
-        handleFiles(file.name, Fs.readdirSync(path, { withFileTypes: true }));
+        handleFiles(
+          Path.join(root, file.name),
+          Fs.readdirSync(path, { withFileTypes: true })
+        );
         continue;
       }
 

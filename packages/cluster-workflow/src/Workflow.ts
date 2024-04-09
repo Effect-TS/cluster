@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import * as Schema from "@effect/schema/Schema"
@@ -9,6 +12,9 @@ import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import type * as Request from "effect/Request"
 
+/**
+ * @since 1.0.0
+ */
 export interface Workflow<T extends Schema.TaggedRequest.Any, R> {
   schema: Schema.Schema<T, unknown>
   executionId: (input: T) => string
@@ -17,12 +23,29 @@ export interface Workflow<T extends Schema.TaggedRequest.Any, R> {
   ) => Effect.Effect<Request.Request.Success<T>, Request.Request.Error<T>, R | WorkflowContext.WorkflowContext>
 }
 
+/**
+ * @since 1.0.0
+ */
 export namespace Workflow {
+  /**
+   * @since 1.0.0
+   */
   export type Any = Workflow<any, any>
+
+  /**
+   * @since 1.0.0
+   */
   export type Context<A> = A extends Workflow<any, infer R> ? R : never
+
+  /**
+   * @since 1.0.0
+   */
   export type Request<A> = A extends Workflow<infer T, any> ? T : never
 }
 
+/**
+ * @since 1.0.0
+ */
 export function make<T extends Schema.TaggedRequest.Any, R = never, I = unknown>(
   schema: Schema.Schema<T, I>,
   executionId: (input: T) => string,
@@ -37,6 +60,9 @@ export function make<T extends Schema.TaggedRequest.Any, R = never, I = unknown>
   })
 }
 
+/**
+ * @since 1.0.0
+ */
 export function union<WFs extends ReadonlyArray<Workflow.Any>>(
   ...wfs: WFs
 ) {
@@ -77,16 +103,25 @@ function remainingDuration(persistenceId: string, duration: Duration.Duration) {
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export const sleep = (persistenceId: string, duration: Duration.Duration) =>
   Effect.gen(function*(_) {
     const remaining = yield* _(remainingDuration(persistenceId, duration))
     yield* _(Effect.sleep(remaining))
   })
 
+/**
+ * @since 1.0.0
+ */
 export const timeout = (persistenceId: string, duration: Duration.Duration) => <R, E, A>(fa: Effect.Effect<R, E, A>) =>
   Effect.gen(function*(_) {
     const remaining = yield* _(remainingDuration(persistenceId, duration))
     yield* _(Effect.timeout(fa, remaining))
   })
 
+/**
+ * @since 1.0.0
+ */
 export const yieldExecution = Effect.flatMap(WorkflowContext.WorkflowContext, (ctx) => ctx.yieldExecution)

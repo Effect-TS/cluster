@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as DurableExecutionEvent from "@effect/cluster-workflow/DurableExecutionEvent"
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as DurableExecutionState from "@effect/cluster-workflow/DurableExecutionState"
@@ -8,6 +11,9 @@ import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Unify from "effect/Unify"
 
+/**
+ * @since 1.0.0
+ */
 export function kill<A, IA, E, IE>(
   persistenceId: string,
   success: Schema.Schema<A, IA>,
@@ -22,6 +28,9 @@ export function kill<A, IA, E, IE>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function attempt<A, IA, E, IE>(
   persistenceId: string,
   success: Schema.Schema<A, IA>,

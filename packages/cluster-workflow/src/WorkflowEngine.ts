@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as DurableExecution from "@effect/cluster-workflow/DurableExecution"
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import type * as Workflow from "@effect/cluster-workflow/Workflow"
@@ -15,6 +18,9 @@ import type * as Request from "effect/Request"
 import * as Scope from "effect/Scope"
 import * as SynchronizedRef from "effect/SynchronizedRef"
 
+/**
+ * @since 1.0.0
+ */
 export interface WorkflowEngine<T extends Schema.TaggedRequest.Any> {
   sendDiscard: (request: T) => Effect.Effect<void>
   send: <A extends T>(request: A) => Effect.Effect<Request.Request.Success<A>, Request.Request.Error<A>>
@@ -98,6 +104,9 @@ function resume<T extends Schema.TaggedRequest.Any, R>(
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export function makeScoped<T extends Schema.TaggedRequest.Any, R>(
   workflow: Workflow.Workflow<T, R>
 ): Effect.Effect<

@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Resolver from "@effect/rpc/Resolver"
 import * as Router from "@effect/rpc/Router"
 import type * as Rpc from "@effect/rpc/Rpc"
@@ -20,6 +23,9 @@ class ServerResponse extends Schema.TaggedClass<ServerResponse>()("ServerRespons
 
 const BroadcastMessage = Schema.union(ClientRequest, ServerResponse)
 
+/**
+ * @since 1.0.0
+ */
 export const toBroadcastChannelRouter = <R extends Router.Router<any, any>>(self: R, channelId: string) => {
   const handler = Router.toHandlerEffect(self)
 
@@ -59,6 +65,9 @@ export const toBroadcastChannelRouter = <R extends Router.Router<any, any>>(self
   }).pipe(Effect.forkScoped)
 }
 
+/**
+ * @since 1.0.0
+ */
 export const make = <R extends Router.Router<any, any>>(
   channelId: string
 ): RequestResolver.RequestResolver<

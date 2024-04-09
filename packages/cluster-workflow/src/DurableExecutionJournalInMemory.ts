@@ -16,6 +16,9 @@ class JournalEntry extends Data.Class<{
 }> {
 }
 
+/**
+ * @since 1.0.0
+ */
 export const activityJournalInMemory = Layer.effect(
   DurableExecutionJournal.DurableExecutionJournal,
   Effect.gen(function*(_) {
