@@ -32,7 +32,7 @@ export class CrashableRuntimeScheduler implements Scheduler.Scheduler {
    * @since 1.0.0
    */
   crashed: boolean = false
-  
+
   constructor(readonly baseScheduler: Scheduler.Scheduler) {}
 
   /**
