@@ -5,18 +5,16 @@ import type * as DurableExecutionJournal from "@effect/cluster-workflow/DurableE
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
-import * as Ref from "effect/Ref"
 
 /**
  * @since 1.0.0
  */
 export interface WorkflowContext {
-  currentAttempt: number
   makePersistenceId: (localId: string) => string
-  shouldInterruptCurrentFiberInActivity: Ref.Ref<boolean>
-  isGracefulShutdownHappening: Effect.Effect<boolean>
   durableExecutionJournal: DurableExecutionJournal.DurableExecutionJournal
+  isYielding: Effect.Effect<boolean>
   yieldExecution: Effect.Effect<never>
+  forkAndJoin: <A, E, R>(persistenceId: string, effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>
 }
 
 /**
@@ -30,23 +28,6 @@ export const WorkflowContext = Context.GenericTag<WorkflowContext>("@services/Wo
 export function make(args: WorkflowContext): WorkflowContext {
   return args
 }
-
-/**
- * @since 1.0.0
- */
-export const shouldInterruptCurrentFiberInActivity = Effect.flatMap(
-  WorkflowContext,
-  (_) => Ref.get(_.shouldInterruptCurrentFiberInActivity)
-)
-
-/**
- * @since 1.0.0
- */
-export const setShouldInterruptCurrentFiberInActivity = (value: boolean) =>
-  Effect.flatMap(
-    WorkflowContext,
-    (_) => Ref.set(_.shouldInterruptCurrentFiberInActivity, value)
-  )
 
 /**
  * @since 1.0.0

@@ -19,6 +19,20 @@ export function exitSchema<A extends Message.Message.Any>(
   return Serializable.exitSchema(message as any) as any
 }
 
+/** @internal */
+export function successSchema<A extends Message.Message.Any>(
+  message: A
+): Schema.Schema<Message.Message.Success<A>, unknown> {
+  return Serializable.successSchema(message as any) as any
+}
+
+/** @internal */
+export function failureSchema<A extends Message.Message.Any>(
+  message: A
+): Schema.Schema<Message.Message.Error<A>, unknown> {
+  return Serializable.failureSchema(message as any) as any
+}
+
 /**
  * @since 1.0.0
  * @category schemas
