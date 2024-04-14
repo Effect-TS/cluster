@@ -3,7 +3,7 @@
  */
 import * as Data from "effect/Data"
 import type * as Deferred from "effect/Deferred"
-import * as Exit from "effect/Exit"
+import type * as Exit from "effect/Exit"
 
 const REQUEST_FORK = "@effect/cluster-workflow/WorkflowRuntimeMessage/RequestFork"
 /**
@@ -12,7 +12,7 @@ const REQUEST_FORK = "@effect/cluster-workflow/WorkflowRuntimeMessage/RequestFor
 export class RequestFork extends Data.TaggedClass(REQUEST_FORK)<{
   persistenceId: string
   signal: Deferred.Deferred<void, never>
-}> { }
+}> {}
 
 const REQUEST_JOIN = "@effect/cluster-workflow/WorkflowRuntimeMessage/RequestJoin"
 /**
@@ -21,14 +21,13 @@ const REQUEST_JOIN = "@effect/cluster-workflow/WorkflowRuntimeMessage/RequestJoi
 export class RequestJoin extends Data.TaggedClass(REQUEST_JOIN)<{
   persistenceId: string
   signal: Deferred.Deferred<void, never>
-}> { }
+}> {}
 
 const REQUEST_YIELD = "@effect/cluster-workflow/WorkflowRuntimeMessage/RequestYield"
 /**
  * @since 1.0.0
  */
-export class RequestYield extends Data.TaggedClass(REQUEST_YIELD)<{
-}> { }
+export class RequestYield extends Data.TaggedClass(REQUEST_YIELD)<{}> {}
 
 const REQUEST_COMPLETE = "@effect/cluster-workflow/WorkflowRuntimeMessage/RequestComplete"
 /**
@@ -37,7 +36,7 @@ const REQUEST_COMPLETE = "@effect/cluster-workflow/WorkflowRuntimeMessage/Reques
 export class RequestComplete<A, E> extends Data.TaggedClass(REQUEST_COMPLETE)<{
   exit: Exit.Exit<A, E>
   signal: Deferred.Deferred<void, never>
-}> { }
+}> {}
 
 /**
  * @since 1.0.0

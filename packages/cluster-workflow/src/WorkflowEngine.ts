@@ -1,18 +1,18 @@
 /**
  * @since 1.0.0
  */
-import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
+import type * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import type * as Workflow from "@effect/cluster-workflow/Workflow"
+import * as WorkflowRuntime from "@effect/cluster-workflow/WorkflowRuntime"
+import type * as Message from "@effect/cluster/Message"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import * as Option from "effect/Option"
-import * as Scope from "effect/Scope"
-import * as SynchronizedRef from "effect/SynchronizedRef"
 import * as PrimaryKey from "effect/PrimaryKey"
-import * as WorkflowRuntime from "@effect/cluster-workflow/WorkflowRuntime"
-import * as Message from "@effect/cluster/Message"
+import type * as Scope from "effect/Scope"
+import * as SynchronizedRef from "effect/SynchronizedRef"
 
 /**
  * @since 1.0.0
@@ -32,7 +32,7 @@ export function makeScoped<T extends Message.Message.Any, R>(
   never,
   R | Scope.Scope | DurableExecutionJournal.DurableExecutionJournal
 > {
-  return Effect.gen(function* (_) {
+  return Effect.gen(function*(_) {
     const executionScope = yield* _(Effect.scope)
     const fibers = yield* _(
       SynchronizedRef.make(HashMap.empty<string, Fiber.Fiber<any, any>>())

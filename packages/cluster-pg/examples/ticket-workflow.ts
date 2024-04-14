@@ -2,6 +2,7 @@ import * as DurableExecutionJournalPostgres from "@effect/cluster-pg/DurableExec
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as WorkflowEngine from "@effect/cluster-workflow/WorkflowEngine"
+import * as Message from "@effect/cluster/Message"
 import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
@@ -56,7 +57,7 @@ const sendTickets = (email: string, ticketIds: ReadonlyArray<string>) =>
     Effect.logDebug("Sending tickets " + ticketIds.join(", ") + " to " + email + "...")
   ))
 
-class BookSeatRequest extends Schema.TaggedRequest<BookSeatRequest>()(
+class BookSeatRequest extends Message.TaggedMessage<BookSeatRequest>()(
   "BeginPaymentWorkflowRequest",
   Schema.never,
   Schema.void,
@@ -65,13 +66,13 @@ class BookSeatRequest extends Schema.TaggedRequest<BookSeatRequest>()(
     cardNumber: Schema.string,
     numberOfSeats: Schema.number,
     email: Schema.string
-  }
+  },
+  (_) => _.orderId
 ) {
 }
 
 const bookSeatWorkflow = Workflow.make(
   BookSeatRequest,
-  (_) => _.orderId,
   ({ cardNumber, email, numberOfSeats, orderId }) =>
     pipe(
       Effect.acquireUseRelease(

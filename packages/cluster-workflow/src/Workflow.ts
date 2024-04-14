@@ -3,6 +3,7 @@
  */
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
+import type * as Message from "@effect/cluster/Message"
 import * as Schema from "@effect/schema/Schema"
 import { ReadonlyArray } from "effect"
 import * as Clock from "effect/Clock"
@@ -10,7 +11,6 @@ import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
-import type * as Message from "@effect/cluster/Message"
 
 /**
  * @since 1.0.0
@@ -97,7 +97,7 @@ function remainingDuration(persistenceId: string, duration: Duration.Duration) {
  * @since 1.0.0
  */
 export const sleep = (persistenceId: string, duration: Duration.Duration) =>
-  Effect.gen(function* (_) {
+  Effect.gen(function*(_) {
     const remaining = yield* _(remainingDuration(persistenceId, duration))
     yield* _(Effect.sleep(remaining))
   })
@@ -106,7 +106,7 @@ export const sleep = (persistenceId: string, duration: Duration.Duration) =>
  * @since 1.0.0
  */
 export const timeout = (persistenceId: string, duration: Duration.Duration) => <R, E, A>(fa: Effect.Effect<R, E, A>) =>
-  Effect.gen(function* (_) {
+  Effect.gen(function*(_) {
     const remaining = yield* _(remainingDuration(persistenceId, duration))
     yield* _(Effect.timeout(fa, remaining))
   })

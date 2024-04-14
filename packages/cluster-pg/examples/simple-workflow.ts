@@ -10,6 +10,7 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
+import * as Message from "@effect/cluster/Message"
 
 const getTotalAmount = (orderId: string) =>
   Activity.make(
@@ -48,7 +49,7 @@ const sendConfirmationEmail = (email: string, orderId: string, trackingId: strin
     )
   ))
 
-class ProcessPaymentRequest extends Schema.TaggedRequest<ProcessPaymentRequest>()(
+class ProcessPaymentRequest extends Message.TaggedMessage<ProcessPaymentRequest>()(
   "ProcessPaymentRequest",
   Schema.never,
   Schema.void,
@@ -57,13 +58,13 @@ class ProcessPaymentRequest extends Schema.TaggedRequest<ProcessPaymentRequest>(
     cardNumber: Schema.string,
     email: Schema.string,
     deliveryAddress: Schema.string
-  }
+  },
+  _ => "ProcessPayment@" + _.orderId
 ) {
 }
 
 const processPaymentWorkflow = Workflow.make(
   ProcessPaymentRequest,
-  (_) => "ProcessPayment@" + _.orderId,
   ({ cardNumber, deliveryAddress, email, orderId }) =>
     Effect.gen(function*(_) {
       // get total order amount

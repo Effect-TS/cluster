@@ -61,7 +61,6 @@ export function KillRequested(sequence: number): DurableExecutionEvent<never, ne
   return ({ _tag: INTERRUPTION_REQUESTED, sequence })
 }
 
-
 const FORKED = "@effect/cluster-workflow/DurableExecutionEvent/Forked"
 /**
  * @since 1.0.0
@@ -108,8 +107,8 @@ export type DurableExecutionEvent<A, E> =
   | Joined
 
 /**
-* @since 1.0.0
-*/
+ * @since 1.0.0
+ */
 export type DurableExecutionEventFrom<IE, IA> = {
   readonly _tag: typeof ATTEMPTED
   readonly sequence: number
