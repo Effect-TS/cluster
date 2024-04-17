@@ -6,13 +6,11 @@ import type * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as WorkflowRuntime from "@effect/cluster-workflow/WorkflowRuntime"
 import type * as Message from "@effect/cluster/Message"
 import * as Effect from "effect/Effect"
-import * as Fiber from "effect/Fiber"
+import type * as Fiber from "effect/Fiber"
+import * as FiberMap from "effect/FiberMap"
 import { pipe } from "effect/Function"
-import * as HashMap from "effect/HashMap"
-import * as Option from "effect/Option"
 import * as PrimaryKey from "effect/PrimaryKey"
 import type * as Scope from "effect/Scope"
-import * as SynchronizedRef from "effect/SynchronizedRef"
 
 /**
  * @since 1.0.0
@@ -33,10 +31,7 @@ export function makeScoped<T extends Message.Message.Any, R>(
   R | Scope.Scope | DurableExecutionJournal.DurableExecutionJournal
 > {
   return Effect.gen(function*(_) {
-    const executionScope = yield* _(Effect.scope)
-    const fibers = yield* _(
-      SynchronizedRef.make(HashMap.empty<string, Fiber.Fiber<any, any>>())
-    )
+    const fiberMap = yield* _(FiberMap.make())
     const env = yield* _(Effect.context<R | DurableExecutionJournal.DurableExecutionJournal>())
 
     const getOrStartFiber = <A extends T>(
@@ -44,21 +39,14 @@ export function makeScoped<T extends Message.Message.Any, R>(
     ): Effect.Effect<Fiber.Fiber<Message.Message.Success<A>, Message.Message.Error<A>>> => {
       const executionId = PrimaryKey.value(request)
 
-      return SynchronizedRef.modifyEffect(fibers, (state) =>
+      return FiberMap.run(
+        fiberMap,
+        executionId,
         pipe(
-          HashMap.get(state, executionId),
-          Option.match({
-            onSome: (fiber) => Effect.succeed([fiber, state] as const),
-            onNone: () =>
-              pipe(
-                WorkflowRuntime.attempt(workflow)(request),
-                Effect.provide(env),
-                Effect.ensuring(SynchronizedRef.update(fibers, HashMap.remove(executionId))),
-                Effect.forkIn(executionScope),
-                Effect.map((fiber) => [fiber, HashMap.set(state, executionId, fiber)])
-              )
-          })
-        ))
+          WorkflowRuntime.attempt(workflow)(request),
+          Effect.provide(env)
+        )
+      )
     }
 
     const sendDiscard = (request: T) =>
@@ -71,9 +59,8 @@ export function makeScoped<T extends Message.Message.Any, R>(
       request: A
     ): Effect.Effect<Message.Message.Success<A>, Message.Message.Error<A>> =>
       pipe(
-        getOrStartFiber(request),
-        Effect.flatMap((fiber) => Fiber.await(fiber)),
-        Effect.flatten
+        WorkflowRuntime.attempt(workflow)(request),
+        Effect.provide(env)
       )
 
     return ({ send, sendDiscard })

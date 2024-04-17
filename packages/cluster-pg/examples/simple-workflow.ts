@@ -2,6 +2,7 @@ import * as DurableExecutionJournalPostgres from "@effect/cluster-pg/DurableExec
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as WorkflowEngine from "@effect/cluster-workflow/WorkflowEngine"
+import * as Message from "@effect/cluster/Message"
 import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
@@ -10,7 +11,6 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
-import * as Message from "@effect/cluster/Message"
 
 const getTotalAmount = (orderId: string) =>
   Activity.make(
@@ -59,7 +59,7 @@ class ProcessPaymentRequest extends Message.TaggedMessage<ProcessPaymentRequest>
     email: Schema.string,
     deliveryAddress: Schema.string
   },
-  _ => "ProcessPayment@" + _.orderId
+  (_) => "ProcessPayment@" + _.orderId
 ) {
 }
 

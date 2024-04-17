@@ -295,8 +295,9 @@ describe.concurrent("Workflow", () => {
       const exit = yield* _(
         WorkflowEngine.makeScoped(workflow),
         Effect.flatMap((engine) => engine.send(new StartWorkflowRequest({ executionId: "wf" }))),
+        Effect.zipLeft(Deferred.succeed(latch, void 0), { concurrent: true }),
         Effect.forkScoped,
-        Effect.tap(Deferred.await(latch)),
+        Effect.zipLeft(Deferred.await(latch)),
         Effect.scoped,
         Effect.flatMap((_) => _.await)
       )
