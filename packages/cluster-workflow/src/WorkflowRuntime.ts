@@ -336,7 +336,7 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
           ),
           Effect.tap(Deferred.await),
           Effect.zipRight(fa),
-          Effect.zipLeft(
+          Effect.ensuring(
             pipe(
               Deferred.make<void>(),
               Effect.tap((signal) =>
