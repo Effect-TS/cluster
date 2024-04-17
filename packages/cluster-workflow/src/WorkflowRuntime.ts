@@ -5,6 +5,7 @@ import * as Message from "@effect/cluster/Message"
 import type { Schema } from "@effect/schema"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
 import * as Fiber from "effect/Fiber"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
@@ -28,29 +29,8 @@ function handleReplayPhase<A, E>(
   mailbox: Queue.Dequeue<WorkflowRuntimeMessage.WorkflowRuntimeMessage<A, E>>
 ): Effect.Effect<WorkflowRuntimeState.WorkflowRuntimeState<A, E>, never, Scope.Scope> {
   return WorkflowRuntimeState.match(wrs, {
-    onCompleted: (state) => {
-      // on completed state we want to receive only completed event
-      return pipe(
-        Queue.take(mailbox),
-        Effect.flatMap((ms) =>
-          WorkflowRuntimeMessage.match(ms, {
-            onRequestComplete: (message) => Deferred.succeed(message.signal, void 0),
-            onRequestFork: () =>
-              Effect.die(
-                `Determinism has been broken! Can only receive RequestComplete in Completed state while replaying`
-              ),
-            onRequestJoin: () =>
-              Effect.die(
-                `Determinism has been broken! Can only receive RequestComplete in Completed state while replaying`
-              ),
-            onRequestYield: () =>
-              Effect.die(
-                `Determinism has been broken! Can only receive RequestComplete in Completed state while replaying`
-              )
-          })
-        ),
-        Effect.as(state)
-      )
+    onCompleted: () => {
+      return Effect.die(`ABSURD: Cannot have more event in the journal after complete!`)
     },
     onRunning: () => {
       return Effect.die(`ABSURD: Cannot enter in running state while still replaying events.`)
@@ -254,7 +234,7 @@ function handleExecutionPhase<A, E>(
           ),
         // on yield request we trigger interrupt and immediately switch to yielding
         onRequestYield: () =>
-          pipe(Fiber.interrupt(fiber), Effect.forkDaemon, Effect.as(new WorkflowRuntimeState.Yielding()))
+          pipe(Fiber.interrupt(fiber), Effect.forkScoped, Effect.as(new WorkflowRuntimeState.Yielding()))
       })
     },
 
@@ -276,7 +256,7 @@ function handleExecutionPhase<A, E>(
     },
     onCompleted: (state) => {
       return WorkflowRuntimeMessage.match(ms, {
-        // we completed already!
+        // we completed already! just proceed!
         onRequestComplete: (message) =>
           pipe(
             Deferred.succeed(message.signal, void 0),
@@ -371,7 +351,7 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
 
       const executionScope = yield* $(Scope.make())
 
-      const fiber = yield* $(
+      const executionFiber = yield* $(
         workflow.execute(request),
         Effect.provideService(WorkflowContext.WorkflowContext, {
           makePersistenceId,
@@ -394,7 +374,7 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
         durableExecutionJournal.read(persistenceId, successSchema, failureSchema, 0, false),
         Stream.runFoldEffect(initialState, (state, event) =>
           pipe(
-            handleReplayPhase(state, event, fiber, mailbox),
+            handleReplayPhase(state, event, executionFiber, mailbox),
             Effect.tap((state) => Ref.set(stateRef, state))
           )),
         Effect.zipRight(
@@ -404,7 +384,15 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
               pipe(
                 Ref.get(stateRef),
                 Effect.flatMap((state) =>
-                  handleExecutionPhase(persistenceId, successSchema, failureSchema, state, message, fiber, mailbox)
+                  handleExecutionPhase(
+                    persistenceId,
+                    successSchema,
+                    failureSchema,
+                    state,
+                    message,
+                    executionFiber,
+                    mailbox
+                  )
                 ),
                 Effect.tap((state) => Ref.set(stateRef, state))
               )
@@ -424,14 +412,14 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
       )
 
       return yield* $(
-        Fiber.await(coordinatorFiber),
+        Fiber.await(executionFiber),
         Effect.onInterrupt(() =>
           pipe(
             Queue.offer(mailbox, new WorkflowRuntimeMessage.RequestYield()),
             Effect.zipRight(Fiber.await(coordinatorFiber))
           )
         ),
-        Effect.zipRight(Fiber.await(fiber)),
+        Effect.ensuring(Scope.close(executionScope, Exit.unit)),
         Effect.flatten
       )
     }).pipe(Effect.scoped)
