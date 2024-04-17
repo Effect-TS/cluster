@@ -326,4 +326,28 @@ describe.concurrent("Workflow", () => {
       expect(mockedRelease.spy).toHaveBeenCalledOnce()
     }).pipe(withTestEnv, Effect.runPromise)
   })
+
+  it("On replay activities should fork/complete in the same order to allow Effect.race-like combinators", () => {
+    return Effect.gen(function*(_) {
+      function testWorkflow(firstFastest: boolean) {
+        return Effect.gen(function*(_) {
+          const activity1 = utils.mockActivity("activity1", Schema.number, Schema.never, () => Exit.succeed(1))
+            .activityWithBody(pipe(Effect.sleep(firstFastest ? 0 : 1000), Effect.as(1)))
+          const activity2 = utils.mockActivity("activity2", Schema.number, Schema.never, () => Exit.succeed(1))
+            .activityWithBody(pipe(Effect.sleep(!firstFastest ? 0 : 1000), Effect.as(2)))
+
+          const workflow = Workflow.make(StartWorkflowRequest, () => Effect.race(activity1, activity2))
+
+          const engine = yield* _(WorkflowEngine.makeScoped(workflow))
+
+          return yield* _(engine.send(new StartWorkflowRequest({ executionId: "wf" })))
+        }).pipe(Effect.scoped)
+      }
+
+      const exit1 = yield* _(testWorkflow(true))
+      const exit2 = yield* _(testWorkflow(false))
+
+      expect(exit1).toEqual(exit2)
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
 })
