@@ -5,7 +5,7 @@ import * as Activity from "@effect/cluster-workflow/Activity"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
 import type * as Message from "@effect/cluster/Message"
 import * as Schema from "@effect/schema/Schema"
-import { ReadonlyArray } from "effect"
+import * as Array from "effect/Array"
 import * as Clock from "effect/Clock"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
@@ -64,11 +64,11 @@ export function union<WFs extends ReadonlyArray<Workflow.Any>>(
   ...wfs: WFs
 ) {
   return make<Workflow.Request<WFs[number]>, Workflow.Context<WFs[number]>>(
-    Schema.union(...wfs.map((_) => _.schema)),
+    Schema.Union(...wfs.map((_) => _.schema)),
     (request) =>
       pipe(
         wfs,
-        ReadonlyArray.findFirst((_) => Schema.is(_.schema)(request)),
+        Array.findFirst((_) => Schema.is(_.schema)(request)),
         Option.map((_) => _.execute(request) as any),
         Option.getOrElse(() => Effect.die("unknown workflow input"))
       )
@@ -76,7 +76,7 @@ export function union<WFs extends ReadonlyArray<Workflow.Any>>(
 }
 
 function remainingDuration(persistenceId: string, duration: Duration.Duration) {
-  const startedAtActivity = Activity.make(persistenceId, Schema.number, Schema.never)(pipe(
+  const startedAtActivity = Activity.make(persistenceId, Schema.Number, Schema.Never)(pipe(
     Clock.currentTimeMillis
   ))
 

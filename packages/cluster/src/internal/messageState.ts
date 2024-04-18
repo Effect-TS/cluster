@@ -78,27 +78,27 @@ export function schema<A, I>(
   MessageState.MessageState<A>,
   MessageState.MessageState.Encoded<I>
 > {
-  return Schema.union(
+  return Schema.Union(
     Schema.rename(
-      Schema.struct({
+      Schema.Struct({
         [MessageStateSymbolKey]: Schema.compose(
-          Schema.compose(Schema.literal(MessageStateSymbolKey), Schema.symbol, { strict: false }),
-          Schema.uniqueSymbolFromSelf(MessageStateTypeId),
+          Schema.compose(Schema.Literal(MessageStateSymbolKey), Schema.Symbol, { strict: false }),
+          Schema.UniqueSymbolFromSelf(MessageStateTypeId),
           { strict: false }
         ),
-        _tag: Schema.literal("@effect/cluster/MessageState/Acknowledged")
+        _tag: Schema.Literal("@effect/cluster/MessageState/Acknowledged")
       }),
       { [MessageStateSymbolKey]: MessageStateTypeId }
     ),
     Schema.rename(
-      Schema.struct({
+      Schema.Struct({
         [MessageStateSymbolKey]: Schema.compose(
-          Schema.compose(Schema.literal(MessageStateSymbolKey), Schema.symbol, { strict: false }),
-          Schema.uniqueSymbolFromSelf(MessageStateTypeId),
+          Schema.compose(Schema.Literal(MessageStateSymbolKey), Schema.Symbol, { strict: false }),
+          Schema.UniqueSymbolFromSelf(MessageStateTypeId),
           { strict: false }
         ),
-        _tag: Schema.literal("@effect/cluster/MessageState/Processed"),
-        result: Schema.option(result)
+        _tag: Schema.Literal("@effect/cluster/MessageState/Processed"),
+        result: Schema.Option(result)
       }),
       { [MessageStateSymbolKey]: MessageStateTypeId }
     )

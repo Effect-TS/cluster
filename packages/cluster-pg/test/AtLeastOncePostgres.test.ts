@@ -11,7 +11,7 @@ import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
 import * as Storage from "@effect/cluster/Storage"
 import * as Schema from "@effect/schema/Schema"
-import * as Postgres from "@sqlfx/pg"
+import * as Pg from "@effect/sql-pg"
 import { PostgreSqlContainer } from "@testcontainers/postgresql"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
@@ -24,9 +24,9 @@ import * as PrimaryKey from "effect/PrimaryKey"
 import * as Secret from "effect/Secret"
 import { describe, expect, it } from "vitest"
 
-class SampleMessage extends Schema.TaggedRequest<SampleMessage>()("SampleMessage", Schema.never, Schema.void, {
-  id: Schema.string,
-  value: Schema.number
+class SampleMessage extends Schema.TaggedRequest<SampleMessage>()("SampleMessage", Schema.Never, Schema.Void, {
+  id: Schema.String,
+  value: Schema.Number
 }) {
   [PrimaryKey.symbol]() {
     return this.id
@@ -38,8 +38,8 @@ const testContainerPostgresLayer = pipe(
     Effect.promise(() => new PostgreSqlContainer().start()),
     (container) => Effect.promise(() => container.stop())
   ),
-  Effect.flatMap((container) => Postgres.make({ url: (Secret.fromString(container.getConnectionUri())) })),
-  Layer.scoped(Postgres.tag)
+  Effect.flatMap((container) => Pg.client.make({ url: (Secret.fromString(container.getConnectionUri())) })),
+  Layer.scoped(Pg.client.PgClient)
 )
 
 const SampleEntity = RecipientType.makeEntityType("SampleEntity", SampleMessage)
@@ -73,7 +73,7 @@ describe.concurrent("AtLeastOncePostgres", () => {
 
   it("Should create the message table upon layer creation", () => {
     return Effect.gen(function*(_) {
-      const sql = yield* _(Postgres.tag)
+      const sql = yield* _(Pg.client.PgClient)
 
       const rows = yield* _(sql<{ table_name: string }>`
         SELECT table_name
@@ -104,7 +104,7 @@ describe.concurrent("AtLeastOncePostgres", () => {
       const msg = new SampleMessage({ id: "a", value: 42 })
       yield* _(messenger.sendDiscard("entity1")(msg))
 
-      const sql = yield* _(Postgres.tag)
+      const sql = yield* _(Pg.client.PgClient)
       const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack`)
 
       expect(rows.length).toBe(1)
@@ -130,7 +130,7 @@ describe.concurrent("AtLeastOncePostgres", () => {
       const msg = new SampleMessage({ id: "a", value: 42 })
       yield* _(messenger.sendDiscard("entity1")(msg))
 
-      const sql = yield* _(Postgres.tag)
+      const sql = yield* _(Pg.client.PgClient)
       const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack WHERE processed = TRUE`)
 
       expect(rows.length).toBe(1)
@@ -155,7 +155,7 @@ describe.concurrent("AtLeastOncePostgres", () => {
       const messenger = yield* _(Sharding.messenger(SampleEntity))
       yield* _(messenger.sendDiscard("entity1")(new SampleMessage({ id: "a", value: 42 })))
 
-      const sql = yield* _(Postgres.tag)
+      const sql = yield* _(Pg.client.PgClient)
       const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack WHERE processed = FALSE`)
 
       expect(rows.length).toBe(1)

@@ -98,14 +98,14 @@ export function make<Msg extends Message.Message.Any, R>(
               Option.getOrElse(() => 0)
             )),
           Effect.let("remaining", ({ cdt, lastReceivedAt }) => (maxIdleMillis - cdt + lastReceivedAt)),
-          Effect.tap((_) => _.remaining > 0 ? sleep(_.remaining) : Effect.unit)
+          Effect.tap((_) => _.remaining > 0 ? sleep(_.remaining) : Effect.void)
         )
       }
 
       return pipe(
         sleep(maxIdleMillis),
         Effect.zipRight(forkEntityTermination(entityId)),
-        Effect.asUnit,
+        Effect.asVoid,
         Effect.interruptible,
         Effect.annotateLogs("entityId", entityId),
         Effect.annotateLogs("recipientType", recipientType.name),
@@ -125,19 +125,19 @@ export function make<Msg extends Message.Message.Any, R>(
         Effect.map(HashMap.get(entityId)),
         Effect.flatMap(Option.match({
           // there is no entity state to cleanup
-          onNone: () => Effect.unit,
+          onNone: () => Effect.void,
           // found it!
           onSome: (entityState) =>
             pipe(
               // interrupt the expiration timer
               Fiber.interrupt(entityState.expirationFiber),
               // close the scope of the entity,
-              Effect.ensuring(Scope.close(entityState.executionScope, Exit.unit)),
+              Effect.ensuring(Scope.close(entityState.executionScope, Exit.void)),
               // remove the entry from the map
               Effect.ensuring(RefSynchronized.update(entityStates, HashMap.remove(entityId))),
               // log error if happens
               Effect.catchAllCause(Effect.logError),
-              Effect.asUnit,
+              Effect.asVoid,
               Effect.annotateLogs("entityId", entityId),
               Effect.annotateLogs("recipientType", recipientType.name)
             )
@@ -223,7 +223,7 @@ export function make<Msg extends Message.Message.Any, R>(
                     const executionScope = yield* _(Scope.make())
                     const expirationFiber = yield* _(startExpirationFiber(entityId))
                     const cdt = yield* _(Clock.currentTimeMillis)
-                    const forkShutdown = pipe(forkEntityTermination(entityId), Effect.asUnit)
+                    const forkShutdown = pipe(forkEntityTermination(entityId), Effect.asVoid)
                     const shardId = sharding.getShardId(entityId)
 
                     const sendAndGetState = yield* _(pipe(
@@ -278,12 +278,12 @@ export function make<Msg extends Message.Message.Any, R>(
         Effect.tap(() => {
           // first, verify that this entity should be handled by this pod
           if (recipientType._tag === "EntityType") {
-            return Effect.asUnit(Effect.unlessEffect(
+            return Effect.asVoid(Effect.unlessEffect(
               Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ entityId })),
               sharding.isEntityOnLocalShards(entityId)
             ))
           } else if (recipientType._tag === "TopicType") {
-            return Effect.unit
+            return Effect.void
           }
           return Effect.die("Unhandled recipientType")
         }),
@@ -325,7 +325,7 @@ export function make<Msg extends Message.Message.Any, R>(
               forkEntityTermination(entityId),
               Effect.flatMap((_) =>
                 Option.match(_, {
-                  onNone: () => Effect.unit,
+                  onNone: () => Effect.void,
                   onSome: (terminationFiber) =>
                     pipe(
                       Fiber.await(terminationFiber),
@@ -344,14 +344,14 @@ export function make<Msg extends Message.Message.Any, R>(
                             `Entity ${recipientType.name + "#" + entityId} cleaned up.`
                           )
                       }),
-                      Effect.asUnit
+                      Effect.asVoid
                     )
                 })
               )
             ),
           { concurrency: "inherit" }
         ),
-        Effect.asUnit
+        Effect.asVoid
       )
     }
 

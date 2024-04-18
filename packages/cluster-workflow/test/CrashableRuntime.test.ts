@@ -54,7 +54,7 @@ describe.concurrent("CrashableRuntime", () => {
             () => Ref.set(valueRef, 4)
           )
         ),
-        Effect.catchAll(() => Effect.unit)
+        Effect.catchAll(() => Effect.void)
       )
 
       const value = yield* _(Ref.get(valueRef))
@@ -75,7 +75,7 @@ describe.concurrent("CrashableRuntime", () => {
             Effect.zipRight(Ref.set(valueRef, 42))
           ))
         ),
-        Effect.catchAll(() => Effect.unit)
+        Effect.catchAll(() => Effect.void)
       )
 
       const value = yield* _(Ref.get(valueRef))
@@ -113,7 +113,7 @@ describe.concurrent("CrashableRuntime", () => {
           exit = _
         }),
         Effect.timeout(Duration.millis(100)),
-        Effect.catchAllCause(() => Effect.unit)
+        Effect.catchAllCause(() => Effect.void)
       )
 
       yield* _(test)
@@ -131,7 +131,7 @@ describe.concurrent("CrashableRuntime", () => {
         onNone: () => Effect.interrupt,
         onSome: (_) => Fiber.interrupt(_)
       }),
-      Effect.asUnit,
+      Effect.asVoid,
       Effect.map((_) => {
         exit = _
       })

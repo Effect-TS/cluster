@@ -4,7 +4,7 @@
 import * as DurableExecutionEvent from "@effect/cluster-workflow/DurableExecutionEvent"
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as Schema from "@effect/schema/Schema"
-import * as Pg from "@sqlfx/pg"
+import * as Pg from "@effect/sql-pg"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
@@ -15,7 +15,7 @@ function append<A, IA, E, IE>(
   success: Schema.Schema<A, IA>,
   failure: Schema.Schema<E, IE>,
   event: DurableExecutionEvent.DurableExecutionEvent<A, E>,
-  sql: Pg.PgClient
+  sql: Pg.client.PgClient
 ): Effect.Effect<void> {
   return pipe(
     Schema.encode(Schema.parseJson(DurableExecutionEvent.schema(success, failure)))(event),
@@ -37,14 +37,14 @@ function read<A, IA, E, IE>(
   success: Schema.Schema<A, IA>,
   failure: Schema.Schema<E, IE>,
   fromSequence: number,
-  sql: Pg.PgClient
+  sql: Pg.client.PgClient
 ): Stream.Stream<DurableExecutionEvent.DurableExecutionEvent<A, E>> {
   return pipe(
     sql<
       { event_json: string }
     >`SELECT event_json FROM execution_journal WHERE execution_id = ${(executionId)} AND sequence >= ${fromSequence} ORDER BY sequence ASC`,
     Effect.flatMap((result) =>
-      Schema.decode(Schema.array(Schema.parseJson(DurableExecutionEvent.schema(success, failure))))(
+      Schema.decode(Schema.Array(Schema.parseJson(DurableExecutionEvent.schema(success, failure))))(
         result.map((_) => _.event_json)
       )
     ),
@@ -60,7 +60,7 @@ function read<A, IA, E, IE>(
 export const DurableExecutionJournalPostgres = Layer.effect(
   DurableExecutionJournal.DurableExecutionJournal,
   Effect.gen(function*(_) {
-    const sql = yield* _(Pg.tag)
+    const sql = yield* _(Pg.client.PgClient)
 
     yield* _(sql`
     CREATE TABLE IF NOT EXISTS execution_journal

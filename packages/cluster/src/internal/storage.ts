@@ -52,9 +52,9 @@ export const noop: Layer.Layer<Storage.Storage> = Layer.effect(
   storageTag,
   Effect.succeed(make({
     getAssignments: Effect.succeed(HashMap.empty()),
-    saveAssignments: () => Effect.unit,
+    saveAssignments: () => Effect.void,
     assignmentsStream: Stream.empty,
     getPods: Effect.succeed(HashMap.empty()),
-    savePods: () => Effect.unit
+    savePods: () => Effect.void
   }))
 )

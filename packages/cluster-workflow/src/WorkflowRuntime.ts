@@ -3,6 +3,7 @@
  */
 import * as Message from "@effect/cluster/Message"
 import type { Schema } from "@effect/schema"
+import * as Array from "effect/Array"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
@@ -11,7 +12,6 @@ import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as PrimaryKey from "effect/PrimaryKey"
 import * as Queue from "effect/Queue"
-import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Ref from "effect/Ref"
 import * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
@@ -93,7 +93,7 @@ function handleReplayPhase<A, E>(
                 Effect.succeed(
                   new WorkflowRuntimeState.Replay({
                     ...state,
-                    delayedMessages: ReadonlyArray.filter(state.delayedMessages, (_) => _ !== requestedFork)
+                    delayedMessages: Array.filter(state.delayedMessages, (_) => _ !== requestedFork)
                   })
                 ),
               onNone: () =>
@@ -136,7 +136,7 @@ function handleReplayPhase<A, E>(
                 Effect.succeed(
                   new WorkflowRuntimeState.Replay({
                     ...state,
-                    delayedMessages: ReadonlyArray.filter(state.delayedMessages, (_) => _ !== message)
+                    delayedMessages: Array.filter(state.delayedMessages, (_) => _ !== message)
                   })
                 ),
               onNone: () =>
@@ -419,7 +419,7 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
             Effect.zipRight(Fiber.await(coordinatorFiber))
           )
         ),
-        Effect.ensuring(Scope.close(executionScope, Exit.unit)),
+        Effect.ensuring(Scope.close(executionScope, Exit.void)),
         Effect.flatten
       )
     }).pipe(Effect.scoped)

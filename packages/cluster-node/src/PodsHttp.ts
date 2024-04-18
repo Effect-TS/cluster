@@ -40,7 +40,7 @@ export const httpPods: Layer.Layer<Pods.Pods, never, Http.client.Client.Default>
         )
 
         return yield* _(client(request))
-      }).pipe(Effect.asUnit, Effect.scoped, Effect.orDie)
+      }).pipe(Effect.asVoid, Effect.scoped, Effect.orDie)
     }
 
     function unassignShards(podAddress: PodAddress.PodAddress, shards: HashSet.HashSet<ShardId.ShardId>) {
@@ -56,7 +56,7 @@ export const httpPods: Layer.Layer<Pods.Pods, never, Http.client.Client.Default>
         )
 
         return yield* _(client(request))
-      }).pipe(Effect.asUnit, Effect.scoped, Effect.orDie)
+      }).pipe(Effect.asVoid, Effect.scoped, Effect.orDie)
     }
 
     function ping(podAddress: PodAddress.PodAddress) {
@@ -70,7 +70,7 @@ export const httpPods: Layer.Layer<Pods.Pods, never, Http.client.Client.Default>
 
         return yield* _(client(request))
       }).pipe(
-        Effect.asUnit,
+        Effect.asVoid,
         Effect.mapError(() => new ShardingException.PodUnavailableException({ podAddress })),
         Effect.scoped
       )

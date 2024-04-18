@@ -45,11 +45,11 @@ export function isPoisonPill(value: unknown): value is PoisonPill.PoisonPill {
 export const schema: Schema.Schema<
   { readonly [PoisonPill.PoisonPillTypeId]: typeof PoisonPill.PoisonPillTypeId },
   { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" }
-> = Schema.data(Schema.rename(
-  Schema.struct({
+> = Schema.Data(Schema.rename(
+  Schema.Struct({
     [PoisonPillSymbolKey]: Schema.compose(
-      Schema.compose(Schema.literal(PoisonPillSymbolKey), Schema.symbol, { strict: false }),
-      Schema.uniqueSymbolFromSelf(PoisonPillTypeId),
+      Schema.compose(Schema.Literal(PoisonPillSymbolKey), Schema.Symbol, { strict: false }),
+      Schema.UniqueSymbolFromSelf(PoisonPillTypeId),
       { strict: false }
     )
   }),

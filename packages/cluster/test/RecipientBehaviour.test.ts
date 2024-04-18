@@ -16,8 +16,8 @@ import * as Queue from "effect/Queue"
 import * as Scope from "effect/Scope"
 import { describe, expect, it } from "vitest"
 
-class Sample extends Message.TaggedMessage<Sample>()("Sample", Schema.never, Schema.number, {
-  id: Schema.string
+class Sample extends Message.TaggedMessage<Sample>()("Sample", Schema.Never, Schema.Number, {
+  id: Schema.String
 }, (_) => _.id) {
 }
 
@@ -35,7 +35,7 @@ describe.concurrent("RecipientBehaviour", () => {
         RecipientBehaviourContext.RecipientBehaviourContext,
         RecipientBehaviourContext.make({
           entityId: "entity1",
-          forkShutdown: Effect.unit,
+          forkShutdown: Effect.void,
           shardId: ShardId.make(1),
           recipientType: RecipientType.makeEntityType("Sample", Sample) as any
         })

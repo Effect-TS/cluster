@@ -10,7 +10,7 @@ import * as Schema from "@effect/schema/Schema"
  * @since 1.0.0
  * @category schema
  */
-export const Register_ = Schema.struct({
+export const Register_ = Schema.Struct({
   pod: Pod.schema
 })
 
@@ -18,7 +18,7 @@ export const Register_ = Schema.struct({
  * @since 1.0.0
  * @category schema
  */
-export const Unregister_ = Schema.struct({
+export const Unregister_ = Schema.Struct({
   pod: Pod.schema
 })
 
@@ -26,7 +26,7 @@ export const Unregister_ = Schema.struct({
  * @since 1.0.0
  * @category schema
  */
-export const NotifyUnhealthyPod_ = Schema.struct({
+export const NotifyUnhealthyPod_ = Schema.Struct({
   podAddress: PodAddress.schema
 })
 
@@ -34,6 +34,6 @@ export const NotifyUnhealthyPod_ = Schema.struct({
  * @since 1.0.0
  * @category schema
  */
-export const GetAssignmentsResult_ = Schema.array(
-  Schema.tuple(ShardId.schema, Schema.option(PodAddress.schema))
+export const GetAssignmentsResult_ = Schema.Array(
+  Schema.Tuple(ShardId.schema, Schema.Option(PodAddress.schema))
 )

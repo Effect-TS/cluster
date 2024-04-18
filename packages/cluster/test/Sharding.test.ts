@@ -36,19 +36,19 @@ interface SampleService {
 
 const SampleService = Context.GenericTag<SampleService>("@services/SampleService")
 
-class SampleMessage extends Message.TaggedMessage<SampleMessage>()("SampleMessage", Schema.never, Schema.void, {
-  id: Schema.string,
-  value: Schema.number
+class SampleMessage extends Message.TaggedMessage<SampleMessage>()("SampleMessage", Schema.Never, Schema.Void, {
+  id: Schema.String,
+  value: Schema.Number
 }, (_) => _.id) {
 }
 
 class SampleMessageWithResult extends Message.TaggedMessage<SampleMessageWithResult>()(
   "SampleMessageWithResult",
-  Schema.never,
-  Schema.number,
+  Schema.Never,
+  Schema.Number,
   {
-    id: Schema.string,
-    value: Schema.number
+    id: Schema.String,
+    value: Schema.Number
   },
   (_) => _.id
 ) {
@@ -56,11 +56,11 @@ class SampleMessageWithResult extends Message.TaggedMessage<SampleMessageWithRes
 
 class FailableMessageWithResult extends Message.TaggedMessage<FailableMessageWithResult>()(
   "FailableMessageWithResult",
-  Schema.string,
-  Schema.number,
+  Schema.String,
+  Schema.Number,
   {
-    id: Schema.string,
-    value: Schema.number
+    id: Schema.String,
+    value: Schema.Number
   },
   (_) => _.id
 ) {
@@ -70,7 +70,7 @@ type SampleEntity = SampleMessage | SampleMessageWithResult | FailableMessageWit
 
 const SampleEntity = RecipientType.makeEntityType(
   "Sample",
-  Schema.union(SampleMessage, SampleMessageWithResult, FailableMessageWithResult)
+  Schema.Union(SampleMessage, SampleMessageWithResult, FailableMessageWithResult)
 )
 
 describe.concurrent("SampleTests", () => {
@@ -217,8 +217,8 @@ describe.concurrent("SampleTests", () => {
     return Effect.gen(function*(_) {
       yield* _(Sharding.registerScoped)
 
-      class GetIncrement extends Schema.TaggedRequest<GetIncrement>()("GetIncrement", Schema.never, Schema.number, {
-        id: Schema.string
+      class GetIncrement extends Schema.TaggedRequest<GetIncrement>()("GetIncrement", Schema.Never, Schema.Number, {
+        id: Schema.String
       }) {
         [PrimaryKey.symbol]() {
           return this.id
@@ -226,8 +226,8 @@ describe.concurrent("SampleTests", () => {
       }
 
       class BroadcastIncrement
-        extends Schema.TaggedRequest<BroadcastIncrement>()("BroadcastIncrement", Schema.never, Schema.void, {
-          id: Schema.string
+        extends Schema.TaggedRequest<BroadcastIncrement>()("BroadcastIncrement", Schema.Never, Schema.Void, {
+          id: Schema.String
         })
       {
         [PrimaryKey.symbol]() {
@@ -235,7 +235,7 @@ describe.concurrent("SampleTests", () => {
         }
       }
 
-      const SampleProtocol = Schema.union(
+      const SampleProtocol = Schema.Union(
         BroadcastIncrement,
         GetIncrement
       )
