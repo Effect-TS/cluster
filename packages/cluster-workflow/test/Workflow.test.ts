@@ -1,12 +1,15 @@
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as ActivityContext from "@effect/cluster-workflow/ActivityContext"
 import * as CrashableRuntime from "@effect/cluster-workflow/CrashableRuntime"
+import * as DurableExecutionEvent from "@effect/cluster-workflow/DurableExecutionEvent"
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as DurableExecutionJournalInMemory from "@effect/cluster-workflow/DurableExecutionJournalInMemory"
 import * as utils from "@effect/cluster-workflow/test/utils"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as WorkflowEngine from "@effect/cluster-workflow/WorkflowEngine"
+import * as Message from "@effect/cluster/Message"
 import * as Schema from "@effect/schema/Schema"
+import * as Chunk from "effect/Chunk"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
@@ -22,14 +25,14 @@ describe.concurrent("Workflow", () => {
     pipe(
       fa,
       Effect.provide(DurableExecutionJournalInMemory.activityJournalInMemory),
-      Logger.withMinimumLogLevel(LogLevel.Info),
+      Logger.withMinimumLogLevel(LogLevel.Debug),
       Effect.scoped
     )
 
   class StartWorkflowRequest
-    extends Schema.TaggedRequest<StartWorkflowRequest>()("StartWorkflow", Schema.string, Schema.number, {
+    extends Message.TaggedMessage<StartWorkflowRequest>()("StartWorkflow", Schema.string, Schema.number, {
       executionId: Schema.string
-    })
+    }, (_) => _.executionId)
   {}
 
   it("Should run as expected if not crashed", () => {
@@ -41,7 +44,7 @@ describe.concurrent("Workflow", () => {
         Activity.make("activity", Schema.number, Schema.never)
       )
 
-      const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
+      const workflow = Workflow.make(StartWorkflowRequest, () => activity)
       const engine = yield* _(WorkflowEngine.makeScoped(workflow))
 
       const exit = yield* _(
@@ -63,7 +66,7 @@ describe.concurrent("Workflow", () => {
         Activity.make("activity", Schema.number, Schema.string)
       )
 
-      const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
+      const workflow = Workflow.make(StartWorkflowRequest, () => activity)
       const engine = yield* _(WorkflowEngine.makeScoped(workflow))
 
       const exit = yield* _(
@@ -80,17 +83,19 @@ describe.concurrent("Workflow", () => {
     const firstActivity = utils.mockActivity("activity1", Schema.number, Schema.never, () => Exit.succeed(1))
     const secondActivity = utils.mockActivity("activity2", Schema.number, Schema.never, () => Exit.succeed(2))
 
-    class FirstWorkflow extends Schema.TaggedRequest<FirstWorkflow>()("FirstWorkflow", Schema.never, Schema.number, {
+    class FirstWorkflow extends Message.TaggedMessage<FirstWorkflow>()("FirstWorkflow", Schema.never, Schema.number, {
       id: Schema.string
-    }) {}
+    }, (_) => _.id) {}
 
-    const firstWorkflow = Workflow.make(FirstWorkflow, (_) => _.id, () => firstActivity.activity)
+    const firstWorkflow = Workflow.make(FirstWorkflow, () => firstActivity.activity)
 
-    class SecondWorkflow extends Schema.TaggedRequest<SecondWorkflow>()("SecondWorkflow", Schema.never, Schema.number, {
-      id: Schema.string
-    }) {}
+    class SecondWorkflow
+      extends Message.TaggedMessage<SecondWorkflow>()("SecondWorkflow", Schema.never, Schema.number, {
+        id: Schema.string
+      }, (_) => _.id)
+    {}
 
-    const secondWorkflow = Workflow.make(SecondWorkflow, (_) => _.id, () => secondActivity.activity)
+    const secondWorkflow = Workflow.make(SecondWorkflow, () => secondActivity.activity)
 
     const mergedWorkflow = Workflow.union(firstWorkflow, secondWorkflow)
 
@@ -116,7 +121,7 @@ describe.concurrent("Workflow", () => {
 
       const activity = pipe(mocked.effect, Activity.make("activity", Schema.number, Schema.never))
 
-      const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
+      const workflow = Workflow.make(StartWorkflowRequest, () => activity)
       const engine = yield* _(WorkflowEngine.makeScoped(workflow))
 
       const exit1 = yield* _(
@@ -142,7 +147,7 @@ describe.concurrent("Workflow", () => {
       const executeAttempt = (shouldCrash: boolean) =>
         CrashableRuntime.runWithCrash((crash) =>
           Effect.gen(function*(_) {
-            const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () =>
+            const workflow = Workflow.make(StartWorkflowRequest, () =>
               Effect.acquireUseRelease(
                 mockedAcquire.activity,
                 () => mockedUse.activityWithBody(shouldCrash ? crash : Effect.succeed(2)),
@@ -186,7 +191,7 @@ describe.concurrent("Workflow", () => {
       const executeAttempt = (shouldCrash: boolean) =>
         CrashableRuntime.runWithCrash((crash) =>
           Effect.gen(function*(_) {
-            const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () =>
+            const workflow = Workflow.make(StartWorkflowRequest, () =>
               Effect.acquireUseRelease(
                 mockedAcquire.activity,
                 () => mockedUse.activity,
@@ -248,7 +253,7 @@ describe.concurrent("Workflow", () => {
                 Activity.make("activity", Schema.number, Schema.never)
               )
 
-              const workflow = Workflow.make(StartWorkflowRequest, (_) => _.executionId, () => activity)
+              const workflow = Workflow.make(StartWorkflowRequest, () => activity)
               const engine = yield* _(WorkflowEngine.makeScoped(workflow))
 
               return yield* _(engine.send(new StartWorkflowRequest({ executionId: "wf" })))
@@ -273,7 +278,6 @@ describe.concurrent("Workflow", () => {
 
       const workflow = Workflow.make(
         StartWorkflowRequest,
-        (_) => _.executionId,
         () =>
           mockedActivity.activityWithBody(
             Effect.acquireUseRelease(Effect.succeed(1), () =>
@@ -291,29 +295,59 @@ describe.concurrent("Workflow", () => {
       const exit = yield* _(
         WorkflowEngine.makeScoped(workflow),
         Effect.flatMap((engine) => engine.send(new StartWorkflowRequest({ executionId: "wf" }))),
-        Effect.forkDaemon,
-        Effect.tap(Deferred.await(latch)),
+        Effect.zipLeft(Deferred.succeed(latch, void 0), { concurrent: true }),
+        Effect.forkScoped,
+        Effect.zipLeft(Deferred.await(latch)),
         Effect.scoped,
         Effect.flatMap((_) => _.await)
       )
 
       const workflowJournalEntryCount = yield* _(
         DurableExecutionJournal.read("wf", Schema.never, Schema.number, 0, false),
-        Stream.runCount
+        Stream.runCollect,
+        Effect.map(Chunk.toReadonlyArray)
       )
 
       const persistenceId = yield* _(Ref.get(persistenceIdRef))
       const activityJournalEntryCount = yield* _(
         DurableExecutionJournal.read(persistenceId, Schema.never, Schema.number, 0, false),
-        Stream.runCount
+        Stream.runCollect,
+        Effect.map(Chunk.toReadonlyArray)
       )
 
       expect(mockedUse.spy).toHaveBeenCalled()
       expect(mockedActivity.spy).toHaveBeenCalledOnce()
-      expect(activityJournalEntryCount).toEqual(1)
-      expect(workflowJournalEntryCount).toEqual(1)
+      expect(activityJournalEntryCount.length).toEqual(1)
+      expect(activityJournalEntryCount[0]._tag).toEqual(DurableExecutionEvent.Attempted(0)(0)._tag)
+      expect(workflowJournalEntryCount.length).toEqual(2)
+      expect(workflowJournalEntryCount[0]._tag).toEqual(DurableExecutionEvent.Attempted(0)(0)._tag)
+      expect(workflowJournalEntryCount[1]._tag).toEqual(DurableExecutionEvent.Forked(persistenceId)(1)._tag)
       expect(Exit.isInterrupted(exit)).toEqual(true)
       expect(mockedRelease.spy).toHaveBeenCalledOnce()
+    }).pipe(withTestEnv, Effect.runPromise)
+  })
+
+  it("On replay activities should fork/complete in the same order to allow Effect.race-like combinators", () => {
+    return Effect.gen(function*(_) {
+      function testWorkflow(firstFastest: boolean) {
+        return Effect.gen(function*(_) {
+          const activity1 = utils.mockActivity("activity1", Schema.number, Schema.never, () => Exit.succeed(1))
+            .activityWithBody(pipe(Effect.sleep(firstFastest ? 0 : 1000), Effect.as(1)))
+          const activity2 = utils.mockActivity("activity2", Schema.number, Schema.never, () => Exit.succeed(1))
+            .activityWithBody(pipe(Effect.sleep(!firstFastest ? 0 : 1000), Effect.as(2)))
+
+          const workflow = Workflow.make(StartWorkflowRequest, () => Effect.race(activity1, activity2))
+
+          const engine = yield* _(WorkflowEngine.makeScoped(workflow))
+
+          return yield* _(engine.send(new StartWorkflowRequest({ executionId: "wf" })))
+        }).pipe(Effect.scoped)
+      }
+
+      const exit1 = yield* _(testWorkflow(true))
+      const exit2 = yield* _(testWorkflow(false))
+
+      expect(exit1).toEqual(exit2)
     }).pipe(withTestEnv, Effect.runPromise)
   })
 })

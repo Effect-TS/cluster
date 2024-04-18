@@ -91,3 +91,19 @@ export const isMessageWithResult: (value: unknown) => value is Message<unknown, 
 export const exitSchema: <A extends Message.Any>(
   message: A
 ) => Schema.Schema<Message.Exit<A>, unknown> = internal.exitSchema
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export const failureSchema: <A extends Message.Any>(
+  message: A
+) => Schema.Schema<Message.Error<A>, unknown> = internal.failureSchema
+
+/**
+ * @since 1.0.0
+ * @category utils
+ */
+export const successSchema: <A extends Message.Any>(
+  message: A
+) => Schema.Schema<Message.Success<A>, unknown> = internal.successSchema

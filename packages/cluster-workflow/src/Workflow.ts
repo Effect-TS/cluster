@@ -3,6 +3,7 @@
  */
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as WorkflowContext from "@effect/cluster-workflow/WorkflowContext"
+import type * as Message from "@effect/cluster/Message"
 import * as Schema from "@effect/schema/Schema"
 import { ReadonlyArray } from "effect"
 import * as Clock from "effect/Clock"
@@ -10,17 +11,15 @@ import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
-import type * as Request from "effect/Request"
 
 /**
  * @since 1.0.0
  */
-export interface Workflow<T extends Schema.TaggedRequest.Any, R> {
+export interface Workflow<T extends Message.Message.Any, R> {
   schema: Schema.Schema<T, unknown>
-  executionId: (input: T) => string
   execute: (
     input: T
-  ) => Effect.Effect<Request.Request.Success<T>, Request.Request.Error<T>, R | WorkflowContext.WorkflowContext>
+  ) => Effect.Effect<Message.Message.Success<T>, Message.Message.Error<T>, R | WorkflowContext.WorkflowContext>
 }
 
 /**
@@ -46,16 +45,14 @@ export namespace Workflow {
 /**
  * @since 1.0.0
  */
-export function make<T extends Schema.TaggedRequest.Any, R = never, I = unknown>(
+export function make<T extends Message.Message.Any, R = never, I = unknown>(
   schema: Schema.Schema<T, I>,
-  executionId: (input: T) => string,
   execute: (
     input: T
-  ) => Effect.Effect<Request.Request.Success<T>, Request.Request.Error<T>, R>
+  ) => Effect.Effect<Message.Message.Success<T>, Message.Message.Error<T>, R>
 ): Workflow<T, Exclude<R, WorkflowContext.WorkflowContext>> {
   return ({
     schema: schema as Schema.Schema<T, unknown>,
-    executionId,
     execute: execute as any
   })
 }
@@ -68,13 +65,6 @@ export function union<WFs extends ReadonlyArray<Workflow.Any>>(
 ) {
   return make<Workflow.Request<WFs[number]>, Workflow.Context<WFs[number]>>(
     Schema.union(...wfs.map((_) => _.schema)),
-    (request) =>
-      pipe(
-        wfs,
-        ReadonlyArray.findFirst((_) => Schema.is(_.schema)(request)),
-        Option.map((_) => _.executionId(request)),
-        Option.getOrElse(() => "")
-      ),
     (request) =>
       pipe(
         wfs,

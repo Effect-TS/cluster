@@ -4,56 +4,31 @@
 import { Schema } from "@effect/schema"
 import type * as Exit from "effect/Exit"
 
+const ATTEMPTED = "@effect/cluster-workflow/DurableExecutionEvent/Attempted"
+
 /**
  * @since 1.0.0
  */
-export interface DurableExecutionEventAttempted {
-  _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted"
+export interface Attempted {
+  _tag: typeof ATTEMPTED
   sequence: number
+  version: number
 }
 
 /**
  * @since 1.0.0
  */
-export function DurableExecutionEventAttempted(sequence: number): DurableExecutionEvent<never, never> {
-  return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted", sequence })
+export function Attempted(version: number) {
+  return (sequence: number): DurableExecutionEvent<never, never> => ({ _tag: ATTEMPTED, sequence, version })
 }
+
+const COMPLETED = "@effect/cluster-workflow/DurableExecutionEvent/Completed"
 
 /**
  * @since 1.0.0
  */
-export interface DurableExecutionEventKillRequested {
-  _tag: "@effect/cluster-workflow/DurableExecutionEventKillRequested"
-  sequence: number
-}
-
-/**
- * @since 1.0.0
- */
-export function DurableExecutionEventKillRequested(sequence: number): DurableExecutionEvent<never, never> {
-  return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventKillRequested", sequence })
-}
-
-/**
- * @since 1.0.0
- */
-export interface DurableExecutionEventKilled {
-  _tag: "@effect/cluster-workflow/DurableExecutionEventKilled"
-  sequence: number
-}
-
-/**
- * @since 1.0.0
- */
-export function DurableExecutionEventKilled(sequence: number): DurableExecutionEvent<never, never> {
-  return ({ _tag: "@effect/cluster-workflow/DurableExecutionEventKilled", sequence })
-}
-
-/**
- * @since 1.0.0
- */
-export interface DurableExecutionEventCompleted<A, E> {
-  _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted"
+export interface Completed<A, E> {
+  _tag: typeof COMPLETED
   sequence: number
   exit: Exit.Exit<A, E>
 }
@@ -61,39 +36,98 @@ export interface DurableExecutionEventCompleted<A, E> {
 /**
  * @since 1.0.0
  */
-export function DurableExecutionEventCompleted<A, E>(exit: Exit.Exit<A, E>) {
+export function Completed<A, E>(exit: Exit.Exit<A, E>) {
   return (sequence: number): DurableExecutionEvent<A, E> => ({
-    _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted",
+    _tag: COMPLETED,
     sequence,
     exit
   })
+}
+
+const INTERRUPTION_REQUESTED = "@effect/cluster-workflow/DurableExecutionEvent/InterruptionRequested"
+
+/**
+ * @since 1.0.0
+ */
+export interface InterruptionRequested {
+  _tag: typeof INTERRUPTION_REQUESTED
+  sequence: number
+}
+
+/**
+ * @since 1.0.0
+ */
+export function KillRequested(sequence: number): DurableExecutionEvent<never, never> {
+  return ({ _tag: INTERRUPTION_REQUESTED, sequence })
+}
+
+const FORKED = "@effect/cluster-workflow/DurableExecutionEvent/Forked"
+/**
+ * @since 1.0.0
+ */
+export interface Forked {
+  _tag: typeof FORKED
+  sequence: number
+  persistenceId: string
+}
+
+/**
+ * @since 1.0.0
+ */
+export function Forked(persistenceId: string) {
+  return (sequence: number): DurableExecutionEvent<never, never> => ({ _tag: FORKED, sequence, persistenceId })
+}
+
+const JOINED = "@effect/cluster-workflow/DurableExecutionEvent/Joined"
+
+/**
+ * @since 1.0.0
+ */
+export interface Joined {
+  _tag: typeof JOINED
+  sequence: number
+  persistenceId: string
+}
+
+/**
+ * @since 1.0.0
+ */
+export function Joined(persistenceId: string) {
+  return (sequence: number): DurableExecutionEvent<never, never> => ({ _tag: JOINED, sequence, persistenceId })
 }
 
 /**
  * @since 1.0.0
  */
 export type DurableExecutionEvent<A, E> =
-  | DurableExecutionEventAttempted
-  | DurableExecutionEventKillRequested
-  | DurableExecutionEventKilled
-  | DurableExecutionEventCompleted<A, E>
+  | Attempted
+  | InterruptionRequested
+  | Completed<A, E>
+  | Forked
+  | Joined
 
 /**
  * @since 1.0.0
  */
-export type DurableExecutionEventEncoded<IE, IA> = {
-  readonly _tag: "@effect/cluster-workflow/DurableExecutionEventAttempted"
+export type DurableExecutionEventFrom<IE, IA> = {
+  readonly _tag: typeof ATTEMPTED
+  readonly sequence: number
+  readonly version: number
+} | {
+  readonly _tag: typeof INTERRUPTION_REQUESTED
   readonly sequence: number
 } | {
-  readonly _tag: "@effect/cluster-workflow/DurableExecutionEventKillRequested"
-  readonly sequence: number
-} | {
-  readonly _tag: "@effect/cluster-workflow/DurableExecutionEventKilled"
-  readonly sequence: number
-} | {
-  readonly _tag: "@effect/cluster-workflow/DurableExecutionEventCompleted"
+  readonly _tag: typeof COMPLETED
   readonly sequence: number
   readonly exit: Schema.ExitEncoded<IE, IA>
+} | {
+  readonly _tag: typeof FORKED
+  readonly sequence: number
+  readonly persistenceId: string
+} | {
+  readonly _tag: typeof JOINED
+  readonly sequence: number
+  readonly persistenceId: string
 }
 
 /**
@@ -101,25 +135,32 @@ export type DurableExecutionEventEncoded<IE, IA> = {
  */
 export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Schema.Schema<E, IE>): Schema.Schema<
   DurableExecutionEvent<A, E>,
-  DurableExecutionEventEncoded<IA, IE>
+  DurableExecutionEventFrom<IA, IE>
 > {
   return Schema.union(
     Schema.struct({
-      _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventAttempted"),
+      _tag: Schema.literal(ATTEMPTED),
+      sequence: Schema.number,
+      version: Schema.number
+    }),
+    Schema.struct({
+      _tag: Schema.literal(INTERRUPTION_REQUESTED),
       sequence: Schema.number
     }),
     Schema.struct({
-      _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventKillRequested"),
-      sequence: Schema.number
-    }),
-    Schema.struct({
-      _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventKilled"),
-      sequence: Schema.number
-    }),
-    Schema.struct({
-      _tag: Schema.literal("@effect/cluster-workflow/DurableExecutionEventCompleted"),
+      _tag: Schema.literal(COMPLETED),
       sequence: Schema.number,
       exit: Schema.exit<Schema.Schema<A, IA, never>, Schema.Schema<E, IE, never>, never>({ failure, success })
+    }),
+    Schema.struct({
+      _tag: Schema.literal(FORKED),
+      sequence: Schema.number,
+      persistenceId: Schema.string
+    }),
+    Schema.struct({
+      _tag: Schema.literal(JOINED),
+      sequence: Schema.number,
+      persistenceId: Schema.string
     })
   )
 }
@@ -127,24 +168,26 @@ export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Sch
 /**
  * @since 1.0.0
  */
-export function match<A, E, B, C = B, D = C, F = D>(
+export function match<A, E, B, C = B, D = C, F = D, G = F>(
+  event: DurableExecutionEvent<A, E>,
   fns: {
-    onAttempted: (event: DurableExecutionEventAttempted) => B
-    onKillRequested: (event: DurableExecutionEventKillRequested) => C
-    onKilled: (event: DurableExecutionEventKilled) => D
-    onCompleted: (event: DurableExecutionEventCompleted<A, E>) => F
+    onAttempted: (event: Attempted) => B
+    onInterruptionRequested: (event: InterruptionRequested) => C
+    onCompleted: (event: Completed<A, E>) => D
+    onForked: (event: Forked) => F
+    onJoined: (event: Joined) => G
   }
 ) {
-  return (event: DurableExecutionEvent<A, E>) => {
-    switch (event._tag) {
-      case "@effect/cluster-workflow/DurableExecutionEventAttempted":
-        return fns.onAttempted(event)
-      case "@effect/cluster-workflow/DurableExecutionEventKillRequested":
-        return fns.onKillRequested(event)
-      case "@effect/cluster-workflow/DurableExecutionEventKilled":
-        return fns.onKilled(event)
-      case "@effect/cluster-workflow/DurableExecutionEventCompleted":
-        return fns.onCompleted(event)
-    }
+  switch (event._tag) {
+    case ATTEMPTED:
+      return fns.onAttempted(event)
+    case INTERRUPTION_REQUESTED:
+      return fns.onInterruptionRequested(event)
+    case COMPLETED:
+      return fns.onCompleted(event)
+    case FORKED:
+      return fns.onForked(event)
+    case JOINED:
+      return fns.onJoined(event)
   }
 }

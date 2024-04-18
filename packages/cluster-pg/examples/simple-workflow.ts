@@ -2,6 +2,7 @@ import * as DurableExecutionJournalPostgres from "@effect/cluster-pg/DurableExec
 import * as Activity from "@effect/cluster-workflow/Activity"
 import * as Workflow from "@effect/cluster-workflow/Workflow"
 import * as WorkflowEngine from "@effect/cluster-workflow/WorkflowEngine"
+import * as Message from "@effect/cluster/Message"
 import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
@@ -48,7 +49,7 @@ const sendConfirmationEmail = (email: string, orderId: string, trackingId: strin
     )
   ))
 
-class ProcessPaymentRequest extends Schema.TaggedRequest<ProcessPaymentRequest>()(
+class ProcessPaymentRequest extends Message.TaggedMessage<ProcessPaymentRequest>()(
   "ProcessPaymentRequest",
   Schema.never,
   Schema.void,
@@ -57,13 +58,13 @@ class ProcessPaymentRequest extends Schema.TaggedRequest<ProcessPaymentRequest>(
     cardNumber: Schema.string,
     email: Schema.string,
     deliveryAddress: Schema.string
-  }
+  },
+  (_) => "ProcessPayment@" + _.orderId
 ) {
 }
 
 const processPaymentWorkflow = Workflow.make(
   ProcessPaymentRequest,
-  (_) => "ProcessPayment@" + _.orderId,
   ({ cardNumber, deliveryAddress, email, orderId }) =>
     Effect.gen(function*(_) {
       // get total order amount
