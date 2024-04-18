@@ -30,8 +30,8 @@ describe.concurrent("Workflow", () => {
     )
 
   class StartWorkflowRequest
-    extends Message.TaggedMessage<StartWorkflowRequest>()("StartWorkflow", Schema.string, Schema.number, {
-      executionId: Schema.string
+    extends Message.TaggedMessage<StartWorkflowRequest>()("StartWorkflow", Schema.String, Schema.Number, {
+      executionId: Schema.String
     }, (_) => _.executionId)
   {}
 
@@ -41,7 +41,7 @@ describe.concurrent("Workflow", () => {
 
       const activity = pipe(
         mocked.effect,
-        Activity.make("activity", Schema.number, Schema.never)
+        Activity.make("activity", Schema.Number, Schema.Never)
       )
 
       const workflow = Workflow.make(StartWorkflowRequest, () => activity)
@@ -63,7 +63,7 @@ describe.concurrent("Workflow", () => {
 
       const activity = pipe(
         mocked.effect,
-        Activity.make("activity", Schema.number, Schema.string)
+        Activity.make("activity", Schema.Number, Schema.String)
       )
 
       const workflow = Workflow.make(StartWorkflowRequest, () => activity)
@@ -80,18 +80,18 @@ describe.concurrent("Workflow", () => {
   })
 
   it("Should be able to compose different workflows", () => {
-    const firstActivity = utils.mockActivity("activity1", Schema.number, Schema.never, () => Exit.succeed(1))
-    const secondActivity = utils.mockActivity("activity2", Schema.number, Schema.never, () => Exit.succeed(2))
+    const firstActivity = utils.mockActivity("activity1", Schema.Number, Schema.Never, () => Exit.succeed(1))
+    const secondActivity = utils.mockActivity("activity2", Schema.Number, Schema.Never, () => Exit.succeed(2))
 
-    class FirstWorkflow extends Message.TaggedMessage<FirstWorkflow>()("FirstWorkflow", Schema.never, Schema.number, {
-      id: Schema.string
+    class FirstWorkflow extends Message.TaggedMessage<FirstWorkflow>()("FirstWorkflow", Schema.Never, Schema.Number, {
+      id: Schema.String
     }, (_) => _.id) {}
 
     const firstWorkflow = Workflow.make(FirstWorkflow, () => firstActivity.activity)
 
     class SecondWorkflow
-      extends Message.TaggedMessage<SecondWorkflow>()("SecondWorkflow", Schema.never, Schema.number, {
-        id: Schema.string
+      extends Message.TaggedMessage<SecondWorkflow>()("SecondWorkflow", Schema.Never, Schema.Number, {
+        id: Schema.String
       }, (_) => _.id)
     {}
 
@@ -119,7 +119,7 @@ describe.concurrent("Workflow", () => {
     return Effect.gen(function*(_) {
       const mocked = utils.mockEffect(() => Exit.succeed(Math.random()))
 
-      const activity = pipe(mocked.effect, Activity.make("activity", Schema.number, Schema.never))
+      const activity = pipe(mocked.effect, Activity.make("activity", Schema.Number, Schema.Never))
 
       const workflow = Workflow.make(StartWorkflowRequest, () => activity)
       const engine = yield* _(WorkflowEngine.makeScoped(workflow))
@@ -140,9 +140,9 @@ describe.concurrent("Workflow", () => {
 
   it("Ensure that acquireUseRelease gets interrupted without calling release inside workflow", () => {
     return Effect.gen(function*(_) {
-      const mockedAcquire = utils.mockActivity("acquire", Schema.number, Schema.never, () => Exit.succeed(1))
-      const mockedUse = utils.mockActivity("use", Schema.number, Schema.never, () => Exit.succeed(2))
-      const mockedRelease = utils.mockActivity("release", Schema.number, Schema.never, () => Exit.succeed(3))
+      const mockedAcquire = utils.mockActivity("acquire", Schema.Number, Schema.Never, () => Exit.succeed(1))
+      const mockedUse = utils.mockActivity("use", Schema.Number, Schema.Never, () => Exit.succeed(2))
+      const mockedRelease = utils.mockActivity("release", Schema.Number, Schema.Never, () => Exit.succeed(3))
 
       const executeAttempt = (shouldCrash: boolean) =>
         CrashableRuntime.runWithCrash((crash) =>
@@ -184,9 +184,9 @@ describe.concurrent("Workflow", () => {
 
   it("Upon crash on release, when restarted should resume release", () => {
     return Effect.gen(function*(_) {
-      const mockedAcquire = utils.mockActivity("acquire", Schema.number, Schema.never, () => Exit.succeed(1))
-      const mockedUse = utils.mockActivity("use", Schema.number, Schema.never, () => Exit.succeed(2))
-      const mockedRelease = utils.mockActivity("release", Schema.number, Schema.never, () => Exit.succeed(3))
+      const mockedAcquire = utils.mockActivity("acquire", Schema.Number, Schema.Never, () => Exit.succeed(1))
+      const mockedUse = utils.mockActivity("use", Schema.Number, Schema.Never, () => Exit.succeed(2))
+      const mockedRelease = utils.mockActivity("release", Schema.Number, Schema.Never, () => Exit.succeed(3))
 
       const executeAttempt = (shouldCrash: boolean) =>
         CrashableRuntime.runWithCrash((crash) =>
@@ -250,7 +250,7 @@ describe.concurrent("Workflow", () => {
                     )
                   )
                 ),
-                Activity.make("activity", Schema.number, Schema.never)
+                Activity.make("activity", Schema.Number, Schema.Never)
               )
 
               const workflow = Workflow.make(StartWorkflowRequest, () => activity)
@@ -270,7 +270,7 @@ describe.concurrent("Workflow", () => {
 
   it("On graceful interrupt, should not persist exit into DurableExecutionJournal", () => {
     return Effect.gen(function*(_) {
-      const mockedActivity = utils.mockActivity("activity", Schema.number, Schema.never, () => Exit.succeed(1))
+      const mockedActivity = utils.mockActivity("activity", Schema.Number, Schema.Never, () => Exit.succeed(1))
       const mockedRelease = utils.mockEffect(() => Exit.succeed(1))
       const mockedUse = utils.mockEffect(() => Exit.succeed(1))
       const latch = yield* _(Deferred.make<void>())
@@ -303,14 +303,14 @@ describe.concurrent("Workflow", () => {
       )
 
       const workflowJournalEntryCount = yield* _(
-        DurableExecutionJournal.read("wf", Schema.never, Schema.number, 0, false),
+        DurableExecutionJournal.read("wf", Schema.Never, Schema.Number, 0, false),
         Stream.runCollect,
         Effect.map(Chunk.toReadonlyArray)
       )
 
       const persistenceId = yield* _(Ref.get(persistenceIdRef))
       const activityJournalEntryCount = yield* _(
-        DurableExecutionJournal.read(persistenceId, Schema.never, Schema.number, 0, false),
+        DurableExecutionJournal.read(persistenceId, Schema.Never, Schema.Number, 0, false),
         Stream.runCollect,
         Effect.map(Chunk.toReadonlyArray)
       )
@@ -331,9 +331,9 @@ describe.concurrent("Workflow", () => {
     return Effect.gen(function*(_) {
       function testWorkflow(firstFastest: boolean) {
         return Effect.gen(function*(_) {
-          const activity1 = utils.mockActivity("activity1", Schema.number, Schema.never, () => Exit.succeed(1))
+          const activity1 = utils.mockActivity("activity1", Schema.Number, Schema.Never, () => Exit.succeed(1))
             .activityWithBody(pipe(Effect.sleep(firstFastest ? 0 : 1000), Effect.as(1)))
-          const activity2 = utils.mockActivity("activity2", Schema.number, Schema.never, () => Exit.succeed(1))
+          const activity2 = utils.mockActivity("activity2", Schema.Number, Schema.Never, () => Exit.succeed(1))
             .activityWithBody(pipe(Effect.sleep(!firstFastest ? 0 : 1000), Effect.as(2)))
 
           const workflow = Workflow.make(StartWorkflowRequest, () => Effect.race(activity1, activity2))

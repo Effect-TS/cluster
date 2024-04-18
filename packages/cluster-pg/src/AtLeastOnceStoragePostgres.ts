@@ -5,8 +5,7 @@ import * as AtLeastOnceStorage from "@effect/cluster/AtLeastOnceStorage"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import * as SerializedMessage from "@effect/cluster/SerializedMessage"
-import * as Pg from "@sqlfx/pg"
-import type * as PgError from "@sqlfx/pg/Error"
+import * as Pg from "@effect/sql-pg"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
@@ -19,12 +18,12 @@ import * as Stream from "effect/Stream"
  */
 export const atLeastOnceStoragePostgres: Layer.Layer<
   AtLeastOnceStorage.AtLeastOnceStorage,
-  PgError.SqlError,
-  Serialization.Serialization | Pg.PgClient
+  Pg.error.SqlError,
+  Serialization.Serialization | Pg.client.PgClient
 > = Layer.effect(
   AtLeastOnceStorage.Tag,
   Effect.gen(function*(_) {
-    const sql = yield* _(Pg.tag)
+    const sql = yield* _(Pg.client.PgClient)
     const serialization = yield* _(Serialization.Serialization)
 
     yield* _(sql`
@@ -74,7 +73,7 @@ export const atLeastOnceStoragePostgres: Layer.Layer<
             message_id: string
             message_body: string
           }>`SELECT * FROM message_ack WHERE processed = FALSE AND shard_id IN ${
-            sql(Array.from(shardIds).map((_) => _.value))
+            sql.in(Array.from(shardIds).map((_) => _.value))
           }`.stream,
           Stream.orDie,
           Stream.map((_) =>

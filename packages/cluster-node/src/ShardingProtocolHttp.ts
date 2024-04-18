@@ -19,8 +19,8 @@ export const AssignShard_: Schema.Schema<
       { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number }
     >
   }
-> = Schema.struct({
-  shards: Schema.array(ShardId.schema)
+> = Schema.Struct({
+  shards: Schema.Array(ShardId.schema)
 })
 
 /**
@@ -30,8 +30,8 @@ export const AssignShard_: Schema.Schema<
 export const UnassignShards_: Schema.Schema<
   { readonly shards: ReadonlyArray<ShardId.ShardId> },
   { readonly shards: ReadonlyArray<ShardId.ShardId.From> }
-> = Schema.struct({
-  shards: Schema.array(ShardId.schema)
+> = Schema.Struct({
+  shards: Schema.Array(ShardId.schema)
 })
 
 /**
@@ -41,7 +41,7 @@ export const UnassignShards_: Schema.Schema<
 export const Send_: Schema.Schema<
   { readonly message: SerializedEnvelope.SerializedEnvelope },
   { readonly message: SerializedEnvelope.SerializedEnvelope.From }
-> = Schema.struct({
+> = Schema.Struct({
   message: SerializedEnvelope.schema
 })
 
@@ -49,7 +49,7 @@ export const Send_: Schema.Schema<
  * @since 1.0.0
  * @category schema
  */
-export const SendResult_ = Schema.either({
+export const SendResult_ = Schema.Either({
   left: ShardingException.schema,
   right: MessageState.schema(SerializedMessage.schema)
 })
@@ -58,7 +58,7 @@ export const SendResult_ = Schema.either({
  * @since 1.0.0
  * @category schema
  */
-export const PingShards_ = Schema.struct({})
+export const PingShards_ = Schema.Struct({})
 
 /**
  * This is the schema for the protocol.
@@ -66,4 +66,4 @@ export const PingShards_ = Schema.struct({})
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.union(AssignShard_, UnassignShards_, Send_, PingShards_)
+export const schema = Schema.Union(AssignShard_, UnassignShards_, Send_, PingShards_)

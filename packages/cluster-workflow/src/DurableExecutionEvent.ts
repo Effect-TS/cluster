@@ -137,30 +137,30 @@ export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Sch
   DurableExecutionEvent<A, E>,
   DurableExecutionEventFrom<IA, IE>
 > {
-  return Schema.union(
-    Schema.struct({
-      _tag: Schema.literal(ATTEMPTED),
-      sequence: Schema.number,
-      version: Schema.number
+  return Schema.Union(
+    Schema.Struct({
+      _tag: Schema.Literal(ATTEMPTED),
+      sequence: Schema.Number,
+      version: Schema.Number
     }),
-    Schema.struct({
-      _tag: Schema.literal(INTERRUPTION_REQUESTED),
-      sequence: Schema.number
+    Schema.Struct({
+      _tag: Schema.Literal(INTERRUPTION_REQUESTED),
+      sequence: Schema.Number
     }),
-    Schema.struct({
-      _tag: Schema.literal(COMPLETED),
-      sequence: Schema.number,
-      exit: Schema.exit<Schema.Schema<A, IA, never>, Schema.Schema<E, IE, never>, never>({ failure, success })
+    Schema.Struct({
+      _tag: Schema.Literal(COMPLETED),
+      sequence: Schema.Number,
+      exit: Schema.Exit<Schema.Schema<A, IA, never>, Schema.Schema<E, IE, never>, never>({ failure, success })
     }),
-    Schema.struct({
-      _tag: Schema.literal(FORKED),
-      sequence: Schema.number,
-      persistenceId: Schema.string
+    Schema.Struct({
+      _tag: Schema.Literal(FORKED),
+      sequence: Schema.Number,
+      persistenceId: Schema.String
     }),
-    Schema.struct({
-      _tag: Schema.literal(JOINED),
-      sequence: Schema.number,
-      persistenceId: Schema.string
+    Schema.Struct({
+      _tag: Schema.Literal(JOINED),
+      sequence: Schema.Number,
+      persistenceId: Schema.String
     })
   )
 }

@@ -36,15 +36,15 @@ export const schema: Schema.Schema<
     readonly version: string
     readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
   }
-> = Schema.data(Schema.rename(
-  Schema.struct({
+> = Schema.Data(Schema.rename(
+  Schema.Struct({
     [PodSymbolKey]: Schema.compose(
-      Schema.compose(Schema.literal(PodSymbolKey), Schema.symbol, { strict: false }),
-      Schema.uniqueSymbolFromSelf(PodTypeId),
+      Schema.compose(Schema.Literal(PodSymbolKey), Schema.Symbol, { strict: false }),
+      Schema.UniqueSymbolFromSelf(PodTypeId),
       { strict: false }
     ),
     address: PodAddress.schema,
-    version: Schema.string
+    version: Schema.String
   }),
   { [PodSymbolKey]: PodTypeId }
 ))

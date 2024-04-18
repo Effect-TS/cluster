@@ -92,7 +92,7 @@ export const make = pipe(
           crash: restore(pipe(
             Effect.sync(() => crashableScheduler.crash()),
             Effect.zipRight(Deferred.fail(latch, new CrashableRuntimeCrashedError())),
-            Effect.asUnit
+            Effect.asVoid
           )),
           run: (fn) =>
             pipe(

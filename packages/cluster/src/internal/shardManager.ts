@@ -78,7 +78,7 @@ function make(
       Effect.zipLeft(PubSub.publish(eventsHub, ShardingEvent.PodRegistered(pod.address))),
       Effect.flatMap((state) => Effect.when(rebalance(false), () => HashSet.size(state.unassignedShards) > 0)),
       Effect.zipRight(Effect.forkIn(layerScope)(persistPods)),
-      Effect.asUnit
+      Effect.asVoid
     )
   }
 
@@ -106,7 +106,7 @@ function make(
         ),
         stateHasPod(podAddress)
       ),
-      Effect.asUnit
+      Effect.asVoid
     )
   }
 
@@ -146,7 +146,7 @@ function make(
       Effect.zipLeft(Effect.forkIn(layerScope)(persistPods)),
       Effect.zipLeft(Effect.forkIn(layerScope)(rebalance(true)))
     )
-    return Effect.asUnit(Effect.whenEffect(eff, stateHasPod(podAddress)))
+    return Effect.asVoid(Effect.whenEffect(eff, stateHasPod(podAddress)))
   }
 
   function withRetry<A, E>(zio: Effect.Effect<A, E>): Effect.Effect<void> {

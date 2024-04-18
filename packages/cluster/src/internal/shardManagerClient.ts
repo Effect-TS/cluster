@@ -39,9 +39,9 @@ export const local = pipe(
         shards = HashMap.set(shards, ShardId.make(i), Option.some(pod))
       }
       return make({
-        register: () => Effect.unit,
-        unregister: () => Effect.unit,
-        notifyUnhealthyPod: () => Effect.unit,
+        register: () => Effect.void,
+        unregister: () => Effect.void,
+        notifyUnhealthyPod: () => Effect.void,
         getAssignments: Effect.succeed(shards)
       })
     })

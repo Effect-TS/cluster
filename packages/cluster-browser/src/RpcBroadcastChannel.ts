@@ -12,16 +12,16 @@ import type * as RequestResolver from "effect/RequestResolver"
 import * as Stream from "effect/Stream"
 
 class ClientRequest extends Schema.TaggedClass<ClientRequest>()("ClientRequest", {
-  id: Schema.string,
-  request: Schema.unknown
+  id: Schema.String,
+  request: Schema.Unknown
 }) {}
 
 class ServerResponse extends Schema.TaggedClass<ServerResponse>()("ServerResponse", {
-  id: Schema.string,
-  response: Schema.unknown
+  id: Schema.String,
+  response: Schema.Unknown
 }) {}
 
-const BroadcastMessage = Schema.union(ClientRequest, ServerResponse)
+const BroadcastMessage = Schema.Union(ClientRequest, ServerResponse)
 
 /**
  * @since 1.0.0
@@ -58,7 +58,7 @@ export const toBroadcastChannelRouter = <R extends Router.Router<any, any>>(self
             Stream.runDrain,
             Effect.forkScoped
           ) :
-          Effect.unit
+          Effect.void
       ),
       Effect.forever
     )
@@ -74,7 +74,7 @@ export const make = <R extends Router.Router<any, any>>(
   Rpc.Request<Router.Router.Request<R>>,
   Serializable.SerializableWithResult.Context<Router.Router.Request<R>>
 > => {
-  return Resolver.makeEffect((requests) => {
+  return Resolver.make((requests) => {
     return Effect.gen(function*($) {
       const queue = yield* $(Queue.unbounded())
       yield* $(Effect.addFinalizer(() => Queue.shutdown(queue)))

@@ -33,7 +33,7 @@ export const shardManagerClientHttp = Layer.effect(
           )
 
           return yield* _(client(request))
-        }).pipe(Effect.asUnit, Effect.scoped, Effect.orDie),
+        }).pipe(Effect.asVoid, Effect.scoped, Effect.orDie),
       unregister: (podAddress) =>
         Effect.gen(function*(_) {
           const request = yield* _(
@@ -45,7 +45,7 @@ export const shardManagerClientHttp = Layer.effect(
           )
 
           return yield* _(client(request))
-        }).pipe(Effect.asUnit, Effect.scoped, Effect.orDie),
+        }).pipe(Effect.asVoid, Effect.scoped, Effect.orDie),
       notifyUnhealthyPod: (podAddress) =>
         Effect.gen(function*(_) {
           const request = yield* _(
@@ -57,7 +57,7 @@ export const shardManagerClientHttp = Layer.effect(
           )
 
           return yield* _(client(request))
-        }).pipe(Effect.asUnit, Effect.scoped, Effect.orDie),
+        }).pipe(Effect.asVoid, Effect.scoped, Effect.orDie),
       getAssignments: Effect.gen(function*(_) {
         const request = pipe(
           Http.request.get("/get-assignments"),

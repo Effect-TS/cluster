@@ -42,16 +42,16 @@ export const schema: Schema.Schema<
       readonly value: string
     }
   }
-> = Schema.data(
+> = Schema.Data(
   Schema.rename(
-    Schema.struct({
+    Schema.Struct({
       [SerializedEnvelopeSymbolKey]: Schema.compose(
-        Schema.compose(Schema.literal(SerializedEnvelopeSymbolKey), Schema.symbol, { strict: false }),
-        Schema.uniqueSymbolFromSelf(SerializedEnvelopeTypeId),
+        Schema.compose(Schema.Literal(SerializedEnvelopeSymbolKey), Schema.Symbol, { strict: false }),
+        Schema.UniqueSymbolFromSelf(SerializedEnvelopeTypeId),
         { strict: false }
       ),
-      entityId: Schema.string,
-      entityType: Schema.string,
+      entityId: Schema.String,
+      entityType: Schema.String,
       body: SerializedMessage.schema
     }),
     { [SerializedEnvelopeSymbolKey]: SerializedEnvelopeTypeId }

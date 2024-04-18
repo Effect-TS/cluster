@@ -88,15 +88,15 @@ export const schema: Schema.Schema<
     }
     readonly registered: number
   }
-> = Schema.data(Schema.rename(
-  Schema.struct({
+> = Schema.Data(Schema.rename(
+  Schema.Struct({
     [PodWithMetadataSymbolKey]: Schema.compose(
-      Schema.compose(Schema.literal(PodWithMetadataSymbolKey), Schema.symbol, { strict: false }),
-      Schema.uniqueSymbolFromSelf(PodWithMetadataTypeId),
+      Schema.compose(Schema.Literal(PodWithMetadataSymbolKey), Schema.Symbol, { strict: false }),
+      Schema.UniqueSymbolFromSelf(PodWithMetadataTypeId),
       { strict: false }
     ),
     pod: Pod.schema,
-    registered: Schema.number
+    registered: Schema.Number
   }),
   { [PodWithMetadataSymbolKey]: PodWithMetadataTypeId }
 ))

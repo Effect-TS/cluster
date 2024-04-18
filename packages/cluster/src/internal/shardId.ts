@@ -22,15 +22,15 @@ export function show(value: ShardId.ShardId) {
 export const schema: Schema.Schema<
   ShardId.ShardId,
   { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number }
-> = Schema.data(
+> = Schema.Data(
   Schema.rename(
-    Schema.struct({
+    Schema.Struct({
       [ShardIdSymbolKey]: Schema.compose(
-        Schema.compose(Schema.literal(ShardIdSymbolKey), Schema.symbol, { strict: false }),
-        Schema.uniqueSymbolFromSelf(ShardIdTypeId),
+        Schema.compose(Schema.Literal(ShardIdSymbolKey), Schema.Symbol, { strict: false }),
+        Schema.UniqueSymbolFromSelf(ShardIdTypeId),
         { strict: false }
       ),
-      value: Schema.number
+      value: Schema.Number
     }),
     { [ShardIdSymbolKey]: ShardIdTypeId }
   )

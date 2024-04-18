@@ -274,7 +274,7 @@ function make(
         )
     ),
     Effect.whenEffect(isSingletonNode),
-    Effect.asUnit
+    Effect.asVoid
   )
 
   const stopSingletonsIfNeeded: Effect.Effect<void> = pipe(
@@ -300,7 +300,7 @@ function make(
         )
     ),
     Effect.unlessEffect(isSingletonNode),
-    Effect.asUnit
+    Effect.asVoid
   )
 
   function registerSingleton<R>(name: string, run: Effect.Effect<void, never, R>): Effect.Effect<void, never, R> {
@@ -325,7 +325,7 @@ function make(
       Effect.zipRight(startSingletonsIfNeeded),
       Effect.zipLeft(Effect.logDebug("Assigned shards: " + showHashSet(ShardId.show)(shards))),
       Effect.unlessEffect(isShuttingDown),
-      Effect.asUnit
+      Effect.asVoid
     )
   }
 
@@ -413,7 +413,7 @@ function make(
     Effect.retry(Schedule.fixed(config.refreshAssignmentsRetryInterval)),
     Effect.interruptible,
     Effect.forkScoped,
-    Effect.asUnit
+    Effect.asVoid
   )
 
   function sendMessageToLocalEntityManagerWithoutRetries(
@@ -470,10 +470,10 @@ function make(
             Effect.flatMap((_) => updateAssignments(_, true)),
             Effect.forkDaemon,
             Effect.whenEffect(notify),
-            Effect.asUnit
+            Effect.asVoid
           )
         }
-        return Effect.unit
+        return Effect.void
       }),
       Effect.annotateLogs("pod", pod),
       Effect.annotateLogs("envelope", envelope)
@@ -509,7 +509,7 @@ function make(
             onTimeout: () => new ShardingException.SendTimeoutException(),
             duration: timeout
           }),
-          Effect.asUnit
+          Effect.asVoid
         )
     }
 
@@ -644,7 +644,7 @@ function make(
             onTimeout: () => new ShardingException.SendTimeoutException(),
             duration: timeout
           }),
-          Effect.asUnit
+          Effect.asVoid
         )
     }
 
@@ -703,7 +703,7 @@ function make(
       pipe(
         registerRecipient(entityType, behavior, options),
         Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.EntityRegistered(entityType))),
-        Effect.asUnit
+        Effect.asVoid
       )
   }
 
@@ -717,7 +717,7 @@ function make(
       pipe(
         registerRecipient(topicType, behavior, options),
         Effect.zipRight(PubSub.publish(eventsHub, ShardingRegistrationEvent.TopicRegistered(topicType))),
-        Effect.asUnit
+        Effect.asVoid
       )
   }
 
@@ -794,7 +794,7 @@ export const live = Layer.scoped(
       pipe(
         Synchronized.get(singletons),
         Effect.flatMap(
-          Effect.forEach(([_, __, fa]) => Option.isSome(fa) ? Fiber.interrupt(fa.value) : Effect.unit)
+          Effect.forEach(([_, __, fa]) => Option.isSome(fa) ? Fiber.interrupt(fa.value) : Effect.void)
         )
       )
     ))

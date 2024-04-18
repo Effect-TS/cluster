@@ -22,8 +22,8 @@ export function make(
 /** @internal */
 export const noop = Layer.succeed(podsTag, {
   [PodsTypeId]: PodsTypeId,
-  assignShards: () => Effect.unit,
-  unassignShards: () => Effect.unit,
-  ping: () => Effect.unit,
+  assignShards: () => Effect.void,
+  unassignShards: () => Effect.void,
+  ping: () => Effect.void,
   sendAndGetState: () => Effect.never
 })

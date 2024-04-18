@@ -5,7 +5,7 @@ import * as WorkflowEngine from "@effect/cluster-workflow/WorkflowEngine"
 import * as Message from "@effect/cluster/Message"
 import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Schema from "@effect/schema/Schema"
-import * as Pg from "@sqlfx/pg"
+import * as Pg from "@effect/sql-pg"
 import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -15,15 +15,15 @@ import * as LogLevel from "effect/LogLevel"
 const getTotalAmount = (orderId: string) =>
   Activity.make(
     "get-total-amount",
-    Schema.number,
-    Schema.never
+    Schema.Number,
+    Schema.Never
   )(pipe(
     Effect.sync(() => Math.round(Math.random() * 10000) / 100),
     Effect.tap((amountDue) => Effect.logInfo("Amount due for order#" + orderId + " is " + amountDue + "..."))
   ))
 
 const createShippingTrackingCode = (deliveryAddress: string) =>
-  Activity.make("create-tracking-code", Schema.string, Schema.never)(pipe(
+  Activity.make("create-tracking-code", Schema.String, Schema.Never)(pipe(
     pipe(
       Effect.logDebug("Creating tracking code to " + deliveryAddress + "..."),
       Effect.zipRight(Effect.sync(() => Math.round(Math.random() * 100000).toString(36)))
@@ -31,19 +31,19 @@ const createShippingTrackingCode = (deliveryAddress: string) =>
   ))
 
 const chargeCreditCard = (cardNumber: string, amountDue: number) =>
-  Activity.make("charge-credit-card", Schema.void, Schema.never)(pipe(
+  Activity.make("charge-credit-card", Schema.Void, Schema.Never)(pipe(
     pipe(
       Effect.logDebug("Charging " + amountDue + "€ to card no." + cardNumber + "...")
     )
   ))
 
 const sendOrderToShipping = (orderId: string, trackingId: string) =>
-  Activity.make("send-order-to-shipping", Schema.void, Schema.never)(pipe(
+  Activity.make("send-order-to-shipping", Schema.Void, Schema.Never)(pipe(
     Effect.logDebug("Sending order " + orderId + " to shipping with trackingId " + trackingId + "...")
   ))
 
 const sendConfirmationEmail = (email: string, orderId: string, trackingId: string) =>
-  Activity.make("send-confirmation", Schema.void, Schema.never)(pipe(
+  Activity.make("send-confirmation", Schema.Void, Schema.Never)(pipe(
     Effect.logDebug(
       "Sending confirmation email of " + orderId + " to " + email + " with trackingId " + trackingId + "..."
     )
@@ -51,13 +51,13 @@ const sendConfirmationEmail = (email: string, orderId: string, trackingId: strin
 
 class ProcessPaymentRequest extends Message.TaggedMessage<ProcessPaymentRequest>()(
   "ProcessPaymentRequest",
-  Schema.never,
-  Schema.void,
+  Schema.Never,
+  Schema.Void,
   {
-    orderId: Schema.string,
-    cardNumber: Schema.string,
-    email: Schema.string,
-    deliveryAddress: Schema.string
+    orderId: Schema.String,
+    cardNumber: Schema.String,
+    email: Schema.String,
+    deliveryAddress: Schema.String
   },
   (_) => "ProcessPayment@" + _.orderId
 ) {
@@ -93,7 +93,7 @@ const main = pipe(
     )
   ),
   Effect.provide(DurableExecutionJournalPostgres.DurableExecutionJournalPostgres),
-  Effect.provide(Pg.makeLayer({
+  Effect.provide(Pg.client.layer({
     host: Config.succeed("127.0.0.1"),
     username: Config.succeed("postgres"),
     database: Config.succeed("cluster")

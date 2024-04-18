@@ -52,7 +52,7 @@ export function makeScoped<T extends Message.Message.Any, R>(
     const sendDiscard = (request: T) =>
       pipe(
         getOrStartFiber(request),
-        Effect.asUnit
+        Effect.asVoid
       )
 
     const send = <A extends T>(

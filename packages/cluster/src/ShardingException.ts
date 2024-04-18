@@ -11,7 +11,7 @@ import * as Schema from "@effect/schema/Schema"
 export class EntityNotManagedByThisPodException extends Schema.TaggedError<EntityNotManagedByThisPodException>()(
   "@effect/cluster/EntityNotManagedByThisPodException",
   {
-    entityId: Schema.string
+    entityId: Schema.String
   }
 ) {
 }
@@ -29,7 +29,7 @@ export const isEntityNotManagedByThisPodException = Schema.is(EntityNotManagedBy
 export class EntityTypeNotRegisteredException extends Schema.TaggedError<EntityTypeNotRegisteredException>()(
   "@effect/cluster/EntityTypeNotRegisteredException",
   {
-    entityType: Schema.string,
+    entityType: Schema.String,
     podAddress: PodAddress.schema
   }
 ) {
@@ -149,7 +149,7 @@ export const isExceptionWhileOfferingMessageException = Schema.is(ExceptionWhile
  * @since 1.0.0
  * @category schema
  */
-export const schema = Schema.union(
+export const schema = Schema.Union(
   SerializationException,
   EntityNotManagedByThisPodException,
   EntityTypeNotRegisteredException,

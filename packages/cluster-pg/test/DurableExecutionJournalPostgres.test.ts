@@ -2,7 +2,7 @@ import * as DurableExecutionJournalPostgres from "@effect/cluster-pg/DurableExec
 import * as DurableExecutionEvent from "@effect/cluster-workflow/DurableExecutionEvent"
 import * as DurableExecutionJournal from "@effect/cluster-workflow/DurableExecutionJournal"
 import * as Schema from "@effect/schema/Schema"
-import * as Postgres from "@sqlfx/pg"
+import * as Pg from "@effect/sql-pg"
 import { PostgreSqlContainer } from "@testcontainers/postgresql"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -18,8 +18,8 @@ const testContainerPostgresLayer = pipe(
     Effect.promise(() => new PostgreSqlContainer().start()),
     (container) => Effect.promise(() => container.stop())
   ),
-  Effect.flatMap((container) => Postgres.make({ url: (Secret.fromString(container.getConnectionUri())) })),
-  Layer.scoped(Postgres.tag)
+  Effect.flatMap((container) => Pg.client.make({ url: (Secret.fromString(container.getConnectionUri())) })),
+  Layer.scoped(Pg.client.PgClient)
 )
 
 describe.concurrent("DurableExecutionJournalPostgres", () => {
@@ -34,7 +34,7 @@ describe.concurrent("DurableExecutionJournalPostgres", () => {
 
   it("Should create the execution table upon layer creation", () => {
     return Effect.gen(function*(_) {
-      const sql = yield* _(Postgres.tag)
+      const sql = yield* _(Pg.client.PgClient)
 
       const rows = yield* _(sql<{ table_name: string }>`
         SELECT table_name
@@ -51,10 +51,10 @@ describe.concurrent("DurableExecutionJournalPostgres", () => {
       const journal = yield* _(DurableExecutionJournal.DurableExecutionJournal)
 
       yield* _(
-        journal.append("test", Schema.never, Schema.void, DurableExecutionEvent.Attempted(0)(0))
+        journal.append("test", Schema.Never, Schema.Void, DurableExecutionEvent.Attempted(0)(0))
       )
 
-      const sql = yield* _(Postgres.tag)
+      const sql = yield* _(Pg.client.PgClient)
       const rows = yield* _(sql<{ message_id: string }>`SELECT execution_id FROM execution_journal`)
 
       expect(rows.length).toBe(1)
@@ -66,11 +66,11 @@ describe.concurrent("DurableExecutionJournalPostgres", () => {
       const journal = yield* _(DurableExecutionJournal.DurableExecutionJournal)
 
       yield* _(
-        journal.append("test", Schema.never, Schema.void, DurableExecutionEvent.Attempted(0)(0))
+        journal.append("test", Schema.Never, Schema.Void, DurableExecutionEvent.Attempted(0)(0))
       )
 
       const count = yield* _(
-        journal.read("test", Schema.never, Schema.void, 0, false),
+        journal.read("test", Schema.Never, Schema.Void, 0, false),
         Stream.runCount
       )
 

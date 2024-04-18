@@ -39,11 +39,11 @@ export function jsonParse<A, I>(value: string, schema: Schema.Schema<A, I>) {
 const PODS_FILE = "pods.json"
 const ASSIGNMENTS_FILE = "assignments.json"
 
-const AssignmentsSchema = Schema.array(
-  Schema.tuple(ShardId.schema, Schema.optionFromNullable(PodAddress.schema))
+const AssignmentsSchema = Schema.Array(
+  Schema.Tuple(ShardId.schema, Schema.OptionFromNullOr(PodAddress.schema))
 )
 
-const PodsSchema = Schema.array(Schema.tuple(PodAddress.schema, Pod.schema))
+const PodsSchema = Schema.Array(Schema.Tuple(PodAddress.schema, Pod.schema))
 
 function writeJsonData<A, I>(fileName: string, schema: Schema.Schema<A, I>, data: A) {
   return pipe(

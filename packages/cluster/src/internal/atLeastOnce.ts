@@ -28,7 +28,7 @@ export function runPendingMessageSweeperScoped(
       Effect.catchAllCause(Effect.logError),
       Effect.forever,
       Effect.forkScoped,
-      Effect.asUnit
+      Effect.asVoid
     ))
 }
 
@@ -49,7 +49,7 @@ export function atLeastOnceRecipientBehaviour<Msg extends Message.Message.Any, R
           pipe(
             offer(message),
             Effect.tap(MessageState.match({
-              onAcknowledged: () => Effect.unit,
+              onAcknowledged: () => Effect.void,
               onProcessed: () => storage.markAsProcessed(recipientType, shardId, entityId, message)
             }))
           )
