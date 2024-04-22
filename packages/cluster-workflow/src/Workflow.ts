@@ -75,13 +75,13 @@ export function union<WFs extends ReadonlyArray<Workflow.Any>>(
         Option.map((_) => _.execute(request) as any),
         Option.getOrElse(() => Effect.die("unknown workflow input"))
       ),
-      (request) =>
-        pipe(
-          wfs,
-          Array.findFirst((_) => Schema.is(_.schema)(request)),
-          Option.map((_) => _.version(request) as string),
-          Option.getOrElse(() => "")
-        )
+    (request) =>
+      pipe(
+        wfs,
+        Array.findFirst((_) => Schema.is(_.schema)(request)),
+        Option.map((_) => _.version(request) as string),
+        Option.getOrElse(() => "")
+      )
   )
 }
 
