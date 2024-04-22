@@ -51,7 +51,7 @@ describe.concurrent("DurableExecutionJournalPostgres", () => {
       const journal = yield* _(DurableExecutionJournal.DurableExecutionJournal)
 
       yield* _(
-        journal.append("test", Schema.Never, Schema.Void, DurableExecutionEvent.Attempted(0)(0))
+        journal.append("test", Schema.Never, Schema.Void, DurableExecutionEvent.Attempted("")(0))
       )
 
       const sql = yield* _(Pg.client.PgClient)
@@ -66,7 +66,7 @@ describe.concurrent("DurableExecutionJournalPostgres", () => {
       const journal = yield* _(DurableExecutionJournal.DurableExecutionJournal)
 
       yield* _(
-        journal.append("test", Schema.Never, Schema.Void, DurableExecutionEvent.Attempted(0)(0))
+        journal.append("test", Schema.Never, Schema.Void, DurableExecutionEvent.Attempted("")(0))
       )
 
       const count = yield* _(
