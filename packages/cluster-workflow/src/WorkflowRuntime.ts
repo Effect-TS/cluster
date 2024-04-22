@@ -341,17 +341,9 @@ function handleExecutionPhase<A, E>(
 /**
  * @since 1.0.0
  */
-export interface WorkflowRuntimeOptions {
-  version: string
-}
-
-/**
- * @since 1.0.0
- */
 export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Workflow<A, R>) {
   return (
-    request: A,
-    opts?: WorkflowRuntimeOptions
+    request: A
   ): Effect.Effect<
     Message.Message.Success<A>,
     Message.Message.Error<A>,
@@ -363,7 +355,7 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
       const failureSchema = Message.failureSchema(request)
       const durableExecutionJournal = yield* $(DurableExecutionJournal.DurableExecutionJournal)
       const context = yield* $(Effect.context<R>())
-      const executionVersion = opts?.version || ""
+      const executionVersion = workflow.version(request)
 
       const appendToJournal = (
         event: DurableExecutionEvent.DurableExecutionEvent<Message.Message.Success<A>, Message.Message.Error<A>>
