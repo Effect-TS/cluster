@@ -20,6 +20,7 @@ const REPLAY = "@effect/cluster-workflow/WorkflowRuntimeState/Replay"
  * @since 1.0.0
  */
 export class Replay<A, E> extends Data.TaggedClass(REPLAY)<{
+  version: string
   fiber: Fiber.Fiber<A, E>
   expectedSequence: number
   attempt: number

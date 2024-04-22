@@ -12,13 +12,13 @@ const ATTEMPTED = "@effect/cluster-workflow/DurableExecutionEvent/Attempted"
 export interface Attempted {
   _tag: typeof ATTEMPTED
   sequence: number
-  version: number
+  version: string
 }
 
 /**
  * @since 1.0.0
  */
-export function Attempted(version: number) {
+export function Attempted(version: string) {
   return (sequence: number): DurableExecutionEvent<never, never> => ({ _tag: ATTEMPTED, sequence, version })
 }
 
@@ -112,7 +112,7 @@ export type DurableExecutionEvent<A, E> =
 export type DurableExecutionEventFrom<IE, IA> = {
   readonly _tag: typeof ATTEMPTED
   readonly sequence: number
-  readonly version: number
+  readonly version: string
 } | {
   readonly _tag: typeof INTERRUPTION_REQUESTED
   readonly sequence: number
@@ -141,7 +141,7 @@ export function schema<A, IA, E, IE>(success: Schema.Schema<A, IA>, failure: Sch
     Schema.Struct({
       _tag: Schema.Literal(ATTEMPTED),
       sequence: Schema.Number,
-      version: Schema.Number
+      version: Schema.String
     }),
     Schema.Struct({
       _tag: Schema.Literal(INTERRUPTION_REQUESTED),
