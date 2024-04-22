@@ -4,6 +4,7 @@
 import * as Data from "effect/Data"
 import type * as Deferred from "effect/Deferred"
 import type * as Exit from "effect/Exit"
+import type * as WorkflowRuntimeState from "./WorkflowRuntimeState.js"
 
 const REQUEST_FORK = "@effect/cluster-workflow/WorkflowRuntimeMessage/RequestFork"
 /**
@@ -38,12 +39,12 @@ export class RequestComplete<A, E> extends Data.TaggedClass(REQUEST_COMPLETE)<{
   signal: Deferred.Deferred<void, never>
 }> {}
 
-const CHECK_YIELDING = "@effect/cluster-workflow/WorkflowRuntimeMessage/CheckYielding"
+const CHECK_STATUS = "@effect/cluster-workflow/WorkflowRuntimeMessage/CheckStatus"
 /**
  * @since 1.0.0
  */
-export class CheckYielding extends Data.TaggedClass(CHECK_YIELDING)<{
-  signal: Deferred.Deferred<boolean, never>
+export class CheckStatus<A, E> extends Data.TaggedClass(CHECK_STATUS)<{
+  signal: Deferred.Deferred<WorkflowRuntimeState.WorkflowRuntimeState<A, E>, never>
 }> {}
 
 /**
@@ -54,7 +55,7 @@ export type WorkflowRuntimeMessage<A, E> =
   | RequestFork
   | RequestYield
   | RequestComplete<A, E>
-  | CheckYielding
+  | CheckStatus<A, E>
 
 /**
  * @since 1.0.0
@@ -64,7 +65,7 @@ export function match<A, E, B, C = B, D = C, F = D, G = F>(fa: WorkflowRuntimeMe
   onRequestJoin: (message: RequestJoin) => C
   onRequestYield: (message: RequestYield) => D
   onRequestComplete: (message: RequestComplete<A, E>) => F
-  onCheckYielding: (message: CheckYielding) => G
+  onCheckStatus: (message: CheckStatus<A, E>) => G
 }) {
   switch (fa._tag) {
     case REQUEST_FORK:
@@ -75,7 +76,7 @@ export function match<A, E, B, C = B, D = C, F = D, G = F>(fa: WorkflowRuntimeMe
       return fns.onRequestYield(fa)
     case REQUEST_COMPLETE:
       return fns.onRequestComplete(fa)
-    case CHECK_YIELDING:
-      return fns.onCheckYielding(fa)
+    case CHECK_STATUS:
+      return fns.onCheckStatus(fa)
   }
 }

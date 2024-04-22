@@ -100,7 +100,7 @@ function handleReplayPhase<A, E>(
               onRequestJoin: () => Effect.succeed(false),
               onRequestYield: () => Effect.succeed(false),
               onRequestComplete: () => Effect.succeed(false),
-              onCheckYielding: () => Effect.succeed(false),
+              onCheckStatus: () => Effect.succeed(false),
               onRequestFork: (fork) => {
                 if (_.persistenceId !== fork.persistenceId) {
                   return Effect.die(
@@ -146,7 +146,7 @@ function handleReplayPhase<A, E>(
               onRequestFork: () => Effect.succeed(false),
               onRequestYield: () => Effect.succeed(false),
               onRequestComplete: () => Effect.succeed(false),
-              onCheckYielding: () => Effect.succeed(false),
+              onCheckStatus: () => Effect.succeed(false),
               onRequestJoin: (requestedJoin) => {
                 if (_.persistenceId !== requestedJoin.persistenceId) {
                   return Effect.succeed(false)
@@ -281,7 +281,7 @@ function handleExecutionPhase<A, E>(
             Effect.as(new WorkflowRuntimeState.Yielding({ fiber: state.fiber }))
           ),
         // no, we are running
-        onCheckYielding: (_) => pipe(Deferred.succeed(_.signal, false), Effect.as(state))
+        onCheckStatus: (_) => pipe(Deferred.succeed(_.signal, state), Effect.as(state))
       })
     },
 
@@ -301,7 +301,7 @@ function handleExecutionPhase<A, E>(
         // we wielded already for another reason!
         onRequestYield: () => Effect.succeed(state),
         // yes, we are!
-        onCheckYielding: (_) => pipe(Deferred.succeed(_.signal, true), Effect.as(state))
+        onCheckStatus: (_) => pipe(Deferred.succeed(_.signal, state), Effect.as(state))
       })
     },
     onCompleted: (state) => {
@@ -328,7 +328,7 @@ function handleExecutionPhase<A, E>(
         // we completed so yielding is a noop
         onRequestYield: () => Effect.succeed(state),
         // no, we are completed
-        onCheckYielding: (_) => pipe(Deferred.succeed(_.signal, false), Effect.as(state))
+        onCheckStatus: (_) => pipe(Deferred.succeed(_.signal, state), Effect.as(state))
       })
     }
   })
@@ -363,9 +363,21 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
       )
 
       const isYielding = pipe(
-        Deferred.make<boolean, never>(),
-        Effect.tap((signal) => Queue.offer(mailbox, new WorkflowRuntimeMessage.CheckYielding({ signal }))),
-        Effect.flatMap(Deferred.await)
+        Deferred.make<
+          WorkflowRuntimeState.WorkflowRuntimeState<Message.Message.Success<A>, Message.Message.Error<A>>,
+          never
+        >(),
+        Effect.tap((signal) => Queue.offer(mailbox, new WorkflowRuntimeMessage.CheckStatus({ signal }))),
+        Effect.flatMap(Deferred.await),
+        Effect.map((_) =>
+          WorkflowRuntimeState.match(_, {
+            onNotStarted: () => false,
+            onReplay: () => false,
+            onRunning: () => false,
+            onYielding: () => true,
+            onCompleted: () => false
+          })
+        )
       )
 
       const yieldExecution = pipe(
@@ -422,8 +434,11 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
           (state, event) => handleReplayPhase(state, event, executionEffect, mailbox)
         ),
         Effect.zipLeft(pipe(
-          Deferred.make<boolean, never>(),
-          Effect.flatMap((signal) => Queue.offer(mailbox, new WorkflowRuntimeMessage.CheckYielding({ signal })))
+          Deferred.make<
+            WorkflowRuntimeState.WorkflowRuntimeState<Message.Message.Success<A>, Message.Message.Error<A>>,
+            never
+          >(),
+          Effect.flatMap((signal) => Queue.offer(mailbox, new WorkflowRuntimeMessage.CheckStatus({ signal })))
         )),
         Effect.flatMap((stateAfterReplay) =>
           pipe(
