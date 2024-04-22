@@ -1,19 +1,18 @@
 /**
  * @since 1.0.0
  */
+import type * as Message from "@effect/cluster/Message"
 import * as Data from "effect/Data"
 import type * as Exit from "effect/Exit"
-import * as Fiber from "effect/Fiber"
+import type * as Fiber from "effect/Fiber"
 import type * as WorkflowRuntimeMessage from "./WorkflowRuntimeMessage.js"
-import * as Message from "@effect/cluster/Message"
 
 const NOT_STARTED = "@effect/cluster-workflow/WorkflowRuntimeState/NotStarted"
 
 /**
  * @since 1.0.0
  */
-export class NotStarted<A, E> extends Data.TaggedClass(NOT_STARTED)<{
-}> {}
+export class NotStarted extends Data.TaggedClass(NOT_STARTED)<{}> {}
 
 const REPLAY = "@effect/cluster-workflow/WorkflowRuntimeState/Replay"
 
@@ -53,14 +52,18 @@ const COMPLETED = "@effect/cluster-workflow/WorkflowRuntimeState/Completed"
  * @since 1.0.0
  */
 export class Completed<A, E> extends Data.TaggedClass(COMPLETED)<{
-  fiber: Fiber.Fiber<A, E>
   exit: Exit.Exit<A, E>
 }> {}
 
 /**
  * @since 1.0.0
  */
-export type WorkflowRuntimeState<A, E> = NotStarted<A, E> | Replay<A, E> | Running<A, E> | Yielding<A, E> | Completed<A, E>
+export type WorkflowRuntimeState<A, E> =
+  | NotStarted
+  | Replay<A, E>
+  | Running<A, E>
+  | Yielding<A, E>
+  | Completed<A, E>
 
 /**
  * @since 1.0.0
@@ -70,7 +73,7 @@ export function match<A, E, B, C = B, D = C, F = D, G = F>(fa: WorkflowRuntimeSt
   onRunning: (state: Running<A, E>) => C
   onYielding: (state: Yielding<A, E>) => D
   onCompleted: (state: Completed<A, E>) => F
-  onNotStarted: (state: NotStarted<A, E>) => G
+  onNotStarted: (state: NotStarted) => G
 }) {
   switch (fa._tag) {
     case NOT_STARTED:
@@ -86,8 +89,8 @@ export function match<A, E, B, C = B, D = C, F = D, G = F>(fa: WorkflowRuntimeSt
   }
 }
 
-
 /**
  * @since 1.0.0
  */
-export const initialState = <A extends Message.Message.Any>() => new NotStarted() as WorkflowRuntimeState<Message.Message.Success<A>, Message.Message.Error<A>>
+export const initialState = <A extends Message.Message.Any>() =>
+  new NotStarted() as WorkflowRuntimeState<Message.Message.Success<A>, Message.Message.Error<A>>

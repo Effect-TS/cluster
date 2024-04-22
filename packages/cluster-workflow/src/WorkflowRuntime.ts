@@ -30,11 +30,19 @@ function handleReplayPhase<A, E>(
     onNotStarted: () => {
       // we expect that the first event into the journal should be an "attempted"
       return DurableExecutionEvent.match(sa, {
-        onAttempted: (_) => pipe(
-          executionEffect,
-          Effect.forkDaemon,
-          Effect.map(fiber => new WorkflowRuntimeState.Replay({ fiber, expectedSequence: _.sequence + 1, attempt: 1, delayedMessages: []}))
-        ),
+        onAttempted: (_) =>
+          pipe(
+            executionEffect,
+            Effect.forkDaemon,
+            Effect.map((fiber) =>
+              new WorkflowRuntimeState.Replay({
+                fiber,
+                expectedSequence: _.sequence + 1,
+                attempt: 1,
+                delayedMessages: []
+              })
+            )
+          ),
         onForked: () => {
           return Effect.die(`ABSURD: Cannot fork on a never started workflow!`)
         },
@@ -83,7 +91,7 @@ function handleReplayPhase<A, E>(
           if (state.delayedMessages.length > 0) {
             return Effect.die(`Determinism has been broken! Journal is expected to be empty upon completion replay!`)
           }
-          return Effect.succeed(new WorkflowRuntimeState.Completed({ fiber: state.fiber, exit: _.exit }))
+          return Effect.succeed(new WorkflowRuntimeState.Completed({ exit: _.exit }))
         },
         // wait for forked to be treated
         onForked: (_) => {
@@ -181,7 +189,9 @@ function handleReplayPhase<A, E>(
 }
 
 function handleExecutionPhase<A, E>(
-  appendToJournal: (event: DurableExecutionEvent.DurableExecutionEvent<A, E>) => Effect.Effect<void, never, DurableExecutionJournal.DurableExecutionJournal>,
+  appendToJournal: (
+    event: DurableExecutionEvent.DurableExecutionEvent<A, E>
+  ) => Effect.Effect<void, never, DurableExecutionJournal.DurableExecutionJournal>,
   wrs: WorkflowRuntimeState.WorkflowRuntimeState<A, E>,
   ms: WorkflowRuntimeMessage.WorkflowRuntimeMessage<A, E>,
   executionEffect: Effect.Effect<A, E, never>,
@@ -193,13 +203,22 @@ function handleExecutionPhase<A, E>(
 > {
   return WorkflowRuntimeState.match(wrs, {
     // workflow never started, we start the fiber than process again this message
-    onNotStarted: () => pipe(
-      appendToJournal(
-        DurableExecutionEvent.Attempted(0)(0)
+    onNotStarted: () =>
+      pipe(
+        appendToJournal(
+          DurableExecutionEvent.Attempted(0)(0)
+        ),
+        Effect.zipRight(Effect.forkDaemon(executionEffect)),
+        Effect.flatMap((fiber) =>
+          handleExecutionPhase(
+            appendToJournal,
+            new WorkflowRuntimeState.Running({ fiber, attempt: 0, nextSequence: 1 }),
+            ms,
+            executionEffect,
+            mailbox
+          )
+        )
       ),
-      Effect.zipRight(Effect.forkDaemon(executionEffect)),
-      Effect.flatMap(fiber => handleExecutionPhase(appendToJournal, new WorkflowRuntimeState.Running({ fiber, attempt: 0, nextSequence: 1}), ms, executionEffect, mailbox))
-    ),
     // we need to switch from replay to running state and then run all the delayed messages one after the other
     onReplay: (state) => {
       return pipe(
@@ -228,8 +247,11 @@ function handleExecutionPhase<A, E>(
             appendToJournal(
               DurableExecutionEvent.Completed(message.exit)(state.nextSequence)
             ),
-            Effect.as(new WorkflowRuntimeState.Completed({
-              fiber: state.fiber, exit: message.exit })),
+            Effect.as(
+              new WorkflowRuntimeState.Completed({
+                exit: message.exit
+              })
+            ),
             Effect.zipLeft(Deferred.succeed(message.signal, void 0)),
             Effect.zipLeft(Queue.shutdown(mailbox))
           ),
@@ -253,7 +275,11 @@ function handleExecutionPhase<A, E>(
           ),
         // on yield request we trigger interrupt and immediately switch to yielding
         onRequestYield: () =>
-          pipe(Fiber.interrupt(state.fiber), Effect.forkScoped, Effect.as(new WorkflowRuntimeState.Yielding({ fiber: state.fiber }))),
+          pipe(
+            Fiber.interrupt(state.fiber),
+            Effect.forkScoped,
+            Effect.as(new WorkflowRuntimeState.Yielding({ fiber: state.fiber }))
+          ),
         // no, we are running
         onCheckYielding: (_) => pipe(Deferred.succeed(_.signal, false), Effect.as(state))
       })
@@ -326,7 +352,9 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
       const durableExecutionJournal = yield* $(DurableExecutionJournal.DurableExecutionJournal)
       const context = yield* $(Effect.context<R>())
 
-      const appendToJournal = (event: DurableExecutionEvent.DurableExecutionEvent<Message.Message.Success<A>, Message.Message.Error<A>>) => DurableExecutionJournal.append(persistenceId, successSchema, failureSchema, event)
+      const appendToJournal = (
+        event: DurableExecutionEvent.DurableExecutionEvent<Message.Message.Success<A>, Message.Message.Error<A>>
+      ) => DurableExecutionJournal.append(persistenceId, successSchema, failureSchema, event)
 
       const mailbox = yield* $(
         Queue.unbounded<
@@ -336,7 +364,7 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
 
       const isYielding = pipe(
         Deferred.make<boolean, never>(),
-        Effect.tap(signal => Queue.offer(mailbox, new WorkflowRuntimeMessage.CheckYielding({ signal }))),
+        Effect.tap((signal) => Queue.offer(mailbox, new WorkflowRuntimeMessage.CheckYielding({ signal }))),
         Effect.flatMap(Deferred.await)
       )
 
@@ -389,32 +417,36 @@ export function attempt<A extends Message.Message.Any, R>(workflow: Workflow.Wor
 
       const coordinatorFiber = yield* $(
         durableExecutionJournal.read(persistenceId, successSchema, failureSchema, 0, false),
-        Stream.runFoldEffect(WorkflowRuntimeState.initialState<A>(), (state, event) => handleReplayPhase(state, event, executionEffect, mailbox)),
+        Stream.runFoldEffect(
+          WorkflowRuntimeState.initialState<A>(),
+          (state, event) => handleReplayPhase(state, event, executionEffect, mailbox)
+        ),
         Effect.zipLeft(pipe(
           Deferred.make<boolean, never>(),
-          Effect.flatMap(signal => Queue.offer(mailbox, new WorkflowRuntimeMessage.CheckYielding({ signal })))
+          Effect.flatMap((signal) => Queue.offer(mailbox, new WorkflowRuntimeMessage.CheckYielding({ signal })))
         )),
-          Effect.flatMap(stateAfterReplay =>
+        Effect.flatMap((stateAfterReplay) =>
           pipe(
             Stream.fromQueue(mailbox),
             Stream.runFoldEffect(stateAfterReplay, (state, message) =>
-                  handleExecutionPhase(
-                    appendToJournal,
-                    state,
-                    message,
-                    executionEffect,
-                    mailbox
-                  )
-            )
+              handleExecutionPhase(
+                appendToJournal,
+                state,
+                message,
+                executionEffect,
+                mailbox
+              ))
           )
         ),
-        Effect.flatMap(state => WorkflowRuntimeState.match(state, {
-          onCompleted: _ => _.exit,
-          onNotStarted: () => Effect.interrupt,
-          onReplay: () => Effect.interrupt,
-          onRunning: () => Effect.interrupt,
-          onYielding: () => Effect.interrupt
-        })),
+        Effect.flatMap((state) =>
+          WorkflowRuntimeState.match(state, {
+            onCompleted: (_) => _.exit,
+            onNotStarted: () => Effect.interrupt,
+            onReplay: () => Effect.interrupt,
+            onRunning: () => Effect.interrupt,
+            onYielding: () => Effect.interrupt
+          })
+        ),
         Effect.forkIn(executionScope)
       )
 

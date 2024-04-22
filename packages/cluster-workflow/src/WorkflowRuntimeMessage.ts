@@ -49,7 +49,12 @@ export class CheckYielding extends Data.TaggedClass(CHECK_YIELDING)<{
 /**
  * @since 1.0.0
  */
-export type WorkflowRuntimeMessage<A, E> = RequestJoin | RequestFork | RequestYield | RequestComplete<A, E> | CheckYielding
+export type WorkflowRuntimeMessage<A, E> =
+  | RequestJoin
+  | RequestFork
+  | RequestYield
+  | RequestComplete<A, E>
+  | CheckYielding
 
 /**
  * @since 1.0.0
@@ -58,7 +63,7 @@ export function match<A, E, B, C = B, D = C, F = D, G = F>(fa: WorkflowRuntimeMe
   onRequestFork: (message: RequestFork) => B
   onRequestJoin: (message: RequestJoin) => C
   onRequestYield: (message: RequestYield) => D
-  onRequestComplete: (message: RequestComplete<A, E>) => F,
+  onRequestComplete: (message: RequestComplete<A, E>) => F
   onCheckYielding: (message: CheckYielding) => G
 }) {
   switch (fa._tag) {
