@@ -295,7 +295,6 @@ describe.concurrent("Workflow", () => {
       const exit = yield* _(
         WorkflowEngine.makeScoped(workflow),
         Effect.flatMap((engine) => engine.send(new StartWorkflowRequest({ executionId: "wf" }))),
-        Effect.zipLeft(Deferred.succeed(latch, void 0), { concurrent: true }),
         Effect.forkScoped,
         Effect.zipLeft(Deferred.await(latch)),
         Effect.scoped,
@@ -318,9 +317,9 @@ describe.concurrent("Workflow", () => {
       expect(mockedUse.spy).toHaveBeenCalled()
       expect(mockedActivity.spy).toHaveBeenCalledOnce()
       expect(activityJournalEntryCount.length).toEqual(1)
-      expect(activityJournalEntryCount[0]._tag).toEqual(DurableExecutionEvent.Attempted(0)(0)._tag)
+      expect(activityJournalEntryCount[0]._tag).toEqual(DurableExecutionEvent.Attempted("")(0)._tag)
       expect(workflowJournalEntryCount.length).toEqual(2)
-      expect(workflowJournalEntryCount[0]._tag).toEqual(DurableExecutionEvent.Attempted(0)(0)._tag)
+      expect(workflowJournalEntryCount[0]._tag).toEqual(DurableExecutionEvent.Attempted("")(0)._tag)
       expect(workflowJournalEntryCount[1]._tag).toEqual(DurableExecutionEvent.Forked(persistenceId)(1)._tag)
       expect(Exit.isInterrupted(exit)).toEqual(true)
       expect(mockedRelease.spy).toHaveBeenCalledOnce()

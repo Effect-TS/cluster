@@ -20,6 +20,7 @@ export interface Workflow<T extends Message.Message.Any, R> {
   execute: (
     input: T
   ) => Effect.Effect<Message.Message.Success<T>, Message.Message.Error<T>, R | WorkflowContext.WorkflowContext>
+  version: (input: T) => string
 }
 
 /**
@@ -49,11 +50,13 @@ export function make<T extends Message.Message.Any, R = never, I = unknown>(
   schema: Schema.Schema<T, I>,
   execute: (
     input: T
-  ) => Effect.Effect<Message.Message.Success<T>, Message.Message.Error<T>, R>
+  ) => Effect.Effect<Message.Message.Success<T>, Message.Message.Error<T>, R>,
+  version?: (input: T) => string
 ): Workflow<T, Exclude<R, WorkflowContext.WorkflowContext>> {
   return ({
     schema: schema as Schema.Schema<T, unknown>,
-    execute: execute as any
+    execute: execute as any,
+    version: version || (() => "")
   })
 }
 
@@ -71,6 +74,13 @@ export function union<WFs extends ReadonlyArray<Workflow.Any>>(
         Array.findFirst((_) => Schema.is(_.schema)(request)),
         Option.map((_) => _.execute(request) as any),
         Option.getOrElse(() => Effect.die("unknown workflow input"))
+      ),
+    (request) =>
+      pipe(
+        wfs,
+        Array.findFirst((_) => Schema.is(_.schema)(request)),
+        Option.map((_) => _.version(request) as string),
+        Option.getOrElse(() => "")
       )
   )
 }

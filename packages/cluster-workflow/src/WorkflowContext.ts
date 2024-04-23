@@ -15,6 +15,7 @@ export interface WorkflowContext {
   isYielding: Effect.Effect<boolean>
   yieldExecution: Effect.Effect<never>
   forkAndJoin: <A, E, R>(persistenceId: string, effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>
+  version: string
 }
 
 /**

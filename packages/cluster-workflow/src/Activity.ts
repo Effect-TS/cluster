@@ -51,7 +51,7 @@ export function make<A, IA, E, IE>(
                       persistenceId,
                       successSchema,
                       failureSchema,
-                      DurableExecutionEvent.Attempted(0)(_.lastSequence + 1)
+                      DurableExecutionEvent.Attempted(context.version)(_.lastSequence + 1)
                     ),
                     Effect.zipRight(execute),
                     Effect.provideService(ActivityContext.ActivityContext, {
