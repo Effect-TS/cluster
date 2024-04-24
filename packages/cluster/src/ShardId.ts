@@ -1,14 +1,16 @@
 /**
  * @since 1.0.0
  */
-import type * as Schema from "@effect/schema/Schema"
-import * as internal from "./internal/shardId.js"
+import * as Schema from "@effect/schema/Schema"
+
+/** @internal */
+const ShardIdSymbolKey = "@effect/cluster/ShardId"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const ShardIdTypeId: unique symbol = internal.ShardIdTypeId
+export const ShardIdTypeId: unique symbol = Symbol.for(ShardIdSymbolKey)
 
 /**
  * @since 1.0.0
@@ -16,13 +18,27 @@ export const ShardIdTypeId: unique symbol = internal.ShardIdTypeId
  */
 export type ShardIdTypeId = typeof ShardIdTypeId
 
+/** @internal */
+const ShardIdTypeIdSchema = Schema.compose(
+  Schema.compose(Schema.Literal(ShardIdSymbolKey), Schema.Symbol, { strict: false }),
+  Schema.UniqueSymbolFromSelf(ShardIdTypeId),
+  { strict: false }
+)
+
 /**
  * @since 1.0.0
  * @category models
  */
-export interface ShardId {
-  readonly [ShardIdTypeId]: ShardIdTypeId
-  readonly value: number
+export class ShardId extends Schema.Class<ShardId>(ShardIdSymbolKey)({
+  [ShardIdTypeId]: Schema.propertySignature(ShardIdTypeIdSchema).pipe(Schema.fromKey(ShardIdSymbolKey)),
+  value: Schema.Number
+}) {
+  /**
+   * @since 1.0.0
+   */
+  toString() {
+    return `ShardId(${this.value})`
+  }
 }
 
 /**
@@ -34,20 +50,16 @@ export namespace ShardId {
    * @since 1.0.0
    * @category models
    */
-  export interface From {
-    readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"
-    readonly value: number
-  }
+  export interface Encoded extends Schema.Schema.Encoded<typeof ShardId> {}
 }
 
 /**
  * @since 1.0.0
  * @category constructors
  */
-export const make: (value: number) => ShardId = internal.make
-
-/** @internal */
-export const show = internal.show
+export function make(value: number): ShardId {
+  return new ShardId({ [ShardIdTypeId]: ShardIdTypeId, value })
+}
 
 /**
  * This is the schema for a value.
@@ -57,5 +69,5 @@ export const show = internal.show
  */
 export const schema: Schema.Schema<
   ShardId,
-  ShardId.From
-> = internal.schema
+  ShardId.Encoded
+> = Schema.asSchema(ShardId)

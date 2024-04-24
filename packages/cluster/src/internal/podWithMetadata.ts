@@ -1,9 +1,8 @@
-import * as Schema from "@effect/schema/Schema"
 import * as Data from "effect/Data"
 import { pipe } from "effect/Function"
 import * as List from "effect/List"
 import * as Option from "effect/Option"
-import * as Pod from "../Pod.js"
+import type * as Pod from "../Pod.js"
 
 /** @internal */
 const PodWithMetadataSymbolKey = "@effect/cluster/PodWithMetadata"
@@ -15,15 +14,15 @@ export const PodWithMetadataTypeId = Symbol.for(PodWithMetadataSymbolKey)
 export type PodWithMetadataTypeId = typeof PodWithMetadataTypeId
 
 /** @internal */
-export interface PodWithMetadata {
+export class PodWithMetadata extends Data.Class<{
   [PodWithMetadataTypeId]: PodWithMetadataTypeId
   pod: Pod.Pod
   registered: number
-}
+}> {}
 
 /** @internal */
 export function make(pod: Pod.Pod, registered: number): PodWithMetadata {
-  return Data.struct({ [PodWithMetadataTypeId]: PodWithMetadataTypeId, pod, registered })
+  return new PodWithMetadata({ [PodWithMetadataTypeId]: PodWithMetadataTypeId, pod, registered })
 }
 
 /** @internal */
@@ -71,32 +70,3 @@ export function compareVersion(a: List.List<number>, b: List.List<number>): 0 | 
   }
   return 0
 }
-
-/** @internal */
-export const schema: Schema.Schema<
-  PodWithMetadata,
-  {
-    readonly "@effect/cluster/PodWithMetadata": "@effect/cluster/PodWithMetadata"
-    readonly pod: {
-      readonly "@effect/cluster/Pod": "@effect/cluster/Pod"
-      readonly address: {
-        readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-        readonly host: string
-        readonly port: number
-      }
-      readonly version: string
-    }
-    readonly registered: number
-  }
-> = Schema.Data(Schema.rename(
-  Schema.Struct({
-    [PodWithMetadataSymbolKey]: Schema.compose(
-      Schema.compose(Schema.Literal(PodWithMetadataSymbolKey), Schema.Symbol, { strict: false }),
-      Schema.UniqueSymbolFromSelf(PodWithMetadataTypeId),
-      { strict: false }
-    ),
-    pod: Pod.schema,
-    registered: Schema.Number
-  }),
-  { [PodWithMetadataSymbolKey]: PodWithMetadataTypeId }
-))

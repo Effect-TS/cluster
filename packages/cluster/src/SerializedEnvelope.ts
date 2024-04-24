@@ -1,15 +1,29 @@
 /**
  * @since 1.0.0
  */
-import type * as Schema from "@effect/schema/Schema"
-import * as internal from "./internal/serializedEnvelope.js"
-import type * as SerializedMessage from "./SerializedMessage.js"
+import * as Schema from "@effect/schema/Schema"
+import * as Serializable from "@effect/schema/Serializable"
+import { pipe } from "effect/Function"
+import * as PrimaryKey from "effect/PrimaryKey"
+import * as SerializedMessage from "./SerializedMessage.js"
+
+/** @internal */
+const SerializedEnvelopeSymbolKey = "@effect/cluster/SerializedEnvelope"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const SerializedEnvelopeTypeId: unique symbol = internal.SerializedEnvelopeTypeId
+export const SerializedEnvelopeTypeId: unique symbol = Symbol.for(SerializedEnvelopeSymbolKey)
+
+/** @internal */
+const SerializedEnvelopeTypeIdSchema = pipe(
+  Schema.compose(
+    Schema.compose(Schema.Literal(SerializedEnvelopeSymbolKey), Schema.Symbol, { strict: false }),
+    Schema.UniqueSymbolFromSelf(SerializedEnvelopeTypeId),
+    { strict: false }
+  )
+)
 
 /**
  * @since 1.0.0
@@ -21,7 +35,25 @@ export type SerializedEnvelopeTypeId = typeof SerializedEnvelopeTypeId
  * @since 1.0.0
  * @category models
  */
-export interface SerializedEnvelope extends internal.SerializedEnvelope_ {}
+export class SerializedEnvelope extends Schema.Class<SerializedEnvelope>(SerializedEnvelopeSymbolKey)({
+  [SerializedEnvelopeTypeId]: Schema.propertySignature(SerializedEnvelopeTypeIdSchema).pipe(
+    Schema.fromKey(SerializedEnvelopeSymbolKey)
+  ),
+  entityType: Schema.String,
+  entityId: Schema.String,
+  messageId: Schema.String,
+  body: SerializedMessage.schema
+}) {
+  get [Serializable.symbol]() {
+    return this.constructor
+  }
+  get [Serializable.symbolResult]() {
+    return { Success: Schema.Void, Failure: Schema.Never }
+  }
+  get [PrimaryKey.symbol]() {
+    return this.messageId + "@" + this.entityType + "#" + this.entityId
+  }
+}
 
 /**
  * @since 1.0.0
@@ -32,7 +64,7 @@ export namespace SerializedEnvelope {
    * @since 1.0.0
    * @category models
    */
-  export interface Encoded extends Schema.Schema.Encoded<typeof internal.SerializedEnvelope_> {}
+  export interface Encoded extends Schema.Schema.Encoded<typeof SerializedEnvelope> {}
 }
 
 /**
@@ -41,18 +73,33 @@ export namespace SerializedEnvelope {
  * @since 1.0.0
  * @category constructors
  */
-export const make: (
+export function make(
   entityType: string,
   entityId: string,
   messageId: string,
   body: SerializedMessage.SerializedMessage
-) => SerializedEnvelope = internal.make
+): SerializedEnvelope {
+  return new SerializedEnvelope({
+    [SerializedEnvelopeTypeId]: SerializedEnvelopeTypeId,
+    messageId,
+    entityType,
+    entityId,
+    body
+  })
+}
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const isSerializedEnvelope: (value: unknown) => value is SerializedEnvelope = internal.isSerializedEnvelope
+export function isSerializedEnvelope(value: unknown): value is SerializedEnvelope {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    SerializedEnvelopeTypeId in value &&
+    value[SerializedEnvelopeTypeId] === SerializedEnvelopeTypeId
+  )
+}
 
 /**
  * This is the schema for a value.
@@ -60,4 +107,6 @@ export const isSerializedEnvelope: (value: unknown) => value is SerializedEnvelo
  * @since 1.0.0
  * @category schema
  */
-export const schema: Schema.Schema<SerializedEnvelope, SerializedEnvelope.Encoded, never> = internal.schema
+export const schema: Schema.Schema<SerializedEnvelope, SerializedEnvelope.Encoded, never> = Schema.asSchema(
+  SerializedEnvelope
+)

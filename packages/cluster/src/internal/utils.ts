@@ -44,24 +44,3 @@ export function groupBy<A, K>(f: (value: A) => K) {
     return current
   }
 }
-
-/** @internal */
-export function showHashSet<A>(fn: (value: A) => string) {
-  return (fa: HashSet.HashSet<A>) => {
-    return "HashSet(" + Array.from(fa).map(fn).join("; ") + ")"
-  }
-}
-
-/** @internal */
-export function showHashMap<K, A>(fnK: (value: K) => string, fn: (value: A) => string) {
-  return (fa: HashMap.HashMap<K, A>) => {
-    return "HashMap(" + Array.from(fa).map(([key, value]) => fnK(key) + "=" + fn(value)).join("; ") + ")"
-  }
-}
-
-/** @internal */
-export function showOption<A>(fn: (value: A) => string) {
-  return (fa: Option.Option<A>) => {
-    return Option.match(fa, { onNone: () => "None()", onSome: (_) => "Some(" + fn(_) + ")" })
-  }
-}

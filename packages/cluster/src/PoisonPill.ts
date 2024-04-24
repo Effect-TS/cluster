@@ -1,16 +1,19 @@
 /**
  * @since 1.0.0
  */
-import type * as Schema from "@effect/schema/Schema"
-import type * as Effect from "effect/Effect"
-import type * as Queue from "effect/Queue"
-import * as internal from "./internal/poisonPill.js"
+import * as Schema from "@effect/schema/Schema"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
+import * as Queue from "effect/Queue"
+
+/** @internal */
+const PoisonPillSymbolKey = "@effect/cluster/PoisonPill"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const PoisonPillTypeId: unique symbol = internal.PoisonPillTypeId
+export const PoisonPillTypeId: unique symbol = Symbol.for(PoisonPillSymbolKey)
 
 /**
  * @since 1.0.0
@@ -18,12 +21,31 @@ export const PoisonPillTypeId: unique symbol = internal.PoisonPillTypeId
  */
 export type PoisonPillTypeId = typeof PoisonPillTypeId
 
+/** @internal */
+const PoisonPillTypeIdSchema = Schema.compose(
+  Schema.compose(Schema.Literal(PoisonPillSymbolKey), Schema.Symbol, { strict: false }),
+  Schema.UniqueSymbolFromSelf(PoisonPillTypeId),
+  { strict: false }
+)
+
+/**
+ * @since 1.0.0
+ */
+export namespace PoisonPill {
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export interface Encoded extends Schema.Schema.Encoded<typeof PoisonPill> {}
+}
+
 /**
  * @since 1.0.0
  * @category models
  */
-export interface PoisonPill {
-  [PoisonPillTypeId]: PoisonPillTypeId
+export class PoisonPill extends Schema.Class<PoisonPill>(PoisonPillSymbolKey)({
+  [PoisonPillTypeId]: Schema.propertySignature(PoisonPillTypeIdSchema).pipe(Schema.fromKey(PoisonPillSymbolKey))
+}) {
 }
 
 /**
@@ -32,13 +54,22 @@ export interface PoisonPill {
  * @since 1.0.0
  * @category constructors
  */
-export const make: Effect.Effect<PoisonPill> = internal.make
+export const make: Effect.Effect<PoisonPill> = Effect.succeed(
+  new PoisonPill({ [PoisonPillTypeId]: PoisonPillTypeId })
+)
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const isPoisonPill: (value: unknown) => value is PoisonPill = internal.isPoisonPill
+export function isPoisonPill(value: unknown): value is PoisonPill {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    PoisonPillTypeId in value &&
+    value[PoisonPillTypeId] === PoisonPillTypeId
+  )
+}
 
 /**
  * This is the schema for a value.
@@ -47,16 +78,22 @@ export const isPoisonPill: (value: unknown) => value is PoisonPill = internal.is
  * @category schema
  */
 export const schema: Schema.Schema<
-  { readonly [PoisonPillTypeId]: typeof PoisonPillTypeId },
-  { readonly "@effect/cluster/PoisonPill": "@effect/cluster/PoisonPill" }
-> = internal.schema
+  PoisonPill,
+  PoisonPill.Encoded
+> = Schema.asSchema(PoisonPill)
 
 /**
  * Attempts to take a message from the queue in the same way Queue.take does.
  * If the result is a PoisonPill, it will interrupt the effect.
  *
  * @since 1.0.0
- * @category schema
+ * @category utils
  */
-export const takeOrInterrupt: <Req>(dequeue: Queue.Dequeue<PoisonPill | Req>) => Effect.Effect<Req> =
-  internal.takeOrInterrupt
+export function takeOrInterrupt<Req>(
+  dequeue: Queue.Dequeue<Req | PoisonPill>
+): Effect.Effect<Req> {
+  return pipe(
+    Queue.take(dequeue),
+    Effect.flatMap((msg) => isPoisonPill(msg) ? Effect.interrupt : Effect.succeed(msg))
+  )
+}
