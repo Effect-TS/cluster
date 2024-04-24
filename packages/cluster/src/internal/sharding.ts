@@ -12,6 +12,7 @@ import * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
 import * as List from "effect/List"
 import * as Option from "effect/Option"
+import * as PrimaryKey from "effect/PrimaryKey"
 import * as PubSub from "effect/PubSub"
 import * as Ref from "effect/Ref"
 import * as Schedule from "effect/Schedule"
@@ -566,7 +567,10 @@ function make(
               : Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ entityId }))
           ),
           Effect.flatMap((pod) =>
-            sendMessageToPodWithoutRetries(pod, SerializedEnvelope.make(entityType.name, entityId, body))
+            sendMessageToPodWithoutRetries(
+              pod,
+              SerializedEnvelope.make(entityType.name, entityId, PrimaryKey.value(message), body)
+            )
           ),
           Effect.retry(pipe(
             Schedule.fixed(Duration.millis(100)),
@@ -613,7 +617,7 @@ function make(
                 pipe(
                   sendMessageToPodWithoutRetries(
                     pod,
-                    SerializedEnvelope.make(topicType.name, topicId, body)
+                    SerializedEnvelope.make(topicType.name, topicId, PrimaryKey.value(message), body)
                   ),
                   Effect.retry(pipe(
                     Schedule.fixed(Duration.millis(100)),
