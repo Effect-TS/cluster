@@ -21,12 +21,7 @@ export type SerializedEnvelopeTypeId = typeof SerializedEnvelopeTypeId
  * @since 1.0.0
  * @category models
  */
-export interface SerializedEnvelope {
-  readonly [SerializedEnvelopeTypeId]: SerializedEnvelopeTypeId
-  readonly entityId: string
-  readonly entityType: string
-  readonly body: SerializedMessage.SerializedMessage
-}
+export interface SerializedEnvelope extends internal.SerializedEnvelope_ {}
 
 /**
  * @since 1.0.0
@@ -37,12 +32,7 @@ export namespace SerializedEnvelope {
    * @since 1.0.0
    * @category models
    */
-  export interface From {
-    readonly "@effect/cluster/SerializedEnvelope": "@effect/cluster/SerializedEnvelope"
-    readonly entityId: string
-    readonly entityType: string
-    readonly body: SerializedMessage.SerializedMessage.From
-  }
+  export interface Encoded extends Schema.Schema.Encoded<typeof internal.SerializedEnvelope_> {}
 }
 
 /**
@@ -54,6 +44,7 @@ export namespace SerializedEnvelope {
 export const make: (
   entityType: string,
   entityId: string,
+  messageId: string,
   body: SerializedMessage.SerializedMessage
 ) => SerializedEnvelope = internal.make
 
@@ -69,7 +60,4 @@ export const isSerializedEnvelope: (value: unknown) => value is SerializedEnvelo
  * @since 1.0.0
  * @category schema
  */
-export const schema: Schema.Schema<
-  SerializedEnvelope,
-  SerializedEnvelope.From
-> = internal.schema
+export const schema: Schema.Schema<SerializedEnvelope, SerializedEnvelope.Encoded, never> = internal.schema
