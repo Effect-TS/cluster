@@ -40,7 +40,7 @@ export const UnassignShards_: Schema.Schema<
  */
 export const Send_: Schema.Schema<
   { readonly message: SerializedEnvelope.SerializedEnvelope },
-  { readonly message: SerializedEnvelope.SerializedEnvelope.From }
+  { readonly message: SerializedEnvelope.SerializedEnvelope.Encoded }
 > = Schema.Struct({
   message: SerializedEnvelope.schema
 })

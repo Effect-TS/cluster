@@ -77,7 +77,7 @@ export const atLeastOnceStoragePostgres: Layer.Layer<
           }`.stream,
           Stream.orDie,
           Stream.map((_) =>
-            SerializedEnvelope.make(_.recipient_name, _.entity_id, SerializedMessage.make(_.message_body))
+            SerializedEnvelope.make(_.recipient_name, _.entity_id, _.message_id, SerializedMessage.make(_.message_body))
           )
         )
     })
