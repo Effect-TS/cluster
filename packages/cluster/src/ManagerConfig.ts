@@ -20,7 +20,8 @@ export const ManagerConfigTypeId: unique symbol = internal.ManagerConfigTypeId
 export type ManagerConfigTypeId = typeof ManagerConfigTypeId
 
 /**
- * Shard Manager configuration
+ * This is the Shard Manager configuration.
+ *
  * @param numberOfShards number of shards (see documentation on how to choose this), should be same on all nodes
  * @param apiPort port to expose the GraphQL API
  * @param rebalanceInterval interval for regular rebalancing of shards
@@ -50,11 +51,16 @@ export interface ManagerConfig {
 export const ManagerConfig: Context.Tag<ManagerConfig, ManagerConfig> = internal.managerConfigTag
 
 /**
+ * Uses the default as ManagerConfig.
+ *
  * @since 1.0.0
  * @category utils
  */
 export const defaults: Layer.Layer<ManagerConfig> = internal.defaults
+
 /**
+ * Reads the ManagerConfig from the provided Config.
+ *
  * @since 1.0.0
  * @category constructors
  */

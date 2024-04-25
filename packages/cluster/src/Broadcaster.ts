@@ -10,12 +10,14 @@ import type * as ShardingException from "./ShardingException.js"
 
 /**
  * An interface to communicate with a remote broadcast receiver
+ *
  * @since 1.0.0
  * @category models
  */
 export interface Broadcaster<Msg extends Message.Message.Any> {
   /**
    * Broadcast a message without waiting for a response (fire and forget)
+   *
    * @since 1.0.0
    */
   readonly broadcastDiscard: (
@@ -24,6 +26,7 @@ export interface Broadcaster<Msg extends Message.Message.Any> {
 
   /**
    * Broadcast a message and wait for a response from each consumer
+   *
    * @since 1.0.0
    */
   readonly broadcast: (

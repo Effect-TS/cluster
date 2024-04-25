@@ -9,7 +9,8 @@ import type * as Types from "effect/Types"
 import * as internal from "./internal/message.js"
 
 /**
- * A `Message<A>` is a request from a data source for a value of type `A`
+ * A Message is a request for an entity that will process it.
+ * A Message also has a PrimaryKey so that the receiver is eventually able to detect duplicated messages.
  *
  * @since 1.0.0
  * @category models
@@ -32,7 +33,7 @@ export namespace Message {
     | Message<any, any, never, never>
 
   /**
-   * Extracts the success type from a `MessageWithResult<A, E>`.
+   * Extracts the success type from a `Message`.
    *
    * @since 1.0.0
    * @category utils
@@ -40,7 +41,7 @@ export namespace Message {
   export type Success<S> = S extends Message<infer A, infer _AI, infer _E, infer _EI> ? A : never
 
   /**
-   * Extracts the success type from a `MessageWithResult<A, E>`.
+   * Extracts the error type from a `Message`.
    *
    * @since 1.0.0
    * @category utils
@@ -48,7 +49,7 @@ export namespace Message {
   export type Error<S> = S extends Message<infer _A, infer _AI, infer E, infer _EI> ? E : never
 
   /**
-   * Extracts the success type from a `MessageWithResult<A, E>`.
+   * Extracts the exit type from a `Message`.
    *
    * @since 1.0.0
    * @category utils
@@ -85,6 +86,8 @@ export const isMessageWithResult: (value: unknown) => value is Message<unknown, 
   internal.isMessageWithResult
 
 /**
+ * Extracts the exit schema from a Message. This schema will be used to encode the remote exit of the Message processor.
+ *
  * @since 1.0.0
  * @category utils
  */
@@ -93,6 +96,8 @@ export const exitSchema: <A extends Message.Any>(
 ) => Schema.Schema<Message.Exit<A>, unknown> = internal.exitSchema
 
 /**
+ * Extracts the failure schema from a Message. This schema will be used to encode remote failures of the Message processor.
+ *
  * @since 1.0.0
  * @category utils
  */
@@ -101,6 +106,8 @@ export const failureSchema: <A extends Message.Any>(
 ) => Schema.Schema<Message.Error<A>, unknown> = internal.failureSchema
 
 /**
+ * Extracts the success schema from a Message. This schema will be used to encode the remote success of the Message processor.
+ *
  * @since 1.0.0
  * @category utils
  */

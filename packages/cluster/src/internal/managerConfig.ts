@@ -16,9 +16,7 @@ export const ManagerConfigTypeId: ManagerConfig.ManagerConfigTypeId = Symbol.for
 
 /** @internal */
 export const managerConfigTag: Context.Tag<ManagerConfig.ManagerConfig, ManagerConfig.ManagerConfig> = Context
-  .GenericTag<
-    ManagerConfig.ManagerConfig
-  >("@services/managerConfigTag")
+  .GenericTag(ManagerConfigSymbolKey)
 
 /** @internal */
 const defaultValues: ManagerConfig.ManagerConfig = {

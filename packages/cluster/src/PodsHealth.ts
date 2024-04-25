@@ -26,6 +26,7 @@ export type PodsHealthTypeId = typeof PodsHealthTypeId
  * If the pod is alive, shards will not be unassigned because the pods might still be processing messages and might be responsive again.
  * If the pod is not alive, shards can be safely reassigned somewhere else.
  * A typical implementation for this is using k8s to check if the pod still exists.
+ *
  * @since 1.0.0
  * @category models
  */
@@ -43,6 +44,8 @@ export interface PodsHealth {
 }
 
 /**
+ * Constructs a PodsHealth from its implementation
+ *
  * @since 1.0.0
  * @category constructors
  */

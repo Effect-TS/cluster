@@ -38,6 +38,9 @@ export class Pod extends Schema.Class<Pod>(PodSymbolKey)({
   address: PodAddress.schema,
   version: Schema.String
 }) {
+  /**
+   * @since 1.0.0
+   */
   toString() {
     return `Pod(${this.address}, ${this.version})`
   }
