@@ -24,6 +24,12 @@ export type PodTypeId = typeof PodTypeId
 const PodTypeIdSchema = TypeIdSchema(PodSymbolKey, PodTypeId)
 
 /**
+ * A pod is an application server that is able to run entities. A pod can run multiple entities,
+ * but a single entity will live on a given pod at a time.
+ * Since this is an application server, it needs to have an unique identifier where it's addressed (PodAddress),
+ * and has a version of the application that's running on it.
+ * Version is used during the rebalance phase to give priority to newer application servers and slowly kill older ones.
+ *
  * @since 1.0.0
  * @category models
  */
@@ -31,7 +37,11 @@ export class Pod extends Schema.Class<Pod>(PodSymbolKey)({
   [PodTypeId]: Schema.propertySignature(PodTypeIdSchema).pipe(Schema.fromKey(PodSymbolKey)),
   address: PodAddress.schema,
   version: Schema.String
-}) {}
+}) {
+  toString() {
+    return `Pod(${this.address}, ${this.version})`
+  }
+}
 
 /**
  * @since 1.0.0
@@ -39,6 +49,8 @@ export class Pod extends Schema.Class<Pod>(PodSymbolKey)({
  */
 export namespace Pod {
   /**
+   * This is the shape that a Pod is represented over the wire.
+   *
    * @since 1.0.0
    * @category models
    */
@@ -46,6 +58,8 @@ export namespace Pod {
 }
 
 /**
+ * Given a value, ensures that it's a valid Pod.
+ *
  * @since 1.0.0
  * @category utils
  */
@@ -59,6 +73,8 @@ export function isPod(value: unknown): value is Pod {
 }
 
 /**
+ * Constructs a Pod from it's identifing PodAddress and application server version.
+ *
  * @since 1.0.0
  * @category constructors
  */
