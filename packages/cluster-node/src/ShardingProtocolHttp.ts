@@ -16,7 +16,7 @@ export const AssignShard_: Schema.Schema<
   { readonly shards: ReadonlyArray<ShardId.ShardId> },
   {
     readonly shards: ReadonlyArray<
-      { readonly "@effect/cluster/ShardId": "@effect/cluster/ShardId"; readonly value: number }
+      ShardId.ShardId.Encoded
     >
   }
 > = Schema.Struct({
@@ -29,7 +29,7 @@ export const AssignShard_: Schema.Schema<
  */
 export const UnassignShards_: Schema.Schema<
   { readonly shards: ReadonlyArray<ShardId.ShardId> },
-  { readonly shards: ReadonlyArray<ShardId.ShardId.From> }
+  { readonly shards: ReadonlyArray<ShardId.ShardId.Encoded> }
 > = Schema.Struct({
   shards: Schema.Array(ShardId.schema)
 })

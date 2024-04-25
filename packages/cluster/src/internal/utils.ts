@@ -1,3 +1,4 @@
+import * as Schema from "@effect/schema/Schema"
 import * as HashMap from "effect/HashMap"
 import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
@@ -46,22 +47,8 @@ export function groupBy<A, K>(f: (value: A) => K) {
 }
 
 /** @internal */
-export function showHashSet<A>(fn: (value: A) => string) {
-  return (fa: HashSet.HashSet<A>) => {
-    return "HashSet(" + Array.from(fa).map(fn).join("; ") + ")"
-  }
-}
-
-/** @internal */
-export function showHashMap<K, A>(fnK: (value: K) => string, fn: (value: A) => string) {
-  return (fa: HashMap.HashMap<K, A>) => {
-    return "HashMap(" + Array.from(fa).map(([key, value]) => fnK(key) + "=" + fn(value)).join("; ") + ")"
-  }
-}
-
-/** @internal */
-export function showOption<A>(fn: (value: A) => string) {
-  return (fa: Option.Option<A>) => {
-    return Option.match(fa, { onNone: () => "None()", onSome: (_) => "Some(" + fn(_) + ")" })
-  }
-}
+export const TypeIdSchema = <Key extends string, Symbol extends symbol>(key: Key, symbol: Symbol) =>
+  Schema.Literal(key).pipe(
+    Schema.compose(Schema.Symbol, { strict: false }),
+    Schema.compose(Schema.UniqueSymbolFromSelf(symbol), { strict: false })
+  )

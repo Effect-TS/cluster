@@ -1,14 +1,20 @@
 /**
  * @since 1.0.0
  */
-import type * as Schema from "@effect/schema/Schema"
-import * as internal from "./internal/podAddress.js"
+import * as Schema from "@effect/schema/Schema"
+import { TypeIdSchema } from "./internal/utils.js"
+
+/** @internal */
+const PodAddressSymbolKey = "@effect/cluster/PodAddress"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const PodAddressTypeId: unique symbol = internal.PodAddressTypeId
+export const PodAddressTypeId: unique symbol = Symbol.for(PodAddressSymbolKey)
+
+/** @internal */
+export const PodAddressTypeIdSchema = TypeIdSchema(PodAddressSymbolKey, PodAddressTypeId)
 
 /**
  * @since 1.0.0
@@ -20,10 +26,17 @@ export type PodAddressTypeId = typeof PodAddressTypeId
  * @since 1.0.0
  * @category models
  */
-export interface PodAddress {
-  readonly [PodAddressTypeId]: PodAddressTypeId
-  readonly host: string
-  readonly port: number
+export class PodAddress extends Schema.Class<PodAddress>(PodAddressSymbolKey)({
+  [PodAddressTypeId]: Schema.propertySignature(PodAddressTypeIdSchema).pipe(Schema.fromKey(PodAddressSymbolKey)),
+  host: Schema.String,
+  port: Schema.Number
+}) {
+  /**
+   * @since 1.0.0
+   */
+  toString() {
+    return `PodAddress(${this.host}:${this.port})`
+  }
 }
 
 /**
@@ -35,27 +48,29 @@ export namespace PodAddress {
    * @since 1.0.0
    * @category models
    */
-  export interface From {
-    readonly "@effect/cluster/PodAddress": "@effect/cluster/PodAddress"
-    readonly host: string
-    readonly port: number
-  }
+  export interface Encoded extends Schema.Schema.Encoded<typeof PodAddress> {}
 }
 
 /**
  * @since 1.0.0
  * @category constructors
  */
-export const make: (host: string, port: number) => PodAddress = internal.make
+export function make(host: string, port: number): PodAddress {
+  return new PodAddress({ [PodAddressTypeId]: PodAddressTypeId, host, port })
+}
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const isPodAddress: (value: unknown) => value is PodAddress = internal.isPodAddress
-
-/** @internal */
-export const show: (podAddress: PodAddress) => string = internal.show
+export function isPodAddress(value: unknown): value is PodAddress {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    PodAddressTypeId in value &&
+    value[PodAddressTypeId] === PodAddressTypeId
+  )
+}
 
 /**
  * This is the schema for a value.
@@ -65,5 +80,5 @@ export const show: (podAddress: PodAddress) => string = internal.show
  */
 export const schema: Schema.Schema<
   PodAddress,
-  PodAddress.From
-> = internal.schema
+  PodAddress.Encoded
+> = Schema.asSchema(PodAddress)

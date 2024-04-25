@@ -19,7 +19,7 @@ import * as Stream from "effect/Stream"
 import * as RefSynchronized from "effect/SynchronizedRef"
 import * as ManagerConfig from "../ManagerConfig.js"
 import type * as Pod from "../Pod.js"
-import * as PodAddress from "../PodAddress.js"
+import type * as PodAddress from "../PodAddress.js"
 import * as Pods from "../Pods.js"
 import * as PodsHealth from "../PodsHealth.js"
 import * as ShardId from "../ShardId.js"
@@ -29,7 +29,7 @@ import type * as ShardManager from "../ShardManager.js"
 import * as Storage from "../Storage.js"
 import * as PodWithMetadata from "./podWithMetadata.js"
 import * as ShardManagerState from "./shardManagerState.js"
-import { groupBy, minByOption, showHashSet } from "./utils.js"
+import { groupBy, minByOption } from "./utils.js"
 
 /** @internal */
 const ShardManagerSymbolKey = "@effect/cluster/ShardManager"
@@ -62,7 +62,7 @@ function make(
 
   function register(pod: Pod.Pod) {
     return pipe(
-      Effect.logDebug("Registering " + PodAddress.show(pod.address) + "@" + pod.version),
+      Effect.logDebug("Registering " + (pod.address) + "@" + pod.version),
       Effect.zipRight(
         RefSynchronized.updateAndGetEffect(stateRef, (state) =>
           pipe(
@@ -321,10 +321,10 @@ function make(
         yield* _(
           Effect.logDebug(
             "Failed to rebalance pods: " +
-              showHashSet(PodAddress.show)(failedPods) +
-              " failed pinged: " + showHashSet(PodAddress.show)(failedPingedPods) +
-              " failed assigned: " + showHashSet(PodAddress.show)(failedAssignedPods) +
-              " failed unassigned: " + showHashSet(PodAddress.show)(failedUnassignedPods)
+              (failedPods) +
+              " failed pinged: " + (failedPingedPods) +
+              " failed assigned: " + (failedAssignedPods) +
+              " failed unassigned: " + (failedUnassignedPods)
           )
         )
       }

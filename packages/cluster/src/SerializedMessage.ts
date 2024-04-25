@@ -1,14 +1,17 @@
 /**
  * @since 1.0.0
  */
-import type * as Schema from "@effect/schema/Schema"
-import * as internal from "./internal/serializedMessage.js"
+import * as Schema from "@effect/schema/Schema"
+import { TypeIdSchema } from "./internal/utils.js"
+
+/** @internal */
+const SerializedMessageSymbolKey = "@effect/cluster/SerializedMessage"
 
 /**
  * @since 1.0.0
  * @category symbols
  */
-export const SerializedMessageTypeId: unique symbol = internal.SerializedMessageTypeId
+export const SerializedMessageTypeId: unique symbol = Symbol.for(SerializedMessageSymbolKey)
 
 /**
  * @since 1.0.0
@@ -16,14 +19,19 @@ export const SerializedMessageTypeId: unique symbol = internal.SerializedMessage
  */
 export type SerializedMessageTypeId = typeof SerializedMessageTypeId
 
+/** @internal */
+const SerializedMessageTypeIdSchema = TypeIdSchema(SerializedMessageSymbolKey, SerializedMessageTypeId)
+
 /**
  * @since 1.0.0
  * @category models
  */
-export interface SerializedMessage {
-  readonly [SerializedMessageTypeId]: SerializedMessageTypeId
-  readonly value: string
-}
+export class SerializedMessage extends Schema.Class<SerializedMessage>(SerializedMessageSymbolKey)({
+  [SerializedMessageTypeId]: Schema.propertySignature(SerializedMessageTypeIdSchema).pipe(
+    Schema.fromKey(SerializedMessageSymbolKey)
+  ),
+  value: Schema.String
+}) {}
 
 /**
  * @since 1.0.0
@@ -34,10 +42,7 @@ export namespace SerializedMessage {
    * @since 1.0.0
    * @category models
    */
-  export interface From {
-    readonly "@effect/cluster/SerializedMessage": "@effect/cluster/SerializedMessage"
-    readonly value: string
-  }
+  export interface Encoded extends Schema.Schema.Encoded<typeof SerializedMessage> {}
 }
 
 /**
@@ -46,13 +51,22 @@ export namespace SerializedMessage {
  * @since 1.0.0
  * @category constructors
  */
-export const make: (value: string) => SerializedMessage = internal.make
+export function make(value: string): SerializedMessage {
+  return new SerializedMessage({ [SerializedMessageTypeId]: SerializedMessageTypeId, value })
+}
 
 /**
  * @since 1.0.0
  * @category utils
  */
-export const isSerializedMessage: (value: unknown) => value is SerializedMessage = internal.isSerializedMessage
+export function isSerializedMessage(value: unknown): value is SerializedMessage {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    SerializedMessageTypeId in value &&
+    value[SerializedMessageTypeId] === SerializedMessageTypeId
+  )
+}
 
 /**
  * This is the schema for a value.
@@ -62,5 +76,5 @@ export const isSerializedMessage: (value: unknown) => value is SerializedMessage
  */
 export const schema: Schema.Schema<
   SerializedMessage,
-  SerializedMessage.From
-> = internal.schema
+  SerializedMessage.Encoded
+> = Schema.asSchema(SerializedMessage)
