@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import * as Schema from "@effect/schema/Schema"
+import { TypeIdSchema } from "./internal/utils.js"
 
 /** @internal */
 const ShardIdSymbolKey = "@effect/cluster/ShardId"
@@ -19,11 +20,7 @@ export const ShardIdTypeId: unique symbol = Symbol.for(ShardIdSymbolKey)
 export type ShardIdTypeId = typeof ShardIdTypeId
 
 /** @internal */
-const ShardIdTypeIdSchema = Schema.compose(
-  Schema.compose(Schema.Literal(ShardIdSymbolKey), Schema.Symbol, { strict: false }),
-  Schema.UniqueSymbolFromSelf(ShardIdTypeId),
-  { strict: false }
-)
+const ShardIdTypeIdSchema = TypeIdSchema(ShardIdSymbolKey, ShardIdTypeId)
 
 /**
  * @since 1.0.0

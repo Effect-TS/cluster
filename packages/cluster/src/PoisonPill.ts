@@ -5,6 +5,7 @@ import * as Schema from "@effect/schema/Schema"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Queue from "effect/Queue"
+import { TypeIdSchema } from "./internal/utils.js"
 
 /** @internal */
 const PoisonPillSymbolKey = "@effect/cluster/PoisonPill"
@@ -22,11 +23,7 @@ export const PoisonPillTypeId: unique symbol = Symbol.for(PoisonPillSymbolKey)
 export type PoisonPillTypeId = typeof PoisonPillTypeId
 
 /** @internal */
-const PoisonPillTypeIdSchema = Schema.compose(
-  Schema.compose(Schema.Literal(PoisonPillSymbolKey), Schema.Symbol, { strict: false }),
-  Schema.UniqueSymbolFromSelf(PoisonPillTypeId),
-  { strict: false }
-)
+const PoisonPillTypeIdSchema = TypeIdSchema(PoisonPillSymbolKey, PoisonPillTypeId)
 
 /**
  * @since 1.0.0

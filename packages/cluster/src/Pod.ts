@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import * as Schema from "@effect/schema/Schema"
+import { TypeIdSchema } from "./internal/utils.js"
 import * as PodAddress from "./PodAddress.js"
 
 /** @internal */
@@ -20,11 +21,7 @@ export const PodTypeId: unique symbol = Symbol.for(PodSymbolKey)
 export type PodTypeId = typeof PodTypeId
 
 /** @internal */
-const PodTypeIdSchema = Schema.compose(
-  Schema.compose(Schema.Literal(PodSymbolKey), Schema.Symbol, { strict: false }),
-  Schema.UniqueSymbolFromSelf(PodTypeId),
-  { strict: false }
-)
+const PodTypeIdSchema = TypeIdSchema(PodSymbolKey, PodTypeId)
 
 /**
  * @since 1.0.0

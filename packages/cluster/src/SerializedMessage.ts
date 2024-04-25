@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import * as Schema from "@effect/schema/Schema"
+import { TypeIdSchema } from "./internal/utils.js"
 
 /** @internal */
 const SerializedMessageSymbolKey = "@effect/cluster/SerializedMessage"
@@ -19,11 +20,7 @@ export const SerializedMessageTypeId: unique symbol = Symbol.for(SerializedMessa
 export type SerializedMessageTypeId = typeof SerializedMessageTypeId
 
 /** @internal */
-const SerializedMessageTypeIdSchema = Schema.compose(
-  Schema.compose(Schema.Literal(SerializedMessageSymbolKey), Schema.Symbol, { strict: false }),
-  Schema.UniqueSymbolFromSelf(SerializedMessageTypeId),
-  { strict: false }
-)
+const SerializedMessageTypeIdSchema = TypeIdSchema(SerializedMessageSymbolKey, SerializedMessageTypeId)
 
 /**
  * @since 1.0.0

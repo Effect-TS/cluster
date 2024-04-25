@@ -1,3 +1,4 @@
+import * as Schema from "@effect/schema/Schema"
 import * as HashMap from "effect/HashMap"
 import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
@@ -44,3 +45,10 @@ export function groupBy<A, K>(f: (value: A) => K) {
     return current
   }
 }
+
+/** @internal */
+export const TypeIdSchema = <Key extends string, Symbol extends symbol>(key: Key, symbol: Symbol) =>
+  Schema.Literal(key).pipe(
+    Schema.compose(Schema.Symbol, { strict: false }),
+    Schema.compose(Schema.UniqueSymbolFromSelf(symbol), { strict: false })
+  )

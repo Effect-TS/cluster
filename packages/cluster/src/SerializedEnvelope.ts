@@ -3,8 +3,8 @@
  */
 import * as Schema from "@effect/schema/Schema"
 import * as Serializable from "@effect/schema/Serializable"
-import { pipe } from "effect/Function"
 import * as PrimaryKey from "effect/PrimaryKey"
+import { TypeIdSchema } from "./internal/utils.js"
 import * as SerializedMessage from "./SerializedMessage.js"
 
 /** @internal */
@@ -17,13 +17,7 @@ const SerializedEnvelopeSymbolKey = "@effect/cluster/SerializedEnvelope"
 export const SerializedEnvelopeTypeId: unique symbol = Symbol.for(SerializedEnvelopeSymbolKey)
 
 /** @internal */
-const SerializedEnvelopeTypeIdSchema = pipe(
-  Schema.compose(
-    Schema.compose(Schema.Literal(SerializedEnvelopeSymbolKey), Schema.Symbol, { strict: false }),
-    Schema.UniqueSymbolFromSelf(SerializedEnvelopeTypeId),
-    { strict: false }
-  )
-)
+const SerializedEnvelopeTypeIdSchema = TypeIdSchema(SerializedEnvelopeSymbolKey, SerializedEnvelopeTypeId)
 
 /**
  * @since 1.0.0
