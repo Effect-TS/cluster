@@ -3,7 +3,6 @@
  */
 import type * as Schema from "@effect/schema/Schema"
 import type * as Effect from "effect/Effect"
-import type * as Option from "effect/Option"
 import * as internal from "./internal/messageState.js"
 
 /**
@@ -41,7 +40,7 @@ export interface MessageStateAcknowledged {
 export interface MessageStateProcessed<A> {
   readonly [MessageStateTypeId]: MessageStateTypeId
   readonly _tag: "@effect/cluster/MessageState/Processed"
-  readonly result: Option.Option<A>
+  readonly result: A
 }
 
 /**
@@ -66,7 +65,7 @@ export namespace MessageState {
     readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
     readonly _tag: "@effect/cluster/MessageState/Acknowledged"
   } | {
-    readonly result: Schema.OptionEncoded<I>
+    readonly result: I
     readonly "@effect/cluster/MessageState": "@effect/cluster/MessageState"
     readonly _tag: "@effect/cluster/MessageState/Processed"
   }
@@ -102,7 +101,7 @@ export const Acknowledged: MessageStateAcknowledged = internal.Acknowledged
  * @since 1.0.0
  * @category constructors
  */
-export const Processed: <A>(result: Option.Option<A>) => MessageStateProcessed<A> = internal.Processed
+export const Processed: <A>(result: A) => MessageStateProcessed<A> = internal.Processed
 
 /**
  * Effectfully transform the <A> type of the MessageState<A>.

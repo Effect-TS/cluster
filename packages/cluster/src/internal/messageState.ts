@@ -1,7 +1,6 @@
 import * as Schema from "@effect/schema/Schema"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
-import * as Option from "effect/Option"
 import type * as MessageState from "../MessageState.js"
 
 /** @internal */
@@ -24,7 +23,7 @@ export const Acknowledged: MessageState.MessageStateAcknowledged = {
 }
 
 /** @internal */
-export function Processed<A>(result: Option.Option<A>): MessageState.MessageStateProcessed<A> {
+export function Processed<A>(result: A): MessageState.MessageStateProcessed<A> {
   return ({
     [MessageStateTypeId]: MessageStateTypeId,
     _tag: "@effect/cluster/MessageState/Processed",
@@ -59,14 +58,7 @@ export function mapEffect<A, B, R, E>(
     match({
       onAcknowledged: Effect.succeed,
       onProcessed: (_) =>
-        pipe(
-          _.result,
-          Option.match({
-            onNone: () => Effect.succeed(Processed(Option.none())) as Effect.Effect<MessageState.MessageState<B>, E, R>,
-            onSome: (_) =>
-              Effect.map(fn(_), (_) => Processed(Option.some(_))) as Effect.Effect<MessageState.MessageState<B>, E, R>
-          })
-        )
+        Effect.map(fn(_.result), (_) => Processed(_)) as Effect.Effect<MessageState.MessageState<B>, E, R>
     })
   )
 }
@@ -98,7 +90,7 @@ export function schema<A, I>(
           { strict: false }
         ),
         _tag: Schema.Literal("@effect/cluster/MessageState/Processed"),
-        result: Schema.Option(result)
+        result
       }),
       { [MessageStateSymbolKey]: MessageStateTypeId }
     )

@@ -15,11 +15,11 @@ import * as Pg from "@effect/sql-pg"
 import { PostgreSqlContainer } from "@testcontainers/postgresql"
 import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
-import * as Option from "effect/Option"
 import * as PrimaryKey from "effect/PrimaryKey"
 import * as Secret from "effect/Secret"
 import { describe, expect, it } from "vitest"
@@ -119,7 +119,7 @@ describe.concurrent("AtLeastOncePostgres", () => {
           SampleEntity
         )(
           pipe(
-            RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Processed(Option.none()))),
+            RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Processed(Exit.void))),
             AtLeastOnce.atLeastOnceRecipientBehaviour
           )
         )
