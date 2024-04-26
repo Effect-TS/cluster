@@ -10,11 +10,11 @@ import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as NodeClient from "@effect/platform-node/NodeHttpClient"
 import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
 import { pipe } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
-import * as Option from "effect/Option"
 import * as Ref from "effect/Ref"
 import { CounterEntity } from "./sample-common.js"
 
@@ -29,19 +29,19 @@ const liveLayer = Sharding.registerEntity(
           return pipe(
             Ref.update(stateRef, (count) => count + 1),
             Effect.zipLeft(Effect.logInfo(`Counter ${entityId} incremented`)),
-            Effect.as(MessageState.Processed(Option.none()))
+            Effect.as(MessageState.Processed(Exit.void))
           )
         case "Decrement":
           return pipe(
             Ref.update(stateRef, (count) => count - 1),
             Effect.zipLeft(Effect.logInfo(`Counter ${entityId} decremented`)),
-            Effect.as(MessageState.Processed(Option.none()))
+            Effect.as(MessageState.Processed(Exit.void))
           )
         case "GetCurrent":
           return pipe(
             Ref.get(stateRef),
             Effect.exit,
-            Effect.map((result) => MessageState.Processed(Option.some(result)))
+            Effect.map((result) => MessageState.Processed(result))
           )
       }
     }
