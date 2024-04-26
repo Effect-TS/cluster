@@ -174,9 +174,7 @@ describe.concurrent("SampleTests", () => {
         Sharding.registerEntity(
           SampleEntity
         )(
-          RecipientBehaviour.fromFunctionEffect(() =>
-            Effect.succeed(MessageState.Processed(Option.some(Exit.succeed(42))))
-          )
+          RecipientBehaviour.fromFunctionEffect(() => Effect.succeed(MessageState.Processed(Exit.succeed(42))))
         )
       )
 
@@ -198,8 +196,8 @@ describe.concurrent("SampleTests", () => {
         )(
           RecipientBehaviour.fromFunctionEffect((_, msg) =>
             msg._tag === "FailableMessageWithResult"
-              ? Effect.succeed(MessageState.Processed(Option.some(Exit.fail("custom-error"))))
-              : Effect.succeed(MessageState.Processed(Option.none()))
+              ? Effect.succeed(MessageState.Processed(Exit.fail("custom-error")))
+              : Effect.succeed(MessageState.Processed(Exit.void))
           )
         )
       )
@@ -252,7 +250,7 @@ describe.concurrent("SampleTests", () => {
               case "BroadcastIncrement":
                 return pipe(Ref.update(ref, (_) => _ + 1), Effect.as(MessageState.Acknowledged))
               case "GetIncrement":
-                return pipe(Ref.get(ref), Effect.map((_) => MessageState.Processed(Option.some(Exit.succeed(_)))))
+                return pipe(Ref.get(ref), Effect.map((_) => MessageState.Processed(Exit.succeed(_))))
             }
           })
         )

@@ -514,12 +514,7 @@ function make(
               state,
               MessageState.match({
                 onAcknowledged: () => Effect.fail(new ShardingException.NoResultInProcessedMessageStateException()),
-                onProcessed: (state) =>
-                  Option.isNone(state.result)
-                    ? Effect.fail(
-                      new ShardingException.NoResultInProcessedMessageStateException()
-                    )
-                    : Effect.succeed(state.result.value)
+                onProcessed: (state) => Effect.succeed(state.result)
               })
             ))
           ),
@@ -640,10 +635,7 @@ function make(
                       MessageState.match({
                         onAcknowledged: () =>
                           Effect.fail(new ShardingException.NoResultInProcessedMessageStateException()),
-                        onProcessed: (state) =>
-                          Option.isNone(state.result)
-                            ? Effect.fail(new ShardingException.NoResultInProcessedMessageStateException())
-                            : Effect.succeed(state.result.value)
+                        onProcessed: (state) => Effect.succeed(state.result)
                       })
                     ))
                   ),
