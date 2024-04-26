@@ -110,20 +110,18 @@ export function registerTopic<Msg extends Message.Message.Any>(
  * @internal
  */
 export function messenger<Msg extends Message.Message.Any>(
-  entityType: RecipientType.EntityType<Msg>,
-  sendTimeout?: Option.Option<Duration.Duration>
+  entityType: RecipientType.EntityType<Msg>
 ): Effect.Effect<Messenger<Msg>, never, Sharding.Sharding> {
-  return Effect.map(shardingTag, (_) => _.messenger(entityType, sendTimeout))
+  return Effect.map(shardingTag, (_) => _.messenger(entityType))
 }
 
 /**
  * @internal
  */
 export function broadcaster<Msg extends Message.Message.Any>(
-  topicType: RecipientType.TopicType<Msg>,
-  sendTimeout?: Option.Option<Duration.Duration>
+  topicType: RecipientType.TopicType<Msg>
 ): Effect.Effect<Broadcaster.Broadcaster<Msg>, never, Sharding.Sharding> {
-  return Effect.map(shardingTag, (_) => _.broadcaster(topicType, sendTimeout))
+  return Effect.map(shardingTag, (_) => _.broadcaster(topicType))
 }
 
 /**
@@ -494,22 +492,12 @@ function make(
   }
 
   function messenger<Msg extends Message.Message.Any>(
-    entityType: RecipientType.EntityType<Msg>,
-    sendTimeout: Option.Option<Duration.Duration> = Option.none()
+    entityType: RecipientType.EntityType<Msg>
   ): Messenger<Msg> {
-    const timeout = pipe(
-      sendTimeout,
-      Option.getOrElse(() => config.sendTimeout)
-    )
-
     function sendDiscard(entityId: string) {
       return (message: Msg) =>
         pipe(
           sendMessage(entityId, message),
-          Effect.timeoutFail({
-            onTimeout: () => new ShardingException.SendTimeoutException(),
-            duration: timeout
-          }),
           Effect.asVoid
         )
     }
@@ -539,11 +527,7 @@ function make(
             Schedule.fixed(100),
             Schedule.whileInput((error: unknown) => ShardingException.isNoResultInProcessedMessageStateException(error))
           )),
-          Effect.timeoutFail({
-            onTimeout: () => new ShardingException.SendTimeoutException(),
-            duration: timeout
-          }),
-          Effect.flatMap((_) => _),
+          Effect.flatten,
           Effect.interruptible
         )
       }
@@ -586,14 +570,8 @@ function make(
   }
 
   function broadcaster<Msg extends Message.Message.Any>(
-    topicType: RecipientType.TopicType<Msg>,
-    sendTimeout: Option.Option<Duration.Duration> = Option.none()
+    topicType: RecipientType.TopicType<Msg>
   ): Broadcaster.Broadcaster<Msg> {
-    const timeout = pipe(
-      sendTimeout,
-      Option.getOrElse(() => config.sendTimeout)
-    )
-
     function sendMessage<A extends Msg>(
       topicId: string,
       message: A
@@ -626,10 +604,6 @@ function make(
                       ShardingException.isEntityNotManagedByThisPodException(error)
                     )
                   )),
-                  Effect.timeoutFail({
-                    onTimeout: () => new ShardingException.SendTimeoutException(),
-                    duration: timeout
-                  }),
                   Effect.either,
                   Effect.map((res) => [pod, res] as const)
                 ),
@@ -644,10 +618,6 @@ function make(
       return (message: Msg) =>
         pipe(
           sendMessage(topicId, message),
-          Effect.timeoutFail({
-            onTimeout: () => new ShardingException.SendTimeoutException(),
-            duration: timeout
-          }),
           Effect.asVoid
         )
     }

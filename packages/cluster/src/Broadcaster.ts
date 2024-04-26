@@ -17,9 +17,8 @@ import type * as ShardingException from "./ShardingException.js"
 export interface Broadcaster<Msg extends Message.Message.Any> {
   /**
    * Broadcast a message without waiting for a response (fire and forget)
-   * Remember that due to network being unreliable, the messenger may attempt to send multiple times the same message.
-   * The sendTimeout is exactly there to prevent indefinite sending of messages.
    *
+   * You can use Effect timeout to get send timeouts. The default behaviour is to send the message indifinetely.
    * @since 1.0.0
    */
   readonly broadcastDiscard: (
@@ -28,9 +27,8 @@ export interface Broadcaster<Msg extends Message.Message.Any> {
 
   /**
    * Broadcast a message and wait for a response from each consumer
-   * Remember that due to network being unreliable, the messenger may attempt to send multiple times the same message.
-   * The sendTimeout is exactly there to prevent indefinite sending of messages.
    *
+   * You can use Effect timeout to get send timeouts. The default behaviour is to send the message indifinetely
    * @since 1.0.0
    */
   readonly broadcast: (

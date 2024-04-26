@@ -83,8 +83,7 @@ describe.concurrent("SampleTests", () => {
     Layer.provide(ShardManagerClient.local),
     Layer.provide(
       ShardingConfig.withDefaults({
-        entityTerminationTimeout: Duration.millis(4000),
-        sendTimeout: Duration.millis(1000)
+        entityTerminationTimeout: Duration.millis(4000)
       })
     )
   )
@@ -482,6 +481,10 @@ describe.concurrent("SampleTests", () => {
       const msg = new SampleMessageWithResult({ id: "a", value: 42 })
       const replyFiber = yield* _(
         messenger.send("entity1")(msg),
+        Effect.timeoutFail({
+          onTimeout: () => "timeout",
+          duration: Duration.millis(1000)
+        }),
         Effect.fork
       )
 
@@ -489,7 +492,7 @@ describe.concurrent("SampleTests", () => {
       yield* _(Sharding.unregister)
 
       const exit = yield* _(Fiber.await(replyFiber))
-      const expectedExit = Exit.fail(new ShardingException.SendTimeoutException())
+      const expectedExit = Exit.fail("timeout")
 
       expect(Exit.isFailure(exit)).toBe(true)
       expect(exit.toString() === expectedExit.toString()).toBe(true)
