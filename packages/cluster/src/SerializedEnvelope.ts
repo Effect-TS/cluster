@@ -26,6 +26,9 @@ const SerializedEnvelopeTypeIdSchema = TypeIdSchema(SerializedEnvelopeSymbolKey,
 export type SerializedEnvelopeTypeId = typeof SerializedEnvelopeTypeId
 
 /**
+ * A SerializedEnvelope is the message that goes over the wire between pods.
+ * Inside the Envelope, you have the encoded messages, plus some informations on where it should be routed to.
+ *
  * @since 1.0.0
  * @category models
  */
@@ -83,6 +86,8 @@ export function make(
 }
 
 /**
+ * Ensures that the given value is a SerializedEnvelope.
+ *
  * @since 1.0.0
  * @category utils
  */

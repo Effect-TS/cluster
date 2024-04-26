@@ -1,6 +1,5 @@
 /**
  * @since 1.0.0
- * This module provides the context that is given to a RecipientBehaviour
  */
 import type * as Message from "@effect/cluster/Message"
 import type * as Context from "effect/Context"
@@ -22,7 +21,9 @@ export const RecipientBehaviourContextTypeId: unique symbol = internal.Recipient
 export type RecipientBehaviourContextTypeId = typeof RecipientBehaviourContextTypeId
 
 /**
- * The context where a RecipientBehaviour is running, knows the current entityId, entityType, etc...
+ * This is the context information that is available to the RecipientBehaviour and has general informations
+ * about this specific entity, like the entityId or the recipientType.
+ *
  * @since 1.0.0
  * @category models
  */
@@ -35,7 +36,8 @@ export interface RecipientBehaviourContext {
 }
 
 /**
- * A tag to access current RecipientBehaviour
+ * A tag to access current RecipientBehaviourContext
+ *
  * @since 1.0.0
  * @category context
  */
@@ -44,6 +46,7 @@ export const RecipientBehaviourContext: Context.Tag<RecipientBehaviourContext, R
 
 /**
  * Creates a new RecipientBehaviourContext
+ *
  * @since 1.0.0
  * @category constructors
  */
@@ -53,6 +56,7 @@ export const make: (
 
 /**
  * Gets the current entityId
+ *
  * @since 1.0.0
  * @category utils
  */
@@ -60,13 +64,15 @@ export const entityId: Effect.Effect<string, never, RecipientBehaviourContext> =
 
 /**
  * Gets the current shardId
+ *
  * @since 1.0.0
  * @category utils
  */
 export const shardId: Effect.Effect<ShardId.ShardId, never, RecipientBehaviourContext> = internal.shardId
 
 /**
- * Gets the current shardId
+ * Gets the current recipientType
+ *
  * @since 1.0.0
  * @category utils
  */
@@ -77,7 +83,8 @@ export const recipientType: Effect.Effect<
 > = internal.recipientType
 
 /**
- * Forks the shutdown of the current recipient
+ * Forks the shutdown of the current recipient behaviour as soon as possible.
+ *
  * @since 1.0.0
  * @category utils
  */

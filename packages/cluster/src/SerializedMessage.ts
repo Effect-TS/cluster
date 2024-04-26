@@ -23,6 +23,8 @@ export type SerializedMessageTypeId = typeof SerializedMessageTypeId
 const SerializedMessageTypeIdSchema = TypeIdSchema(SerializedMessageSymbolKey, SerializedMessageTypeId)
 
 /**
+ * Represents a Message that has been serialized.
+ *
  * @since 1.0.0
  * @category models
  */

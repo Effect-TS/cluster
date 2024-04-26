@@ -30,6 +30,8 @@ const PoisonPillTypeIdSchema = TypeIdSchema(PoisonPillSymbolKey, PoisonPillTypeI
  */
 export namespace PoisonPill {
   /**
+   * This is the shape that a PoisonPill takes over the wire.
+   *
    * @since 1.0.0
    * @category models
    */
@@ -37,6 +39,10 @@ export namespace PoisonPill {
 }
 
 /**
+ * A PoisonPill is a special value that tells a behaviour entity to shut itself down.
+ * PoisonPill is handled only when you are using a Queue-based RecipientBehaviour.
+ * Other RecipientBehaviour such as fromFunctionEffect would not care about PoisonPill.
+ *
  * @since 1.0.0
  * @category models
  */
@@ -46,7 +52,7 @@ export class PoisonPill extends Schema.Class<PoisonPill>(PoisonPillSymbolKey)({
 }
 
 /**
- * `PoisonPill`
+ * Constructs a new PosionPill
  *
  * @since 1.0.0
  * @category constructors
@@ -56,6 +62,8 @@ export const make: Effect.Effect<PoisonPill> = Effect.succeed(
 )
 
 /**
+ * Checks if the given value is a PoisonPill.
+ *
  * @since 1.0.0
  * @category utils
  */
@@ -69,7 +77,8 @@ export function isPoisonPill(value: unknown): value is PoisonPill {
 }
 
 /**
- * This is the schema for a value.
+ * This is the schema for a PoisonPill that is used to encode the value over the wire.
+ * This is useful if you want a behavior that can be shut down from an external message.
  *
  * @since 1.0.0
  * @category schema

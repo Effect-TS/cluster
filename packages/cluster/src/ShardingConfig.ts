@@ -24,7 +24,7 @@ export type ShardingConfigTypeId = typeof ShardingConfigTypeId
  * @param numberOfShards number of shards (see documentation on how to choose this), should be same on all nodes
  * @param selfHost hostname or IP address of the current pod
  * @param shardingPort port used for pods to communicate together
- * @param shardManagerUri url of the Shard Manager GraphQL API
+ * @param shardManagerUri url of the Shard Manager API
  * @param serverVersion version of the current pod
  * @param entityMaxIdleTime time of inactivity (without receiving any message) after which an entity will be interrupted
  * @param entityTerminationTimeout time we give to an entity to handle the termination message before interrupting it
@@ -54,18 +54,24 @@ export interface ShardingConfig {
 export const ShardingConfig: Context.Tag<ShardingConfig, ShardingConfig> = internal.shardingConfigTag
 
 /**
+ * Provides the default values for the ShardingConfig.
+ *
  * @since 1.0.0
  * @category layers
  */
 export const defaults: Layer.Layer<ShardingConfig> = internal.defaults
 
 /**
+ * Provides the ShardingConfig, values that are omitted will be read from the defaults
+ *
  * @since 1.0.0
  * @category layers
  */
 export const withDefaults: (customs: Partial<ShardingConfig>) => Layer.Layer<ShardingConfig> = internal.withDefaults
 
 /**
+ * Reads the ShardingConfig from the effect/ConfigProvider
+ *
  * @since 1.0.0
  * @category layers
  */
