@@ -83,6 +83,8 @@ export interface Pods {
 export const Pods: Context.Tag<Pods, Pods> = internal.podsTag
 
 /**
+ * Constructs a Pods service from its implementation
+ *
  * @since 1.0.0
  * @category context
  */

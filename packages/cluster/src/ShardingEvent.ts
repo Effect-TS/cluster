@@ -12,6 +12,8 @@ interface ShardsAssigned {
 }
 
 /**
+ * Constructs the event that occurs when new shards are assigned to Pod.
+ *
  * @since 1.0.0
  * @category constructors
  */
@@ -29,6 +31,7 @@ interface ShardsUnassigned {
 }
 
 /**
+ * Constructs the event that occurs when shards are unassigned to a Pod
  * @since 1.0.0
  * @category constructors
  */
@@ -45,6 +48,8 @@ interface PodHealthChecked {
 }
 
 /**
+ * Constructs the event that occurs when the health of a Pod has been checked
+ *
  * @since 1.0.0
  * @category constructors
  */
@@ -58,6 +63,8 @@ interface PodRegistered {
 }
 
 /**
+ * Constructs the event that occurs when a new Pod has registered
+ *
  * @since 1.0.0
  * @category constructors
  */
@@ -71,6 +78,8 @@ interface PodUnregistered {
 }
 
 /**
+ * Constructs the event that occurs when a pod has unregistered
+ *
  * @since 1.0.0
  * @category constructors
  */
@@ -79,6 +88,8 @@ export function PodUnregistered(pod: PodAddress.PodAddress): PodUnregistered {
 }
 
 /**
+ * This are the events that may occur over the ShardManager during its lifetime.
+ *
  * @since 1.0.0
  * @category models
  */

@@ -24,6 +24,8 @@ export const ShardManagerClientTypeId: unique symbol = internal.ShardManagerClie
 export type ShardManagerClientTypeId = typeof ShardManagerClientTypeId
 
 /**
+ * ShardManagerClient provides the methods exposed by the ShardManager and called by the Pod.
+ *
  * @since 1.0.0
  * @category models
  */

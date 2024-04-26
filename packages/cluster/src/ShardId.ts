@@ -23,6 +23,10 @@ export type ShardIdTypeId = typeof ShardIdTypeId
 const ShardIdTypeIdSchema = TypeIdSchema(ShardIdSymbolKey, ShardIdTypeId)
 
 /**
+ * A shard is a logical grouping of multiple entities. There could be thousands of entities in your system,
+ * so instead of managing every single entity id, the shard manager group them by shard id, and when they are assigned
+ * or moved around, we always move all the entities with the same shard id.
+ *
  * @since 1.0.0
  * @category models
  */
@@ -44,6 +48,8 @@ export class ShardId extends Schema.Class<ShardId>(ShardIdSymbolKey)({
  */
 export namespace ShardId {
   /**
+   * This is the shape that a shard id has over the wire.
+   *
    * @since 1.0.0
    * @category models
    */
@@ -51,6 +57,9 @@ export namespace ShardId {
 }
 
 /**
+ * Constructs a shard id from its numerical value.
+ * The shard id is currently built up by making the hash of the entity id, and then modulo the max amount of shards configured in ManagerConfig.
+ *
  * @since 1.0.0
  * @category constructors
  */
@@ -59,7 +68,7 @@ export function make(value: number): ShardId {
 }
 
 /**
- * This is the schema for a value.
+ * This is the schema for a ShardId.
  *
  * @since 1.0.0
  * @category schema

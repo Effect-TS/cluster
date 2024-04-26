@@ -19,7 +19,8 @@ export const MessageStateTypeId: unique symbol = internal.MessageStateTypeId
 export type MessageStateTypeId = typeof MessageStateTypeId
 
 /**
- * A message state given to just acknowledged messages
+ * A message state given to just acknowledged messages.
+ * This state tells the sender that the receiver has received the message and will eventually process it later.
  *
  * @since 1.0.0
  * @category models
@@ -30,7 +31,9 @@ export interface MessageStateAcknowledged {
 }
 
 /**
- * A message state given to processed messages
+ * A message state given to processed messages.
+ * This state tells the sender that the receiver has already received and processed the message.
+ * This will also tell the sender the result for this message.
  *
  * @since 1.0.0
  * @category models
@@ -42,6 +45,9 @@ export interface MessageStateProcessed<A> {
 }
 
 /**
+ * Once a Message is sent to an entity to be processed,
+ * the state of that message over that entity is either Acknoledged (not yet processed) or Processed.
+ *
  * @since 1.0.0
  * @category models
  */
@@ -67,30 +73,40 @@ export namespace MessageState {
 }
 
 /**
+ * Ensures that the given value is a MessageState
+ *
  * @since 1.0.0
  * @category utils
  */
 export const isMessageState = internal.isMessageState
 
 /**
+ * Match over the possible states of a MessageState
+ *
  * @since 1.0.0
  * @category utils
  */
 export const match = internal.match
 
 /**
+ * Constructs an AcknowledgedMessageState.
+ *
  * @since 1.0.0
  * @category constructors
  */
 export const Acknowledged: MessageStateAcknowledged = internal.Acknowledged
 
 /**
+ * Constructs a ProcessedMessageState from the result of the message being processed.
+ *
  * @since 1.0.0
  * @category constructors
  */
 export const Processed: <A>(result: Option.Option<A>) => MessageStateProcessed<A> = internal.Processed
 
 /**
+ * Effectfully transform the <A> type of the MessageState<A>.
+ *
  * @since 1.0.0
  * @category utils
  */
