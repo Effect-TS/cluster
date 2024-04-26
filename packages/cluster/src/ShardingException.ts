@@ -99,22 +99,6 @@ export const isPodUnavailableException = Schema.is(PodUnavailableException)
  * @since 1.0.0
  * @category models
  */
-export class SendTimeoutException extends Schema.TaggedError<SendTimeoutException>()(
-  "@effect/cluster/SendTimeoutException",
-  {}
-) {
-}
-
-/**
- * @since 1.0.0
- * @category utils
- */
-export const isSendTimeoutException = Schema.is(SendTimeoutException)
-
-/**
- * @since 1.0.0
- * @category models
- */
 export class SerializationException extends Schema.TaggedError<SerializationException>()(
   "@effect/cluster/SerializationException",
   {}
@@ -155,7 +139,6 @@ export const schema = Schema.Union(
   EntityTypeNotRegisteredException,
   PodNoLongerRegisteredException,
   PodUnavailableException,
-  SendTimeoutException,
   NoResultInProcessedMessageStateException,
   ExceptionWhileOfferingMessageException
 )

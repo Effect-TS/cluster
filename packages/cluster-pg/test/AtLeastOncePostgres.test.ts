@@ -56,8 +56,7 @@ describe.concurrent("AtLeastOncePostgres", () => {
     Layer.provide(ShardManagerClient.local),
     Layer.provide(
       ShardingConfig.withDefaults({
-        entityTerminationTimeout: Duration.millis(4000),
-        sendTimeout: Duration.millis(1000)
+        entityTerminationTimeout: Duration.millis(4000)
       })
     )
   )

@@ -28,7 +28,6 @@ export type ShardingConfigTypeId = typeof ShardingConfigTypeId
  * @param serverVersion version of the current pod
  * @param entityMaxIdleTime time of inactivity (without receiving any message) after which an entity will be interrupted
  * @param entityTerminationTimeout time we give to an entity to handle the termination message before interrupting it
- * @param sendTimeout timeout when calling sendMessage
  * @param refreshAssignmentsRetryInterval retry interval in case of failure getting shard assignments from storage
  * @param unhealthyPodReportInterval interval to report unhealthy pods to the Shard Manager (this exists to prevent calling the Shard Manager for each failed message)
  * @since 1.0.0
@@ -42,7 +41,6 @@ export interface ShardingConfig {
   readonly serverVersion: string
   readonly entityMaxIdleTime: Duration.Duration
   readonly entityTerminationTimeout: Duration.Duration
-  readonly sendTimeout: Duration.Duration
   readonly refreshAssignmentsRetryInterval: Duration.Duration
   readonly unhealthyPodReportInterval: Duration.Duration
 }

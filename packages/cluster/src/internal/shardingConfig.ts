@@ -18,7 +18,7 @@ export const ShardingConfigTypeId: ShardingConfig.ShardingConfigTypeId = Symbol.
 export const shardingConfigTag = Context.GenericTag<ShardingConfig.ShardingConfig>(ShardingConfigSymbolKey)
 
 /** @internal */
-const defaultValues = {
+const defaultValues: ShardingConfig.ShardingConfig = {
   numberOfShards: 300,
   selfHost: "localhost",
   shardingPort: 54321,
@@ -26,7 +26,6 @@ const defaultValues = {
   serverVersion: "1.0.0",
   entityMaxIdleTime: Duration.minutes(1),
   entityTerminationTimeout: Duration.seconds(3),
-  sendTimeout: Duration.seconds(5),
   refreshAssignmentsRetryInterval: Duration.seconds(5),
   unhealthyPodReportInterval: Duration.seconds(5)
 }
@@ -78,11 +77,6 @@ const config: Config.Config<ShardingConfig.ShardingConfig> = Config.all({
     Config.map(Config.integer("ENTITY_TERMINATION_TIMEOUT"), Duration.millis),
     Config.withDefault(defaultValues.entityTerminationTimeout),
     Config.withDescription("Max time to wait for entity to terminate (millis)")
-  ),
-  sendTimeout: pipe(
-    Config.map(Config.integer("SEND_TIMEOUT"), Duration.millis),
-    Config.withDefault(defaultValues.sendTimeout),
-    Config.withDescription("Send timeout for messages (millis)")
   ),
   refreshAssignmentsRetryInterval: pipe(
     Config.map(Config.integer("REFRESH_ASSIGNMENTS_INTERVAL"), Duration.millis),

@@ -12,10 +12,8 @@ import type * as SerializedMessage from "@effect/cluster/SerializedMessage"
 import type * as ShardId from "@effect/cluster/ShardId"
 import type * as ShardingException from "@effect/cluster/ShardingException"
 import type * as ShardingRegistrationEvent from "@effect/cluster/ShardingRegistrationEvent"
-import type * as Duration from "effect/Duration"
 import type * as Effect from "effect/Effect"
 import type * as HashSet from "effect/HashSet"
-import type * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 import type * as Stream from "effect/Stream"
 import type { Broadcaster } from "./Broadcaster.js"
@@ -32,12 +30,10 @@ export interface Sharding {
   readonly register: Effect.Effect<void>
   readonly unregister: Effect.Effect<void>
   readonly messenger: <Msg extends Message.Message.Any>(
-    entityType: RecipentType.EntityType<Msg>,
-    sendTimeout?: Option.Option<Duration.Duration>
+    entityType: RecipentType.EntityType<Msg>
   ) => Messenger<Msg>
   readonly broadcaster: <Msg extends Message.Message.Any>(
-    topicType: RecipentType.TopicType<Msg>,
-    sendTimeout?: Option.Option<Duration.Duration>
+    topicType: RecipentType.TopicType<Msg>
   ) => Broadcaster<Msg>
   readonly isEntityOnLocalShards: (
     entityId: string
@@ -157,8 +153,7 @@ export const registerTopic: <Msg extends Message.Message.Any>(
  * @category utils
  */
 export const messenger: <Msg extends Message.Message.Any>(
-  entityType: RecipentType.EntityType<Msg>,
-  sendTimeout?: Option.Option<Duration.Duration> | undefined
+  entityType: RecipentType.EntityType<Msg>
 ) => Effect.Effect<Messenger<Msg>, never, Sharding> = internal.messenger
 
 /**
@@ -169,8 +164,7 @@ export const messenger: <Msg extends Message.Message.Any>(
  * @category utils
  */
 export const broadcaster: <Msg extends Message.Message.Any>(
-  topicType: RecipentType.TopicType<Msg>,
-  sendTimeout?: Option.Option<Duration.Duration> | undefined
+  topicType: RecipentType.TopicType<Msg>
 ) => Effect.Effect<Broadcaster<Msg>, never, Sharding> = internal.broadcaster
 
 /**
