@@ -59,14 +59,12 @@ export * as PodsHealth from "./PodsHealth.js"
 export * as PoisonPill from "./PoisonPill.js"
 
 /**
- * A module that provides utilities to build basic behaviours
  * @since 1.0.0
  */
 export * as RecipientBehaviour from "./RecipientBehaviour.js"
 
 /**
  * @since 1.0.0
- * This module provides the context that is given to a RecipientBehaviour
  */
 export * as RecipientBehaviourContext from "./RecipientBehaviourContext.js"
 
