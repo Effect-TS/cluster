@@ -25,6 +25,9 @@ export const StorageTypeId: unique symbol = internal.StorageTypeId
 export type StorageTypeId = typeof StorageTypeId
 
 /**
+ * The storage Service is responsible of persisting assignments and registered pods.
+ * The storage is expected to be shared among all pods, so it works also as communication of assignments between Pods.
+ *
  * @since 1.0.0
  * @category models
  */
