@@ -211,8 +211,8 @@ function make(
       }
 
       const failedPingedPods = yield* _(
+        HashSet.union(HashMap.keySet(assignments), HashMap.keySet(unassignments)),
         Effect.forEach(
-          HashSet.union(HashMap.keySet(assignments), HashMap.keySet(unassignments)),
           (pod) =>
             pipe(
               podApi.ping(pod),

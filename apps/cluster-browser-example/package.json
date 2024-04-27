@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@effect/cluster": "workspace:*",
-    "@effect/rpc": "^0.30.9",
-    "@effect/schema": "^0.66.7",
-    "effect": "^3.0.4",
+    "@effect/rpc": "^0.30.11",
+    "@effect/schema": "^0.66.9",
+    "effect": "^3.0.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -26,7 +26,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "typescript": "^5.4.4",
+    "typescript": "^5.4.5",
     "vite": "^5.2.8"
   }
 }
