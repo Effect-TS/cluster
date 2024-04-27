@@ -3,8 +3,18 @@
  */
 import type * as Message from "@effect/cluster/Message"
 import type * as Schema from "@effect/schema/Schema"
+import * as Data from "effect/Data"
+import * as Equal from "effect/Equal"
 import * as Hash from "effect/Hash"
 import * as ShardId from "./ShardId.js"
+
+const RecipientTypeSymbolKey = "@effect/cluster/RecipientType"
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export const RecipientTypeTypeId: unique symbol = Symbol.for(RecipientTypeSymbolKey)
 
 /**
  * An EntityType is a RecipientType that is ensured to be alive only on a single Pod at a time.
@@ -12,10 +22,31 @@ import * as ShardId from "./ShardId.js"
  * @since 1.0.0
  * @category models
  */
-export interface EntityType<Msg extends Message.Message.Any> {
-  readonly _tag: "EntityType"
+export class EntityType<Msg extends Message.Message.Any> extends Data.TaggedClass("EntityType")<{
   readonly name: string
   readonly schema: Schema.Schema<Msg, unknown>
+}> {
+  /**
+   * @since 1.0.0
+   */
+  readonly [RecipientTypeTypeId] = RecipientTypeTypeId;
+
+  /**
+   * @since 1.0.0
+   */
+  [Hash.symbol](): number {
+    return Hash.structure({ _tag: this._tag, name: this.name })
+  }
+
+  /**
+   * @since 1.0.0
+   */
+  [Equal.symbol](this: TopicType<Msg>, that: Equal.Equal): boolean {
+    if (isRecipientType(that)) {
+      return this._tag === that._tag && this.name === that.name
+    }
+    return false
+  }
 }
 
 /**
@@ -24,10 +55,31 @@ export interface EntityType<Msg extends Message.Message.Any> {
  * @since 1.0.0
  * @category models
  */
-export interface TopicType<Msg extends Message.Message.Any> {
-  readonly _tag: "TopicType"
+export class TopicType<Msg extends Message.Message.Any> extends Data.TaggedClass("TopicType")<{
   readonly name: string
   readonly schema: Schema.Schema<Msg, unknown>
+}> {
+  /**
+   * @since 1.0.0
+   */
+  readonly [RecipientTypeTypeId] = RecipientTypeTypeId;
+
+  /**
+   * @since 1.0.0
+   */
+  [Hash.symbol](): number {
+    return Hash.structure({ _tag: this._tag, name: this.name })
+  }
+
+  /**
+   * @since 1.0.0
+   */
+  [Equal.symbol](this: EntityType<Msg>, that: Equal.Equal): boolean {
+    if (isRecipientType(that)) {
+      return this._tag === that._tag && this.name === that.name
+    }
+    return false
+  }
 }
 
 /**
@@ -42,6 +94,16 @@ export interface TopicType<Msg extends Message.Message.Any> {
 export type RecipientType<Msg extends Message.Message.Any> = EntityType<Msg> | TopicType<Msg>
 
 /**
+ * Ensure that given value is a RecipientType
+ * @since 1.0.0
+ * @category constructors
+ */
+export function isRecipientType<A extends Message.Message.Any>(value: unknown): value is RecipientType<A> {
+  return typeof value === "object" && value !== null && RecipientTypeTypeId in value &&
+    value[RecipientTypeTypeId] === RecipientTypeTypeId
+}
+
+/**
  * Given a name and a schema for the protocol, constructs an EntityType.
  *
  * @since 1.0.0
@@ -51,7 +113,7 @@ export function makeEntityType<Msg extends Message.Message.Any, I>(
   name: string,
   schema: Schema.Schema<Msg, I>
 ): EntityType<Msg> {
-  return { _tag: "EntityType", name, schema: schema as any }
+  return new EntityType({ name, schema: schema as any })
 }
 
 /**
@@ -64,7 +126,7 @@ export function makeTopicType<Msg extends Message.Message.Any, I>(
   name: string,
   schema: Schema.Schema<Msg, I>
 ): TopicType<Msg> {
-  return { _tag: "TopicType", name, schema: schema as any }
+  return new TopicType({ name, schema: schema as any })
 }
 
 /** @internal */
