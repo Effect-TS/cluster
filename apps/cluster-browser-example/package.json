@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@effect/cluster": "workspace:*",
-    "@effect/rpc": "^0.30.11",
-    "@effect/schema": "^0.66.9",
-    "effect": "^3.0.6",
+    "@effect/rpc": "^0.30.16",
+    "@effect/schema": "^0.66.13",
+    "effect": "^3.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
