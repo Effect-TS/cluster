@@ -7,6 +7,7 @@ import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import type * as ShardId from "@effect/cluster/ShardId"
 import * as ShardingException from "@effect/cluster/ShardingException"
 import * as Http from "@effect/platform/HttpClient"
+import * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
@@ -71,6 +72,7 @@ export const httpPods: Layer.Layer<Pods.Pods, never, Http.client.Client.Default>
         return yield* _(client(request))
       }).pipe(
         Effect.asVoid,
+        Effect.timeout(Duration.seconds(5)),
         Effect.mapError(() => new ShardingException.PodUnavailableException({ podAddress })),
         Effect.scoped
       )
