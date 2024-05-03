@@ -1,5 +1,5 @@
-import * as PodsHttp from "@effect/cluster-node/PodsHttp"
-import * as ShardingServiceHttp from "@effect/cluster-node/ShardingServiceHttp"
+import * as PodsRpc from "@effect/cluster-node/PodsRpc"
+import * as ShardingServiceRpc from "@effect/cluster-node/ShardingServiceRpc"
 import * as ShardManagerClientHttp from "@effect/cluster-node/ShardManagerClientHttp"
 import * as StorageFile from "@effect/cluster-node/StorageFile"
 import * as MessageState from "@effect/cluster/MessageState"
@@ -7,8 +7,13 @@ import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
+import { NodeHttpServer } from "@effect/platform-node"
 import * as NodeClient from "@effect/platform-node/NodeHttpClient"
 import { runMain } from "@effect/platform-node/NodeRuntime"
+import * as HttpClient from "@effect/platform/HttpClient"
+import * as HttpServer from "@effect/platform/HttpServer"
+import { Resolver } from "@effect/rpc"
+import { HttpResolver, HttpRouter } from "@effect/rpc-http"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import { pipe } from "effect/Function"
@@ -16,7 +21,16 @@ import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Ref from "effect/Ref"
+import { createServer } from "http"
 import { CounterEntity } from "./sample-common.js"
+
+const HttpLive = HttpServer.router.empty.pipe(
+  HttpServer.router.post("/api/rest", HttpRouter.toHttpApp(ShardingServiceRpc.router)),
+  HttpServer.server.serve(HttpServer.middleware.logger),
+  HttpServer.server.withLogAddress,
+  Layer.provide(NodeHttpServer.server.layer(createServer, { port: 54321 })),
+  Layer.discard
+)
 
 const liveLayer = Sharding.registerEntity(
   CounterEntity
@@ -49,10 +63,18 @@ const liveLayer = Sharding.registerEntity(
 ).pipe(
   Effect.zipRight(Sharding.registerScoped),
   Layer.scopedDiscard,
-  Layer.provide(ShardingServiceHttp.shardingServiceHttp),
+  Layer.provide(HttpLive),
   Layer.provideMerge(Sharding.live),
   Layer.provide(StorageFile.storageFile),
-  Layer.provide(PodsHttp.httpPods),
+  Layer.provide(PodsRpc.podsRpc<never>((podAddress) =>
+    HttpResolver.make<ShardingServiceRpc.ShardingServiceRpc>(
+      HttpClient.client.fetchOk.pipe(
+        HttpClient.client.mapRequest(
+          HttpClient.request.prependUrl(`http://${podAddress.host}:${podAddress.port}/api/rest`)
+        )
+      )
+    ).pipe(Resolver.toClient) as any // TODO: ask tim about better typings
+  )),
   Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
   Layer.provide(Serialization.json),
   Layer.provide(NodeClient.layer),
