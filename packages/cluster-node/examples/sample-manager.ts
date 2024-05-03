@@ -27,7 +27,7 @@ const liveShardingManager = pipe(
           HttpClient.request.prependUrl(`http://${podAddress.host}:${podAddress.port}/api/rest`)
         )
       )
-    ).pipe(Resolver.toClient) as any // TODO: ask tim about better typings
+    ).pipe(Resolver.toClient)
   )),
   Layer.provide(ManagerConfig.fromConfig),
   Layer.provide(HttpClient.client.layer)

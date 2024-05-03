@@ -42,7 +42,7 @@ const liveLayer = Effect.gen(function*(_) {
           HttpClient.request.prependUrl(`http://${podAddress.host}:${podAddress.port}/api/rest`)
         )
       )
-    ).pipe(Resolver.toClient) as any // TODO: ask tim about better typings
+    ).pipe(Resolver.toClient)
   )),
   Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
   Layer.provide(ShardingConfig.withDefaults({ shardingPort: 54322 })),

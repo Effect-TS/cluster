@@ -73,7 +73,7 @@ const liveLayer = Sharding.registerEntity(
           HttpClient.request.prependUrl(`http://${podAddress.host}:${podAddress.port}/api/rest`)
         )
       )
-    ).pipe(Resolver.toClient) as any // TODO: ask tim about better typings
+    ).pipe(Resolver.toClient)
   )),
   Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
   Layer.provide(Serialization.json),

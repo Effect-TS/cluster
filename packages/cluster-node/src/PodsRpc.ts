@@ -6,11 +6,13 @@ import * as Pods from "@effect/cluster/Pods"
 import type * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import type * as ShardId from "@effect/cluster/ShardId"
 import * as ShardingException from "@effect/cluster/ShardingException"
+import type * as Resolver from "@effect/rpc/Resolver"
+import type * as Rpc from "@effect/rpc/Rpc"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
-import type * as Request from "effect/Request"
+import type * as RequestResolver from "effect/RequestResolver"
 import * as ShardingProtocol from "./ShardingProtocol.js"
 import type * as ShardingServiceRpc from "./ShardingServiceRpc.js"
 
@@ -22,9 +24,9 @@ import type * as ShardingServiceRpc from "./ShardingServiceRpc.js"
 export function podsRpc<R>(
   buildClient: (
     podAddress: PodAddress.PodAddress
-  ) => <A extends ShardingServiceRpc.ShardingServiceRpcRequest>(
-    request: A
-  ) => Effect.Effect<Request.Request.Success<A>, Request.Request.Error<A>, R>
+  ) => Resolver.Client<
+    RequestResolver.RequestResolver<Rpc.Request<ShardingServiceRpc.ShardingServiceRpcRequest>, never>
+  >
 ): Layer.Layer<Pods.Pods, never, R> {
   return Layer.effect(Pods.Pods)(
     Effect.gen(function*() {
@@ -32,15 +34,13 @@ export function podsRpc<R>(
 
       function assignShards(podAddress: PodAddress.PodAddress, shards: HashSet.HashSet<ShardId.ShardId>) {
         return buildClient(podAddress)(new ShardingProtocol.AssignShards({ shards })).pipe(
-          Effect.provide(env),
-          Effect.catchAllCause((e) => Effect.logError(e))
+          Effect.provide(env)
         )
       }
 
       function unassignShards(podAddress: PodAddress.PodAddress, shards: HashSet.HashSet<ShardId.ShardId>) {
         return buildClient(podAddress)(new ShardingProtocol.UnassignShards({ shards })).pipe(
-          Effect.provide(env),
-          Effect.catchAllCause((e) => Effect.logError(e))
+          Effect.provide(env)
         )
       }
 
