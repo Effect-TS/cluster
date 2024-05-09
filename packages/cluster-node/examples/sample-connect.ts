@@ -1,6 +1,6 @@
 import * as PodsRpc from "@effect/cluster-node/PodsRpc"
 import type * as ShardingServiceRpc from "@effect/cluster-node/ShardingServiceRpc"
-import * as ShardManagerClientHttp from "@effect/cluster-node/ShardManagerClientHttp"
+import * as ShardManagerClientRpc from "@effect/cluster-node/ShardManagerClientRpc"
 import * as StorageFile from "@effect/cluster-node/StorageFile"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as Sharding from "@effect/cluster/Sharding"
@@ -44,7 +44,16 @@ const liveLayer = Effect.gen(function*(_) {
       )
     ).pipe(Resolver.toClient)
   )),
-  Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
+  Layer.provide(ShardManagerClientRpc.shardManagerClientRpc(
+    (shardManagerUri) =>
+      HttpResolver.make<ShardingServiceRpc.ShardingServiceRpc>(
+        HttpClient.client.fetchOk.pipe(
+          HttpClient.client.mapRequest(
+            HttpClient.request.prependUrl(shardManagerUri)
+          )
+        )
+      ).pipe(Resolver.toClient) as any // TODO: ask tim about better typings
+  )),
   Layer.provide(ShardingConfig.withDefaults({ shardingPort: 54322 })),
   Layer.provide(Serialization.json),
   Layer.provide(NodeClient.layer)

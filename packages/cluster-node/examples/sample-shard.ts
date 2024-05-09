@@ -1,6 +1,6 @@
 import * as PodsRpc from "@effect/cluster-node/PodsRpc"
 import * as ShardingServiceRpc from "@effect/cluster-node/ShardingServiceRpc"
-import * as ShardManagerClientHttp from "@effect/cluster-node/ShardManagerClientHttp"
+import * as ShardManagerClientRpc from "@effect/cluster-node/ShardManagerClientRpc"
 import * as StorageFile from "@effect/cluster-node/StorageFile"
 import * as MessageState from "@effect/cluster/MessageState"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
@@ -85,7 +85,16 @@ const liveLayer = Sharding.registerEntity(
       )
     ).pipe(Resolver.toClient)
   )),
-  Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
+  Layer.provide(ShardManagerClientRpc.shardManagerClientRpc(
+    (shardManagerUri) =>
+      HttpResolver.make<ShardingServiceRpc.ShardingServiceRpc>(
+        HttpClient.client.fetchOk.pipe(
+          HttpClient.client.mapRequest(
+            HttpClient.request.prependUrl(shardManagerUri)
+          )
+        )
+      ).pipe(Resolver.toClient) as any // TODO: ask tim about better typings
+  )),
   Layer.provide(Serialization.json),
   Layer.provide(NodeClient.layer),
   Layer.provide(ShardingConfig.fromConfig)
