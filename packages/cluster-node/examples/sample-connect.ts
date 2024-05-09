@@ -52,7 +52,7 @@ const liveLayer = Effect.gen(function*(_) {
             HttpClient.request.prependUrl(shardManagerUri)
           )
         )
-      ).pipe(Resolver.toClient) as any // TODO: ask tim about better typings
+      ).pipe(Resolver.toClient)
   )),
   Layer.provide(ShardingConfig.withDefaults({ shardingPort: 54322 })),
   Layer.provide(Serialization.json),

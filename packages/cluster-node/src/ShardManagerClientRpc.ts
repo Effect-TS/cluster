@@ -4,9 +4,11 @@
 import * as Pod from "@effect/cluster/Pod"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as ShardManagerClient from "@effect/cluster/ShardManagerClient"
+import type * as Resolver from "@effect/rpc/Resolver"
+import type * as Rpc from "@effect/rpc/Rpc"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
-import type * as Request from "effect/Request"
+import type * as RequestResolver from "effect/RequestResolver"
 import * as ShardManagerProtocol from "./ShardManagerProtocol.js"
 import type * as ShardManagerServiceRpc from "./ShardManagerServiceRpc.js"
 
@@ -15,9 +17,9 @@ import type * as ShardManagerServiceRpc from "./ShardManagerServiceRpc.js"
  * @category layer
  */
 export function shardManagerClientRpc(
-  makeClient: (shardManagerUri: string) => <A extends ShardManagerServiceRpc.ShardManagerServiceRpcRequest>(
-    request: A
-  ) => Effect.Effect<Request.Request.Success<A>, Request.Request.Error<A>, never>
+  makeClient: (shardManagerUri: string) => Resolver.Client<
+    RequestResolver.RequestResolver<Rpc.Request<ShardManagerServiceRpc.ShardManagerServiceRpcRequest>, never>
+  >
 ) {
   return Layer.effect(
     ShardManagerClient.ShardManagerClient,

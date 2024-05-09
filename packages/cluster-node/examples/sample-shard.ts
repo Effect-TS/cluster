@@ -25,7 +25,6 @@ import * as Ref from "effect/Ref"
 import { createServer } from "http"
 import { CounterEntity } from "./sample-common.js"
 
-// Layer.Layer<never, HttpServer.error.ServeError, Sharding.Sharding | ShardingConfig.ShardingConfig>
 const HttpLive = Layer.flatMap(
   Layer.effect(ShardingConfig.ShardingConfig, ShardingConfig.ShardingConfig),
   (config) =>
@@ -93,7 +92,7 @@ const liveLayer = Sharding.registerEntity(
             HttpClient.request.prependUrl(shardManagerUri)
           )
         )
-      ).pipe(Resolver.toClient) as any // TODO: ask tim about better typings
+      ).pipe(Resolver.toClient)
   )),
   Layer.provide(Serialization.json),
   Layer.provide(NodeClient.layer),
