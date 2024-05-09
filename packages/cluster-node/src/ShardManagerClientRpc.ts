@@ -10,6 +10,10 @@ import type * as Request from "effect/Request"
 import * as ShardManagerProtocol from "./ShardManagerProtocol.js"
 import type * as ShardManagerServiceRpc from "./ShardManagerServiceRpc.js"
 
+/**
+ * @since 1.0.0
+ * @category layer
+ */
 export function shardManagerClientRpc(
   makeClient: (shardManagerUri: string) => <A extends ShardManagerServiceRpc.ShardManagerServiceRpcRequest>(
     request: A
