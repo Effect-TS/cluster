@@ -14,6 +14,7 @@ import * as HttpClient from "@effect/platform/HttpClient"
 import * as HttpServer from "@effect/platform/HttpServer"
 import { Resolver } from "@effect/rpc"
 import { HttpResolver, HttpRouter } from "@effect/rpc-http"
+import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import { pipe } from "effect/Function"
@@ -24,12 +25,21 @@ import * as Ref from "effect/Ref"
 import { createServer } from "http"
 import { CounterEntity } from "./sample-common.js"
 
-const HttpLive = HttpServer.router.empty.pipe(
-  HttpServer.router.post("/api/rest", HttpRouter.toHttpApp(ShardingServiceRpc.router)),
-  HttpServer.server.serve(HttpServer.middleware.logger),
-  HttpServer.server.withLogAddress,
-  Layer.provide(NodeHttpServer.server.layer(createServer, { port: 54321 })),
-  Layer.discard
+// Layer.Layer<never, HttpServer.error.ServeError, Sharding.Sharding | ShardingConfig.ShardingConfig>
+const HttpLive = Layer.flatMap(
+  Layer.effect(ShardingConfig.ShardingConfig, ShardingConfig.ShardingConfig),
+  (config) =>
+    HttpServer.router.empty.pipe(
+      HttpServer.router.post("/api/rest", HttpRouter.toHttpApp(ShardingServiceRpc.router)),
+      HttpServer.server.serve(HttpServer.middleware.logger),
+      HttpServer.server.withLogAddress,
+      Layer.provide(
+        NodeHttpServer.server.layer(createServer, {
+          port: Context.get(config, ShardingConfig.ShardingConfig).shardingPort
+        })
+      ),
+      Layer.discard
+    )
 )
 
 const liveLayer = Sharding.registerEntity(

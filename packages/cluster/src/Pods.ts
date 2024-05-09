@@ -46,7 +46,7 @@ export interface Pods {
   readonly assignShards: (
     pod: PodAddress.PodAddress,
     shards: HashSet.HashSet<ShardId.ShardId>
-  ) => Effect.Effect<void>
+  ) => Effect.Effect<void, ShardingException.PodUnavailableException>
 
   /**
    * Notify a pod that it was unassigned a list of shards
@@ -55,7 +55,7 @@ export interface Pods {
   readonly unassignShards: (
     pod: PodAddress.PodAddress,
     shards: HashSet.HashSet<ShardId.ShardId>
-  ) => Effect.Effect<void>
+  ) => Effect.Effect<void, ShardingException.PodUnavailableException>
 
   /**
    * Check that a pod is responsive

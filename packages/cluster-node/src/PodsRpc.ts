@@ -34,13 +34,25 @@ export function podsRpc<R>(
 
       function assignShards(podAddress: PodAddress.PodAddress, shards: HashSet.HashSet<ShardId.ShardId>) {
         return buildClient(podAddress)(new ShardingProtocol.AssignShards({ shards })).pipe(
-          Effect.provide(env)
+          Effect.provide(env),
+          Effect.catchAllDefect((e) =>
+            pipe(
+              Effect.logError(e),
+              Effect.zipRight(Effect.fail(new ShardingException.PodUnavailableException({ podAddress })))
+            )
+          )
         )
       }
 
       function unassignShards(podAddress: PodAddress.PodAddress, shards: HashSet.HashSet<ShardId.ShardId>) {
         return buildClient(podAddress)(new ShardingProtocol.UnassignShards({ shards })).pipe(
-          Effect.provide(env)
+          Effect.provide(env),
+          Effect.catchAllDefect((e) =>
+            pipe(
+              Effect.logError(e),
+              Effect.zipRight(Effect.fail(new ShardingException.PodUnavailableException({ podAddress })))
+            )
+          )
         )
       }
 
@@ -59,7 +71,15 @@ export function podsRpc<R>(
       }
 
       function sendAndGetState(podAddress: PodAddress.PodAddress, envelope: SerializedEnvelope.SerializedEnvelope) {
-        return buildClient(podAddress)(new ShardingProtocol.Send({ envelope })).pipe(Effect.provide(env))
+        return buildClient(podAddress)(new ShardingProtocol.Send({ envelope })).pipe(
+          Effect.provide(env),
+          Effect.catchAllDefect((e) =>
+            pipe(
+              Effect.logError(e),
+              Effect.zipRight(Effect.fail(new ShardingException.PodUnavailableException({ podAddress })))
+            )
+          )
+        )
       }
 
       return Pods.make({
