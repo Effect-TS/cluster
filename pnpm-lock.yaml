@@ -199,6 +199,12 @@ importers:
       '@effect/platform-node':
         specifier: ^0.48.2
         version: 0.48.2(@effect/platform@0.52.1)(effect@3.1.1)
+      '@effect/rpc':
+        specifier: 0.30.16
+        version: 0.30.16(@effect/platform@0.52.1)(@effect/schema@0.66.13)(effect@3.1.1)
+      '@effect/rpc-http':
+        specifier: 0.28.16
+        version: 0.28.16(@effect/platform@0.52.1)(@effect/schema@0.66.13)(effect@3.1.1)
       '@effect/schema':
         specifier: ^0.66.13
         version: 0.66.13(effect@3.1.1)(fast-check@3.17.1)
@@ -218,6 +224,9 @@ importers:
 
   packages/cluster-pg:
     dependencies:
+      '@effect/sql':
+        specifier: ^0.1.16
+        version: 0.1.16(@effect/platform@0.52.1)(@effect/schema@0.66.13)(effect@3.1.1)
       '@effect/sql-pg':
         specifier: ^0.1.16
         version: 0.1.16(@effect/platform@0.52.1)(@effect/sql@0.1.16)(effect@3.1.1)
@@ -910,6 +919,19 @@ packages:
       path-browserify: 1.0.1
     transitivePeerDependencies:
       - ws
+
+  /@effect/rpc-http@0.28.16(@effect/platform@0.52.1)(@effect/schema@0.66.13)(effect@3.1.1):
+    resolution: {integrity: sha512-JNktPw7BZypzczPYnlwLJsl0fXMtN46tKQwtjW01w6+QgA8q2WnGMNDNCzoXZy+VUDp7bQkE0wd1l7LT/3mAZQ==}
+    peerDependencies:
+      '@effect/platform': ^0.52.1
+      '@effect/schema': ^0.66.13
+      effect: ^3.1.1
+    dependencies:
+      '@effect/platform': 0.52.1(@effect/schema@0.66.13)(effect@3.1.1)(ws@8.17.0)
+      '@effect/rpc': 0.30.16(@effect/platform@0.52.1)(@effect/schema@0.66.13)(effect@3.1.1)
+      '@effect/schema': 0.66.13(effect@3.1.1)(fast-check@3.17.1)
+      effect: 3.1.1
+    dev: true
 
   /@effect/rpc@0.30.16(@effect/platform@0.52.1)(@effect/schema@0.66.13)(effect@3.1.1):
     resolution: {integrity: sha512-FaOcUl9a63yKqAOLXISssg8uevfcCgSFH6ogk/NsqUxMpRrbz8/IvzjcV6tA8gP4FeBc0yy236/8P3RadRmnAA==}

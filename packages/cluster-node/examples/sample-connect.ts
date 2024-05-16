@@ -1,11 +1,15 @@
-import * as PodsHttp from "@effect/cluster-node/PodsHttp"
-import * as ShardManagerClientHttp from "@effect/cluster-node/ShardManagerClientHttp"
+import * as PodsRpc from "@effect/cluster-node/PodsRpc"
+import type * as ShardingServiceRpc from "@effect/cluster-node/ShardingServiceRpc"
+import * as ShardManagerClientRpc from "@effect/cluster-node/ShardManagerClientRpc"
 import * as StorageFile from "@effect/cluster-node/StorageFile"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as Sharding from "@effect/cluster/Sharding"
 import * as ShardingConfig from "@effect/cluster/ShardingConfig"
 import * as NodeClient from "@effect/platform-node/NodeHttpClient"
 import { runMain } from "@effect/platform-node/NodeRuntime"
+import * as HttpClient from "@effect/platform/HttpClient"
+import { Resolver } from "@effect/rpc"
+import { HttpResolver } from "@effect/rpc-http"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Logger from "effect/Logger"
@@ -31,8 +35,25 @@ const liveLayer = Effect.gen(function*(_) {
   Layer.effectDiscard,
   Layer.provide(Sharding.live),
   Layer.provide(StorageFile.storageFile),
-  Layer.provide(PodsHttp.httpPods),
-  Layer.provide(ShardManagerClientHttp.shardManagerClientHttp),
+  Layer.provide(PodsRpc.podsRpc<never>((podAddress) =>
+    HttpResolver.make<ShardingServiceRpc.ShardingServiceRpc>(
+      HttpClient.client.fetchOk.pipe(
+        HttpClient.client.mapRequest(
+          HttpClient.request.prependUrl(`http://${podAddress.host}:${podAddress.port}/api/rest`)
+        )
+      )
+    ).pipe(Resolver.toClient)
+  )),
+  Layer.provide(ShardManagerClientRpc.shardManagerClientRpc(
+    (shardManagerUri) =>
+      HttpResolver.make<ShardingServiceRpc.ShardingServiceRpc>(
+        HttpClient.client.fetchOk.pipe(
+          HttpClient.client.mapRequest(
+            HttpClient.request.prependUrl(shardManagerUri)
+          )
+        )
+      ).pipe(Resolver.toClient)
+  )),
   Layer.provide(ShardingConfig.withDefaults({ shardingPort: 54322 })),
   Layer.provide(Serialization.json),
   Layer.provide(NodeClient.layer)

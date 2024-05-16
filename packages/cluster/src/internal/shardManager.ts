@@ -40,7 +40,7 @@ export const ShardManagerTypeId: ShardManager.ShardManagerTypeId = Symbol.for(
 ) as ShardManager.ShardManagerTypeId
 
 /** @internal */
-export const shardManagerTag = GenericTag<ShardManager.ShardManager>("@services/shardManagerTag")
+export const shardManagerTag = GenericTag<ShardManager.ShardManager>(ShardManagerSymbolKey)
 
 /** @internal */
 function make(

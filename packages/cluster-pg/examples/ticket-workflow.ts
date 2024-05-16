@@ -105,7 +105,7 @@ const main = pipe(
       new BookSeatRequest({ orderId: "order-1", cardNumber: "my-card", numberOfSeats: 2, email: "my@email.com" })
     )
   ),
-  Effect.provide(DurableExecutionJournalPostgres.DurableExecutionJournalPostgres),
+  Effect.provide(DurableExecutionJournalPostgres.makeDurableExecutionJournalPostgres("event_journal")),
   Effect.provide(Pg.client.layer({
     host: Config.succeed("127.0.0.1"),
     username: Config.succeed("postgres"),

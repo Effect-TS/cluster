@@ -1,32 +1,32 @@
 /**
  * @since 1.0.0
  */
-export * as PodsHttp from "./PodsHttp.js"
+export * as PodsRpc from "./PodsRpc.js"
 
 /**
  * @since 1.0.0
  */
-export * as ShardManagerClientHttp from "./ShardManagerClientHttp.js"
+export * as ShardManagerClientRpc from "./ShardManagerClientRpc.js"
 
 /**
  * @since 1.0.0
  */
-export * as ShardManagerHttp from "./ShardManagerHttp.js"
+export * as ShardManagerProtocol from "./ShardManagerProtocol.js"
 
 /**
  * @since 1.0.0
  */
-export * as ShardManagerProtocolHttp from "./ShardManagerProtocolHttp.js"
+export * as ShardManagerServiceRpc from "./ShardManagerServiceRpc.js"
 
 /**
  * @since 1.0.0
  */
-export * as ShardingProtocolHttp from "./ShardingProtocolHttp.js"
+export * as ShardingProtocol from "./ShardingProtocol.js"
 
 /**
  * @since 1.0.0
  */
-export * as ShardingServiceHttp from "./ShardingServiceHttp.js"
+export * as ShardingServiceRpc from "./ShardingServiceRpc.js"
 
 /**
  * @since 1.0.0

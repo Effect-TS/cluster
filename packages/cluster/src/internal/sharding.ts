@@ -42,11 +42,17 @@ import * as Storage from "../Storage.js"
 import * as EntityManager from "./entityManager.js"
 import { NotAMessageWithReplierDefect } from "./utils.js"
 
+/** @internal */
+const ShardingSymbolKey = "@effect/cluster/Sharding"
+
+/** @internal */
+export const ShardingTypeId: Sharding.ShardingTypeId = Symbol.for(ShardingSymbolKey) as Sharding.ShardingTypeId
+
 /**
  * @internal
  */
 export const shardingTag: Context.Tag<Sharding.Sharding, Sharding.Sharding> = Context.GenericTag<Sharding.Sharding>(
-  "@services/shardingTag"
+  ShardingSymbolKey
 )
 
 /**
@@ -715,6 +721,7 @@ function make(
   const registerScoped = Effect.acquireRelease(register, (_) => unregister)
 
   const self: Sharding.Sharding = {
+    [ShardingTypeId]: ShardingTypeId,
     getShardId,
     register,
     unregister,

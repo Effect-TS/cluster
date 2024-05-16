@@ -8,6 +8,23 @@ import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 
 /**
+ * @internal
+ */
+const DurableExecutionJournalSymbolKey = "@effect/cluster-workflow/DurableExecutionJournal"
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export const DurableExecutionJournalTypeId: unique symbol = Symbol.for(DurableExecutionJournalSymbolKey)
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type DurableExecutionJournalTypeId = typeof DurableExecutionJournal
+
+/**
  * @since 1.0.0
  */
 export interface DurableExecutionJournal {
@@ -29,7 +46,7 @@ export interface DurableExecutionJournal {
 /**
  * @since 1.0.0
  */
-export const DurableExecutionJournal = Context.GenericTag<DurableExecutionJournal>("@services/DurableExecutionJournal")
+export const DurableExecutionJournal = Context.GenericTag<DurableExecutionJournal>(DurableExecutionJournalSymbolKey)
 
 /**
  * @since 1.0.0

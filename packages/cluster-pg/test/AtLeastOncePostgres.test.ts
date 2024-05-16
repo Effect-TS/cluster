@@ -22,7 +22,7 @@ import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as PrimaryKey from "effect/PrimaryKey"
 import * as Secret from "effect/Secret"
-import { describe, expect, it } from "vitest"
+import { beforeAll, describe, expect, it } from "vitest"
 
 class SampleMessage extends Schema.TaggedRequest<SampleMessage>()("SampleMessage", Schema.Never, Schema.Void, {
   id: Schema.String,
@@ -33,41 +33,41 @@ class SampleMessage extends Schema.TaggedRequest<SampleMessage>()("SampleMessage
   }
 }
 
-const testContainerPostgresLayer = pipe(
-  Effect.acquireRelease(
-    Effect.promise(() => new PostgreSqlContainer().start()),
-    (container) => Effect.promise(() => container.stop())
-  ),
-  Effect.flatMap((container) => Pg.client.make({ url: (Secret.fromString(container.getConnectionUri())) })),
-  Layer.scoped(Pg.client.PgClient)
-)
-
 const SampleEntity = RecipientType.makeEntityType("SampleEntity", SampleMessage)
 type SampleEntity = SampleMessage
 
-describe.concurrent("AtLeastOncePostgres", () => {
-  const inMemorySharding = pipe(
-    Sharding.live,
-    Layer.merge(AtLeastOnceStoragePostgres.atLeastOnceStoragePostgres),
-    Layer.provide(PodsHealth.local),
-    Layer.provide(Pods.noop),
-    Layer.provide(Storage.memory),
-    Layer.provide(Serialization.json),
-    Layer.provide(ShardManagerClient.local),
-    Layer.provide(
-      ShardingConfig.withDefaults({
-        entityTerminationTimeout: Duration.millis(4000)
-      })
-    )
-  )
+describe("AtLeastOncePostgres", () => {
+  let connectionUri: string = ""
 
-  const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
+  beforeAll(async () => {
+    const container = await new PostgreSqlContainer().start()
+    connectionUri = container.getConnectionUri()
+    return async () => await container.stop()
+  })
+
+  const withTestEnv = (tableName: string) => <R, E, A>(fa: Effect.Effect<R, E, A>) =>
     pipe(
       fa,
-      Effect.provide(inMemorySharding),
-      Effect.provide(testContainerPostgresLayer),
+      Effect.provide(AtLeastOnceStoragePostgres.makeAtLeastOnceStoragePostgres(tableName)),
+      Effect.provide(Sharding.live),
+      Effect.provide(PodsHealth.local),
+      Effect.provide(Pods.noop),
+      Effect.provide(Storage.memory),
+      Effect.provide(Serialization.json),
+      Effect.provide(ShardManagerClient.local),
+      Effect.provide(
+        ShardingConfig.withDefaults({
+          entityTerminationTimeout: Duration.millis(4000)
+        })
+      ),
+      Effect.provide(
+        Layer.scoped(
+          Pg.client.PgClient,
+          Effect.suspend(() => Pg.client.make({ url: Secret.fromString(connectionUri) }))
+        )
+      ),
       Effect.scoped,
-      Logger.withMinimumLogLevel(LogLevel.Info)
+      Logger.withMinimumLogLevel(LogLevel.Debug)
     )
 
   it("Should create the message table upon layer creation", () => {
@@ -80,8 +80,11 @@ describe.concurrent("AtLeastOncePostgres", () => {
         WHERE table_schema='public'
           AND table_type='BASE TABLE'`)
 
-      expect(rows).toEqual([{ table_name: "message_ack" }])
-    }).pipe(withTestEnv, Effect.runPromise)
+      expect(rows).toEqual([{ table_name: "test_creation" }])
+    }).pipe(
+      withTestEnv("test_creation"),
+      Effect.runPromise
+    )
   })
 
   it("Should store the message in the table upon send", () => {
@@ -104,10 +107,10 @@ describe.concurrent("AtLeastOncePostgres", () => {
       yield* _(messenger.sendDiscard("entity1")(msg))
 
       const sql = yield* _(Pg.client.PgClient)
-      const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack`)
+      const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM test_storage`)
 
       expect(rows.length).toBe(1)
-    }).pipe(withTestEnv, Effect.runPromise)
+    }).pipe(withTestEnv("test_storage"), Effect.runPromise)
   })
 
   it("Should mark as processed if message state is processed", () => {
@@ -130,10 +133,12 @@ describe.concurrent("AtLeastOncePostgres", () => {
       yield* _(messenger.sendDiscard("entity1")(msg))
 
       const sql = yield* _(Pg.client.PgClient)
-      const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack WHERE processed = TRUE`)
+      const rows = yield* _(
+        sql<{ message_id: string }>`SELECT message_id FROM test_marked_processed WHERE processed = TRUE`
+      )
 
       expect(rows.length).toBe(1)
-    }).pipe(withTestEnv, Effect.runPromise)
+    }).pipe(withTestEnv("test_marked_processed"), Effect.runPromise)
   })
 
   it("Should not mark as processed if message state is acknowledged", () => {
@@ -155,9 +160,11 @@ describe.concurrent("AtLeastOncePostgres", () => {
       yield* _(messenger.sendDiscard("entity1")(new SampleMessage({ id: "a", value: 42 })))
 
       const sql = yield* _(Pg.client.PgClient)
-      const rows = yield* _(sql<{ message_id: string }>`SELECT message_id FROM message_ack WHERE processed = FALSE`)
+      const rows = yield* _(
+        sql<{ message_id: string }>`SELECT message_id FROM test_acknowledged_unprocessed WHERE processed = FALSE`
+      )
 
       expect(rows.length).toBe(1)
-    }).pipe(withTestEnv, Effect.runPromise)
+    }).pipe(withTestEnv("test_acknowledged_unprocessed"), Effect.runPromise)
   })
-}, { timeout: 60000 })
+}, { timeout: 60000, sequential: true })

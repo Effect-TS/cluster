@@ -22,11 +22,22 @@ import type * as PodAddress from "./PodAddress.js"
 
 /**
  * @since 1.0.0
+ * @category symbols
+ */
+export const ShardingTypeId: unique symbol = internal.ShardingTypeId
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type ShardingTypeId = typeof ShardingTypeId
+
+/**
+ * @since 1.0.0
  * @category models
  */
 export interface Sharding {
-  /** @internal */
-  readonly getShardId: (entityId: string) => ShardId.ShardId
+  readonly [ShardingTypeId]: ShardingTypeId
   readonly register: Effect.Effect<void>
   readonly unregister: Effect.Effect<void>
   readonly messenger: <Msg extends Message.Message.Any>(
@@ -55,8 +66,6 @@ export interface Sharding {
   ) => Effect.Effect<void, never, Exclude<R, RecipientBehaviourContext.RecipientBehaviourContext>>
   readonly getShardingRegistrationEvents: Stream.Stream<ShardingRegistrationEvent.ShardingRegistrationEvent>
   readonly registerSingleton: <R>(name: string, run: Effect.Effect<void, never, R>) => Effect.Effect<void, never, R>
-  /** @internal */
-  readonly refreshAssignments: Effect.Effect<void, never, Scope.Scope>
   readonly assign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
   readonly unassign: (shards: HashSet.HashSet<ShardId.ShardId>) => Effect.Effect<void>
   readonly sendMessageToLocalEntityManagerWithoutRetries: (
@@ -67,6 +76,10 @@ export interface Sharding {
   >
   readonly getPods: Effect.Effect<HashSet.HashSet<PodAddress.PodAddress>>
   readonly getAssignedShardIds: Effect.Effect<HashSet.HashSet<ShardId.ShardId>>
+  /** @internal */
+  readonly refreshAssignments: Effect.Effect<void, never, Scope.Scope>
+  /** @internal */
+  readonly getShardId: (entityId: string) => ShardId.ShardId
 }
 
 /**
