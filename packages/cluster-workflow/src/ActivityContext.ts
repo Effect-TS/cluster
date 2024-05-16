@@ -4,6 +4,23 @@
 import * as Context from "effect/Context"
 
 /**
+ * @internal
+ */
+const ActivityContextSymbolKey = "@effect/cluster-workflow/ActivityContext"
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export const ActivityContextTypeId: unique symbol = Symbol.for(ActivityContextSymbolKey)
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type ActivityContextTypeId = typeof ActivityContextTypeId
+
+/**
  * @since 1.0.0
  */
 export interface ActivityContext {
@@ -14,4 +31,4 @@ export interface ActivityContext {
 /**
  * @since 1.0.0
  */
-export const ActivityContext = Context.GenericTag<ActivityContext>("@services/ActivityContext")
+export const ActivityContext = Context.GenericTag<ActivityContext>(ActivityContextSymbolKey)

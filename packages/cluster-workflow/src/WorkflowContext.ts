@@ -7,6 +7,23 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 
 /**
+ * @internal
+ */
+const WorkflowContextSymbolKey = "@effect/cluster-workflow/WorkflowContext"
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export const WorkflowContextTypeId: unique symbol = Symbol.for(WorkflowContextSymbolKey)
+
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type WorkflowContextTypeId = typeof WorkflowContextTypeId
+
+/**
  * @since 1.0.0
  */
 export interface WorkflowContext {
