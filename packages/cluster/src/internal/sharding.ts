@@ -721,6 +721,7 @@ function make(
   const registerScoped = Effect.acquireRelease(register, (_) => unregister)
 
   const self: Sharding.Sharding = {
+    [ShardingTypeId]: ShardingTypeId,
     getShardId,
     register,
     unregister,

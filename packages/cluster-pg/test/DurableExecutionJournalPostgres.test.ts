@@ -11,23 +11,27 @@ import * as Logger from "effect/Logger"
 import * as LogLevel from "effect/LogLevel"
 import * as Secret from "effect/Secret"
 import * as Stream from "effect/Stream"
-import { describe, expect, it } from "vitest"
+import { beforeAll, describe, expect, it } from "vitest"
 
-const testContainerPostgresLayer = pipe(
-  Effect.acquireRelease(
-    Effect.promise(() => new PostgreSqlContainer().start()),
-    (container) => Effect.promise(() => container.stop())
-  ),
-  Effect.flatMap((container) => Pg.client.make({ url: (Secret.fromString(container.getConnectionUri())) })),
-  Layer.scoped(Pg.client.PgClient)
-)
+describe("DurableExecutionJournalPostgres", () => {
+  let connectionUri: string = ""
 
-describe.concurrent("DurableExecutionJournalPostgres", () => {
-  const withTestEnv = <R, E, A>(fa: Effect.Effect<R, E, A>) =>
+  beforeAll(async () => {
+    const container = await new PostgreSqlContainer().start()
+    connectionUri = container.getConnectionUri()
+    return async () => await container.stop()
+  })
+
+  const withTestEnv = (tableName: string) => <R, E, A>(fa: Effect.Effect<R, E, A>) =>
     pipe(
       fa,
-      Effect.provide(DurableExecutionJournalPostgres.DurableExecutionJournalPostgres),
-      Effect.provide(testContainerPostgresLayer),
+      Effect.provide(DurableExecutionJournalPostgres.makeDurableExecutionJournalPostgres(tableName)),
+      Effect.provide(
+        Layer.scoped(
+          Pg.client.PgClient,
+          Effect.suspend(() => Pg.client.make({ url: Secret.fromString(connectionUri) }))
+        )
+      ),
       Effect.scoped,
       Logger.withMinimumLogLevel(LogLevel.Info)
     )
@@ -42,8 +46,11 @@ describe.concurrent("DurableExecutionJournalPostgres", () => {
         WHERE table_schema='public'
           AND table_type='BASE TABLE'`)
 
-      expect(rows).toEqual([{ table_name: "execution_journal" }])
-    }).pipe(withTestEnv, Effect.runPromise)
+      expect(rows).toEqual([{ table_name: "test_creation" }])
+    }).pipe(
+      withTestEnv("test_creation"),
+      Effect.runPromise
+    )
   })
 
   it("Should store the execution in the table upon append", () => {
@@ -55,10 +62,13 @@ describe.concurrent("DurableExecutionJournalPostgres", () => {
       )
 
       const sql = yield* _(Pg.client.PgClient)
-      const rows = yield* _(sql<{ message_id: string }>`SELECT execution_id FROM execution_journal`)
+      const rows = yield* _(sql<{ message_id: string }>`SELECT execution_id FROM test_store`)
 
       expect(rows.length).toBe(1)
-    }).pipe(withTestEnv, Effect.runPromise)
+    }).pipe(
+      withTestEnv("test_store"),
+      Effect.runPromise
+    )
   })
 
   it("Should read records after persisting them", () => {
@@ -75,6 +85,9 @@ describe.concurrent("DurableExecutionJournalPostgres", () => {
       )
 
       expect(count).toBe(1)
-    }).pipe(withTestEnv, Effect.runPromise)
+    }).pipe(
+      withTestEnv("test_read"),
+      Effect.runPromise
+    )
   })
-}, { timeout: 60000 })
+}, { timeout: 60000, sequential: true })
