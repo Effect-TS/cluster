@@ -5,6 +5,10 @@ import type * as HashSet from "effect/HashSet"
 import type * as PodAddress from "./PodAddress.js"
 import type * as ShardId from "./ShardId.js"
 
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface ShardsAssigned {
   readonly _tag: "ShardsAssigned"
   readonly pod: PodAddress.PodAddress
@@ -24,6 +28,10 @@ export function ShardsAssigned(
   return { _tag: "ShardsAssigned", pod, shards }
 }
 
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface ShardsUnassigned {
   readonly _tag: "ShardsUnassigned"
   readonly pod: PodAddress.PodAddress
@@ -42,6 +50,10 @@ export function ShardsUnassigned(
   return { _tag: "ShardsUnassigned", pod, shards }
 }
 
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface PodHealthChecked {
   readonly _tag: "PodHealthChecked"
   readonly pod: PodAddress.PodAddress
@@ -57,6 +69,10 @@ export function PodHealthChecked(pod: PodAddress.PodAddress): PodHealthChecked {
   return { _tag: "PodHealthChecked", pod }
 }
 
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface PodRegistered {
   readonly _tag: "PodRegistered"
   readonly pod: PodAddress.PodAddress
@@ -72,6 +88,11 @@ export function PodRegistered(pod: PodAddress.PodAddress): PodRegistered {
   return { _tag: "PodRegistered", pod }
 }
 
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface PodUnregistered {
   readonly _tag: "PodUnregistered"
   readonly pod: PodAddress.PodAddress
