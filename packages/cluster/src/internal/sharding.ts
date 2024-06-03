@@ -40,7 +40,6 @@ import * as ShardingRegistrationEvent from "../ShardingRegistrationEvent.js"
 import * as ShardManagerClient from "../ShardManagerClient.js"
 import * as Storage from "../Storage.js"
 import * as EntityManager from "./entityManager.js"
-import { NotAMessageWithReplierDefect } from "./utils.js"
 
 /** @internal */
 const ShardingSymbolKey = "@effect/cluster/Sharding"
@@ -168,7 +167,7 @@ function make(
   address: PodAddress.PodAddress,
   config: ShardingConfig.ShardingConfig,
   shardAssignments: Ref.Ref<HashMap.HashMap<ShardId.ShardId, PodAddress.PodAddress>>,
-  entityManagers: Ref.Ref<HashMap.HashMap<string, EntityManager.EntityManager<any>>>,
+  entityManagers: Ref.Ref<HashMap.HashMap<string, EntityManager.EntityManager>>,
   singletons: Synchronized.SynchronizedRef<
     List.List<SingletonEntry>
   >,
@@ -180,7 +179,7 @@ function make(
   serialization: Serialization.Serialization,
   eventsHub: PubSub.PubSub<ShardingRegistrationEvent.ShardingRegistrationEvent>
 ) {
-  function getEntityManagerByEntityTypeName<Msg extends Message.Message.Any>(
+  function getEntityManagerByEntityTypeName(
     entityType: string
   ) {
     return pipe(
@@ -190,7 +189,7 @@ function make(
         Unify.unify(Option.match(_, {
           onNone: () =>
             Effect.fail(new ShardingException.EntityTypeNotRegisteredException({ entityType, podAddress: address })),
-          onSome: (entityManager) => Effect.succeed(entityManager as EntityManager.EntityManager<Msg>)
+          onSome: (entityManager) => Effect.succeed(entityManager as EntityManager.EntityManager)
         }))
       )
     )
@@ -427,22 +426,11 @@ function make(
     MessageState.MessageState<SerializedMessage.SerializedMessage>,
     ShardingException.ShardingException
   > {
-    return Effect.gen(function*(_) {
-      const entityManager = yield* _(getEntityManagerByEntityTypeName(envelope.entityType))
-      const request = yield* _(serialization.decode(entityManager.recipientType.schema, envelope.body))
-      return yield* _(
-        entityManager.sendAndGetState(envelope.entityId, request),
-        Effect.flatMap((_) =>
-          MessageState.mapEffect(
-            _,
-            (body: any) =>
-              !Message.isMessageWithResult(request)
-                ? Effect.die(NotAMessageWithReplierDefect(request))
-                : serialization.encode(Message.exitSchema(request), body)
-          )
-        )
-      )
-    }).pipe(Effect.annotateLogs("envelope", envelope))
+    return pipe(
+      getEntityManagerByEntityTypeName(envelope.entityType),
+      Effect.flatMap((entityManager) => entityManager.sendAndGetState(envelope)),
+      Effect.annotateLogs("envelope", envelope)
+    )
   }
 
   function sendMessageToRemotePodWithoutRetries(
@@ -708,6 +696,7 @@ function make(
           behavior,
           self,
           config,
+          serialization,
           options
         )
       )
@@ -756,7 +745,7 @@ export const live = Layer.scoped(
     const storage = yield* _(Storage.Storage)
     const serialization = yield* _(Serialization.Serialization)
     const shardsCache = yield* _(Ref.make(HashMap.empty<ShardId.ShardId, PodAddress.PodAddress>()))
-    const entityManagers = yield* _(Ref.make(HashMap.empty<string, EntityManager.EntityManager<any>>()))
+    const entityManagers = yield* _(Ref.make(HashMap.empty<string, EntityManager.EntityManager>()))
     const shuttingDown = yield* _(Ref.make(false))
     const eventsHub = yield* _(PubSub.unbounded<ShardingRegistrationEvent.ShardingRegistrationEvent>())
     const singletons = yield* _(Synchronized.make<List.List<SingletonEntry>>(List.nil()))
