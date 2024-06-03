@@ -41,12 +41,28 @@ export namespace Message {
   export type Success<S> = S extends Message<infer A, infer _AI, infer _E, infer _EI> ? A : never
 
   /**
+   * Extracts the success type from a `Message`.
+   *
+   * @since 1.0.0
+   * @category utils
+   */
+  export type SuccessEncoded<S> = S extends Message<infer _A, infer _AI, infer _E, infer _EI> ? _AI : never
+
+  /**
    * Extracts the error type from a `Message`.
    *
    * @since 1.0.0
    * @category utils
    */
   export type Error<S> = S extends Message<infer _A, infer _AI, infer E, infer _EI> ? E : never
+
+  /**
+   * Extracts the error type from a `Message`.
+   *
+   * @since 1.0.0
+   * @category utils
+   */
+  export type ErrorEncoded<S> = S extends Message<infer _A, infer _AI, infer _E, infer _EI> ? _EI : never
 
   /**
    * Extracts the exit type from a `Message`.

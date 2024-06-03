@@ -88,7 +88,6 @@ export function PodRegistered(pod: PodAddress.PodAddress): PodRegistered {
   return { _tag: "PodRegistered", pod }
 }
 
-
 /**
  * @since 1.0.0
  * @category models

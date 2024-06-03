@@ -9,11 +9,14 @@ import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
 import * as RefSynchronized from "effect/SynchronizedRef"
-import type * as Message from "../Message.js"
-import type * as MessageState from "../MessageState.js"
+import * as Message from "../Message.js"
+import * as MessageState from "../MessageState.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import type * as RecipientType from "../RecipientType.js"
+import type * as Serialization from "../Serialization.js"
+import type * as SerializedEnvelope from "../SerializedEnvelope.js"
+import type * as SerializedMessage from "../SerializedMessage.js"
 import type * as ShardId from "../ShardId.js"
 import type * as Sharding from "../Sharding.js"
 import type * as ShardingConfig from "../ShardingConfig.js"
@@ -32,21 +35,18 @@ export const EntityManagerTypeId = Symbol.for(
 export type EntityManagerTypeId = typeof EntityManagerTypeId
 
 /** @internal */
-export interface EntityManager<Msg extends Message.Message.Any> {
+export interface EntityManager {
   readonly [EntityManagerTypeId]: EntityManagerTypeId
 
   /** @internal */
-  readonly recipientType: RecipientType.RecipientType<Msg>
-
-  /** @internal */
-  readonly sendAndGetState: <A extends Msg>(
-    entityId: string,
-    req: A
+  readonly sendAndGetState: (
+    envelope: SerializedEnvelope.SerializedEnvelope
   ) => Effect.Effect<
-    MessageState.MessageState<Message.Message.Exit<A>>,
+    MessageState.MessageState<SerializedMessage.SerializedMessage>,
     | ShardingException.EntityNotManagedByThisPodException
     | ShardingException.PodUnavailableException
     | ShardingException.ExceptionWhileOfferingMessageException
+    | ShardingException.SerializationException
   >
 
   /** @internal */
@@ -64,6 +64,7 @@ export function make<Msg extends Message.Message.Any, R>(
   recipientBehaviour: RecipientBehaviour.RecipientBehaviour<Msg, R>,
   sharding: Sharding.Sharding,
   config: ShardingConfig.ShardingConfig,
+  serialization: Serialization.Serialization,
   options: RecipientBehaviour.EntityBehaviourOptions = {}
 ) {
   return Effect.gen(function*(_) {
@@ -73,7 +74,7 @@ export function make<Msg extends Message.Message.Any, R>(
       RefSynchronized.make<
         HashMap.HashMap<
           string,
-          EntityState.EntityState<Msg>
+          EntityState.EntityState
         >
       >(HashMap.empty())
     )
@@ -185,7 +186,7 @@ export function make<Msg extends Message.Message.Any, R>(
     function getOrCreateEntityState(
       entityId: string
     ): Effect.Effect<
-      Option.Option<EntityState.EntityState<Msg>>,
+      Option.Option<EntityState.EntityState>,
       ShardingException.EntityNotManagedByThisPodException
     > {
       return RefSynchronized.modifyEffect(entityStates, (map) =>
@@ -228,6 +229,22 @@ export function make<Msg extends Message.Message.Any, R>(
 
                     const sendAndGetState = yield* _(pipe(
                       recipientBehaviour,
+                      Effect.map((offer) => (envelope: SerializedEnvelope.SerializedEnvelope) =>
+                        pipe(
+                          serialization.decode(recipientType.schema, envelope.body),
+                          Effect.flatMap((message) =>
+                            pipe(
+                              offer(message),
+                              Effect.flatMap((_) =>
+                                MessageState.mapEffect(
+                                  _,
+                                  (value) => serialization.encode(Message.exitSchema(message), value)
+                                )
+                              )
+                            )
+                          )
+                        )
+                      ),
                       Scope.extend(executionScope),
                       Effect.provideService(
                         RecipientBehaviourContext.RecipientBehaviourContext,
@@ -242,7 +259,7 @@ export function make<Msg extends Message.Message.Any, R>(
                     ))
 
                     const entityState = EntityState.make({
-                      sendAndGetState: sendAndGetState as any, // TODO
+                      sendAndGetState,
                       expirationFiber,
                       executionScope,
                       terminationFiber: Option.none(),
@@ -264,14 +281,14 @@ export function make<Msg extends Message.Message.Any, R>(
         ))
     }
 
-    function sendAndGetState<A extends Msg>(
-      entityId: string,
-      req: A
+    function sendAndGetState(
+      envelope: SerializedEnvelope.SerializedEnvelope
     ): Effect.Effect<
-      MessageState.MessageState<Message.Message.Exit<A>>,
+      MessageState.MessageState<SerializedMessage.SerializedMessage>,
       | ShardingException.EntityNotManagedByThisPodException
       | ShardingException.PodUnavailableException
       | ShardingException.ExceptionWhileOfferingMessageException
+      | ShardingException.SerializationException
     > {
       return pipe(
         Effect.Do,
@@ -279,15 +296,15 @@ export function make<Msg extends Message.Message.Any, R>(
           // first, verify that this entity should be handled by this pod
           if (recipientType._tag === "EntityType") {
             return Effect.asVoid(Effect.unlessEffect(
-              Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ entityId })),
-              sharding.isEntityOnLocalShards(entityId)
+              Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ entityId: envelope.entityId })),
+              sharding.isEntityOnLocalShards(envelope.entityId)
             ))
           } else if (recipientType._tag === "TopicType") {
             return Effect.void
           }
           return Effect.die("Unhandled recipientType")
         }),
-        Effect.bind("maybeEntityState", () => getOrCreateEntityState(entityId)),
+        Effect.bind("maybeEntityState", () => getOrCreateEntityState(envelope.entityId)),
         Effect.flatMap((_) =>
           pipe(
             _.maybeEntityState,
@@ -295,10 +312,10 @@ export function make<Msg extends Message.Message.Any, R>(
               onNone: () =>
                 pipe(
                   Effect.sleep(Duration.millis(100)),
-                  Effect.flatMap(() => sendAndGetState(entityId, req))
+                  Effect.flatMap(() => sendAndGetState(envelope))
                 ),
               onSome: (entityState) => {
-                return entityState.sendAndGetState(req)
+                return entityState.sendAndGetState(envelope)
               }
             })
           )
@@ -369,9 +386,8 @@ export function make<Msg extends Message.Message.Any, R>(
       )
     }
 
-    const self: EntityManager<Msg> = {
+    const self: EntityManager = {
       [EntityManagerTypeId]: EntityManagerTypeId,
-      recipientType,
       sendAndGetState,
       terminateAllEntities,
       terminateEntitiesOnShards
