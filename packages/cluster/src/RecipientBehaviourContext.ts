@@ -5,6 +5,7 @@ import type * as Message from "@effect/cluster/Message"
 import type * as Context from "effect/Context"
 import type * as Effect from "effect/Effect"
 import * as internal from "./internal/recipientBehaviourContext.js"
+import type * as RecipientAddress from "./RecipientAddress.js"
 import type * as RecipientType from "./RecipientType.js"
 import type * as ShardId from "./ShardId.js"
 
@@ -29,7 +30,7 @@ export type RecipientBehaviourContextTypeId = typeof RecipientBehaviourContextTy
  */
 export interface RecipientBehaviourContext {
   readonly [RecipientBehaviourContextTypeId]: RecipientBehaviourContextTypeId
-  readonly entityId: string
+  readonly recipientAddress: RecipientAddress.RecipientAddress
   readonly shardId: ShardId.ShardId
   readonly recipientType: RecipientType.RecipientType<Message.Message.Any>
   readonly forkShutdown: Effect.Effect<void>
@@ -61,6 +62,15 @@ export const make: (
  * @category utils
  */
 export const entityId: Effect.Effect<string, never, RecipientBehaviourContext> = internal.entityId
+
+/**
+ * Gets the current entityId
+ *
+ * @since 1.0.0
+ * @category utils
+ */
+export const recipientAddress: Effect.Effect<RecipientAddress.RecipientAddress, never, RecipientBehaviourContext> =
+  internal.recipientAddress
 
 /**
  * Gets the current shardId

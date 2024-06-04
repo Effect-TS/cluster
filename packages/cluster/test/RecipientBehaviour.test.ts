@@ -1,5 +1,6 @@
 import * as Message from "@effect/cluster/Message"
 import * as PoisonPill from "@effect/cluster/PoisonPill"
+import * as RecipientAddress from "@effect/cluster/RecipientAddress"
 import * as RecipientBehaviour from "@effect/cluster/RecipientBehaviour"
 import * as RecipientBehaviourContext from "@effect/cluster/RecipientBehaviourContext"
 import * as RecipientType from "@effect/cluster/RecipientType"
@@ -34,7 +35,7 @@ describe.concurrent("RecipientBehaviour", () => {
       Effect.provideService(
         RecipientBehaviourContext.RecipientBehaviourContext,
         RecipientBehaviourContext.make({
-          entityId: "entity1",
+          recipientAddress: RecipientAddress.makeRecipientAddress("Entity", "entity1"),
           forkShutdown: Effect.void,
           shardId: ShardId.make(1),
           recipientType: RecipientType.makeEntityType("Sample", Sample) as any

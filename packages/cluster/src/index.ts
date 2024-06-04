@@ -61,6 +61,11 @@ export * as PoisonPill from "./PoisonPill.js"
 /**
  * @since 1.0.0
  */
+export * as RecipientAddress from "./RecipientAddress.js"
+
+/**
+ * @since 1.0.0
+ */
 export * as RecipientBehaviour from "./RecipientBehaviour.js"
 
 /**
