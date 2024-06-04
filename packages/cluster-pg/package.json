@@ -1,7 +1,7 @@
 {
   "name": "@effect/cluster-pg",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Cluster utililies using postgres",
   "publishConfig": {
     "access": "public",
