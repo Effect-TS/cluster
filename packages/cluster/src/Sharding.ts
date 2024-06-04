@@ -19,6 +19,7 @@ import type * as Stream from "effect/Stream"
 import type { Broadcaster } from "./Broadcaster.js"
 import * as internal from "./internal/sharding.js"
 import type * as PodAddress from "./PodAddress.js"
+import type * as RecipientAddress from "./RecipientAddress.js"
 
 /**
  * @since 1.0.0
@@ -47,7 +48,7 @@ export interface Sharding {
     topicType: RecipentType.TopicType<Msg>
   ) => Broadcaster<Msg>
   readonly isEntityOnLocalShards: (
-    entityId: string
+    recipientAddress: RecipientAddress.RecipientAddress
   ) => Effect.Effect<boolean>
   readonly isShuttingDown: Effect.Effect<boolean>
 
@@ -79,7 +80,7 @@ export interface Sharding {
   /** @internal */
   readonly refreshAssignments: Effect.Effect<void, never, Scope.Scope>
   /** @internal */
-  readonly getShardId: (entityId: string) => ShardId.ShardId
+  readonly getShardId: (entityId: RecipientAddress.RecipientAddress) => ShardId.ShardId
 }
 
 /**

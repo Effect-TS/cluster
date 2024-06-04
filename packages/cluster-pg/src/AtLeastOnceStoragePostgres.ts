@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import * as AtLeastOnceStorage from "@effect/cluster/AtLeastOnceStorage"
+import * as RecipientAddress from "@effect/cluster/RecipientAddress"
 import * as Serialization from "@effect/cluster/Serialization"
 import * as SerializedEnvelope from "@effect/cluster/SerializedEnvelope"
 import * as SerializedMessage from "@effect/cluster/SerializedMessage"
@@ -76,8 +77,7 @@ export const makeAtLeastOnceStoragePostgres = (tableName: string) =>
             Stream.orDie,
             Stream.map((_) =>
               SerializedEnvelope.make(
-                _.recipient_name,
-                _.entity_id,
+                RecipientAddress.makeRecipientAddress(_.recipient_name, _.entity_id),
                 _.message_id,
                 SerializedMessage.make(_.message_body)
               )

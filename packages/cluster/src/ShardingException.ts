@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import * as PodAddress from "@effect/cluster/PodAddress"
+import * as RecipientAddress from "@effect/cluster/RecipientAddress"
 import * as Schema from "@effect/schema/Schema"
 
 /**
@@ -11,7 +12,7 @@ import * as Schema from "@effect/schema/Schema"
 export class EntityNotManagedByThisPodException extends Schema.TaggedError<EntityNotManagedByThisPodException>()(
   "@effect/cluster/EntityNotManagedByThisPodException",
   {
-    entityId: Schema.String
+    recipientAddress: RecipientAddress.RecipientAddress
   }
 ) {
 }

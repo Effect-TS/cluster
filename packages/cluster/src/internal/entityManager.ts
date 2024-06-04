@@ -11,6 +11,7 @@ import * as Scope from "effect/Scope"
 import * as RefSynchronized from "effect/SynchronizedRef"
 import * as Message from "../Message.js"
 import * as MessageState from "../MessageState.js"
+import type * as RecipientAddress from "../RecipientAddress.js"
 import type * as RecipientBehaviour from "../RecipientBehaviour.js"
 import * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import type * as RecipientType from "../RecipientType.js"
@@ -73,13 +74,13 @@ export function make<Msg extends Message.Message.Any, R>(
     const entityStates = yield* _(
       RefSynchronized.make<
         HashMap.HashMap<
-          string,
+          RecipientAddress.RecipientAddress,
           EntityState.EntityState
         >
       >(HashMap.empty())
     )
 
-    function startExpirationFiber(entityId: string) {
+    function startExpirationFiber(recipientAddress: RecipientAddress.RecipientAddress) {
       const maxIdleMillis = pipe(
         entityMaxIdle,
         Option.getOrElse(() => config.entityMaxIdleTime),
@@ -94,7 +95,7 @@ export function make<Msg extends Message.Message.Any, R>(
           Effect.bind("map", () => RefSynchronized.get(entityStates)),
           Effect.let("lastReceivedAt", ({ map }) =>
             pipe(
-              HashMap.get(map, entityId),
+              HashMap.get(map, recipientAddress),
               Option.map((_) => _.lastReceivedAt),
               Option.getOrElse(() => 0)
             )),
@@ -105,10 +106,10 @@ export function make<Msg extends Message.Message.Any, R>(
 
       return pipe(
         sleep(maxIdleMillis),
-        Effect.zipRight(forkEntityTermination(entityId)),
+        Effect.zipRight(forkEntityTermination(recipientAddress)),
         Effect.asVoid,
         Effect.interruptible,
-        Effect.annotateLogs("entityId", entityId),
+        Effect.annotateLogs("entityId", recipientAddress),
         Effect.annotateLogs("recipientType", recipientType.name),
         Effect.forkDaemon
       )
@@ -117,13 +118,13 @@ export function make<Msg extends Message.Message.Any, R>(
     /**
      * Performs proper termination of the entity, interrupting the expiration timer, closing the scope and failing pending replies
      */
-    function terminateEntity(entityId: string) {
+    function terminateEntity(recipientAddress: RecipientAddress.RecipientAddress) {
       return pipe(
         // get the things to cleanup
         RefSynchronized.get(
           entityStates
         ),
-        Effect.map(HashMap.get(entityId)),
+        Effect.map(HashMap.get(recipientAddress)),
         Effect.flatMap(Option.match({
           // there is no entity state to cleanup
           onNone: () => Effect.void,
@@ -135,12 +136,12 @@ export function make<Msg extends Message.Message.Any, R>(
               // close the scope of the entity,
               Effect.ensuring(Scope.close(entityState.executionScope, Exit.void)),
               // remove the entry from the map
-              Effect.ensuring(RefSynchronized.update(entityStates, HashMap.remove(entityId))),
+              Effect.ensuring(RefSynchronized.update(entityStates, HashMap.remove(recipientAddress))),
               // log error if happens
               Effect.catchAllCause(Effect.logError),
               Effect.asVoid,
-              Effect.annotateLogs("entityId", entityId),
-              Effect.annotateLogs("recipientType", recipientType.name)
+              Effect.annotateLogs("entityId", recipientAddress.entityId),
+              Effect.annotateLogs("recipientType", recipientAddress.recipientTypeName)
             )
         }))
       )
@@ -150,11 +151,11 @@ export function make<Msg extends Message.Message.Any, R>(
      * Begins entity termination (if needed) and return the fiber to wait for completed termination (if any)
      */
     function forkEntityTermination(
-      entityId: string
+      recipientAddress: RecipientAddress.RecipientAddress
     ): Effect.Effect<Option.Option<Fiber.RuntimeFiber<void, never>>> {
       return RefSynchronized.modifyEffect(entityStates, (entityStatesMap) =>
         pipe(
-          HashMap.get(entityStatesMap, entityId),
+          HashMap.get(entityStatesMap, recipientAddress),
           Option.match({
             // if no entry is found, the entity has succefully shut down
             onNone: () => Effect.succeed([Option.none(), entityStatesMap] as const),
@@ -168,12 +169,16 @@ export function make<Msg extends Message.Message.Any, R>(
                   // begin to terminate the queue
                   onNone: () =>
                     pipe(
-                      terminateEntity(entityId),
+                      terminateEntity(recipientAddress),
                       Effect.forkDaemon,
                       Effect.map((terminationFiber) =>
                         [
                           Option.some(terminationFiber),
-                          HashMap.modify(entityStatesMap, entityId, EntityState.withTerminationFiber(terminationFiber))
+                          HashMap.modify(
+                            entityStatesMap,
+                            recipientAddress,
+                            EntityState.withTerminationFiber(terminationFiber)
+                          )
                         ] as const
                       )
                     )
@@ -184,14 +189,14 @@ export function make<Msg extends Message.Message.Any, R>(
     }
 
     function getOrCreateEntityState(
-      entityId: string
+      recipientAddress: RecipientAddress.RecipientAddress
     ): Effect.Effect<
       Option.Option<EntityState.EntityState>,
       ShardingException.EntityNotManagedByThisPodException
     > {
       return RefSynchronized.modifyEffect(entityStates, (map) =>
         pipe(
-          HashMap.get(map, entityId),
+          HashMap.get(map, recipientAddress),
           Option.match({
             onSome: (entityState) =>
               pipe(
@@ -205,7 +210,7 @@ export function make<Msg extends Message.Message.Any, R>(
                         (cdt) =>
                           [
                             Option.some(entityState),
-                            HashMap.modify(map, entityId, EntityState.withLastReceivedAd(cdt))
+                            HashMap.modify(map, recipientAddress, EntityState.withLastReceivedAd(cdt))
                           ] as const
                       )
                     ),
@@ -217,15 +222,15 @@ export function make<Msg extends Message.Message.Any, R>(
               Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
                 if (isGoingDown) {
                   // don't start any fiber while sharding is shutting down
-                  return Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ entityId }))
+                  return Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ recipientAddress }))
                 } else {
                   // offer doesn't exist, create a new one
                   return Effect.gen(function*(_) {
                     const executionScope = yield* _(Scope.make())
-                    const expirationFiber = yield* _(startExpirationFiber(entityId))
+                    const expirationFiber = yield* _(startExpirationFiber(recipientAddress))
                     const cdt = yield* _(Clock.currentTimeMillis)
-                    const forkShutdown = pipe(forkEntityTermination(entityId), Effect.asVoid)
-                    const shardId = sharding.getShardId(entityId)
+                    const forkShutdown = pipe(forkEntityTermination(recipientAddress), Effect.asVoid)
+                    const shardId = sharding.getShardId(recipientAddress)
 
                     const sendAndGetState = yield* _(pipe(
                       recipientBehaviour,
@@ -249,7 +254,7 @@ export function make<Msg extends Message.Message.Any, R>(
                       Effect.provideService(
                         RecipientBehaviourContext.RecipientBehaviourContext,
                         RecipientBehaviourContext.make({
-                          entityId,
+                          recipientAddress,
                           shardId,
                           recipientType: recipientType as any,
                           forkShutdown
@@ -270,7 +275,7 @@ export function make<Msg extends Message.Message.Any, R>(
                       Option.some(entityState),
                       HashMap.set(
                         map,
-                        entityId,
+                        recipientAddress,
                         entityState
                       )
                     ] as const
@@ -296,15 +301,19 @@ export function make<Msg extends Message.Message.Any, R>(
           // first, verify that this entity should be handled by this pod
           if (recipientType._tag === "EntityType") {
             return Effect.asVoid(Effect.unlessEffect(
-              Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ entityId: envelope.entityId })),
-              sharding.isEntityOnLocalShards(envelope.entityId)
+              Effect.fail(
+                new ShardingException.EntityNotManagedByThisPodException({
+                  recipientAddress: envelope.recipientAddress
+                })
+              ),
+              sharding.isEntityOnLocalShards(envelope.recipientAddress)
             ))
           } else if (recipientType._tag === "TopicType") {
             return Effect.void
           }
           return Effect.die("Unhandled recipientType")
         }),
-        Effect.bind("maybeEntityState", () => getOrCreateEntityState(envelope.entityId)),
+        Effect.bind("maybeEntityState", () => getOrCreateEntityState(envelope.recipientAddress)),
         Effect.flatMap((_) =>
           pipe(
             _.maybeEntityState,
@@ -331,15 +340,15 @@ export function make<Msg extends Message.Message.Any, R>(
 
     function terminateEntities(
       entitiesToTerminate: HashSet.HashSet<
-        string
+        RecipientAddress.RecipientAddress
       >
     ) {
       return pipe(
         entitiesToTerminate,
         Effect.forEach(
-          (entityId) =>
+          (recipientAddress) =>
             pipe(
-              forkEntityTermination(entityId),
+              forkEntityTermination(recipientAddress),
               Effect.flatMap((_) =>
                 Option.match(_, {
                   onNone: () => Effect.void,
@@ -350,15 +359,13 @@ export function make<Msg extends Message.Message.Any, R>(
                       Effect.match({
                         onFailure: () =>
                           Effect.logError(
-                            `Entity ${
-                              recipientType.name + "#" + entityId
-                            } termination is taking more than expected entityTerminationTimeout (${
+                            `Entity ${recipientAddress} termination is taking more than expected entityTerminationTimeout (${
                               Duration.toMillis(config.entityTerminationTimeout)
                             }ms).`
                           ),
                         onSuccess: () =>
                           Effect.logDebug(
-                            `Entity ${recipientType.name + "#" + entityId} cleaned up.`
+                            `Entity ${recipientAddress} cleaned up.`
                           )
                       }),
                       Effect.asVoid
@@ -377,7 +384,7 @@ export function make<Msg extends Message.Message.Any, R>(
         RefSynchronized.modify(entityStates, (entities) => [
           HashMap.filter(
             entities,
-            (_, entityId) => HashSet.has(shards, sharding.getShardId(entityId))
+            (_, recipientAddress) => HashSet.has(shards, sharding.getShardId(recipientAddress))
           ),
           entities
         ]),

@@ -1,6 +1,7 @@
 import type * as Message from "@effect/cluster/Message"
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
+import type * as RecipientAddress from "../RecipientAddress.js"
 import type * as RecipientBehaviourContext from "../RecipientBehaviourContext.js"
 import type * as RecipientType from "../RecipientType.js"
 import type * as ShardId from "../ShardId.js"
@@ -29,8 +30,18 @@ export function make(
 }
 
 /** @internal */
-export const entityId: Effect.Effect<string, never, RecipientBehaviourContext.RecipientBehaviourContext> = Effect.map(
+export const recipientAddress: Effect.Effect<
+  RecipientAddress.RecipientAddress,
+  never,
+  RecipientBehaviourContext.RecipientBehaviourContext
+> = Effect.map(
   recipientBehaviourContextTag,
+  (_) => _.recipientAddress
+)
+
+/** @internal */
+export const entityId: Effect.Effect<string, never, RecipientBehaviourContext.RecipientBehaviourContext> = Effect.map(
+  recipientAddress,
   (_) => _.entityId
 )
 
