@@ -80,7 +80,7 @@ export interface Sharding {
   /** @internal */
   readonly refreshAssignments: Effect.Effect<void, never, Scope.Scope>
   /** @internal */
-  readonly getShardId: (entityId: RecipientAddress.RecipientAddress) => ShardId.ShardId
+  readonly getShardId: (recipientAddress: RecipientAddress.RecipientAddress) => ShardId.ShardId
 }
 
 /**
