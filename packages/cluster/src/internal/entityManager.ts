@@ -222,7 +222,7 @@ export function make<Msg extends Message.Message.Any, R>(
               Effect.flatMap(sharding.isShuttingDown, (isGoingDown) => {
                 if (isGoingDown) {
                   // don't start any fiber while sharding is shutting down
-                  return Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ recipientAddress }))
+                  return new ShardingException.EntityNotManagedByThisPodException({ recipientAddress })
                 } else {
                   // offer doesn't exist, create a new one
                   return Effect.gen(function*(_) {

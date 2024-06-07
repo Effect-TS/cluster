@@ -182,7 +182,7 @@ function make(
   ) {
     return RefSynchronized.updateEffect(stateRef, (state) => {
       if (Option.isSome(pod) && !HashMap.has(state.pods, pod.value)) {
-        return Effect.fail(new ShardingException.PodNoLongerRegisteredException({ podAddress: pod.value }))
+        return new ShardingException.PodNoLongerRegisteredException({ podAddress: pod.value })
       }
       return Effect.succeed({
         ...state,

@@ -39,7 +39,7 @@ export function podsRpc<R>(
           Effect.catchAllDefect((e) =>
             pipe(
               Effect.logError(e),
-              Effect.zipRight(Effect.fail(new ShardingException.PodUnavailableException({ podAddress })))
+              Effect.zipRight(new ShardingException.PodUnavailableException({ podAddress }))
             )
           )
         )
@@ -51,7 +51,7 @@ export function podsRpc<R>(
           Effect.catchAllDefect((e) =>
             pipe(
               Effect.logError(e),
-              Effect.zipRight(Effect.fail(new ShardingException.PodUnavailableException({ podAddress })))
+              Effect.zipRight(new ShardingException.PodUnavailableException({ podAddress }))
             )
           )
         )
@@ -64,7 +64,7 @@ export function podsRpc<R>(
             pipe(
               Effect.logError(e),
               Effect.zipRight(
-                Effect.fail(new ShardingException.PodUnavailableException({ podAddress }))
+                new ShardingException.PodUnavailableException({ podAddress })
               )
             )
           )
@@ -77,7 +77,7 @@ export function podsRpc<R>(
           Effect.catchAllDefect((e) =>
             pipe(
               Effect.logError(e),
-              Effect.zipRight(Effect.fail(new ShardingException.PodUnavailableException({ podAddress })))
+              Effect.zipRight(new ShardingException.PodUnavailableException({ podAddress }))
             )
           )
         )
