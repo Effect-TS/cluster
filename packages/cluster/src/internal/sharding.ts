@@ -189,7 +189,7 @@ function make(
       Effect.flatMap((_) =>
         Unify.unify(Option.match(_, {
           onNone: () =>
-            Effect.fail(new ShardingException.EntityTypeNotRegisteredException({ entityType, podAddress: address })),
+            new ShardingException.EntityTypeNotRegisteredException({ entityType, podAddress: address }),
           onSome: (entityManager) => Effect.succeed(entityManager as EntityManager.EntityManager)
         }))
       )
@@ -508,7 +508,7 @@ function make(
             Unify.unify(pipe(
               state,
               MessageState.match({
-                onAcknowledged: () => Effect.fail(new ShardingException.NoResultInProcessedMessageStateException()),
+                onAcknowledged: () => new ShardingException.NoResultInProcessedMessageStateException(),
                 onProcessed: (state) => Effect.succeed(state.result)
               })
             ))
@@ -539,7 +539,7 @@ function make(
           Effect.flatMap((pod) =>
             Option.isSome(pod)
               ? Effect.succeed(pod.value)
-              : Effect.fail(new ShardingException.EntityNotManagedByThisPodException({ recipientAddress }))
+              : new ShardingException.EntityNotManagedByThisPodException({ recipientAddress })
           ),
           Effect.flatMap((pod) =>
             sendMessageToPodWithoutRetries(
@@ -638,7 +638,7 @@ function make(
                       state,
                       MessageState.match({
                         onAcknowledged: () =>
-                          Effect.fail(new ShardingException.NoResultInProcessedMessageStateException()),
+                          new ShardingException.NoResultInProcessedMessageStateException(),
                         onProcessed: (state) => Effect.succeed(state.result)
                       })
                     ))
