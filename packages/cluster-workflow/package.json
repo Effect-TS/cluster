@@ -23,16 +23,21 @@
     "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
   "peerDependencies": {
-    "@effect/platform-node": "^0.48.2",
+    "@effect/platform": "^0.57.4",
+    "@effect/platform-node": "^0.51.13",
     "@effect/schema": "^0.66.13",
+    "@effect/sql": "^0.3.14",
     "effect": "^3.1.1"
   },
   "devDependencies": {
-    "@effect/platform-node": "^0.48.2",
-    "@effect/schema": "^0.66.13",
-    "@types/node": "^20.12.6",
+    "@effect/platform": "^0.57.4",
+    "@effect/platform-node": "^0.51.13",
+    "@effect/schema": "^0.68.1",
+    "@effect/sql": "^0.3.14",
+    "@effect/sql-sqlite-node": "^0.3.15",
+    "@types/node": "^20.14.5",
     "@types/path-browserify": "^1.0.1",
-    "effect": "^3.1.1",
-    "tsx": "^4.7.2"
+    "effect": "^3.3.5",
+    "tsx": "^4.15.6"
   }
 }

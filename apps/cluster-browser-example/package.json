@@ -11,22 +11,22 @@
   },
   "dependencies": {
     "@effect/cluster": "workspace:*",
-    "@effect/rpc": "^0.30.16",
-    "@effect/schema": "^0.66.13",
-    "effect": "^3.1.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@effect/rpc": "^0.30.48",
+    "@effect/schema": "^0.68.1",
+    "effect": "^3.3.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "^18.2.75",
-    "@types/react-dom": "^18.2.24",
-    "@typescript-eslint/eslint-plugin": "^7.6.0",
-    "@typescript-eslint/parser": "^7.6.0",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
+    "@vitejs/plugin-react": "^4.3.1",
     "eslint": "^8.56.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.7",
     "typescript": "^5.4.5",
-    "vite": "^5.2.8"
+    "vite": "^5.3.1"
   }
 }

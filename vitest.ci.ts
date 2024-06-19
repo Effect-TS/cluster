@@ -4,5 +4,5 @@ export default defineWorkspace([
   "packages/cluster",
   "packages/cluster-browser",
   "packages/cluster-node",
-  "packages/cluster-workflow",
+  "packages/cluster-workflow"
 ])
