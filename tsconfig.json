@@ -12,9 +12,6 @@
     },
     {
       "path": "packages/cluster-workflow"
-    },
-    {
-      "path": "packages/cluster-pg"
     }
   ]
 }

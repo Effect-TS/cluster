@@ -22,8 +22,7 @@ const config: UserConfig = {
       ...alias("cluster"),
       ...alias("cluster-browser"),
       ...alias("cluster-node"),
-      ...alias("cluster-pg"),
-      ...alias("cluster-workflow"),
+      ...alias("cluster-workflow")
     }
   }
 }
